@@ -8,7 +8,7 @@ get_combat_efficiency <- function(
   # --- Define Parameters for Coefficient Calculation (Constants) ---
   # These parameters are based directly on the "Regiment Combat Coefficient Calculation and Lookup" source.
   
-  # 1. Weapon Multipliers (Categorical)
+  # Weapon Multipliers (Categorical)
   # Represents the base effectiveness of a regiment's primary weapon.
   weapon_multipliers <- c(
     "-2" = 0.20, # Unarmed or pikemen - very low effectiveness
@@ -18,12 +18,12 @@ get_combat_efficiency <- function(
     "2" = 2.50   # Needler rifles - highly advanced, major advantage
   )
   
-  # 2. Experience and Morale Boosts (Linear)
+  # Experience and Morale Boosts (Linear)
   # Incremental improvements based on a unit's training and spirit.
   xp_boost_per_level <- 0.04   # 4% increase in effectiveness per experience level above 1
   morale_boost_per_level <- 0.02 # 2% increase in effectiveness per morale level above 1
   
-  # 3. Melee Combat Penalty
+  # Melee Combat Penalty
   # Melee combat is less effective than aimed fire.
   melee_penalty_factor <- 0.70 # Melee effectiveness is 70% of ranged effectiveness
   
@@ -49,27 +49,27 @@ get_combat_efficiency <- function(
     # Calculate the combat coefficient for each row in the stat_data
     full_lookup_table <- stat_data %>%
       dplyr::mutate(
-        # Step 1: Get the base effectiveness from the weapon tier
+        # Get the base effectiveness from the weapon tier
         weapon_base_effectiveness = weapon_multipliers[as.character(stat_weapon)],
         
-        # Step 2: Calculate adjustments from Experience and Morale
+        # Calculate adjustments from Experience and Morale
         xp_adjustment = (stat_xp - 1) * xp_boost_per_level,
         morale_adjustment = (stat_morale - 1) * morale_boost_per_level,
         
-        # Step 3: Combine all positive adjustments (weapon, experience, morale)
+        # Combine all positive adjustments (weapon, experience, morale)
         adjusted_effectiveness = weapon_base_effectiveness * (1 + xp_adjustment + morale_adjustment),
         
-        # Step 4: Apply the melee penalty if the unit is in melee
+        # Apply the melee penalty if the unit is in melee
         raw_combat_coefficient = ifelse(
           stat_melee == 1,
           adjusted_effectiveness * melee_penalty_factor,
           adjusted_effectiveness
         ),
         
-        # Step 5: Scale the raw coefficient to be between 0 and 1
+        # Scale the raw coefficient to be between 0 and 1
         final_combat_coefficient = raw_combat_coefficient / max_possible_raw_coefficient,
         
-        # Step 6: Create a unique string identifier for each stat combination
+        # Create a unique string identifier for each stat combination
         stat_string = paste(stat_xp, stat_morale, stat_weapon, stat_melee, sep = "/")
       ) %>%
       # Select and reorder columns for the final lookup table
@@ -94,31 +94,30 @@ get_combat_efficiency <- function(
     }
 
     # Input clamping for robustness: Ensures inputs are within expected valid ranges.
-    # (This is an enhancement for robustness, inferred from the game's stat ranges).
     stat_morale_1_10 <- max(1, min(10, stat_morale_1_10))
     stat_xp <- max(1, min(10, stat_xp))
     stat_weapon <- max(-2, min(2, stat_weapon))
     stat_melee <- max(0, min(1, stat_melee))
 
     # Perform the calculations for the single set of stats:
-    # Step 1: Get the base effectiveness from the weapon tier
+    # Get the base effectiveness from the weapon tier
     weapon_base_effectiveness <- weapon_multipliers[as.character(stat_weapon)]
     
-    # Step 2: Calculate adjustments from Experience and Morale
+    # Calculate adjustments from Experience and Morale
     xp_adjustment <- (stat_xp - 1) * xp_boost_per_level
     morale_adjustment <- (stat_morale_1_10 - 1) * morale_boost_per_level
     
-    # Step 3: Combine all positive adjustments
+    # Combine all positive adjustments
     adjusted_effectiveness <- weapon_base_effectiveness * (1 + xp_adjustment + morale_adjustment)
     
-    # Step 4: Apply the melee penalty if applicable
+    # Apply the melee penalty if applicable
     raw_combat_coefficient <- ifelse(
       stat_melee == 1,
       adjusted_effectiveness * melee_penalty_factor,
       adjusted_effectiveness
     )
     
-    # Step 5: Scale the raw coefficient to be between 0 and 1
+    # Scale the raw coefficient to be between 0 and 1
     final_combat_coefficient <- raw_combat_coefficient / max_possible_raw_coefficient
 
     return(final_combat_coefficient)
