@@ -1,6 +1,7 @@
-
 # Load Packages and Import Functions ----
-if (!require("pacman")) install.packages("pacman")
+if (!require("pacman")) {
+  install.packages("pacman")
+}
 pacman::p_load(
   "tidyverse"
 )
@@ -24,7 +25,7 @@ init <- list(
     size = 4500, # starting size
     stats = "4/7/0/0", # parsed for coef
     type = "sq" # law selection
-  ), 
+  ),
   CSA = list(
     size = 6000, # starting size
     stats = "4/4/0/0", # parsed for coef
@@ -39,19 +40,21 @@ init <- list(
 sim <- build_lanchester_diffeq(
   init = map_vec(init, ~ .x$size),
   type = map_vec(init, ~ .x$type),
-  stat = map_vec(init, ~  .x$stats)
+  stat = map_vec(init, ~ .x$stats)
 )
 
 ## Run Simulation With Stochastic Markov Chain ----
 
+# TODO - tune casualty constants, should be ok for now but keep in mind
 markovchain_diffeq_sim(
   init = sim$state,
-  rate_func = sim$rate_func, 
+  rate_func = sim$rate_func,
   stat = sim$stat,
   time = 1
-) -> df
+) -> out
 
-tail(df)
+tail(out$df)
+out$final_casualties
 
 # Scratch ----
 
@@ -62,7 +65,7 @@ init2 <- list(
     size = 0, # starting size
     stats = "4/7/0/0", # parsed for coef
     type = "sq" # law selection
-  ), 
+  ),
   CSA = list(
     size = 0, # starting size
     stats = "4/7/0/0", # parsed for coef
@@ -72,12 +75,12 @@ init2 <- list(
 
 sim2 <- build_lanchester_diffeq(
   init = map_vec(init2, ~ .x$size),
-  coef = map_dbl(init2, ~  parse_stat_string(pluck(.x, "stats"))),
+  coef = map_dbl(init2, ~ parse_stat_string(pluck(.x, "stats"))),
   type = map_vec(init2, ~ .x$type)
 )
 
 stages <- list(sim, sim2)
 deltas <- c(1, 3)
 
-linked_mc_diffeq_sim(stages, deltas) %>% 
+linked_mc_diffeq_sim(stages, deltas) %>%
   View()
