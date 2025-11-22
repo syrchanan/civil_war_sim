@@ -1,0 +1,2 @@
+2025-11-22 12:45:35,893 INFO Initialized Simulation with forces: ([type: inf] Regiment(size=4000, stats=(4, 4, 0, 0), law='sq'), [type: inf] Regiment(size=3500, stats=(4, 6, 1, 0), law='sq'))
+2025-11-22 12:45:35,895 INFO Building Lanchester differential equations for simulation.

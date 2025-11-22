@@ -7,7 +7,7 @@ pacman::p_load(
 )
 set.seed(8675309)
 
-walk(list.files("./functions/", pattern = ".R", full.names = T), source)
+walk(list.files("./archive/functions/", pattern = ".R", full.names = T), source)
 
 # Unit Stat Blocks ----
 
@@ -22,13 +22,13 @@ coefs <- get_combat_efficiency(return_table = T)
 
 init <- list(
   USA = list(
-    size = 4500, # starting size
-    stats = "4/7/0/0", # parsed for coef
+    size = 4000, # starting size
+    stats = "4/4/0/0", # parsed for coef
     type = "sq" # law selection
   ),
   CSA = list(
-    size = 6000, # starting size
-    stats = "4/4/0/0", # parsed for coef
+    size = 3500, # starting size
+    stats = "4/6/1/0", # parsed for coef
     type = "sq" # law selection
   )
 )

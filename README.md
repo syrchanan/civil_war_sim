@@ -1,4 +1,4 @@
-# Lanchester Modeling for Imperial Generals
+# Imperial Generals: Lanchester Combat Simulation
 
 Imperial Generals is a strategic war game where players command armies and engage in battles. This repository contains an implementation of the Lanchester equations to model combat scenarios within the game.
 
