@@ -1,3 +1,4 @@
+
 """
 Voronoi diagram computation utilities.
 """
@@ -6,9 +7,16 @@ import numpy as np
 from scipy.spatial import Voronoi
 from shapely.geometry import Polygon, box
 import matplotlib.pyplot as plt
+from typing import List, Tuple, Any, Optional
+import logging
+
+# Configure logging for this module
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 class VoronoiMap:
-    def __init__(self, points, width, height):
+    def __init__(self, points: List[Tuple[float, float]], width: int = 100, height: int = 100) -> None:
         """
         Initialize the VoronoiMap.
 
@@ -17,34 +25,58 @@ class VoronoiMap:
             width (int): Width of the bounding rectangle.
             height (int): Height of the bounding rectangle.
         """
-        self.points = np.array(points)
-        self.width = width
-        self.height = height
-        self.diagram = None
-        self.polygons = []
+        self.points: np.ndarray = np.array(points)
+        self.width: int = width
+        self.height: int = height
+        self.diagram: Optional[Voronoi] = None
+        self.polygons: List[Polygon] = []
+        logger.info(f"Initialized VoronoiMap with {len(points)} points, width={width}, height={height}")
 
-    def __str__(self):
+
+    def __str__(self) -> str:
+        """String representation of VoronoiMap."""
         return f"VoronoiMap with {len(self.points)} points"
 
-    def __repr__(self):
+
+    def __repr__(self) -> str:
+        """Detailed representation of VoronoiMap."""
         return (
             f"<VoronoiMap(points={self.points!r}, width={self.width}, height={self.height}, diagram={self.diagram!r})>"
         )
 
-    def add_points(self, points):
-        """Add points to the diagram."""
-        self.points.extend(points)
 
-    def _order_region(self, vertices):
-        # Order vertices counterclockwise around centroid
+    def add_points(self, points: List[Tuple[float, float]]) -> None:
+        """
+        Add points to the diagram.
+        Args:
+            points (List[Tuple[float, float]]): Points to add.
+        """
+        # Note: np.ndarray does not have 'extend', so this may need to be np.vstack or np.concatenate in real usage.
+        self.points = np.vstack([self.points, np.array(points)])
+        logger.info(f"Added {len(points)} points. Total now: {len(self.points)}")
+
+
+    def _order_region(self, vertices: np.ndarray) -> np.ndarray:
+        """
+        Order vertices counterclockwise around centroid.
+        Args:
+            vertices (np.ndarray): Array of vertex coordinates.
+        Returns:
+            np.ndarray: Ordered vertices.
+        """
         centroid = np.mean(vertices, axis=0)
         angles = np.arctan2(vertices[:,1] - centroid[1], vertices[:,0] - centroid[0])
         return vertices[np.argsort(angles)]
 
-    def generate_diagram(self):
-        """Compute the Voronoi diagram and store the clipped cells, including infinite regions."""
+
+    def generate_diagram(self) -> None:
+        """
+        Compute the Voronoi diagram and store the clipped cells, including infinite regions.
+        Handles both finite and infinite regions by reconstructing polygons and clipping to bounding box.
+        """
         if self.points.size == 0:
             self.diagram = {}
+            logger.warning("No points provided; diagram not generated.")
             return
 
         self.diagram = Voronoi(self.points)
@@ -60,16 +92,16 @@ class VoronoiMap:
                 continue
 
             if -1 not in region:
-                # Finite region
+                # Finite region: create polygon from vertices
                 polygon = Polygon([self.diagram.vertices[i] for i in region])
             else:
-                # Infinite region: reconstruct
+                # Infinite region: reconstruct polygon by extending infinite ridges
                 ridge_vertices = []
                 for (p1, p2), (v1, v2) in zip(self.diagram.ridge_points, self.diagram.ridge_vertices):
                     if point_idx not in (p1, p2):
                         continue
                     if v1 == -1 or v2 == -1:
-                        # Infinite ridge: need to extend
+                        # Infinite ridge: extend to bounding box
                         finite_v = v2 if v1 == -1 else v1
                         t = self.diagram.points[p2] - self.diagram.points[p1]
                         t /= np.linalg.norm(t)
@@ -91,18 +123,28 @@ class VoronoiMap:
                 ridge_vertices = ridge_vertices[np.argsort(angles)]
                 polygon = Polygon(ridge_vertices)
 
-            # Clip to bounding box
+            # Clip polygon to bounding box
             clipped = polygon.intersection(bbox)
             if not clipped.is_empty and clipped.geom_type == 'Polygon':
                 self.polygons.append(clipped)
+        logger.info(f"Generated Voronoi diagram with {len(self.polygons)} polygons.")
 
-    def get_cells(self):
-        """Return the Voronoi cells as a dict."""
+
+    def get_cells(self) -> Any:
+        """
+        Return the Voronoi cells (diagram object).
+        Returns:
+            Any: Voronoi diagram object or dict if empty.
+        """
         return self.diagram
 
-    def visualize_points(self):
-        """Visualize the points."""
+
+    def visualize_points(self) -> None:
+        """
+        Visualize the input points using matplotlib.
+        """
         if self.points.size == 0:
+            logger.warning("No points to visualize.")
             print("No points to visualize.")
             return
         xs, ys = zip(*self.points)
@@ -114,9 +156,13 @@ class VoronoiMap:
         plt.axis('equal')
         plt.show()
 
-    def visualize_cells(self):
-        """Visualize the Voronoi cells (polygons) and points."""
+
+    def visualize_cells(self) -> None:
+        """
+        Visualize the Voronoi cells (polygons) and input points using matplotlib.
+        """
         if not self.polygons:
+            logger.warning("No Voronoi diagram to visualize.")
             print("No Voronoi diagram to visualize.")
             return
         fig, ax = plt.subplots()
@@ -131,8 +177,8 @@ class VoronoiMap:
         plt.show()
 
 if __name__ == "__main__":
-    from mapgen.src.poisson_disc import PoissonDiscSampler
-    sample_points = PoissonDiscSampler.generate(100, 100, 10)
+    from imperial_generals.map import PoissonDiscSampler
+    sample_points = PoissonDiscSampler.generate(100, 100, 5)
     voronoi = VoronoiMap(sample_points, width=100, height=100)
     voronoi.visualize_points()
     voronoi.generate_diagram()

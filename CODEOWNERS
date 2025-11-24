@@ -1,0 +1,5 @@
+# Set code owners for everything in the repository
+*    @syrchanan
+
+# Set code owners for this file
+CODEOWNERS    @syrchanan

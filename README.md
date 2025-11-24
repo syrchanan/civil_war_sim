@@ -2,7 +2,7 @@
 
 Imperial Generals is a strategic war game where players command armies and engage in battles. This repository contains an implementation of the Lanchester equations to model combat scenarios within the game.
 
-Currently, the implementation is in R, though there are plans to port it to Julia in the future to leverage its performance advantages for numerical computations. Additionally, a Julia-implementation would allow the functions to be compiled into a shared library for use in both R and Python.
+The prototype was in R, but the current implementation is in Python. I'm currently considering porting it to Julia if I find I need the speedup from compiling.
 
 ## Overview
 

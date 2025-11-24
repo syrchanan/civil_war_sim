@@ -1,18 +1,26 @@
-# Conversion to Python from R
+# Notes
 
-## Steps
-- Define unit stats and effectiveness coefficients
-- Implement Lanchester equations
-- Simulate battles between two forces
+## TODO
 
-## General
-- make everything oop
-    - Army class, Infantry class (artillery & cav eventually)
-    - Map/terrain class
-    - Battle class
+[ ] finish converting all R files to Python
 
-## Organization
-- main.py: entry point, runs simulations
-- army module: defines Army and Unit classes
-- battle module: contains Battle class and Lanchester equations
-- utils module: helper functions for calculations and data handling
+## Ideas
+
+### Map
+
+- Poisson-disc sampling for placing points
+- Create voronoi diagram from points
+- Voronoi cells are map cells for unit movement
+- Create different terrain types for maps
+- Use noise functions to generate elevation
+- Rivers flowing from high elevation to low elevation
+- Roads and paths
+- Each terrain type has different movement costs
+
+### Combat
+
+- Implement range system for attacks
+    - Out of range is less effective, closer is more effective to a certain point
+    - Once elevation is added, effective range is affected by elevation differences
+        - sin(height difference / flat distance) = effective distance
+        - need to give downhill advantage, uphill disadvantage

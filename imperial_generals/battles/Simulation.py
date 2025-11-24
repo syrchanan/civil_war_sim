@@ -43,6 +43,9 @@ class Simulation:
                 - 'morale': np.ndarray
             self.sim_output: pd.DataFrame
         """
+        if not isinstance(forces, tuple) or not all(isinstance(r, Regiment) for r in forces) or len(forces) != 2:
+            raise ValueError("forces must be a tuple of two Regiment instances.")
+
         self.forces: Tuple[Regiment, Regiment] = forces
         self.rate_funcs: Tuple[callable, callable] | None = None
 
