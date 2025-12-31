@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2025-12-31
+
+### Added
+- **Monorepo structure**: Created top-level directories `/python`, `/typescript`, and `/test_cases` for clearer separation of implementation and tests.
+- **TypeScript port scaffold**: Initialized `/typescript/` with `package.json`, `/src`, and `/tests` folders, and created starter `index.ts`.
+- **Golden test case system**: Added `/test_cases/` folder to collect shared language-neutral JSON files for inputs and outputs to be used by both Python and TypeScript tests.
+- **Monorepo plan documentation**: Added `monorepo_plan.md` to describe project strategy and workflow for porting and testing.
+
+### Changed
+- Moved all existing Python code, modules, and test files from root and subfolders into `/python`.
+- Updated `README.md` to reflect monorepo design, the location of code, how to contribute, and the golden file testing strategy.
+
+### Fixed
+- Ensured existing Python test files are located in `/python/tests` for easier test management after migration.
+
+### Notes
+- No code functionality was changed in simulation or core logic at this step, but all paths and organization have been updated for future scalability.
+- Legacy and planning documentation is now included near the bottom of the README, following the new repo introduction.
+
 ## [0.1.1] - 2025-11-25
 
 ### Added
