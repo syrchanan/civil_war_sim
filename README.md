@@ -1,3 +1,73 @@
+# Civil War Sim Tabletop Tools
+
+This repository is a monorepo containing:
+- A Python implementation of battle simulation and map generation logic
+- A TypeScript port designed for browser-use and future web UIs
+- Shared language-neutral golden test files for test consistency across both ports
+
+_Last updated: 2025-12-31_
+
+---
+
+## Current Structure
+
+```
+/
+├── python/             # Python simulation code and tests
+│   ├── main.py
+│   ├── imperial_generals/
+│   ├── archive/
+│   ├── tests/
+│   │   ├── test_battles_simulation.py
+│   │   └── ...
+│   └── ...
+├── typescript/         # Typescript implementation and tests
+│   ├── package.json
+│   ├── src/
+│   │   └── index.ts
+│   ├── tests/
+│   └── ...
+├── test_cases/         # Golden test cases as JSON (shared by both implementations)
+│   ├── battle_simple.json
+│   └── ...
+├── README.md
+├── monorepo_plan.md
+```
+
+---
+
+## Python Implementation (`/python`)
+- Contains core battle simulation logic
+- Includes map generation and supporting tools
+- Test suite under `/python/tests` that will consume golden test cases from `/test_cases`
+
+## TypeScript Implementation (`/typescript`)
+- Port of the Python logic for use in a frontend (React/JS web apps)
+- Organized as an npm package with `/src` for code and `/tests` for the suite
+- Strict separation of logic from UI for easy reuse
+- Test suite will read and validate against `/test_cases` JSON vectors (matching Python)
+
+## Golden Test Strategy (`/test_cases`)
+- All official test cases live as JSON files here
+- Input: battle parameters; Output: expected winner and results
+- Both Python and TypeScript test runners use these
+- See `monorepo_plan.md` for details and format standards
+
+---
+
+## Contributing/Development Workflow
+1. Develop or prototype logic/features in `/python` first
+2. For each stable simulation feature, add/update golden test files in `/test_cases`
+3. Log a checkpoint and open an issue or note to port to `/typescript` when ready
+4. Port logic or tests as needed in `/typescript` and ensure golden file consistency
+
+### Tips
+- Update paths/imports as necessary after moving files
+- Run tests from each language's folder and update shared test cases when new behaviors are introduced
+- If randomness exists, use fixed seeds for deterministic tests
+
+---
+
 # Imperial Generals: Lanchester Combat Simulation
 
 Imperial Generals is a strategic war game where players command armies and engage in battles. This repository contains an implementation of the Lanchester equations to model combat scenarios within the game.
@@ -31,19 +101,19 @@ In this implementation, a coefficient N means that for each 1 soldier of that ty
 
 Each unit type has a stat block that includes the following attributes:
 
--   **XP**: Experience level of the unit from training or prior combat \[1, 10\]
+-   **XP**: Experience level of the unit from training or prior combat [1, 10]
 
--   **Morale**: The morale level of the unit, affecting its performance in battle \[1, 10\]
+-   **Morale**: The morale level of the unit, affecting its performance in battle [1, 10]
 
--   **Weapon**: The stat of the unit's weapon from unarmed to futuristic \[-2, 2\]
+-   **Weapon**: The stat of the unit's weapon from unarmed to futuristic [-2, 2]
 
--   **Melee**: Boolean indicating if the unit is a melee unit \[0, 1\]
+-   **Melee**: Boolean indicating if the unit is a melee unit [0, 1]
 
 For example, a unit stat block might look like this: `10/10/2/0`
 
-Based on these attributes, the unit's combat effectiveness is calculated, and a coefficient is derived for use in the Lanchester equations. In this case, the coefficient would be `1.000`, as this is the maximum possible value.\*
+Based on these attributes, the unit's combat effectiveness is calculated, and a coefficient is derived for use in the Lanchester equations. In this case, the coefficient would be `1.000`, as this is the maximum possible value.*
 
-\*Since Imperial Generals is generally set in the Napoleonic/American Civil War era, a coefficient of 1.000 represents the best possible unit in this context, since the best a single soldier can do is kill/wound one enemy soldier each round.
+*Since Imperial Generals is generally set in the Napoleonic/American Civil War era, a coefficient of 1.000 represents the best possible unit in this context, since the best a single soldier can do is kill/wound one enemy soldier each round.
 
 ## Future Plans
 
