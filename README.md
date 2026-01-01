@@ -16,25 +16,32 @@ _Last updated: 2025-12-31_
 ├── python/             # Python simulation code and tests
 │   ├── main.py
 │   ├── imperial_generals/
-│   ├── archive/
+│   ├── archive/        # Archived R scripts and old code (will be removed)
 │   ├── tests/
-│   │   ├── test_battles_simulation.py
-│   │   └── ...
 │   └── ...
 ├── typescript/         # Typescript implementation and tests
 │   ├── package.json
 │   ├── src/
-│   │   └── index.ts
 │   ├── tests/
 │   └── ...
 ├── test_cases/         # Golden test cases as JSON (shared by both implementations)
-│   ├── battle_simple.json
 │   └── ...
 ├── README.md
-├── monorepo_plan.md
+└── ...
 ```
 
 ---
+
+## Cross-Language Development & Testing Workflow
+
+This project uses a language-agnostic, test-driven workflow to ensure equivalent results and high reliability across Python and TypeScript implementations:
+
+1. **Develop and prototype algorithms in Python**, leveraging the powerful Python ecosystem for rapid iteration and Jupyter-style experimentation.
+2. **Capture all expected behavior in "golden" test cases** as JSON files in `/test_cases`. These goldens serve as the reference for correctness for both codebases.
+3. **Port functionality to TypeScript** (for browser/React/JS UI use) by translating the validated Python logic.
+4. **Run automated TypeScript tests that consume the same golden files.** If TypeScript outputs match the golden results, correctness and parity with Python is assured.
+
+**TLDR:** Code in Python, port to TypeScript, and verify both using shared, language-neutral golden tests!
 
 ## Python Implementation (`/python`)
 - Contains core battle simulation logic
@@ -49,9 +56,7 @@ _Last updated: 2025-12-31_
 
 ## Golden Test Strategy (`/test_cases`)
 - All official test cases live as JSON files here
-- Input: battle parameters; Output: expected winner and results
 - Both Python and TypeScript test runners use these
-- See `monorepo_plan.md` for details and format standards
 
 ---
 

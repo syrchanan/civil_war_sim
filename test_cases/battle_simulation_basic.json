@@ -1,0 +1,27 @@
+[
+  {
+    "description": "Basic simulation: Regiment 1000 4/5/2/1 sq vs. Regiment 200 3/6/1/0 sq; short time",
+    "function": "simulateBattle",
+    "inputs": {
+      "units": [
+        {"size": 1000, "stats": "4/5/2/1", "law": "sq"},
+        {"size": 200, "stats": "3/6/1/0", "law": "sq"}
+      ],
+      "time": 0.1
+    },
+    "expectedOutputFields": ["size_1", "size_2", "morale_1", "morale_2"],
+    "outputShouldIncludeAtLeastRows": 1
+  },
+  {
+    "description": "Battle ends on wipeout: both sides with 1 soldier, law ln, long time",
+    "function": "simulateBattle",
+    "inputs": {
+      "units": [
+        {"size": 1, "stats": "4/5/2/1", "law": "ln"},
+        {"size": 1, "stats": "3/6/1/0", "law": "ln"}
+      ],
+      "time": 10.0
+    },
+    "atLeastOneZeroIn": ["size_1", "size_2"]
+  }
+]

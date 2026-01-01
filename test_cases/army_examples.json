@@ -1,0 +1,26 @@
+[
+  {
+    "description": "Army initialization and add regiment",
+    "function": "Army",
+    "inputs": {
+      "faction": "Union"
+    },
+    "actions": [
+      {"method": "add_regiment", "args": ["1st VA", {"size": 1000, "stats": "2/3/1/0", "law": "ln"}]}
+    ],
+    "expected": {
+      "faction": "Union",
+      "forces": {"1st VA": {"size": 1000, "stats": [2, 3, 1, 0], "law": "ln"}}
+    }
+  },
+  {
+    "description": "Multiple regiments added",
+    "function": "Army",
+    "inputs": {"faction": "Union"},
+    "actions": [
+      {"method": "add_regiment", "args": ["A", {"size": 1000, "stats": "1/2/3/4", "law": "ln"}]},
+      {"method": "add_regiment", "args": ["B", {"size": 1200, "stats": "4/3/2/1", "law": "sq"}]}
+    ],
+    "expectedForcesCount": 2
+  }
+]

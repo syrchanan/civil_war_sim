@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    // Output modern JS for compatibility with React and modern bundlers
+    "target": "ES2017", // JS version to emit (good for browsers & Node)
+    "module": "ESNext", // Use native ESM for best interop
+    // File/folder structure
+    "rootDir": "src", // All TS source files live here
+    "outDir": "dist", // All compiled files/types go here
+    // Type definition support
+    "declaration": true, // Emit .d.ts files for type import in other projects
+    "declarationMap": true, // Emit source maps for .d.ts files (helps in editors)
+    // Type checking options
+    "strict": true, // Turns on all strict type checks
+    // Module system resolution
+    "esModuleInterop": true, // Makes default imports work for CJS packages
+    "allowSyntheticDefaultImports": true, // Smoother importing from JS
+    "moduleResolution": "node", // Node-like module resolution
+    // Debugging
+    "sourceMap": true, // Output .js.map files for debuggers
+    // Incremental/transpile support
+    "isolatedModules": true, // Enforces module boundaries, safer for builds
+    // Dependency/build performance
+    "skipLibCheck": true, // Faster builds, disables type-checking of dependencies
+  },
+  // Only include source files, not tests or output
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests"
+  ]
+}

@@ -1,0 +1,93 @@
+[
+  {
+    "description": "Infantry regiment, basic values",
+    "function": "InfantryRegiment",
+    "inputs": {
+      "size": 1200,
+      "stats": "3/4/2/1",
+      "law": "ln"
+    },
+    "expected": {
+      "unit_type": "inf",
+      "size": 1200,
+      "stats": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "law": "ln"
+    }
+  },
+  {
+    "description": "Update size only",
+    "function": "InfantryRegiment",
+    "inputs": {
+      "size": 1000,
+      "stats": "4/4/0/0",
+      "law": "ln"
+    },
+    "actions": [
+      {
+        "method": "update_size",
+        "args": 800
+      }
+    ],
+    "expected": {
+      "size": 800,
+      "stats": [
+        4,
+        4,
+        0,
+        0
+      ]
+    }
+  },
+  {
+    "description": "Update stats after size",
+    "function": "InfantryRegiment",
+    "inputs": {
+      "size": 1000,
+      "stats": "4/4/0/0",
+      "law": "ln"
+    },
+    "actions": [
+      {
+        "method": "update_stats",
+        "args": "5/6/1/0"
+      }
+    ],
+    "expected": {
+      "stats": [
+        5,
+        6,
+        1,
+        0
+      ]
+    }
+  },
+  {
+    "description": "Update morale after size and stats",
+    "function": "InfantryRegiment",
+    "inputs": {
+      "size": 1000,
+      "stats": "4/4/0/0",
+      "law": "ln"
+    },
+    "actions": [
+      {
+        "method": "update_raw_morale",
+        "args": 55.0
+      }
+    ],
+    "expected": {
+      "stats": [
+        4,
+        5,
+        0,
+        0
+      ],
+      "raw_morale": 55.0
+    }
+  }
+]

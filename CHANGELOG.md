@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-12-31
+
+### Added
+- **TypeScript `package.json` improvements**: Package is now named `imperial_generals`, with type and main exports. Description and keywords reflect wargame simulation and mapgen utility.
+- **Golden test case system for combat efficiency**: Shared `test_cases/combat_efficiency.json` enables both Python (`pytest`) and TypeScript tests. See refactored `python/tests/test_utils_combat_efficiency.py`.
+- **TypeScript port of Regiment unit class**: Added `src/imperial_generals/units/Regiment.ts`, along with `getCombatEfficiency` and `getClosestMoraleStat` utilities, ready for browser/React UI integration.
+- **Jest test runner for TypeScript**: `/typescript/tests/imperial_generals/Regiment.test.ts` validates against golden files in `/test_cases/regiment_examples.json`.
+- **Empty `__init__.py` files**: Added to `python/` and `python/imperial_generals/` for package recognition.
+
+### Changed
+- Expanded test coverage in TypeScript using shared golden files for cross-language parity checks.
+- Updated `src/index.ts` in TypeScript to align with new packaging.
+
 ## [0.1.2] - 2025-12-31
 
 ### Added

@@ -1,0 +1,20 @@
+[
+  {
+    "description": "Typical mapping for 95",
+    "function": "get_closest_morale_stat",
+    "inputs": 95,
+    "expected": 9
+  },
+  {
+    "description": "Boundary: 100 -> 10",
+    "function": "get_closest_morale_stat",
+    "inputs": 100,
+    "expected": 10
+  },
+  {
+    "description": "Boundary: 0 -> 1",
+    "function": "get_closest_morale_stat",
+    "inputs": 0,
+    "expected": 1
+  }
+]

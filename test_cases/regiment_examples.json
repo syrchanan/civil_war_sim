@@ -1,0 +1,34 @@
+[
+  {
+    "description": "Valid regiment, law ln",
+    "function": "Regiment",
+    "inputs": {"size": 3000, "stats": "4/5/2/1", "law": "ln"},
+    "expected": {
+      "size": 3000,
+      "stats": [4, 5, 2, 1],
+      "law": "ln"
+    }
+  },
+  {
+    "description": "Valid regiment, law sq",
+    "function": "Regiment",
+    "inputs": {"size": 1500, "stats": "2/3/1/0", "law": "sq"},
+    "expected": {
+      "size": 1500,
+      "stats": [2, 3, 1, 0],
+      "law": "sq"
+    }
+  },
+  {
+    "description": "Invalid law",
+    "function": "Regiment",
+    "inputs": {"size": 1000, "stats": "1/2/3/4", "law": "invalid"},
+    "shouldError": true
+  },
+  {
+    "description": "Invalid stats format: too few",
+    "function": "Regiment",
+    "inputs": {"size": 1000, "stats": "1/2/3", "law": "ln"},
+    "shouldError": true
+  }
+]

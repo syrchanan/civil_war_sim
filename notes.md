@@ -3,6 +3,9 @@
 ## TODO
 
 [ ] finish converting all R files to Python
+[ ] write tests for all converted code
+[ ] create TypeScript port of Python code
+[ ] write tests for TypeScript code using same golden files as Python tests
 
 ## Ideas
 
