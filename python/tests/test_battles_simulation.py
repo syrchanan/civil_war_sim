@@ -1,4 +1,5 @@
-import os, json
+import os
+import json
 import pytest
 import pandas as pd
 from imperial_generals.units.Regiment import Regiment

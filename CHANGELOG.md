@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-01-01
+
+### Added
+- **TypeScript build output:** The `dist/` directory is now generated in `typescript/` after building, containing compiled JavaScript for distribution and deployment.
+- **TypeScript port of Simulation class:** `src/imperial_generals/battles/Simulation.ts` now mirrors Python simulation logic and is fully tested.
+- **TypeScript InfantryRegiment and Army classes:** Implemented in `src/imperial_generals/units/InfantryRegiment.ts` and `Army.ts` for parity with Python codebase.
+- **Gold path Jest test suites for Simulation, InfantryRegiment, Army and utility functions:** Located in `typescript/tests/imperial_generals/`, using data-driven JSON fixtures from `test_cases/`.
+- **Cross-language golden path test runner:** Top-level `run_tests.py` script runs, parses, and summarizes both TypeScript (Jest) and Python (pytest) tests with unified output.
+- **TypeScript utility ports for morale/combat:** Functions `getClosestMoraleStat` and `getCombatEfficiency` ported to `src/imperial_generals/utils/`, with matching Jest and Python test cases.
+- **As of this update, all base simulation features from Python have been ported to TypeScript.**
+
+### Changed
+- Doc/comments and structure improved for cross-language clarity and 1:1 matching between Python and TypeScript.
+- TypeScript and Python tests updated to load and verify golden test cases from JSON files, ensuring coverage parity.
+
+### Fixed
+- File naming, test detection, and command invocation robustness for TypeScript cross-platform testing.
+- Updated docstrings/comments in TypeScript for correct style and clarity.
+
+### Notes
+- All new features and ports tracked in this release are reflected in updated golden JSON test cases and top-level test runner integrations.
+- All tests must be run from the repo root for correct discovery of configuration and output files.
+
 ## [0.1.3] - 2025-12-31
 
 ### Added

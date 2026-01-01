@@ -1,4 +1,5 @@
-import os, json
+import os
+import json
 import pytest
 from imperial_generals.units.InfantryRegiment import InfantryRegiment
 

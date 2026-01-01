@@ -1,4 +1,5 @@
-import os, json
+import os
+import json
 import pytest
 from imperial_generals.utils.combat_efficiency import get_combat_efficiency
 

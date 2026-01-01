@@ -1,4 +1,5 @@
-import os, json
+import os
+import json
 import pytest
 from imperial_generals.utils.closest_morale_stat import get_closest_morale_stat
 
