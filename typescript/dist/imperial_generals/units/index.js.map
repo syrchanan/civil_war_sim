@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../src/imperial_generals/units/index.ts"],"names":[],"mappings":";;;AAAA,uCAAgC;AAIvB,qFAJA,cAAI,OAIA;AAHb,+DAAwD;AAGzC,iGAHN,sCAAgB,OAGM;AAF/B,+CAAwC;AAEP,yFAFxB,sBAAQ,OAEwB"}
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../src/imperial_generals/units/index.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAE,MAAM,WAAW,CAAA;AAChC,OAAO,EAAE,gBAAgB,EAAE,MAAM,uBAAuB,CAAA;AACxD,OAAO,EAAE,QAAQ,EAAE,MAAM,eAAe,CAAA;AAExC,OAAO,EAAE,IAAI,EAAE,gBAAgB,EAAE,QAAQ,EAAE,CAAA"}

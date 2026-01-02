@@ -1,4 +1,4 @@
-import { Regiment } from '../units/Regiment';
+import { Regiment } from '../units/index.js';
 export declare class Simulation {
     forces: [Regiment, Regiment];
     rate_funcs: [((sizes: number[], coef: number[], idx: number) => number), ((sizes: number[], coef: number[], idx: number) => number)] | null;

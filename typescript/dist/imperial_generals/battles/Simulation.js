@@ -1,20 +1,17 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Simulation = void 0;
-const Regiment_1 = require("../units/Regiment");
+import { Regiment } from '../units/index.js';
 // Helper function for exponential random
 function randomExponential(lambda) {
     // TODO - replace with a library implementation for exponential distribution if needed
     return -Math.log(1 - Math.random()) / lambda;
 }
-class Simulation {
+export class Simulation {
     /**
      * Simulation constructor
      * @param forces Tuple of two Regiment instances representing opposing forces
      */
     constructor(forces) {
         this.rate_funcs = null;
-        if (!Array.isArray(forces) || forces.length !== 2 || !(forces[0] instanceof Regiment_1.Regiment && forces[1] instanceof Regiment_1.Regiment)) {
+        if (!Array.isArray(forces) || forces.length !== 2 || !(forces[0] instanceof Regiment && forces[1] instanceof Regiment)) {
             throw new Error('forces must be a tuple of two Regiment instances.');
         }
         this.forces = forces;
@@ -73,7 +70,7 @@ class Simulation {
     // Build Lanchester differential equation rate functions
     build_lanch_diffeq() {
         console.info('Building Lanchester differential equations for simulation.');
-        if (!Array.isArray(this.forces) || this.forces.length !== 2 || !(this.forces[0] instanceof Regiment_1.Regiment && this.forces[1] instanceof Regiment_1.Regiment)) {
+        if (!Array.isArray(this.forces) || this.forces.length !== 2 || !(this.forces[0] instanceof Regiment && this.forces[1] instanceof Regiment)) {
             throw new Error('forces must be a tuple of two Regiment instances.');
         }
         const [reg1, reg2] = this.forces;
@@ -166,5 +163,4 @@ class Simulation {
         }
     }
 }
-exports.Simulation = Simulation;
 //# sourceMappingURL=Simulation.js.map

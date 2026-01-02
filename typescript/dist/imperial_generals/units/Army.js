@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Army = void 0;
-const Regiment_1 = require("./Regiment");
+import { Regiment } from './Regiment.js';
 /**
  * Represents an army composed of regiments and other subunits.
  *
@@ -10,7 +7,7 @@ const Regiment_1 = require("./Regiment");
  * @property faction - The faction or side the army belongs to.
  * @property forces - Dictionary mapping regiment names to Regiment instances.
  */
-class Army {
+export class Army {
     /**
      * Initialize an army.
      * @param faction - The faction or side the army belongs to.
@@ -47,7 +44,7 @@ class Army {
      * @param regiment - The Regiment instance to add.
      */
     addRegiment(name, regiment) {
-        if (regiment instanceof Regiment_1.Regiment) {
+        if (regiment instanceof Regiment) {
             this.forces[name] = regiment;
         }
         else {
@@ -55,5 +52,4 @@ class Army {
         }
     }
 }
-exports.Army = Army;
 //# sourceMappingURL=Army.js.map

@@ -1,4 +1,4 @@
-import { Regiment } from './Regiment'
+import { Regiment } from './Regiment.js'
 
 /**
  * Represents an army composed of regiments and other subunits.
