@@ -3,12 +3,10 @@
 ## TODO
 
 [ ] finish converting all R files to Python
-[ ] write tests for all converted code
-[ ] create TypeScript port of Python code
-[ ] write tests for TypeScript code using same golden files as Python tests
 [ ] remove print unit type methods since I should be able to access the types as properties of each class
 [ ] add fromJSON methods to each class for easier deserialization
 [ ] add logging to all ts modules to match that of the python modules
+[ ] set up https://cdn.jsdelivr.net/gh/syrchanan/civil_war_sim@master/typescript/ to correctly serve the TypeScript code via CDN
 
 ## Ideas
 

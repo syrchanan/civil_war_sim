@@ -56,6 +56,6 @@ rsconnect/
 # TS ----
 
 node_modules
-dist
+# dist - keeping for now for jsdeliver access
 *.log
 .env
