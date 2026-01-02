@@ -1,5 +1,5 @@
-import { Army } from "./Army";
-import { InfantryRegiment } from "./InfantryRegiment";
-import { Regiment } from "./Regiment";
+import { Army } from "./Army.js";
+import { InfantryRegiment } from "./InfantryRegiment.js";
+import { Regiment } from "./Regiment.js";
 export { Army, InfantryRegiment, Regiment };
 //# sourceMappingURL=index.d.ts.map

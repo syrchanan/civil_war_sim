@@ -1,4 +1,7 @@
-import { Regiment } from "./Regiment";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.InfantryRegiment = void 0;
+const Regiment_1 = require("./Regiment");
 /**
  * Class representing an infantry regiment.
  * Extends the base Regiment class.
@@ -10,7 +13,7 @@ import { Regiment } from "./Regiment";
  * @property coef - Combat efficiency coefficient.
  * @property law - Combat law used ('ln' or 'sq').
  */
-export class InfantryRegiment extends Regiment {
+class InfantryRegiment extends Regiment_1.Regiment {
     // TODO - restrict unitType to 'inf' | 'cav' | 'art'
     /**
      * Initialize an infantry regiment.
@@ -42,4 +45,5 @@ export class InfantryRegiment extends Regiment {
         return this.unitType;
     }
 }
+exports.InfantryRegiment = InfantryRegiment;
 //# sourceMappingURL=InfantryRegiment.js.map

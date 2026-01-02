@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getClosestMoraleStat = getClosestMoraleStat;
 /**
  * Find the closest morale stat (1-10 scale) to a given morale value (0-100 scale).
  *
@@ -9,7 +12,7 @@
  * @throws {TypeError} If morale is not a number.
  * @throws {RangeError} If morale is not between 0 and 100 (inclusive).
  */
-export function getClosestMoraleStat(morale) {
+function getClosestMoraleStat(morale) {
     if (typeof morale !== 'number' || !Number.isFinite(morale)) {
         throw new TypeError(`morale must be a number (int or float), got ${typeof morale}`);
     }

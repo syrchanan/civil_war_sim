@@ -1,4 +1,7 @@
-import { getClosestMoraleStat, getCombatEfficiency } from '../utils';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Regiment = void 0;
+const utils_1 = require("../utils");
 /**
  * Represents a discrete regiment unit on the battlefield.
  *
@@ -13,7 +16,7 @@ import { getClosestMoraleStat, getCombatEfficiency } from '../utils';
  * @property law - Combat law used ('ln' or 'sq').
  *
  */
-export class Regiment {
+class Regiment {
     /**
     * Initialize a regiment.
     * @param size - Number of soldiers.
@@ -33,7 +36,7 @@ export class Regiment {
         // inits
         this.size = size;
         this.stats = statsSplit.map(Number);
-        this.coef = getCombatEfficiency(...this.stats);
+        this.coef = (0, utils_1.getCombatEfficiency)(...this.stats);
         this.rawMorale = this.stats[1] * 10; // second num of stats
         this.law = law;
     }
@@ -70,7 +73,7 @@ export class Regiment {
             throw new Error("New stats must be a slash-separated string of four integers (e.g., '5/6/1/0').");
         }
         this.stats = statsSplit.map(Number);
-        this.coef = getCombatEfficiency(...this.stats);
+        this.coef = (0, utils_1.getCombatEfficiency)(...this.stats);
     }
     /**
      * Update the regiment's raw morale and update stats accordingly.
@@ -82,8 +85,9 @@ export class Regiment {
             throw new TypeError('newMorale must be a number.');
         }
         this.rawMorale = newMorale;
-        const newStat = getClosestMoraleStat(newMorale);
+        const newStat = (0, utils_1.getClosestMoraleStat)(newMorale);
         this.updateStats(`${this.stats[0]}/${newStat}/${this.stats[2]}/${this.stats[3]}`);
     }
 }
+exports.Regiment = Regiment;
 //# sourceMappingURL=Regiment.js.map

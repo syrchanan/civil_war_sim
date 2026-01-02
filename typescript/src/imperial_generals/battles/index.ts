@@ -1,3 +1,3 @@
-import { Simulation } from "./Simulation"
+import { Simulation } from "./Simulation.js"
 
 export { Simulation }

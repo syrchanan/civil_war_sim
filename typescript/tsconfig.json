@@ -2,7 +2,7 @@
   "compilerOptions": {
     // Output modern JS for compatibility with React and modern bundlers
     "target": "ES2017", // JS version to emit (good for browsers & Node)
-    "module": "ESNext", // Use native ESM for best interop
+    "module": "nodenext", // Use native ESM for best interop
     // File/folder structure
     "rootDir": "src", // All TS source files live here
     "outDir": "dist", // All compiled files/types go here
@@ -14,7 +14,7 @@
     // Module system resolution
     "esModuleInterop": true, // Makes default imports work for CJS packages
     "allowSyntheticDefaultImports": true, // Smoother importing from JS
-    "moduleResolution": "node", // Node-like module resolution
+    "moduleResolution": "nodenext", // Node-like module resolution
     // Debugging
     "sourceMap": true, // Output .js.map files for debuggers
     // Incremental/transpile support
