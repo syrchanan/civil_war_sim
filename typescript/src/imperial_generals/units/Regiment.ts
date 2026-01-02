@@ -1,4 +1,4 @@
-import { getClosestMoraleStat, getCombatEfficiency } from '../utils'
+import { getClosestMoraleStat, getCombatEfficiency } from '../utils/index.js'
 
 /**
  * Represents a discrete regiment unit on the battlefield.

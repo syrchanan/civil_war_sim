@@ -1,4 +1,4 @@
-import { Regiment } from "./Regiment";
+import { Regiment } from "./Regiment.js";
 /**
  * Class representing an infantry regiment.
  * Extends the base Regiment class.

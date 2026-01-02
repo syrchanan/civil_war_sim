@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCombatEfficiency = getCombatEfficiency;
 /**
  * Calculate the combat efficiency coefficient for a regiment based on experience, morale, weapon, and melee status.
  *
@@ -19,7 +16,7 @@ exports.getCombatEfficiency = getCombatEfficiency;
  * - Inputs are clamped to valid ranges.
  * - Melee combat applies a penalty to effectiveness.
  */
-function getCombatEfficiency(statXp, statMorale, statWeapon, statMelee) {
+export function getCombatEfficiency(statXp, statMorale, statWeapon, statMelee) {
     // =============================
     // INPUT VALIDATION
     // =============================

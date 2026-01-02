@@ -1,5 +1,6 @@
 {
   "name": "imperial_generals",
+  "type": "module",
   "version": "1.0.0",
   "description": "Port of Imperial Generals combat simulation and map tools to TypeScript for browser and UI integration.",
   "main": "dist/index.js",

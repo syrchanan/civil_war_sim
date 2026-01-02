@@ -1,4 +1,4 @@
-import { Regiment } from '../units/Regiment';
+import { Regiment } from '../units/index.js';
 
 // Helper function for exponential random
 function randomExponential(lambda: number): number {
