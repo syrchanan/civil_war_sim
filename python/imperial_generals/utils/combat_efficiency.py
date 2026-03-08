@@ -1,10 +1,12 @@
 
 import numpy as np
+from imperial_generals.config import get_config
+
 
 def get_combat_efficiency(
     stat_xp: int | np.integer = None,
-    stat_morale: int | np.integer = None, 
-    stat_weapon: int | np.integer = None, 
+    stat_morale: int | np.integer = None,
+    stat_weapon: int | np.integer = None,
     stat_melee: int | np.integer = None
 ) -> float:
     """
@@ -47,6 +49,7 @@ def get_combat_efficiency(
     - Morale is converted from a 10-100 scale to 1-10 for calculations.
     - Inputs are clamped to valid ranges.
     - Melee combat applies a penalty to effectiveness.
+    - All constants are loaded from simulation.yaml via ConfigLoader.
 
     """
 
@@ -66,29 +69,20 @@ def get_combat_efficiency(
             raise TypeError(f"{name} must be an integer.")
 
     # ===========================================
-    # CONSTANTS
+    # CONSTANTS (loaded from simulation.yaml)
     # ===========================================
-    
-    # Base effectiveness of a regiment's primary weapon
-    weapon_multipliers = {
-        '-2': 0.2, # Unarmed or Pikemen - very low effectiveness
-        '-1': 0.5, # Smoothbore matchlocks - inferior
-        '0': 1.0,  # Smoothbore muskets - standard/old for new regiments
-        '1': 1.5,  # Rifled muskets - significant improvement
-        '2': 2.5   # Needler rifles - highly advanced, major advantage
-    }
 
-    # Incremental effectiveness boosts based on training and morale
-    xp_boost_per_level = 0.04 # 4% increase in effectiveness per XP level above 1
-    morale_boost_per_level = 0.02 # 2% increase in effectiveness per morale level above 1
+    combat_cfg = get_config()['combat']
 
-    # Melee combat penalty (less effective than aimed fire)
-    melee_penalty_factor = 0.70 # 30% reduction in effectiveness for melee combat
+    weapon_multipliers      = combat_cfg['weapon_multipliers']
+    xp_boost_per_level      = combat_cfg['xp_boost_per_level']
+    morale_boost_per_level  = combat_cfg['morale_boost_per_level']
+    melee_penalty_factor    = combat_cfg['melee_penalty_factor']
 
     # ===========================================
     # MAX EFFECTIVENESS CALCULATION
     # ===========================================
-    
+
     # Fixed value ensures the final coefficient is between 0 and 1, where 1 is highest possible effectiveness (one shot, one kill principle)
     max_weapon_base = max(weapon_multipliers.values())
     max_xp_adj = (10 - 1) * xp_boost_per_level
@@ -120,6 +114,7 @@ def get_combat_efficiency(
     # Scale and return result
     return coef / max_possible_raw_coefficient
 
-if __name__ == "__main__":
+
+if __name__ == "__main__":  # pragma: no cover
     coef = get_combat_efficiency(stat_xp=5, stat_morale=50, stat_weapon=1, stat_melee=0)
     print(f"Combat Efficiency Coefficient: {coef:.4f}")

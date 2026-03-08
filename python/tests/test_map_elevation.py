@@ -10,7 +10,8 @@ from imperial_generals.map import (
     ElevationGenerator,
     TerrainPresets,
     MapConfig,
-    MapGenerator
+    MapGenerator,
+    MapResult,
 )
 
 
@@ -230,39 +231,24 @@ def test_map_generator_with_elevation():
     )
 
     gen = MapGenerator(map_config)
-    game_map = gen.generate_map()
+    result = gen.generate_map()
 
-    # Check that elevation was generated
-    assert 'elevation_generator' in game_map
-    assert isinstance(game_map['elevation_generator'], ElevationGenerator)
-
-    # Check that cells have elevation
-    cells = game_map['voronoi'].get_cells()
-    assert len(cells) > 0
-
-    for cell in cells:
+    assert isinstance(result, MapResult)
+    assert len(result.cells) > 0
+    for cell in result.cells:
         assert cell.elevation is not None
         assert isinstance(cell.elevation, float)
 
 
 def test_map_generator_without_elevation():
-    """Test MapGenerator without elevation config."""
-    map_config = MapConfig(
-        width=100,
-        height=100,
-        min_distance=20,
-        elevation_config=None
-    )
+    """Test MapGenerator without elevation config produces default elevation."""
+    map_config = MapConfig(width=100, height=100, min_distance=20)
 
     gen = MapGenerator(map_config)
-    game_map = gen.generate_map()
+    result = gen.generate_map()
 
-    # Check that elevation was NOT generated
-    assert 'elevation_generator' not in game_map
-
-    # Cells should still have default elevation (0.0)
-    cells = game_map['voronoi'].get_cells()
-    for cell in cells:
+    assert isinstance(result, MapResult)
+    for cell in result.cells:
         assert cell.elevation == 0.0
 
 
@@ -277,3 +263,30 @@ def test_str_repr():
 
     full_repr = repr(gen)
     assert '<ElevationGenerator' in full_repr
+
+
+def test_elevation_config_negative_range_raises():
+    """Test that negative elevation_range raises ValueError."""
+    with pytest.raises(ValueError):
+        ElevationConfig(elevation_range=-1.0)
+
+
+def test_map_generator_with_biome():
+    """Test MapGenerator with biome config — covers the biome branch."""
+    from imperial_generals.map import BiomePresets
+
+    biome_config = BiomePresets.mixed_battlefield(seed=42)
+    map_config = MapConfig(width=50, height=50, min_distance=10, biome_config=biome_config)
+
+    gen = MapGenerator(map_config)
+    assert 'MapGenerator' in str(gen)
+    assert 'MapGenerator' in repr(gen)
+
+    result = gen.generate_map()
+
+    assert isinstance(result, MapResult)
+    assert len(result.zone_counts) > 0
+    assert isinstance(result.zone_counts, dict)
+    assert len(result.cells) > 0
+    for cell in result.cells:
+        assert cell.terrain_type != ''

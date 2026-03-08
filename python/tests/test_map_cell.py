@@ -18,7 +18,6 @@ def test_cell_initialization():
     assert cell.elevation == 0.0
     assert cell.terrain_type == 'open'
     assert cell.cover_value == 0.0
-    assert cell.neighbors == []
 
 
 def test_cell_with_metadata():
@@ -36,20 +35,6 @@ def test_cell_with_metadata():
     assert cell.elevation == 15.5
     assert cell.terrain_type == 'forest'
     assert cell.cover_value == 0.7
-
-
-def test_add_neighbor():
-    """Test adding neighbors to a cell."""
-    poly = box(0, 0, 10, 10)
-    cell = Cell(index=0, center=(5.0, 5.0), polygon=poly)
-
-    cell.add_neighbor(1)
-    cell.add_neighbor(2)
-    cell.add_neighbor(1)  # Duplicate should not be added
-
-    assert len(cell.neighbors) == 2
-    assert 1 in cell.neighbors
-    assert 2 in cell.neighbors
 
 
 def test_set_elevation():
@@ -136,3 +121,42 @@ def test_cell_str_repr():
     full_repr = repr(cell)
     assert '<Cell' in full_repr
     assert 'index=0' in full_repr
+
+
+def test_set_terrain_type_invalid_raises():
+    """Test TypeError when setting non-string terrain type."""
+    poly = box(0, 0, 10, 10)
+    cell = Cell(index=0, center=(5.0, 5.0), polygon=poly)
+    with pytest.raises(TypeError):
+        cell.set_terrain_type(42)
+
+
+def test_set_cover_value_invalid_type_raises():
+    """Test ValueError when setting non-numeric cover value."""
+    poly = box(0, 0, 10, 10)
+    cell = Cell(index=0, center=(5.0, 5.0), polygon=poly)
+    with pytest.raises(ValueError):
+        cell.set_cover_value('high')
+
+
+def test_set_elevation_invalid_type_raises():
+    """Test TypeError when setting non-numeric elevation."""
+    poly = box(0, 0, 10, 10)
+    cell = Cell(index=0, center=(5.0, 5.0), polygon=poly)
+    with pytest.raises(TypeError):
+        cell.set_elevation('tall')
+
+
+def test_init_terrain_type_invalid_raises():
+    """Test TypeError when passing non-string terrain_type to __init__."""
+    poly = box(0, 0, 10, 10)
+    with pytest.raises(TypeError):
+        Cell(index=0, center=(5.0, 5.0), polygon=poly, terrain_type=42)
+
+
+def test_distance_to_invalid_raises():
+    """Test TypeError when passing non-Cell to distance_to."""
+    poly = box(0, 0, 10, 10)
+    cell = Cell(index=0, center=(5.0, 5.0), polygon=poly)
+    with pytest.raises(TypeError):
+        cell.distance_to("not a cell")

@@ -1,24 +1,21 @@
 from .Cell import Cell
-from .MapConfig import MapConfig
-from .PoissonDiscSampler import PoissonDiscSampler
-from .VoronoiMap import VoronoiMap
-from .MapGenerator import MapGenerator
-from .ElevationConfig import ElevationConfig, TerrainPresets
-from .ElevationGenerator import ElevationGenerator
-from .TerrainZone import TerrainZone, BiomeMapConfig, BiomePresets
-from .BiomeGenerator import BiomeGenerator
+from .elevation import ElevationConfig, TerrainPresets, ElevationGenerator
+from .biome import TerrainZone, BiomeMapConfig, BiomePresets, BiomeGenerator
+from .voronoi import PoissonDiscSampler, VoronoiMap
+from .generator import MapConfig, MapResult, MapGenerator
 
 __all__ = [
     "Cell",
-    "MapConfig",
-    "MapGenerator",
-    "PoissonDiscSampler",
-    "VoronoiMap",
     "ElevationConfig",
     "ElevationGenerator",
     "TerrainPresets",
     "TerrainZone",
     "BiomeMapConfig",
     "BiomePresets",
-    "BiomeGenerator"
+    "BiomeGenerator",
+    "PoissonDiscSampler",
+    "VoronoiMap",
+    "MapConfig",
+    "MapResult",
+    "MapGenerator",
 ]

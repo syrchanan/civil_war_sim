@@ -4,13 +4,16 @@ import pytest
 from imperial_generals.units.Army import Army
 from imperial_generals.units.Regiment import Regiment
 
+
 def load_army_golden_cases():
     path = os.path.join(os.path.dirname(__file__), '../../test_cases/army_examples.json')
     with open(path) as f:
         return json.load(f)
 
+
 def make_reg(obj):
     return Regiment(obj["size"], obj["stats"], obj["law"])
+
 
 @pytest.mark.parametrize("case", load_army_golden_cases())
 def test_army_golden(case):
@@ -20,13 +23,11 @@ def test_army_golden(case):
             method = getattr(army, action['method'])
             args = action['args']
             if isinstance(args[-1], dict):
-                # assume regiment creation
                 reg = make_reg(args[-1])
                 method(args[0], reg)
             else:
                 method(*args)
     if 'expected' in case and 'forces' in case['expected']:
-        # checking populated forces match expected forces
         for k, v in case['expected']['forces'].items():
             assert k in army.forces
             reg = army.forces[k]
@@ -37,5 +38,25 @@ def test_army_golden(case):
                 else:
                     assert got == val2
     if case.get('expectedForcesCount', None) is not None:
-        # checking the count of forces
         assert len(army.forces) == case['expectedForcesCount']
+
+
+def test_add_regiment_invalid_type_raises():
+    army = Army("Union")
+    with pytest.raises(TypeError, match="regiment must be an instance of Regiment"):
+        army.add_regiment("bad_reg", "not a regiment")
+
+
+def test_army_str():
+    army = Army("Confederate")
+    reg = Regiment(1000, '4/4/0/0', 'sq')
+    army.add_regiment("1st VA", reg)
+    s = str(army)
+    assert 'Confederate' in s
+    assert '1st VA' in s
+
+
+def test_army_repr():
+    army = Army("Union")
+    r = repr(army)
+    assert 'Union' in r

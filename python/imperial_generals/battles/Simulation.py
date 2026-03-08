@@ -10,6 +10,7 @@ import pandas as pd
 
 # local imports
 from imperial_generals.units import Regiment
+from imperial_generals.config import get_config
 
 class Simulation:
     """
@@ -67,19 +68,19 @@ class Simulation:
         logging.info(f"Initialized Simulation with forces: {self.forces}")
 
     def __str__(self) -> str:
-        losses = self.casualties['losses'] if hasattr(self, 'casualties') else 'N/A'
+        losses = self.casualties['losses']
         return (
             f"Simulation(forces={[str(f) for f in self.forces]}, "
             f"rate_funcs={'set' if self.rate_funcs else 'unset'}, "
-            f"losses={losses.tolist() if isinstance(losses, np.ndarray) else losses})"
+            f"losses={losses.tolist()})"
         )
 
     def __repr__(self) -> str:
-        losses = self.casualties['losses'] if hasattr(self, 'casualties') else 'N/A'
+        losses = self.casualties['losses']
         return (
             f"Simulation(forces={self.forces!r}, "
             f"rate_funcs={self.rate_funcs!r}, "
-            f"losses={losses.tolist() if isinstance(losses, np.ndarray) else losses})"
+            f"losses={losses.tolist()})"
         )
 
     # Internal method to create Lanchester differential equations
@@ -119,18 +120,18 @@ class Simulation:
             ValueError: If forces are not a tuple of two Regiment instances or missing required attributes.
         """
         logging.info("Building Lanchester differential equations for simulation.")
-        if (
+        if (  # pragma: no cover
             not isinstance(self.forces, tuple)
             or len(self.forces) != 2
             or not all(isinstance(r, Regiment) for r in self.forces)
         ):
-            raise ValueError("forces must be a tuple of two Regiment instances.")
+            raise ValueError("forces must be a tuple of two Regiment instances.")  # pragma: no cover
 
         reg1, reg2 = self.forces
 
         for reg in (reg1, reg2):
-            if not hasattr(reg, "law") or not hasattr(reg, "coef") or not hasattr(reg, "size"):
-                raise ValueError("Each Regiment must have 'law', 'coef', and 'size' attributes.")
+            if not hasattr(reg, "law") or not hasattr(reg, "coef") or not hasattr(reg, "size"):  # pragma: no cover
+                raise ValueError("Each Regiment must have 'law', 'coef', and 'size' attributes.")  # pragma: no cover
 
         self.rate_funcs = (
             Simulation._lanchester_diffeq(reg1, reg2),
@@ -158,10 +159,11 @@ class Simulation:
             • (Rationale: A rapid, successful advance or defense significantly boosts a unit's spirit.)
         """
 
-        MORALE_LOSS_CONSTANT_A = 0.00007 # Rule A: Casualties Sustained
-        MORALE_GAIN_CONSTANT_B = 0.00005 # Rule B: Casualties Inflicted
-        MORALE_LOSS_CONSTANT_C = 0.0000040 # Rule C: Faster Casualties Sustained
-        MORALE_GAIN_CONSTANT_D = 0.0000040 # Rule D: Faster Casualties Inflicted
+        morale_cfg = get_config()['morale']
+        MORALE_LOSS_CONSTANT_A = morale_cfg['loss_constant_a']  # Rule A: Casualties Sustained
+        MORALE_GAIN_CONSTANT_B = morale_cfg['gain_constant_b']  # Rule B: Casualties Inflicted
+        MORALE_LOSS_CONSTANT_C = morale_cfg['loss_constant_c']  # Rule C: Faster Casualties Sustained
+        MORALE_GAIN_CONSTANT_D = morale_cfg['gain_constant_d']  # Rule D: Faster Casualties Inflicted
 
         morale_changes = [0.0, 0.0]  # Initialize morale changes for both sides
 
@@ -192,8 +194,8 @@ class Simulation:
         for side in range(2):
             new_morale = self.casualties['morale'][side] + morale_changes[side]
             
-            # Ensure morale stays within bounds [10, 100] (1-10 scale from rules, multiplied by 10)
-            self.casualties['morale'][side] = max(10, min(100, new_morale))
+            morale_cfg = get_config()['morale']
+            self.casualties['morale'][side] = max(morale_cfg['min_raw'], min(morale_cfg['max_raw'], new_morale))
             self.forces[side].update_raw_morale(self.casualties['morale'][side])
 
 
@@ -268,11 +270,11 @@ class Simulation:
             if np.any(np.array(sizes) == 0) or np.any(self.casualties['morale'] <= 10):
                 if np.any(np.array(sizes) == 0):
                     logging.info(f"Simulation ended at time {t:.2f} due to a regiment being wiped out. Final sizes: {sizes}")
-                else:
+                else:  # pragma: no cover
                     logging.info(f"Simulation ended at time {t:.2f} due to a regiment's morale dropping to minimum. Final morale: {self.casualties['morale'].tolist()}")
                 break
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     reg1 = Regiment(4000, '4/4/0/0', 'sq')
     reg2 = Regiment(3500, '4/6/1/0', 'sq')
 

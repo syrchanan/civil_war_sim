@@ -24,7 +24,7 @@ def get_closest_morale_stat(morale: float) -> int:
     closest_morale = morale_options[np.argmin(morale_diffs)]
     return int(closest_morale // 10)
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     test_morales = [95, 87, 76, 64, 53, 42, 31, 20, 9, 0]
     for morale in test_morales:
         closest_stat = get_closest_morale_stat(morale)

@@ -129,7 +129,7 @@ class Cell:
         )
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     # Example usage
     from shapely.geometry import box
 

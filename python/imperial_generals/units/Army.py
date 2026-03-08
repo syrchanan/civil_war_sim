@@ -41,7 +41,7 @@ class Army:
     def __repr__(self) -> str:
         return f"Army(faction={self.faction!r}, forces={self.forces!r})"
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     army = Army("Union")
     army.add_regiment("69th PVI", Regiment(1500, '10/10/2/0', 'sq'))
     print(army)

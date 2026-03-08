@@ -1,4 +1,5 @@
 from imperial_generals.utils import get_closest_morale_stat, get_combat_efficiency
+from imperial_generals.config import get_config
 
 class Regiment:
     """
@@ -47,7 +48,8 @@ class Regiment:
         self.size: int = size
         self.stats: tuple[int, int, int, int] = tuple(int(d) for d in stats_split)
         self.coef: float = get_combat_efficiency(*self.stats)
-        self.raw_morale: float = float(self.stats[1]*10)
+        scale = get_config()['morale']['raw_scale_factor']
+        self.raw_morale: float = float(self.stats[1] * scale)
         self.law: str = law
 
     def __str__(self) -> str:
@@ -118,7 +120,7 @@ class Regiment:
         # update stats & coef
         self.update_stats(f"{self.stats[0]}/{new_stat}/{self.stats[2]}/{self.stats[3]}")
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     regiment = Regiment(1000, "4/4/0/0", "ln")
     print(regiment)
     regiment.update_size(800)

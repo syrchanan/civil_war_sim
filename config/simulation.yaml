@@ -1,0 +1,377 @@
+# =============================================================================
+# Imperial Generals — Simulation Configuration
+# =============================================================================
+# All tunable constants for the simulation live here.
+# Changes take effect on next run — no code changes needed.
+# This file is shared by both the Python prototype and the TypeScript UI.
+# =============================================================================
+
+
+# =============================================================================
+# COMBAT
+# Coefficients used in the base combat efficiency calculation.
+# The final efficiency is a value in [0, 1] fed into the Lanchester equations.
+# =============================================================================
+combat:
+
+  # Kill-rate multiplier for each weapon type.
+  # Keys are the integer weapon codes used in regiment stats (stat_weapon).
+  #   -2 = Unarmed / Pikemen
+  #   -1 = Smoothbore matchlock
+  #    0 = Smoothbore musket  (standard baseline)
+  #    1 = Rifled musket
+  #    2 = Needler rifle
+  weapon_multipliers:
+    '-2': 0.2
+    '-1': 0.5
+    '0':  1.0
+    '1':  1.5
+    '2':  2.5
+
+  # Fractional boost to combat efficiency per XP level above 1 (scale 1–10).
+  # e.g. 0.04 means a level-5 unit gains +16% over a level-1 unit.
+  xp_boost_per_level: 0.04
+
+  # Fractional boost to combat efficiency per morale level above 1 (scale 1–10).
+  morale_boost_per_level: 0.02
+
+  # Multiplier applied to efficiency when a unit is in melee combat.
+  # < 1.0 means melee is less effective than ranged fire.
+  melee_penalty_factor: 0.70
+
+
+# =============================================================================
+# MORALE
+# Dynamic morale system. Morale is tracked on a raw 10–100 scale internally
+# and converted back to the 1–10 stat scale for efficiency calculations.
+# =============================================================================
+morale:
+
+  # Bounds for the raw morale value (internal tracking scale).
+  min_raw: 10
+  max_raw: 100
+
+  # Conversion factor: morale stat (1–10) × raw_scale_factor = raw morale.
+  raw_scale_factor: 10
+
+  # --- Morale change rules applied each simulation step ---
+
+  # Rule A: Morale falls when casualties are sustained.
+  # Applied as: loss_percentage × constant.
+  loss_constant_a: 0.00007
+
+  # Rule B: Morale rises when casualties are inflicted on the enemy.
+  # Applied as: infliction_percentage × constant.
+  gain_constant_b: 0.00005
+
+  # Rule C: Morale falls faster when casualties arrive quickly.
+  # Applied as: (casualties / (1 + delta_t)) × constant.
+  loss_constant_c: 0.0000040
+
+  # Rule D: Morale rises faster when damage is inflicted quickly.
+  # Applied as: (casualties_inflicted / (1 + delta_t)) × constant.
+  gain_constant_d: 0.0000040
+
+
+# =============================================================================
+# MAP
+# Map generation parameters: dimensions, elevation noise, terrain presets,
+# and biome zone definitions.
+# =============================================================================
+map:
+
+  # --- Default map dimensions and sampling ---
+  defaults:
+    width: 500
+    height: 500
+    min_distance: 3   # Poisson-disc minimum point spacing (lower = more cells)
+    seed: 12345
+
+  # --- Elevation noise defaults (used when no preset overrides them) ---
+  elevation_defaults:
+    seed: 12345
+    octaves: 4          # Noise layers (1–8). More = more detail.
+    persistence: 0.5    # Amplitude decay per octave (0–1). Lower = smoother.
+    lacunarity: 2.0     # Frequency growth per octave (1.5–4.0). Higher = more varied.
+    scale: 50.0         # Feature size in map units. Larger = broader terrain.
+    base_elevation: 50.0
+    elevation_range: 100.0
+    exponent: 1.0       # > 1 creates plateaus; < 1 creates more peaks.
+
+  # --- Per-terrain-type elevation noise parameters ---
+  # These are used by TerrainPresets and referenced by name in biome_presets.
+  terrain_presets:
+
+    flat:
+      octaves: 2
+      persistence: 0.3
+      lacunarity: 2.0
+      scale: 100.0
+      base_elevation: 50.0
+      elevation_range: 20.0
+      exponent: 1.0
+
+    hills:
+      octaves: 4
+      persistence: 0.5
+      lacunarity: 2.0
+      scale: 50.0
+      base_elevation: 50.0
+      elevation_range: 60.0
+      exponent: 1.2
+
+    mountains:
+      octaves: 6
+      persistence: 0.6
+      lacunarity: 2.5
+      scale: 40.0
+      base_elevation: 50.0
+      elevation_range: 150.0
+      exponent: 1.8
+
+    coastal:
+      octaves: 3
+      persistence: 0.4
+      lacunarity: 2.0
+      scale: 60.0
+      base_elevation: 25.0
+      elevation_range: 80.0
+      exponent: 0.8
+
+    forest:
+      octaves: 3
+      persistence: 0.45
+      lacunarity: 2.0
+      scale: 55.0
+      base_elevation: 50.0
+      elevation_range: 40.0
+      exponent: 1.0
+
+    badlands:
+      octaves: 5
+      persistence: 0.7
+      lacunarity: 3.0
+      scale: 35.0
+      base_elevation: 50.0
+      elevation_range: 100.0
+      exponent: 2.2
+
+  # --- Biome generation defaults ---
+  biome_defaults:
+    seed: 12345
+    zone_scale: 80.0    # Noise scale for zone assignment (larger = bigger zones).
+    blend_zones: true
+    blend_distance: 5.0
+
+  # --- Biome presets ---
+  # Each preset defines a list of terrain zones.
+  # zone percentages within a preset must sum to 1.0.
+  # terrain_preset references a key in terrain_presets above.
+  biome_presets:
+
+    mixed_battlefield:
+      zone_scale: 60.0
+      zones:
+        - name: Farmland
+          percentage: 0.40
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Forest
+          percentage: 0.30
+          terrain_preset: forest
+          terrain_type: forest
+          cover_value: 0.7
+        - name: Hills
+          percentage: 0.25
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.2
+        - name: Rough
+          percentage: 0.05
+          terrain_preset: badlands
+          terrain_type: rough
+          cover_value: 0.3
+
+    mountainous_region:
+      zone_scale: 70.0
+      zones:
+        - name: Mountains
+          percentage: 0.45
+          terrain_preset: mountains
+          terrain_type: mountain
+          cover_value: 0.4
+        - name: Hills
+          percentage: 0.35
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.2
+        - name: Valleys
+          percentage: 0.20
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+
+    coastal_landing:
+      zone_scale: 50.0
+      zones:
+        - name: Beach
+          percentage: 0.25
+          terrain_preset: coastal
+          terrain_type: beach
+          cover_value: 0.0
+        - name: Dunes
+          percentage: 0.20
+          terrain_preset: hills
+          terrain_type: sand
+          cover_value: 0.1
+        - name: Grassland
+          percentage: 0.35
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Forest
+          percentage: 0.20
+          terrain_preset: forest
+          terrain_type: forest
+          cover_value: 0.7
+
+    open_plains:
+      zone_scale: 100.0
+      zones:
+        - name: Farmland
+          percentage: 0.70
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Light Woods
+          percentage: 0.20
+          terrain_preset: forest
+          terrain_type: forest
+          cover_value: 0.5
+        - name: Hills
+          percentage: 0.10
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.1
+
+
+# =============================================================================
+# COVER
+# Accuracy penalties applied against the attacker when the target has cover.
+# All penalties are additive and summed before subtracting from base accuracy.
+# Values are fractional (0.0 = no penalty, 1.0 = total suppression).
+# =============================================================================
+cover:
+
+  # Target is inside a forest cell.
+  forest_penalty: 0.30
+
+  # Target is in rough / badlands terrain.
+  rough_penalty: 0.15
+
+  # Target's cell has a fence on its boundary (unit is sheltering behind it).
+  fence_on_cell_penalty: 0.15
+
+  # The LoS ray from attacker to target crosses a fenced edge.
+  fence_on_ray_penalty: 0.10
+
+
+# =============================================================================
+# WEATHER
+# Static per-battle weather. Affects visibility (effective weapon range).
+# Season weights control random weather selection at battle setup.
+# =============================================================================
+weather:
+
+  # Multiplier applied to a unit's max_range to get effective range.
+  # 1.0 = full range (clear skies), lower values reduce effective range.
+  visibility_modifiers:
+    clear: 1.0
+    overcast: 0.90
+    light_rain: 0.75
+    heavy_rain: 0.60
+    fog: 0.40
+    storm: 0.50
+    snow: 0.65
+
+  # Additional multiplier applied to visibility for cells containing water features
+  # (river or lake). Amplifies fog and rain effects near water.
+  # TBD — placeholder value.
+  water_feature_amplifier: 0.85
+
+  # Probability weights for random weather selection, by season.
+  # Each season's weights must sum to 1.0.
+  season_weights:
+    spring:
+      clear: 0.25
+      overcast: 0.25
+      light_rain: 0.25
+      heavy_rain: 0.10
+      fog: 0.10
+      storm: 0.03
+      snow: 0.02
+    summer:
+      clear: 0.45
+      overcast: 0.20
+      light_rain: 0.15
+      heavy_rain: 0.10
+      fog: 0.05
+      storm: 0.05
+      snow: 0.00
+    autumn:
+      clear: 0.20
+      overcast: 0.25
+      light_rain: 0.25
+      heavy_rain: 0.10
+      fog: 0.15
+      storm: 0.03
+      snow: 0.02
+    winter:
+      clear: 0.20
+      overcast: 0.20
+      light_rain: 0.10
+      heavy_rain: 0.05
+      fog: 0.15
+      storm: 0.05
+      snow: 0.25
+
+
+# =============================================================================
+# MOVEMENT
+# Turn-based movement modifiers. Each terrain type has a multiplier applied
+# to a unit's base speed to get the actual distance it can cover per turn.
+# 1.0 = baseline (open ground). 0.0 = impassable.
+# =============================================================================
+movement:
+  terrain_modifiers:
+    open: 1.0       # Farmland, open field — baseline
+    forest: 0.6     # Wooded terrain — slows movement
+    hill: 0.7       # Rolling hills
+    rough: 0.5      # Badlands, broken ground
+    mountain: 0.4   # Mountainous terrain
+    road: 1.3       # Roads — faster than open ground
+    river: 0.2      # Fording a river — very slow
+    beach: 0.8      # Sandy beach — slightly slower
+    sand: 0.7       # Dunes — slower than beach
+    lake: 0.0       # Impassable
+
+
+# =============================================================================
+# VISUALIZATION
+# Colour palette for map views. Hex colour codes (#RRGGBB).
+# Applied to terrain_type categorical map views.
+# Keep colours intuitive — forest = green, water = blue, etc.
+# =============================================================================
+visualization:
+  terrain_colors:
+    open: '#d4e8a0'       # Light yellow-green — farmland / open fields
+    forest: '#4a7c3f'     # Medium green — wooded areas
+    hill: '#c4a882'       # Tan / khaki — rolling hills
+    rough: '#8b6355'      # Dark earthy brown — badlands / broken ground
+    mountain: '#9e9e9e'   # Grey — rocky peaks
+    beach: '#f5e6a3'      # Sandy yellow — coastal beaches
+    sand: '#e8d88a'       # Darker sandy yellow — dunes
+    river: '#6b9eb8'      # Steel blue — river channels
+    lake: '#2c6e9e'       # Deep blue — lakes
+    road: '#7a6652'       # Dark brown — dirt roads
