@@ -4,6 +4,8 @@ MapGenerator: Generates a set of points using Poisson disc sampling and creates 
 """
 
 from imperial_generals.map import PoissonDiscSampler, VoronoiMap
+from imperial_generals.map.ElevationGenerator import ElevationGenerator
+from imperial_generals.map.BiomeGenerator import BiomeGenerator
 from typing import Any, Dict
 import logging
 
@@ -46,11 +48,15 @@ class MapGenerator:
     def generate_map(self) -> Dict[str, Any]:
         """
         Generates Poisson disc points and computes Voronoi cells.
+        Optionally generates terrain based on elevation_config or biome_config.
 
         Returns:
             dict: {
                 'points': List of (x, y) tuples,
-                'voronoi': VoronoiMap object (see voronoi.py)
+                'voronoi': VoronoiMap object,
+                'elevation_generator': ElevationGenerator (if elevation_config provided),
+                'biome_generator': BiomeGenerator (if biome_config provided),
+                'zone_counts': Dict[str, int] (if biome_config provided)
             }
         """
         # Generate points using Poisson disc sampling
@@ -58,11 +64,33 @@ class MapGenerator:
             self.config.width, self.config.height, self.config.min_distance
         )
         logger.info(f"Generated {len(points)} Poisson disc points.")
+
         # Create Voronoi diagram from points
         voronoi = VoronoiMap(points, self.config.width, self.config.height)
         voronoi.generate_diagram()
         logger.info("Voronoi diagram generated.")
-        return {'points': points, 'voronoi': voronoi}
+
+        result = {'points': points, 'voronoi': voronoi}
+
+        # Generate terrain based on config
+        if self.config.biome_config is not None:
+            # Multi-terrain biome generation
+            logger.info("Generating multi-terrain biomes...")
+            biome_gen = BiomeGenerator(self.config.biome_config)
+            zone_counts = biome_gen.apply_to_cells(voronoi.get_cells())
+            result['biome_generator'] = biome_gen
+            result['zone_counts'] = zone_counts
+            logger.info("Biome generation complete.")
+
+        elif self.config.elevation_config is not None:
+            # Uniform elevation generation
+            logger.info("Generating uniform elevation for cells...")
+            elevation_gen = ElevationGenerator(self.config.elevation_config)
+            elevation_gen.apply_to_cells(voronoi.get_cells())
+            result['elevation_generator'] = elevation_gen
+            logger.info("Elevation generation complete.")
+
+        return result
 
 
 if __name__ == "__main__":
