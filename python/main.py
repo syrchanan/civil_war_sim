@@ -8,7 +8,7 @@ import logging
 from collections import Counter
 
 from imperial_generals.config import get_config
-from imperial_generals.map import MapGenerator
+from imperial_generals.map import MapGenerator, MapViewer
 from imperial_generals.units import InfantryRegiment
 from imperial_generals.battles import Simulation
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     # Config summary
     # --------------------------------------------------------------------------
 
-    print("=== Simulation Config (simulation.yaml) ===")
+    print("=== Simulation Config ===")
 
     combat_cfg = cfg['combat']
     print(f"\nCombat:")
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # Two equivalent factory patterns:
     #
     #   MapGenerator.from_config(preset='mixed_battlefield')
-    #       — reads width / height / min_distance / seed from simulation.yaml
+    #       — reads width / height / min_distance / seed from config/map.yaml defaults
     #
     #   MapGenerator.from_preset('mixed_battlefield', seed=42, width=200, height=200, min_distance=3)
     #       — explicit parameters, overrides config defaults for anything supplied
@@ -78,9 +78,7 @@ if __name__ == "__main__":
 
     result = MapGenerator.from_config(preset='mixed_battlefield')
 
-    cells       = result.cells
-    voronoi_map = result.voronoi
-
+    cells = result.cells
     print(f"Generated {len(cells)} cells")
 
     print(f"\nZone distribution:")
@@ -101,14 +99,27 @@ if __name__ == "__main__":
         c = cells[i]
         print(f"  [{c.index}] terrain={c.terrain_type}  elev={c.elevation:.2f}  cover={c.cover_value:.2f}")
 
-    hit = voronoi_map.get_cell_at_position(50, 50)
+    hit = result.voronoi.get_cell_at_position(50, 50)
     if hit:
         print(f"\nCell at (50,50): terrain={hit.terrain_type}  elev={hit.elevation:.2f}  cover={hit.cover_value:.2f}")
 
-    print("\nVisualizations (elevation / terrain_type / cover_value)...")
-    voronoi_map.visualize_cell_property('elevation')
-    voronoi_map.visualize_cell_property('terrain_type')
-    voronoi_map.visualize_cell_property('cover_value')
+    # --------------------------------------------------------------------------
+    # Map visualisation
+    #
+    # MapViewer wraps a MapResult and provides three views:
+    #   elevation    — continuous heatmap
+    #   terrain_type — categorical, colours from config/visualization.yaml
+    #   cover_value  — continuous heatmap
+    #
+    # viewer.view()            — open all three views as separate figures
+    # viewer.view('elevation') — open a single named view
+    # --------------------------------------------------------------------------
+
+    print("\nOpening map views...")
+    viewer = MapViewer(result)
+    viewer.render_view('elevation')
+    viewer.render_view('terrain_type')
+    viewer.render_view('cover_value')
 
     # --------------------------------------------------------------------------
     # Battle simulation

@@ -80,12 +80,21 @@ def test_terrain_presets():
         TerrainPresets.mountains(),
         TerrainPresets.coastal(),
         TerrainPresets.forest(),
-        TerrainPresets.badlands()
+        TerrainPresets.badlands(),
+        TerrainPresets.cliff(),
     ]
 
     for preset in presets:
         assert isinstance(preset, ElevationConfig)
         # Validation happens in __post_init__, so if we get here, it's valid
+
+
+def test_cliff_preset_properties():
+    """Test that cliff preset has appropriate steep-terrain properties."""
+    cfg = TerrainPresets.cliff()
+    assert isinstance(cfg, ElevationConfig)
+    assert cfg.exponent >= 2.0, "cliff exponent should be >= 2.0 for steep terrain"
+    assert cfg.elevation_range >= 150.0, "cliff elevation_range should be >= 150.0"
 
 
 def test_terrain_presets_with_seed():

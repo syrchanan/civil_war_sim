@@ -1,0 +1,210 @@
+# =============================================================================
+# MAP
+# Map generation parameters: dimensions, elevation noise, terrain presets,
+# and biome zone definitions.
+# =============================================================================
+map:
+
+  # --- Default map dimensions and sampling ---
+  defaults:
+    width: 300
+    height: 300
+    min_distance: 2   # Poisson-disc minimum point spacing (lower = more cells)
+    seed: 12345
+
+  # --- Elevation noise defaults (used when no preset overrides them) ---
+  elevation_defaults:
+    seed: 12345
+    octaves: 4          # Noise layers (1–8). More = more detail.
+    persistence: 0.5    # Amplitude decay per octave (0–1). Lower = smoother.
+    lacunarity: 2.0     # Frequency growth per octave (1.5–4.0). Higher = more varied.
+    scale: 50.0         # Feature size in map units. Larger = broader terrain.
+    base_elevation: 50.0
+    elevation_range: 100.0
+    exponent: 1.0       # > 1 creates plateaus; < 1 creates more peaks.
+
+  # --- Per-terrain-type elevation noise parameters ---
+  # These are used by TerrainPresets and referenced by name in biome_presets.
+  terrain_presets:
+
+    flat:
+      octaves: 2
+      persistence: 0.3
+      lacunarity: 2.0
+      scale: 150.0
+      base_elevation: 50.0
+      elevation_range: 20.0
+      exponent: 1.0
+
+    hills:
+      octaves: 4
+      persistence: 0.45
+      lacunarity: 2.0
+      scale: 70.0
+      base_elevation: 50.0
+      elevation_range: 60.0
+      exponent: 1.2
+
+    mountains:
+      octaves: 6
+      persistence: 0.6
+      lacunarity: 2.5
+      scale: 40.0
+      base_elevation: 50.0
+      elevation_range: 150.0
+      exponent: 1.8
+
+    coastal:
+      octaves: 3
+      persistence: 0.4
+      lacunarity: 2.0
+      scale: 85.0
+      base_elevation: 25.0
+      elevation_range: 80.0
+      exponent: 0.8
+
+    forest:
+      octaves: 3
+      persistence: 0.45
+      lacunarity: 2.0
+      scale: 75.0
+      base_elevation: 50.0
+      elevation_range: 40.0
+      exponent: 1.0
+
+    badlands:
+      octaves: 5
+      persistence: 0.7
+      lacunarity: 3.0
+      scale: 35.0
+      base_elevation: 50.0
+      elevation_range: 100.0
+      exponent: 2.2
+
+    cliff:
+      octaves: 6
+      persistence: 0.55
+      lacunarity: 3.0
+      scale: 25.0
+      base_elevation: 75.0
+      elevation_range: 200.0
+      exponent: 2.5
+
+  # --- Biome generation defaults ---
+  biome_defaults:
+    seed: 12345
+    zone_scale: 80.0    # Noise scale for zone assignment (larger = bigger zones).
+    blend_zones: true
+    blend_distance: 15.0
+
+  # --- Biome presets ---
+  # Each preset defines a list of terrain zones.
+  # zone percentages within a preset must sum to 1.0.
+  # terrain_preset references a key in terrain_presets above.
+  biome_presets:
+
+    mixed_battlefield:
+      zone_scale: 60.0
+      zones:
+        - name: Farmland
+          percentage: 0.40
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Forest
+          percentage: 0.30
+          terrain_preset: forest
+          terrain_type: forest
+          cover_value: 0.7
+        - name: Hills
+          percentage: 0.25
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.2
+        - name: Rough
+          percentage: 0.05
+          terrain_preset: badlands
+          terrain_type: rough
+          cover_value: 0.3
+
+    mountainous_region:
+      zone_scale: 70.0
+      zones:
+        - name: Mountains
+          percentage: 0.45
+          terrain_preset: mountains
+          terrain_type: mountain
+          cover_value: 0.4
+        - name: Hills
+          percentage: 0.35
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.2
+        - name: Valleys
+          percentage: 0.20
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+
+    coastal_landing:
+      zone_scale: 50.0
+      zones:
+        - name: Beach
+          percentage: 0.25
+          terrain_preset: coastal
+          terrain_type: beach
+          cover_value: 0.0
+        - name: Dunes
+          percentage: 0.20
+          terrain_preset: hills
+          terrain_type: sand
+          cover_value: 0.1
+        - name: Grassland
+          percentage: 0.35
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Forest
+          percentage: 0.20
+          terrain_preset: forest
+          terrain_type: forest
+          cover_value: 0.7
+
+    open_plains:
+      zone_scale: 100.0
+      zones:
+        - name: Farmland
+          percentage: 0.70
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Light Woods
+          percentage: 0.20
+          terrain_preset: forest
+          terrain_type: forest
+          cover_value: 0.5
+        - name: Hills
+          percentage: 0.10
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.1
+
+    cliffs_and_valleys:
+      zone_scale: 55.0
+      zones:
+        - name: Cliffs
+          percentage: 0.35
+          terrain_preset: cliff
+          terrain_type: cliff
+          cover_value: 0.4
+          no_blend: true
+        - name: Valleys
+          percentage: 0.40
+          terrain_preset: flat
+          terrain_type: open
+          cover_value: 0.0
+        - name: Hills
+          percentage: 0.25
+          terrain_preset: hills
+          terrain_type: hill
+          cover_value: 0.2

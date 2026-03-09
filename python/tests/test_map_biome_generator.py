@@ -156,3 +156,149 @@ class TestZoneMapArray:
         gen = BiomeGenerator(simple_config())
         arr = gen.generate_zone_map_array(width=100, height=100, resolution=10)
         assert arr.shape == (10, 10)
+
+
+# =============================================================================
+# Zone blending
+# =============================================================================
+
+class TestZoneBlending:
+    def _make_two_zone_config(self, blend_zones=True, blend_distance=30.0, seed=42):
+        """Create a simple two-zone BiomeMapConfig for blending tests."""
+        zones = [
+            TerrainZone(
+                name='Flat',
+                percentage=0.5,
+                elevation_config=ElevationConfig(
+                    seed=seed,
+                    octaves=2,
+                    persistence=0.3,
+                    lacunarity=2.0,
+                    scale=150.0,
+                    base_elevation=50.0,
+                    elevation_range=20.0,
+                    exponent=1.0,
+                ),
+                terrain_type='open',
+                cover_value=0.0,
+            ),
+            TerrainZone(
+                name='Hills',
+                percentage=0.5,
+                elevation_config=ElevationConfig(
+                    seed=seed,
+                    octaves=4,
+                    persistence=0.45,
+                    lacunarity=2.0,
+                    scale=70.0,
+                    base_elevation=50.0,
+                    elevation_range=60.0,
+                    exponent=1.2,
+                ),
+                terrain_type='hill',
+                cover_value=0.2,
+            ),
+        ]
+        return BiomeMapConfig(
+            zones=zones,
+            seed=seed,
+            zone_scale=60.0,
+            blend_zones=blend_zones,
+            blend_distance=blend_distance,
+        )
+
+    def test_blend_zones_is_applied_when_configured(self):
+        """_compute_blended_elevation is callable and returns a float."""
+        cfg = self._make_two_zone_config(blend_zones=True, blend_distance=30.0)
+        gen = BiomeGenerator(cfg)
+        result = gen._compute_blended_elevation(0.5, 50.0, 50.0)
+        assert isinstance(result, float)
+
+    def test_blend_disabled_uses_primary_zone_elevation(self):
+        """With blend_zones=False, blended elevation equals primary zone elevation."""
+        cfg = self._make_two_zone_config(blend_zones=False, blend_distance=30.0)
+        gen = BiomeGenerator(cfg)
+        noise_value = 0.3   # well within first zone (threshold=0.5)
+        x, y = 50.0, 50.0
+        blended = gen._compute_blended_elevation(noise_value, x, y)
+        primary_zone = gen._assign_zone(noise_value)
+        direct = gen.elevation_generators[primary_zone.name].generate_elevation(x, y)
+        assert abs(blended - direct) < 1e-9
+
+    def test_no_blend_zone_skips_blending(self):
+        """When a zone has no_blend=True, its boundary cells are not blended."""
+        seed = 42
+        zones = [
+            TerrainZone(
+                name='Cliffs',
+                percentage=0.5,
+                elevation_config=ElevationConfig(
+                    seed=seed, octaves=6, persistence=0.55, lacunarity=3.0,
+                    scale=25.0, base_elevation=75.0, elevation_range=200.0, exponent=2.5,
+                ),
+                terrain_type='cliff',
+                cover_value=0.4,
+                no_blend=True,
+            ),
+            TerrainZone(
+                name='Valley',
+                percentage=0.5,
+                elevation_config=ElevationConfig(
+                    seed=seed, octaves=2, persistence=0.3, lacunarity=2.0,
+                    scale=150.0, base_elevation=50.0, elevation_range=20.0, exponent=1.0,
+                ),
+                terrain_type='open',
+                cover_value=0.0,
+            ),
+        ]
+        cfg = BiomeMapConfig(zones=zones, seed=seed, zone_scale=60.0,
+                             blend_zones=True, blend_distance=30.0)
+        gen = BiomeGenerator(cfg)
+        # noise_value right at boundary (0.5) — would normally blend, but Cliffs has no_blend=True
+        noise_value = 0.5
+        x, y = 50.0, 50.0
+        blended = gen._compute_blended_elevation(noise_value, x, y)
+        primary_zone = gen._assign_zone(noise_value)
+        direct = gen.elevation_generators[primary_zone.name].generate_elevation(x, y)
+        assert abs(blended - direct) < 1e-9
+
+    def test_compute_blended_elevation_at_exact_boundary(self):
+        """noise_value at exact zone threshold gives average of two zone elevations."""
+        seed = 42
+        # Two equal zones, boundary at 0.5
+        zones = [
+            TerrainZone(
+                name='A',
+                percentage=0.5,
+                elevation_config=ElevationConfig(
+                    seed=seed, octaves=2, persistence=0.3, lacunarity=2.0,
+                    scale=150.0, base_elevation=10.0, elevation_range=0.0, exponent=1.0,
+                ),
+                terrain_type='open',
+                cover_value=0.0,
+                no_blend=False,
+            ),
+            TerrainZone(
+                name='B',
+                percentage=0.5,
+                elevation_config=ElevationConfig(
+                    seed=seed, octaves=2, persistence=0.3, lacunarity=2.0,
+                    scale=150.0, base_elevation=100.0, elevation_range=0.0, exponent=1.0,
+                ),
+                terrain_type='hill',
+                cover_value=0.0,
+                no_blend=False,
+            ),
+        ]
+        # Use very large blend_distance so boundary region is wide
+        cfg = BiomeMapConfig(zones=zones, seed=seed, zone_scale=60.0,
+                             blend_zones=True, blend_distance=60.0)
+        gen = BiomeGenerator(cfg)
+        # At exact threshold (0.5), both zones contribute, interpolation weight = 0.5
+        noise_value = 0.5
+        x, y = 50.0, 50.0
+        elev_a = gen.elevation_generators['A'].generate_elevation(x, y)
+        elev_b = gen.elevation_generators['B'].generate_elevation(x, y)
+        blended = gen._compute_blended_elevation(noise_value, x, y)
+        expected = (elev_a + elev_b) / 2.0
+        assert abs(blended - expected) < 1e-6

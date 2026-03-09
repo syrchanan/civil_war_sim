@@ -64,6 +64,33 @@ class TestTerrainZone:
         with pytest.raises(ValueError):
             TerrainZone(name='X', percentage=0.5, elevation_config=ElevationConfig(), cover_value=1.1)
 
+    def test_terrain_zone_no_blend_flag_defaults_false(self):
+        """Default TerrainZone has no_blend=False."""
+        zone = make_zone()
+        assert zone.no_blend is False
+
+    def test_terrain_zone_no_blend_flag_can_be_set(self):
+        """Can set no_blend=True on TerrainZone."""
+        zone = TerrainZone(
+            name='Cliffs',
+            percentage=1.0,
+            elevation_config=ElevationConfig(),
+            terrain_type='cliff',
+            cover_value=0.4,
+            no_blend=True,
+        )
+        assert zone.no_blend is True
+
+    def test_terrain_zone_no_blend_non_bool_raises(self):
+        """no_blend must be a bool."""
+        with pytest.raises(TypeError):
+            TerrainZone(
+                name='X',
+                percentage=1.0,
+                elevation_config=ElevationConfig(),
+                no_blend='yes',
+            )
+
 
 # =============================================================================
 # BiomeMapConfig validation
@@ -100,7 +127,7 @@ class TestBiomeMapConfig:
         assert cfg.seed == 12345
         assert cfg.zone_scale == 80.0
         assert cfg.blend_zones is True
-        assert cfg.blend_distance == 5.0
+        assert cfg.blend_distance == 15.0
 
     def test_percentages_exactly_one(self):
         zones = [make_zone('A', 0.6), make_zone('B', 0.4)]
@@ -118,6 +145,7 @@ class TestBiomePresets:
         BiomePresets.mountainous_region,
         BiomePresets.coastal_landing,
         BiomePresets.open_plains,
+        BiomePresets.cliffs_and_valleys,
     ])
     def test_preset_returns_valid_config(self, preset_fn):
         cfg = preset_fn(seed=42)
@@ -132,6 +160,7 @@ class TestBiomePresets:
         BiomePresets.mountainous_region,
         BiomePresets.coastal_landing,
         BiomePresets.open_plains,
+        BiomePresets.cliffs_and_valleys,
     ])
     def test_preset_zones_have_valid_elevation_config(self, preset_fn):
         cfg = preset_fn(seed=99)
@@ -149,3 +178,24 @@ class TestBiomePresets:
         assert cfg.seed == 7
         assert cfg.zone_scale == 50.0
         assert len(cfg.zones) == 2
+
+    def test_cliffs_and_valleys_cliff_zones_have_no_blend(self):
+        """Cliff zones in cliffs_and_valleys preset have no_blend=True."""
+        cfg = BiomePresets.cliffs_and_valleys(seed=42)
+        cliff_zones = [z for z in cfg.zones if z.name == 'Cliffs']
+        assert len(cliff_zones) == 1
+        assert cliff_zones[0].no_blend is True
+
+    def test_zone_cover_values_in_range(self):
+        """All zones in all presets have cover_value in [0, 1]."""
+        for preset_fn in [
+            BiomePresets.mixed_battlefield,
+            BiomePresets.mountainous_region,
+            BiomePresets.coastal_landing,
+            BiomePresets.open_plains,
+            BiomePresets.cliffs_and_valleys,
+        ]:
+            cfg = preset_fn(seed=42)
+            for zone in cfg.zones:
+                assert 0.0 <= zone.cover_value <= 1.0, \
+                    f"Zone '{zone.name}' cover_value={zone.cover_value} out of range"

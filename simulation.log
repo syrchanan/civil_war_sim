@@ -1,1 +1,19 @@
-2026-03-08 17:45:26,236 INFO MapGenerator initialized: 500x500, min_distance=3
+2026-03-09 18:02:18,738 INFO MapGenerator initialized: 300x300, min_distance=2
+2026-03-09 18:03:14,432 INFO Poisson disc sampling complete: 13881 points.
+2026-03-09 18:03:14,435 INFO Initialized VoronoiMap with 13881 points, width=300, height=300
+2026-03-09 18:03:15,655 INFO Voronoi: 13881 polygons, 13881 cells.
+2026-03-09 18:03:15,655 INFO Stage 1 complete: 13881 cells generated.
+2026-03-09 18:03:15,656 INFO Initialized ElevationGenerator with seed=12345
+2026-03-09 18:03:15,657 INFO Initialized ElevationGenerator with seed=12345
+2026-03-09 18:03:15,658 INFO Initialized ElevationGenerator with seed=12345
+2026-03-09 18:03:15,659 INFO Initialized ElevationGenerator with seed=12345
+2026-03-09 18:03:15,659 INFO Initialized BiomeGenerator with 4 zones, seed=12345
+2026-03-09 18:03:15,660 INFO Generating biomes for 13881 cells...
+2026-03-09 18:03:16,159 INFO Biome generation complete. Distribution:
+2026-03-09 18:03:16,160 INFO   Farmland: 5206 cells (37.5%)
+2026-03-09 18:03:16,161 INFO   Forest: 6936 cells (50.0%)
+2026-03-09 18:03:16,161 INFO   Hills: 1739 cells (12.5%)
+2026-03-09 18:03:16,162 INFO   Rough: 0 cells (0.0%)
+2026-03-09 18:03:16,163 INFO Stage 2 complete: biome assignment applied.
+2026-03-09 18:03:30,723 INFO Initialized Simulation with forces: ([type: inf] Regiment(size=4000, stats=(4, 4, 0, 0), law='sq'), [type: inf] Regiment(size=3500, stats=(4, 6, 1, 0), law='sq'))
+2026-03-09 18:03:30,724 INFO Building Lanchester differential equations for simulation.

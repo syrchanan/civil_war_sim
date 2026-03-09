@@ -1,7 +1,7 @@
 """
 Tests for the admin config loader.
 
-Verifies that simulation.yaml is well-formed and that ConfigLoader surfaces
+Verifies that config/*.yaml files are well-formed and that ConfigLoader surfaces
 all required sections and values correctly.
 """
 
@@ -9,13 +9,13 @@ import pytest
 from pathlib import Path
 from imperial_generals.config import ConfigLoader
 
-CONFIG_PATH = Path(__file__).parent.parent.parent / 'config' / 'simulation.yaml'
+CONFIG_PATH = Path(__file__).parent.parent.parent / 'config'
 
 EXPECTED_WEATHER_TYPES = ['clear', 'overcast', 'light_rain', 'heavy_rain', 'fog', 'storm', 'snow']
 EXPECTED_SEASONS = ['spring', 'summer', 'autumn', 'winter']
-EXPECTED_TERRAIN_PRESETS = ['flat', 'hills', 'mountains', 'coastal', 'forest', 'badlands']
-EXPECTED_BIOME_PRESETS = ['mixed_battlefield', 'mountainous_region', 'coastal_landing', 'open_plains']
-EXPECTED_TERRAIN_TYPES = ['open', 'forest', 'hill', 'rough', 'mountain', 'river', 'lake']
+EXPECTED_TERRAIN_PRESETS = ['flat', 'hills', 'mountains', 'coastal', 'forest', 'badlands', 'cliff']
+EXPECTED_BIOME_PRESETS = ['mixed_battlefield', 'mountainous_region', 'coastal_landing', 'open_plains', 'cliffs_and_valleys']
+EXPECTED_TERRAIN_TYPES = ['open', 'forest', 'hill', 'rough', 'mountain', 'river', 'lake', 'cliff']
 ELEVATION_PRESET_FIELDS = ['octaves', 'persistence', 'lacunarity', 'scale', 'base_elevation', 'elevation_range', 'exponent']
 WEAPON_CODES = ['-2', '-1', '0', '1', '2']
 
@@ -41,6 +41,27 @@ class TestConfigLoaderConstruction:
         loader = ConfigLoader(CONFIG_PATH)
         for section in ['combat', 'morale', 'map', 'cover', 'weather', 'movement', 'visualization']:
             assert section in loader, f"Missing top-level section: {section}"
+
+    def test_loads_from_directory(self):
+        """Loading from a directory merges all YAML files into one dict."""
+        loader = ConfigLoader(CONFIG_PATH)
+        assert 'combat' in loader
+        assert 'map' in loader
+        assert 'weather' in loader
+
+    def test_loads_from_yaml_file_directly(self):
+        """Loading a single YAML file still works."""
+        single_file = CONFIG_PATH / 'combat.yaml'
+        loader = ConfigLoader(single_file)
+        assert 'combat' in loader
+
+    def test_nonexistent_directory_raises(self):
+        with pytest.raises(FileNotFoundError):
+            ConfigLoader('/nonexistent/directory/')
+
+    def test_nonexistent_file_raises(self):
+        with pytest.raises(FileNotFoundError):
+            ConfigLoader('/nonexistent/file.yaml')
 
 
 # =============================================================================

@@ -1,0 +1,31 @@
+# =============================================================================
+# MORALE
+# Dynamic morale system. Morale is tracked on a raw 10–100 scale internally
+# and converted back to the 1–10 stat scale for efficiency calculations.
+# =============================================================================
+morale:
+
+  # Bounds for the raw morale value (internal tracking scale).
+  min_raw: 10
+  max_raw: 100
+
+  # Conversion factor: morale stat (1–10) × raw_scale_factor = raw morale.
+  raw_scale_factor: 10
+
+  # --- Morale change rules applied each simulation step ---
+
+  # Rule A: Morale falls when casualties are sustained.
+  # Applied as: loss_percentage × constant.
+  loss_constant_a: 0.00007
+
+  # Rule B: Morale rises when casualties are inflicted on the enemy.
+  # Applied as: infliction_percentage × constant.
+  gain_constant_b: 0.00005
+
+  # Rule C: Morale falls faster when casualties arrive quickly.
+  # Applied as: (casualties / (1 + delta_t)) × constant.
+  loss_constant_c: 0.0000040
+
+  # Rule D: Morale rises faster when damage is inflicted quickly.
+  # Applied as: (casualties_inflicted / (1 + delta_t)) × constant.
+  gain_constant_d: 0.0000040

@@ -290,9 +290,10 @@ class VoronoiMap:
                     transform=ax.transAxes, fontsize=10, verticalalignment='top',
                     bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
         else:
+            from imperial_generals.config import get_config
             unique_vals = list(set(values))
-            color_map   = {v: plt.cm.tab10(i / len(unique_vals))
-                           for i, v in enumerate(unique_vals)}
+            terrain_colors = get_config()['visualization']['terrain_colors']
+            color_map = {v: terrain_colors.get(v, '#aaaaaa') for v in unique_vals}
             for cell in self.cells:
                 val  = getattr(cell, property_name)
                 x, y = cell.polygon.exterior.xy

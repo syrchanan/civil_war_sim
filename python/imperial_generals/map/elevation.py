@@ -106,6 +106,10 @@ class TerrainPresets:
     def badlands(seed: int = 12345) -> ElevationConfig:
         return TerrainPresets._from_config('badlands', seed)
 
+    @staticmethod
+    def cliff(seed: int = 12345) -> ElevationConfig:
+        return TerrainPresets._from_config('cliff', seed)
+
 
 # =============================================================================
 # Generator

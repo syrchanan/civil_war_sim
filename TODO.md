@@ -9,6 +9,10 @@ Python TDD first; TypeScript port follows after Python is stable.
 
 - [x] **Admin YAML config** — `config/simulation.yaml` holds all constants; `ConfigLoader` singleton; every class reads from config. 100% test coverage.
 - [x] **Map API cleanup + file reorganisation** — 9 files → 5 (`elevation.py`, `biome.py`, `voronoi.py`, `generator.py`, `Cell.py`). `MapResult` replaces raw dict return. `MapGenerator.from_preset()` / `from_config()` factory methods. `MapConfig` extended with `num_rivers`, `num_lakes`, `num_roads` stubs. 100% test coverage.
+- [x] **Split config into per-section files** — `simulation.yaml` → 7 dedicated files (`combat.yaml`, `morale.yaml`, `map.yaml`, `cover.yaml`, `weather.yaml`, `movement.yaml`, `visualization.yaml`). `ConfigLoader` now supports directory loading (merges all `.yaml` files). API unchanged. 100% test coverage.
+- [x] **Smoother elevation** — Implemented zone blending (`blend_zones=True` was configured but never executed). `BiomeGenerator._compute_blended_elevation()` linearly interpolates elevation across zone boundaries. `blend_distance` raised to 15.0. Terrain preset scales tuned (flat 150, hills 70, forest 75, coastal 85). 100% test coverage.
+- [x] **Cliff biome** — New `cliff` terrain preset (scale=25, elevation_range=200, exponent=2.5) and `cliffs_and_valleys` biome preset. `TerrainPresets.cliff()` / `BiomePresets.cliffs_and_valleys()` factory methods. `no_blend: bool` flag on `TerrainZone` prevents boundary smoothing on cliff edges. Cliff added to movement modifiers (0.3×) and visualization colours. 100% test coverage.
+- [x] **Visualization colour fixes + view toggler** (SPEC §7) — `MapViewer` class in `map/viewer.py`: three views (elevation heatmap, terrain_type categorical, cover_value heatmap) toggled with ←/→ keyboard shortcuts. Terrain colours read from `visualization.yaml` — no red/purple. Fixed `VoronoiMap.visualize_cell_property()` to use config colours instead of `tab10`. All views share the same polygon geometry. Feature layer overlay deferred until rivers/lakes/roads/fences are generated. 100% test coverage.
 
 ---
 
@@ -45,17 +49,12 @@ Python TDD first; TypeScript port follows after Python is stable.
 
 ## Backlog
 
-- [ ] **Visualization colour fixes + view toggler** (SPEC §7)
-  - Colour palette per terrain type (no red/purple — see §7.3 for targets)
-  - All views share one polygon geometry; toggle with ←/→ or click
-  - Feature layer overlay (roads, rivers, lakes, fences) on top of terrain
-
 - [ ] **Weather system** (SPEC §2)
   - 7 weather types: clear, overcast, light_rain, heavy_rain, fog, storm, snow
   - Randomised at battle setup, weighted by season (spring/summer/autumn/winter)
   - Weather static for entire battle; map-wide
   - Water feature cells (river, lake) amplify fog/rain modifiers
-  - All weights and modifiers already in `simulation.yaml`
+  - All weights and modifiers already in `weather.yaml`
 
 - [ ] **Line of Sight (LoS) ray cast** (SPEC §3.5)
   - Cast a line segment from attacker position to target position
@@ -66,7 +65,7 @@ Python TDD first; TypeScript port follows after Python is stable.
 - [ ] **Cover calculation** (SPEC §3.3)
   - Accuracy penalty against attacker, additive
   - Sources: target in forest (−30%), rough (−15%), fence on target cell (−15%), fence on LoS ray (−10%)
-  - All penalty values in `simulation.yaml` under `cover:`
+  - All penalty values in `cover.yaml`
 
 - [ ] **Range / distance accuracy model** (SPEC §3.2)
   - Weapon has `max_range` property (map units)
@@ -90,7 +89,7 @@ Python TDD first; TypeScript port follows after Python is stable.
 
 - [ ] **Movement system** (SPEC §4)
   - Turn-based; unit `speed` stat → max distance per turn
-  - Terrain cost modifiers (already in `simulation.yaml` under `movement:`)
+  - Terrain cost modifiers (already in `movement.yaml`)
   - Lakes impassable; rivers fordable at 0.2× speed; roads 1.3×
 
 - [ ] **Battle state serialization** (SPEC §6)

@@ -39,12 +39,14 @@ class TerrainZone:
         elevation_config (ElevationConfig): Elevation parameters for this zone.
         terrain_type (str): Terrain classification for cells in this zone.
         cover_value (float): Default cover value for cells (0.0–1.0).
+        no_blend (bool): If True, cells near this zone's boundary are never blended.
     """
     name: str
     percentage: float
     elevation_config: ElevationConfig
     terrain_type: str = 'open'
     cover_value: float = 0.0
+    no_blend: bool = False
 
     def __post_init__(self):
         if not isinstance(self.name, str) or not self.name:
@@ -57,6 +59,8 @@ class TerrainZone:
             raise TypeError("terrain_type must be a string")
         if not 0.0 <= self.cover_value <= 1.0:
             raise ValueError(f"cover_value must be between 0 and 1, got {self.cover_value}")
+        if not isinstance(self.no_blend, bool):
+            raise TypeError(f"no_blend must be a bool, got {type(self.no_blend).__name__}")
 
 
 @dataclass
@@ -116,6 +120,7 @@ class BiomePresets:
                 elevation_config=ElevationConfig(seed=seed, **terrain_params[z['terrain_preset']]),
                 terrain_type=z['terrain_type'],
                 cover_value=z['cover_value'],
+                no_blend=z.get('no_blend', False),
             )
             for z in preset_data['zones']
         ]
@@ -140,6 +145,11 @@ class BiomePresets:
     def open_plains(seed: int = 12345) -> BiomeMapConfig:
         """Mostly flat terrain with minimal cover."""
         return BiomePresets._from_config('open_plains', seed)
+
+    @staticmethod
+    def cliffs_and_valleys(seed: int = 12345) -> BiomeMapConfig:
+        """Dramatic cliff faces with flat valleys and rolling hills."""
+        return BiomePresets._from_config('cliffs_and_valleys', seed)
 
     @staticmethod
     def custom(zones: List[TerrainZone], seed: int = 12345,
@@ -180,6 +190,48 @@ class BiomeGenerator:
                 return zone
         return self.config.zones[-1]  # pragma: no cover — float rounding fallback
 
+    def _compute_blended_elevation(self, noise_value: float, x: float, y: float) -> float:
+        """
+        Compute elevation with optional blending at zone boundaries.
+
+        If blend_zones is False or blend_distance <= 0, returns the primary zone's
+        elevation unchanged. Otherwise, checks whether noise_value is within blend_half
+        of any zone boundary threshold and linearly interpolates between adjacent zones.
+        Skips blending if either adjacent zone has no_blend=True.
+        """
+        primary_zone = self._assign_zone(noise_value)
+        primary_elev = self.elevation_generators[primary_zone.name].generate_elevation(x, y)
+
+        if not self.config.blend_zones or self.config.blend_distance <= 0:
+            return primary_elev
+
+        blend_half = min(
+            self.config.blend_distance / self.config.zone_scale * 0.2,
+            0.15,
+        )
+
+        # Build cumulative boundary thresholds (all except the last zone)
+        zones = self.config.zones
+        boundaries = []
+        cumulative = 0.0
+        for i, zone in enumerate(zones[:-1]):
+            cumulative += zone.percentage
+            boundaries.append((cumulative, zones[i], zones[i + 1]))
+
+        for threshold, zone_below, zone_above in boundaries:
+            dist = noise_value - threshold
+            if abs(dist) <= blend_half:
+                # Skip blending if either zone has no_blend set
+                if zone_below.no_blend or zone_above.no_blend:
+                    return primary_elev
+                # Linear interpolation: t=0 → fully zone_below, t=1 → fully zone_above
+                t = (dist + blend_half) / (2.0 * blend_half)
+                elev_below = self.elevation_generators[zone_below.name].generate_elevation(x, y)
+                elev_above = self.elevation_generators[zone_above.name].generate_elevation(x, y)
+                return elev_below + t * (elev_above - elev_below)
+
+        return primary_elev
+
     def apply_to_cells(self, cells) -> Dict[str, int]:
         if not cells:
             logger.warning("No cells provided to apply_to_cells")
@@ -187,18 +239,24 @@ class BiomeGenerator:
 
         logger.info(f"Generating biomes for {len(cells)} cells...")
         zone_counts: Dict[str, int] = {zone.name: 0 for zone in self.config.zones}
-        cell_zones = {}
+        cell_zones: Dict[int, TerrainZone] = {}
+        cell_noise: Dict[int, float] = {}
 
+        # First pass: assign zones and record noise values
         for cell in cells:
             x, y = cell.center
-            zone = self._assign_zone(self._get_zone_noise_value(x, y))
+            noise_value = self._get_zone_noise_value(x, y)
+            zone = self._assign_zone(noise_value)
             cell_zones[cell.index] = zone
+            cell_noise[cell.index] = noise_value
             zone_counts[zone.name] += 1
 
+        # Second pass: set elevation (with blending), terrain type, and cover
         for cell in cells:
             zone = cell_zones[cell.index]
             x, y = cell.center
-            cell.set_elevation(self.elevation_generators[zone.name].generate_elevation(x, y))
+            noise_value = cell_noise[cell.index]
+            cell.set_elevation(self._compute_blended_elevation(noise_value, x, y))
             cell.set_terrain_type(zone.terrain_type)
             cell.set_cover_value(zone.cover_value)
 
