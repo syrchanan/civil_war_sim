@@ -8,7 +8,7 @@ import logging
 from collections import Counter
 
 from imperial_generals.config import get_config
-from imperial_generals.map import MapGenerator, MapViewer
+from imperial_generals.map import MapConfig, MapGenerator, MapViewer, BiomePresets
 from imperial_generals.units import InfantryRegiment
 from imperial_generals.battles import Simulation
 
@@ -56,27 +56,35 @@ if __name__ == "__main__":
     print(f"  Loss A={morale_cfg['loss_constant_a']}  Gain B={morale_cfg['gain_constant_b']}")
     print(f"  Loss C={morale_cfg['loss_constant_c']}  Gain D={morale_cfg['gain_constant_d']}")
 
-    map_defaults = cfg['map']['defaults']
-    print(f"\nMap defaults: {map_defaults['width']}x{map_defaults['height']}, "
-          f"min_distance={map_defaults['min_distance']}, seed={map_defaults['seed']}")
-
     # --------------------------------------------------------------------------
     # Map generation
     #
-    # Two equivalent factory patterns:
+    # MapConfig drives the full pipeline:
+    #   Stage 1 — Voronoi mesh (always)
+    #   Stage 2 — Biome assignment (biome_config) or elevation-only
+    #   Stage 3 — River generation  (num_rivers > 0)
+    #   Stage 4 — Lakes             (num_lakes  > 0, TODO)
+    #   Stage 5 — Roads             (num_roads  > 0, TODO)
+    #   Stage 6 — Fences            (auto from farmland edges, TODO)
     #
-    #   MapGenerator.from_config(preset='mixed_battlefield')
-    #       — reads width / height / min_distance / seed from config/map.yaml defaults
-    #
-    #   MapGenerator.from_preset('mixed_battlefield', seed=42, width=200, height=200, min_distance=3)
-    #       — explicit parameters, overrides config defaults for anything supplied
-    #
-    # Both return a MapResult with .voronoi, .cells, and .zone_counts.
+    # Returns a MapResult with .voronoi, .cells, and .zone_counts.
     # --------------------------------------------------------------------------
 
     print("\n=== Map Generation ===")
 
-    result = MapGenerator.from_config(preset='mixed_battlefield')
+    # Build map with terrain + rivers.
+    # MapConfig gives explicit control over all pipeline stages.
+    # num_rivers=2 triggers Stage 3 (RiverGenerator) after biome assignment.
+    map_defaults = cfg['map']['defaults']
+    biome = BiomePresets.mixed_battlefield(seed=map_defaults['seed'])
+    config = MapConfig(
+        width=map_defaults['width'],
+        height=map_defaults['height'],
+        min_distance=map_defaults['min_distance'],
+        biome_config=biome,
+        num_rivers=4,
+    )
+    result = MapGenerator(config).generate_map()
 
     cells = result.cells
     print(f"Generated {len(cells)} cells")
@@ -86,9 +94,12 @@ if __name__ == "__main__":
         print(f"  {zone}: {count} cells ({count / len(cells) * 100:.1f}%)")
 
     terrain_counts = Counter(cell.terrain_type for cell in cells)
-    print(f"\nTerrain distribution:")
+    print(f"\nTerrain distribution (post river generation):")
     for terrain, count in sorted(terrain_counts.items()):
         print(f"  {terrain}: {count} cells ({count / len(cells) * 100:.1f}%)")
+
+    river_cells = [c for c in cells if c.terrain_type == 'river']
+    print(f"\nRivers: {len(river_cells)} cells marked as river")
 
     elevations = [cell.elevation for cell in cells]
     print(f"\nElevation: min={min(elevations):.2f}  max={max(elevations):.2f}  "
@@ -109,17 +120,17 @@ if __name__ == "__main__":
     # MapViewer wraps a MapResult and provides three views:
     #   elevation    — continuous heatmap
     #   terrain_type — categorical, colours from config/visualization.yaml
+    #                  rivers drawn in a second pass (on top) for visibility
     #   cover_value  — continuous heatmap
     #
-    # viewer.view()            — open all three views as separate figures
-    # viewer.view('elevation') — open a single named view
+    # viewer.view()            — open all three views then block until closed
+    # viewer.view('elevation') — open a single named view and block
+    # viewer.show()            — single interactive figure with ←/→ to cycle views
     # --------------------------------------------------------------------------
 
-    print("\nOpening map views...")
+    print("\nOpening map views (close windows to continue)...")
     viewer = MapViewer(result)
-    viewer.render_view('elevation')
-    viewer.render_view('terrain_type')
-    viewer.render_view('cover_value')
+    viewer.view()  # renders all three figures and blocks until they are closed
 
     # --------------------------------------------------------------------------
     # Battle simulation

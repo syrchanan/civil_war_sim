@@ -17,6 +17,7 @@ from imperial_generals.map.Cell import Cell
 from imperial_generals.map.voronoi import PoissonDiscSampler, VoronoiMap
 from imperial_generals.map.elevation import ElevationConfig, ElevationGenerator
 from imperial_generals.map.biome import BiomeMapConfig, BiomeGenerator, BiomePresets
+from imperial_generals.map.river import RiverGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -264,8 +265,21 @@ class MapGenerator:
             elev_gen.apply_to_cells(cells)
             logger.info("Stage 2 complete: elevation applied.")
 
-        # --- Stages 3+ (future terrain features) ---
-        # self.config.num_rivers, .num_lakes, .num_roads are available here.
+        # --- Stage 3: Rivers ---
+        if self.config.num_rivers > 0:
+            # Derive seed from terrain config; fall back to a fixed default.
+            if self.config.biome_config is not None:
+                _seed = self.config.biome_config.seed
+            elif self.config.elevation_config is not None:
+                _seed = self.config.elevation_config.seed
+            else:
+                _seed = 12345
+            river_gen = RiverGenerator(cells, self.config.width, self.config.height)
+            river_gen.apply_to_cells(self.config.num_rivers, _seed)
+            logger.info(f"Stage 3 complete: {self.config.num_rivers} river(s) requested.")
+
+        # --- Stages 4+ (future terrain features) ---
+        # self.config.num_lakes, .num_roads are available here.
 
         return MapResult(voronoi=voronoi, cells=cells, zone_counts=zone_counts)
 

@@ -204,6 +204,27 @@ class TestMapViewerRendering:
             cell.set_elevation(5.0)
         viewer.render_view('elevation')
 
+    def test_render_terrain_type_with_river_cells_no_exception(self):
+        """River cells trigger the second-pass overlay in the terrain_type view."""
+        from imperial_generals.map import MapViewer, MapConfig, MapGenerator, BiomePresets
+        biome = BiomePresets.mixed_battlefield(seed=42)
+        config = MapConfig(width=60, height=60, min_distance=12,
+                           biome_config=biome, num_rivers=1)
+        result = MapGenerator(config).generate_map()
+        # Only run the test if rivers were actually generated on this small map
+        river_cells = [c for c in result.cells if c.terrain_type == 'river']
+        if river_cells:
+            viewer = MapViewer(result)
+            viewer.render_view('terrain_type')  # must not raise
+
+    def test_render_terrain_type_river_cells_drawn_on_top(self, small_result):
+        """Manually mark a cell as river and verify terrain_type renders cleanly."""
+        from imperial_generals.map import MapViewer
+        # Mark a cell as river to exercise the second-pass path
+        small_result.cells[0].set_terrain_type('river')
+        viewer = MapViewer(small_result)
+        viewer.render_view('terrain_type')  # must not raise
+
     def test_view_all_no_exception(self, small_result):
         from imperial_generals.map import MapViewer
         viewer = MapViewer(small_result)

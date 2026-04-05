@@ -2,6 +2,7 @@
 
 Tracks progress against SPEC.md. Items are in implementation order.
 Python TDD first; TypeScript port follows after Python is stable.
+Update `main.py` with 'happy-path' implementation of all features once complete.
 
 ---
 
@@ -13,17 +14,11 @@ Python TDD first; TypeScript port follows after Python is stable.
 - [x] **Smoother elevation** — Implemented zone blending (`blend_zones=True` was configured but never executed). `BiomeGenerator._compute_blended_elevation()` linearly interpolates elevation across zone boundaries. `blend_distance` raised to 15.0. Terrain preset scales tuned (flat 150, hills 70, forest 75, coastal 85). 100% test coverage.
 - [x] **Cliff biome** — New `cliff` terrain preset (scale=25, elevation_range=200, exponent=2.5) and `cliffs_and_valleys` biome preset. `TerrainPresets.cliff()` / `BiomePresets.cliffs_and_valleys()` factory methods. `no_blend: bool` flag on `TerrainZone` prevents boundary smoothing on cliff edges. Cliff added to movement modifiers (0.3×) and visualization colours. 100% test coverage.
 - [x] **Visualization colour fixes + view toggler** (SPEC §7) — `MapViewer` class in `map/viewer.py`: three views (elevation heatmap, terrain_type categorical, cover_value heatmap) toggled with ←/→ keyboard shortcuts. Terrain colours read from `visualization.yaml` — no red/purple. Fixed `VoronoiMap.visualize_cell_property()` to use config colours instead of `tab10`. All views share the same polygon geometry. Feature layer overlay deferred until rivers/lakes/roads/fences are generated. 100% test coverage.
+- [x] **River generation** (SPEC §1.2) — `map/river.py`, `RiverGenerator` class. Source-to-sink greedy downhill walk on cell adjacency graph (STRtree-accelerated neighbour map). Rivers terminate at map edge or merge into existing rivers. BFS fallback for degenerate stuck cases. `MapGenerator.generate_map()` Stage 3 wired up; seed derived from biome/elevation config. 100% test coverage, 62 tests.
 
 ---
 
 ## Up Next
-
-- [ ] **River generation** (SPEC §1.2)
-  - Source-to-sink: start at high-elevation cell, flow downhill to lake or map edge
-  - Count driven by `MapConfig.num_rivers`
-  - Rivers may merge; may cross roads; may not cross lakes
-  - Cells on river path → `terrain_type = 'river'`
-  - Stage 3 in `MapGenerator.generate_map()` pipeline
 
 - [ ] **Lake generation** (SPEC §1.2)
   - Clusters of contiguous cells preferring low-elevation areas

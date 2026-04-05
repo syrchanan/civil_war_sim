@@ -120,11 +120,22 @@ class MapViewer:
             cbar.ax.tick_params(labelsize=10)
 
         else:  # terrain_type
+            # First pass: all cells at base opacity
             for cell in cells:
                 color = self.get_terrain_color(cell.terrain_type)
                 x, y = cell.polygon.exterior.xy
-                ax.fill(x, y, alpha=0.7, edgecolor='black', linewidth=0.5,
-                        facecolor=color)
+                ax.fill(x, y, alpha=0.7, edgecolor='black', linewidth=0.3,
+                        facecolor=color, zorder=2)
+
+            # Second pass: terrain features (rivers, etc.) drawn on top so they
+            # are not visually swallowed by adjacent cell edges on dense maps.
+            _FEATURE_TYPES = {'river'}
+            for cell in cells:
+                if cell.terrain_type in _FEATURE_TYPES:
+                    color = self.get_terrain_color(cell.terrain_type)
+                    x, y = cell.polygon.exterior.xy
+                    ax.fill(x, y, alpha=1.0, edgecolor=color, linewidth=1.0,
+                            facecolor=color, zorder=3)
 
             # Build legend — one patch per unique terrain type
             seen = {}
