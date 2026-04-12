@@ -1,4 +1,4 @@
-from imperial_generals.utils import get_closest_morale_stat, get_combat_efficiency
+from imperial_generals.utils import get_closest_morale_stat, get_combat_efficiency, Position
 
 class Regiment:
     """
@@ -27,7 +27,7 @@ class Regiment:
         Combat law used.
     """
 
-    def __init__(self, size: int, stats: str, law: str) -> None:
+    def __init__(self, size: int, stats: str, law: str, position: Position | None = None) -> None:
         """
         Initialize a regiment.
 
@@ -49,6 +49,7 @@ class Regiment:
         self.coef: float = get_combat_efficiency(*self.stats)
         self.raw_morale: float = float(self.stats[1]*10)
         self.law: str = law
+        self.position: Position | None = position
 
     def __str__(self) -> str:
         return (
@@ -62,6 +63,43 @@ class Regiment:
         return (
             f"Regiment(size={self.size}, stats={self.stats}, law='{self.law}')"
         )
+
+    def deploy(self, position: Position) -> None:
+        """
+        Place or move the regiment to a new position on the battlefield.
+
+        Parameters
+        ----------
+        position : Position
+            The new battlefield position.
+
+        Raises
+        ------
+        TypeError
+            If position is not a Position instance.
+        """
+        if not isinstance(position, Position):
+            raise TypeError(f"position must be a Position instance, got {type(position).__name__}.")
+        self.position = position
+
+    def _require_positions(self, other: 'Regiment') -> None:
+        if self.position is None or other.position is None:
+            raise ValueError("Both regiments must have a position before calculating distance.")
+
+    def flat_distance_to(self, other: 'Regiment') -> float:
+        """Flat (x/y) distance to another regiment."""
+        self._require_positions(other)
+        return self.position.flat_distance_to(other.position)
+
+    def true_distance_to(self, other: 'Regiment') -> float:
+        """3D distance to another regiment, including elevation."""
+        self._require_positions(other)
+        return self.position.true_distance_to(other.position)
+
+    def elevation_difference_to(self, other: 'Regiment') -> float:
+        """Signed elevation difference to another regiment (positive means other is higher)."""
+        self._require_positions(other)
+        return self.position.elevation_difference_to(other.position)
 
     def update_size(self, new_size: int) -> None:
         """
@@ -117,6 +155,11 @@ class Regiment:
         
         # update stats & coef
         self.update_stats(f"{self.stats[0]}/{new_stat}/{self.stats[2]}/{self.stats[3]}")
+
+    @classmethod
+    def from_dict(cls, d: dict) -> 'Regiment':
+        position = Position.from_dict(d['position']) if 'position' in d else None
+        return cls(size=d['size'], stats=d['stats'], law=d['law'], position=position)
 
 if __name__ == "__main__":
     regiment = Regiment(1000, "4/4/0/0", "ln")

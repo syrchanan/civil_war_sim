@@ -1,0 +1,18 @@
+# Valid subtypes per unit type.
+# To add or change subtypes, edit this file — no code changes needed.
+inf:
+  - line
+  - light
+  - marine
+  - pikes
+  - irregulars
+
+cav:
+  - light
+  - heavy
+  - dragoons
+
+art:
+  - battery
+  - horse battery
+  - siege battery
