@@ -11,8 +11,9 @@ The Lanchester equations are a set of differential equations that describe the d
 ## Features
 
 -   **Lanchester Equations**: Implements both Lanchester's Linear and Square Laws to model combat scenarios.
--   **Unit Types**: Leverages the Imperial Generals statistics for various unit types to determine combat effectiveness.
--   **Simulation**: Allows users to simulate battles between two forces with multiple phases (ambush, frontal confrontation).
+-   **Unit Types**: Infantry (`InfantryRegiment`), Cavalry (`CavalryRegiment`), and Artillery (`ArtilleryBattery`) unit classes, each with subtype validation and `from_dict` deserialization.
+-   **Battlefield Position**: `Position` class tracking x/y/z coordinates, cover, and terrain type, with flat, true (3D), and elevation distance methods. Regiments can be deployed and queried for distance.
+-   **Simulation**: Allows users to simulate battles between two forces with dynamic morale tracking and Markov chain time-stepping.
 
 ## Effectiveness Coefficients
 
@@ -126,7 +127,7 @@ This repository is a monorepo containing:
 - A TypeScript port designed for browser-use and future web UIs
 - Shared language-neutral golden test files for test consistency across both ports
 
-_Last updated: 2025-12-31_
+_Last updated: 2026-04-12_
 
 ---
 

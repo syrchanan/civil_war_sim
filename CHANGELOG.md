@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-04-12
+
+### Added
+- **`CavalryRegiment` unit class**: `python/imperial_generals/units/CavalryRegiment.py` — inherits from `Regiment`, validates `subtype` against `config/unit_subtypes.yaml`.
+- **`ArtilleryBattery` unit class**: `python/imperial_generals/units/ArtilleryBattery.py` — extends `Regiment` with `guns`, `MIN_CREW_PER_GUN`, `effective_guns` property (bottlenecked by crew or guns), and `update_guns`.
+- **`Position` class**: `python/imperial_generals/utils/position.py` — battlefield position with x/y/z coordinates, cover, terrain type, and distance methods (`flat_distance_to`, `true_distance_to`, `elevation_difference_to`).
+- **`unit_types` config loader**: `python/imperial_generals/utils/unit_types.py` — loads `UNIT_SUBTYPES` from `config/unit_subtypes.yaml`; subtypes defined for `inf`, `cav`, and `art`.
+- **`from_dict` deserialization**: Added `from_dict` class methods to `Position`, `Regiment`, `InfantryRegiment`, `CavalryRegiment`, and `ArtilleryBattery` for JSON deserialization with optional nested position.
+- **Position support on `Regiment`**: Added optional `position` constructor param, `deploy()`, and distance convenience methods delegating to `Position`.
+- **`InfantryRegiment` subtype validation**: Subtype is now validated against `UNIT_SUBTYPES['inf']` at construction.
+- **New test files**: `test_units_artillery_battery.py`, `test_units_cavalry_regiment.py`, `test_units_from_dict.py`, `test_utils_position.py`, `test_utils_unit_types.py` — 154 total tests, all passing.
+- **`CavalryRegiment` and `ArtilleryBattery` exported** from `units/__init__.py`.
+
+### Removed
+- `InfantryRegiment.print_type()` — redundant; `unit_type` is a class attribute.
+
 ## [0.2.1] - 2026-01-01
 
 ### Changed

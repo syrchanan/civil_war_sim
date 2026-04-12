@@ -5,17 +5,14 @@
     "inputs": {
       "size": 1200,
       "stats": "3/4/2/1",
-      "law": "ln"
+      "law": "ln",
+      "subtype": "line"
     },
     "expected": {
       "unit_type": "inf",
+      "subtype": "line",
       "size": 1200,
-      "stats": [
-        3,
-        4,
-        2,
-        1
-      ],
+      "stats": [3, 4, 2, 1],
       "law": "ln"
     }
   },
@@ -25,7 +22,8 @@
     "inputs": {
       "size": 1000,
       "stats": "4/4/0/0",
-      "law": "ln"
+      "law": "ln",
+      "subtype": "light"
     },
     "actions": [
       {
@@ -35,12 +33,7 @@
     ],
     "expected": {
       "size": 800,
-      "stats": [
-        4,
-        4,
-        0,
-        0
-      ]
+      "stats": [4, 4, 0, 0]
     }
   },
   {
@@ -49,7 +42,8 @@
     "inputs": {
       "size": 1000,
       "stats": "4/4/0/0",
-      "law": "ln"
+      "law": "ln",
+      "subtype": "line"
     },
     "actions": [
       {
@@ -58,12 +52,7 @@
       }
     ],
     "expected": {
-      "stats": [
-        5,
-        6,
-        1,
-        0
-      ]
+      "stats": [5, 6, 1, 0]
     }
   },
   {
@@ -72,7 +61,8 @@
     "inputs": {
       "size": 1000,
       "stats": "4/4/0/0",
-      "law": "ln"
+      "law": "ln",
+      "subtype": "irregulars"
     },
     "actions": [
       {
@@ -81,12 +71,7 @@
       }
     ],
     "expected": {
-      "stats": [
-        4,
-        5,
-        0,
-        0
-      ],
+      "stats": [4, 5, 0, 0],
       "raw_morale": 55.0
     }
   }
