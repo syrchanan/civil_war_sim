@@ -4,7 +4,6 @@ from .biome import TerrainZone, BiomeMapConfig, BiomePresets, BiomeGenerator
 from .voronoi import PoissonDiscSampler, VoronoiMap
 from .generator import MapConfig, MapResult, MapGenerator
 from .river import RiverGenerator
-from .viewer import MapViewer
 
 __all__ = [
     "Cell",
@@ -21,5 +20,4 @@ __all__ = [
     "MapResult",
     "MapGenerator",
     "RiverGenerator",
-    "MapViewer",
 ]
