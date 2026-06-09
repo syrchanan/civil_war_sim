@@ -43,6 +43,6 @@ class Army:
 
 if __name__ == "__main__":  # pragma: no cover
     army = Army("Union")
-    army.add_regiment("69th PVI", Regiment(1500, '10/10/2/0', 'sq'))
+    army.add_regiment("69th PVI", Regiment(1500, '10/10/2/0'))
     print(army)
     print(repr(army))

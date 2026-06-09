@@ -93,6 +93,10 @@ def test_position_inequality_terrain():
     b = Position(x=1.0, y=2.0, z=3.0, cover=0.5, terrain_type='forest')
     assert a != b
 
+def test_position_eq_non_position_returns_not_implemented():
+    p = Position(x=0.0, y=0.0, z=0.0, cover=0.0, terrain_type='open')
+    assert p.__eq__("not a position") is NotImplemented
+
 
 # ---------------------------------------------------------------------------
 # Distance calculations
@@ -162,3 +166,52 @@ def test_elevation_difference_antisymmetric():
     a = Position(x=0.0, y=0.0, z=10.0, cover=0.0, terrain_type='open')
     b = Position(x=0.0, y=0.0, z=25.0, cover=0.0, terrain_type='open')
     assert a.elevation_difference_to(b) == pytest.approx(-b.elevation_difference_to(a))
+
+
+# ---------------------------------------------------------------------------
+# VALID_TERRAIN_TYPES — loaded from config
+# ---------------------------------------------------------------------------
+
+def test_valid_terrain_types_from_config():
+    from imperial_generals.config import get_config
+    expected = frozenset(get_config()['movement']['terrain_modifiers'].keys())
+    assert Position.VALID_TERRAIN_TYPES == expected
+
+def test_valid_terrain_types_contains_map_types():
+    for t in ('open', 'forest', 'hill', 'rough', 'river', 'lake', 'cliff'):
+        assert t in Position.VALID_TERRAIN_TYPES
+
+def test_old_hardcoded_types_no_longer_valid():
+    # 'swamp', 'urban', 'water' were in the old hardcoded set but not in map config
+    for t in ('swamp', 'urban', 'water'):
+        assert t not in Position.VALID_TERRAIN_TYPES
+
+
+# ---------------------------------------------------------------------------
+# Position.from_cell
+# ---------------------------------------------------------------------------
+
+def _make_cell():
+    from shapely.geometry import box
+    from imperial_generals.map.Cell import Cell
+    poly = box(0, 0, 10, 10)
+    c = Cell(index=0, center=(5.0, 5.0), polygon=poly,
+             elevation=42.0, terrain_type='forest', cover_value=0.7)
+    return c
+
+def test_position_from_cell_coordinates():
+    p = Position.from_cell(_make_cell())
+    assert p.x == 5.0
+    assert p.y == 5.0
+
+def test_position_from_cell_elevation():
+    p = Position.from_cell(_make_cell())
+    assert p.z == 42.0
+
+def test_position_from_cell_terrain_and_cover():
+    p = Position.from_cell(_make_cell())
+    assert p.terrain_type == 'forest'
+    assert p.cover == 0.7
+
+def test_position_from_cell_returns_position():
+    assert isinstance(Position.from_cell(_make_cell()), Position)

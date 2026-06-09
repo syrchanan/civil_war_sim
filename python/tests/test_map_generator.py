@@ -144,3 +144,32 @@ def test_from_config_with_preset_override():
                                       width=50, height=50, min_distance=15)
     assert isinstance(result, MapResult)
     assert len(result.zone_counts) > 0
+
+
+# =============================================================================
+# MapResult.get_cell_at_position / is_in_bounds
+# =============================================================================
+
+def _small_result():
+    return MapGenerator.from_preset('open_plains', seed=42,
+                                    width=100, height=100, min_distance=15)
+
+def test_map_result_get_cell_at_position_returns_cell():
+    from imperial_generals.map.Cell import Cell
+    result = _small_result()
+    # Use a known cell center to guarantee a hit
+    cx, cy = result.cells[0].center
+    found = result.get_cell_at_position(cx, cy)
+    assert isinstance(found, Cell)
+
+def test_map_result_get_cell_at_position_miss_returns_none():
+    result = _small_result()
+    assert result.get_cell_at_position(-999.0, -999.0) is None
+
+def test_map_result_is_in_bounds_true():
+    result = _small_result()
+    assert result.is_in_bounds(50.0, 50.0) is True
+
+def test_map_result_is_in_bounds_false():
+    result = _small_result()
+    assert result.is_in_bounds(200.0, 200.0) is False

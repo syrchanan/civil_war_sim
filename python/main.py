@@ -138,8 +138,8 @@ if __name__ == "__main__":
 
     print("\n=== Battle Simulation ===")
 
-    regA = InfantryRegiment(4000, '4/4/0/0', 'sq')
-    regB = InfantryRegiment(3500, '4/6/1/0', 'sq')
+    regA = InfantryRegiment(4000, '4/4/0/0', subtype='line')
+    regB = InfantryRegiment(3500, '4/6/1/0', subtype='line')
 
     print(f"\n{regA}")
     print(f"{regB}")

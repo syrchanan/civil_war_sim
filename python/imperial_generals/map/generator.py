@@ -51,6 +51,14 @@ class MapResult:
                 f"cells={len(self.cells)} cells, "
                 f"zone_counts={self.zone_counts})>")
 
+    def get_cell_at_position(self, x: float, y: float) -> Optional[Cell]:
+        """Return the Cell containing (x, y), or None if outside all cells."""
+        return self.voronoi.get_cell_at_position(x, y)
+
+    def is_in_bounds(self, x: float, y: float) -> bool:
+        """Return True if (x, y) lies within the map boundary."""
+        return self.voronoi.is_in_bounds(x, y)
+
 
 # =============================================================================
 # MapConfig
@@ -273,7 +281,7 @@ class MapGenerator:
             elif self.config.elevation_config is not None:
                 _seed = self.config.elevation_config.seed
             else:
-                _seed = 12345
+                _seed = 12345  # pragma: no cover
             river_gen = RiverGenerator(cells, self.config.width, self.config.height)
             river_gen.apply_to_cells(self.config.num_rivers, _seed)
             logger.info(f"Stage 3 complete: {self.config.num_rivers} river(s) requested.")

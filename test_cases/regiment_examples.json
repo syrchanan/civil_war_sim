@@ -1,34 +1,32 @@
 [
   {
-    "description": "Valid regiment, law ln",
+    "description": "Valid regiment, melee-only unit",
     "function": "Regiment",
-    "inputs": {"size": 3000, "stats": "4/5/2/1", "law": "ln"},
+    "inputs": {"size": 3000, "stats": "4/5/2/1"},
     "expected": {
       "size": 3000,
-      "stats": [4, 5, 2, 1],
-      "law": "ln"
+      "stats": [4, 5, 2, 1]
     }
   },
   {
-    "description": "Valid regiment, law sq",
+    "description": "Valid regiment, ranged unit",
     "function": "Regiment",
-    "inputs": {"size": 1500, "stats": "2/3/1/0", "law": "sq"},
+    "inputs": {"size": 1500, "stats": "2/3/1/0"},
     "expected": {
       "size": 1500,
-      "stats": [2, 3, 1, 0],
-      "law": "sq"
+      "stats": [2, 3, 1, 0]
     }
-  },
-  {
-    "description": "Invalid law",
-    "function": "Regiment",
-    "inputs": {"size": 1000, "stats": "1/2/3/4", "law": "invalid"},
-    "shouldError": true
   },
   {
     "description": "Invalid stats format: too few",
     "function": "Regiment",
-    "inputs": {"size": 1000, "stats": "1/2/3", "law": "ln"},
+    "inputs": {"size": 1000, "stats": "1/2/3"},
+    "shouldError": true
+  },
+  {
+    "description": "Invalid stats format: non-integer",
+    "function": "Regiment",
+    "inputs": {"size": 1000, "stats": "a/b/c/d"},
     "shouldError": true
   }
 ]

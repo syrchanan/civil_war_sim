@@ -16,20 +16,25 @@ def load_infantry_golden_cases():
 
 def test_infantry_subtype_valid():
     for subtype in UNIT_SUBTYPES['inf']:
-        reg = InfantryRegiment(500, '4/4/0/0', 'ln', subtype=subtype)
+        reg = InfantryRegiment(500, '4/4/0/0', subtype=subtype)
         assert reg.subtype == subtype
 
 def test_infantry_subtype_in_str():
-    reg = InfantryRegiment(500, '4/4/0/0', 'ln', subtype='line')
+    reg = InfantryRegiment(500, '4/4/0/0', subtype='line')
     assert 'line' in str(reg)
 
 def test_infantry_invalid_subtype_raises():
     with pytest.raises(ValueError, match="subtype"):
-        InfantryRegiment(500, '4/4/0/0', 'ln', subtype='cuirassier')
+        InfantryRegiment(500, '4/4/0/0', subtype='cuirassier')
 
 def test_infantry_missing_subtype_raises():
     with pytest.raises(TypeError):
-        InfantryRegiment(500, '4/4/0/0', 'ln')
+        InfantryRegiment(500, '4/4/0/0')
+
+def test_infantry_repr_contains_type_and_subtype():
+    reg = InfantryRegiment(500, '4/4/0/0', subtype='line')
+    assert 'inf' in repr(reg)
+    assert 'line' in repr(reg)
 
 
 # ---------------------------------------------------------------------------

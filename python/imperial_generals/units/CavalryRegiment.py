@@ -31,4 +31,4 @@ class CavalryRegiment(Regiment):
     def from_dict(cls, d: dict) -> 'CavalryRegiment':
         from imperial_generals.utils import Position
         position = Position.from_dict(d['position']) if 'position' in d else None
-        return cls(size=d['size'], stats=d['stats'], law=d['law'], subtype=d['subtype'], position=position)
+        return cls(size=d['size'], stats=d['stats'], subtype=d['subtype'], position=position)

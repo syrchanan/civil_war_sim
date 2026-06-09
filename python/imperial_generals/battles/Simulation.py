@@ -18,7 +18,6 @@ class Simulation:
 
     Attributes:
         forces (Tuple[Regiment, Regiment]): The two opposing Regiment instances.
-        rate_funcs (Tuple[callable, callable]): Tuple of rate functions for each regiment (set after build_lanch_diffeq).
         casualties (dict[str, tuple[int, int] | np.ndarray]):
             Tracks initial sizes, current losses, and morale for both regiments.
             Keys:
@@ -37,7 +36,6 @@ class Simulation:
 
         Sets:
             self.forces: Tuple[Regiment, Regiment]
-            self.rate_funcs: Tuple[callable, callable] | None
             self.casualties: dict[str, list[int, int] | np.ndarray]
                 - 'initial_size': list[int, int]
                 - 'losses': np.ndarray
@@ -48,7 +46,6 @@ class Simulation:
             raise ValueError("forces must be a tuple of two Regiment instances.")
 
         self.forces: Tuple[Regiment, Regiment] = forces
-        self.rate_funcs: Tuple[callable, callable] | None = None
 
         reg1, reg2 = forces
         self.casualties: dict[str, list[int, int] | np.ndarray] = {
@@ -71,7 +68,6 @@ class Simulation:
         losses = self.casualties['losses']
         return (
             f"Simulation(forces={[str(f) for f in self.forces]}, "
-            f"rate_funcs={'set' if self.rate_funcs else 'unset'}, "
             f"losses={losses.tolist()})"
         )
 
@@ -79,64 +75,32 @@ class Simulation:
         losses = self.casualties['losses']
         return (
             f"Simulation(forces={self.forces!r}, "
-            f"rate_funcs={self.rate_funcs!r}, "
             f"losses={losses.tolist()})"
         )
 
-    # Internal method to create Lanchester differential equations
     @staticmethod
-    def _lanchester_diffeq(
-        regiment: Regiment, opponent: Regiment
-    ) -> callable:
+    def _compute_rate(regiment: Regiment, sizes: list, coef: list, front_sizes: list, idx: int) -> float:
         """
-        Create a rate function for a Regiment according to its Lanchester law.
+        Compute the casualty rate for the regiment at position idx.
+
+        Dispatches to the appropriate Lanchester law based on regiment.effective_law:
+          'ln' (melee/linear): -coef_B * front_A * front_B — both engaged fronts drive the rate.
+          'sq' (ranged/square): -coef_B * B_total — all opponents fire independently.
 
         Args:
-            regiment (Regiment): The Regiment for which to compute the rate.
-            opponent (Regiment): The opposing Regiment.
+            regiment: The regiment whose casualties are being computed.
+            sizes: Current [size_0, size_1].
+            coef: Combat efficiency [coef_0, coef_1].
+            front_sizes: Effective front [min(size,front_size)_0, min(size,front_size)_1].
+            idx: Index of this regiment (0 or 1).
 
         Returns:
-            callable: A function computing the rate of change.
-
-        Raises:
-            ValueError: If the Regiment's law type is not recognized.
+            float: Rate of change (negative = casualties).
         """
-        logging.debug(f"Building Lanchester diffeq for {regiment} vs {opponent}")
-        if regiment.law == 'ln':
-            # TODO - fix equation, should be linear, so -coef * size of battle front (engaged units). 
-            # will need to add front-size as attribute to Regiment to scale based on how many units are engaged
-            return lambda sizes, coef, idx: -coef[1 - idx] * sizes[0] * sizes[1 - idx]
-        elif regiment.law == 'sq':
-            return lambda sizes, coef, idx: -coef[1 - idx] * sizes[1 - idx]
+        if regiment.effective_law == 'ln':
+            return -coef[1 - idx] * front_sizes[idx] * front_sizes[1 - idx]
         else:
-            raise ValueError(f"Unknown Lanchester law: {regiment.law}")
-
-    # Public method to build Lanchester differential equations for the simulation
-    def build_lanch_diffeq(self) -> None:
-        """
-        Build and store Lanchester differential equation rate functions for the two regiments.
-
-        Raises:
-            ValueError: If forces are not a tuple of two Regiment instances or missing required attributes.
-        """
-        logging.info("Building Lanchester differential equations for simulation.")
-        if (  # pragma: no cover
-            not isinstance(self.forces, tuple)
-            or len(self.forces) != 2
-            or not all(isinstance(r, Regiment) for r in self.forces)
-        ):
-            raise ValueError("forces must be a tuple of two Regiment instances.")  # pragma: no cover
-
-        reg1, reg2 = self.forces
-
-        for reg in (reg1, reg2):
-            if not hasattr(reg, "law") or not hasattr(reg, "coef") or not hasattr(reg, "size"):  # pragma: no cover
-                raise ValueError("Each Regiment must have 'law', 'coef', and 'size' attributes.")  # pragma: no cover
-
-        self.rate_funcs = (
-            Simulation._lanchester_diffeq(reg1, reg2),
-            Simulation._lanchester_diffeq(reg2, reg1)
-        )
+            return -coef[1 - idx] * sizes[1 - idx]
 
     # Private method to update internal casualties value for dynamic morale tracking
     def update_morale_losses(self, delta_t: float) -> None:
@@ -201,9 +165,6 @@ class Simulation:
 
     def run_simulation(self, time: int) -> None:
 
-        if self.rate_funcs is None:
-            self.build_lanch_diffeq()
-
         # deconstruct forces
         reg1, reg2 = self.forces
 
@@ -214,11 +175,12 @@ class Simulation:
 
             sizes = [reg1.size, reg2.size]
             coef = [reg1.coef, reg2.coef]
+            front_sizes = [min(reg1.size, reg1.front_size), min(reg2.size, reg2.front_size)]
 
-            logging.debug(f"At time {t:.2f}, sizes: {sizes}, coefs: {coef}, morale: {self.casualties['morale'].tolist()}, stats: {reg1.stats}, {reg2.stats}")
+            logging.debug(f"At time {t:.2f}, sizes: {sizes}, fronts: {front_sizes}, coefs: {coef}, morale: {self.casualties['morale'].tolist()}, stats: {reg1.stats}, {reg2.stats}")
 
             # returns casualties on each side
-            full_casualties = [self.rate_funcs[i](sizes, coef, i) for i in (0, 1)]
+            full_casualties = [Simulation._compute_rate(self.forces[i], sizes, coef, front_sizes, i) for i in (0, 1)]
             
             # get amount of casualties
             casualty = [abs(d) for d in full_casualties]
@@ -227,10 +189,8 @@ class Simulation:
             dir = [1 if d >= 0 else -1 for d in full_casualties]
 
             # `exponential` here introduces the randomness and continuous-time aspect to the Markov chain by sampling the time to the next event from an exponential distribution, where the rate of that distribution is determined by the current casualty rates calculated from the Lanchester equations -- allowing for the simulation to model the inherently unpredictable nature of combat
-            clocks = [np.random.exponential(scale=1/r) for r in casualty]
-
-            # replace any NA in clocks with infinity
-            clocks = [c if c == c else float('inf') for c in clocks]
+            # rate=0 means this side cannot inflict casualties (e.g. melee-only unit at range)
+            clocks = [np.random.exponential(scale=1/r) if r > 0 else float('inf') for r in casualty]
 
             # increment time by the minimum clock
             t += min(clocks)
@@ -267,7 +227,7 @@ class Simulation:
             self.sim_output = pd.concat([self.sim_output, pd.DataFrame([new_row])], ignore_index=True)
 
             # short circuit if either side is wiped out
-            if np.any(np.array(sizes) == 0) or np.any(self.casualties['morale'] <= 10):
+            if np.any(np.array(sizes) == 0) or np.any(self.casualties['morale'] <= get_config()['morale']['min_raw']):
                 if np.any(np.array(sizes) == 0):
                     logging.info(f"Simulation ended at time {t:.2f} due to a regiment being wiped out. Final sizes: {sizes}")
                 else:  # pragma: no cover
@@ -275,8 +235,8 @@ class Simulation:
                 break
 
 if __name__ == "__main__":  # pragma: no cover
-    reg1 = Regiment(4000, '4/4/0/0', 'sq')
-    reg2 = Regiment(3500, '4/6/1/0', 'sq')
+    reg1 = Regiment(4000, '4/4/0/0')
+    reg2 = Regiment(3500, '4/6/1/0')
 
     sim = Simulation((reg1, reg2))
     sim.run_simulation(time=1)

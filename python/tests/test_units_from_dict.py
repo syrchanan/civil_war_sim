@@ -41,27 +41,22 @@ def test_position_from_dict_missing_key_raises():
 # ---------------------------------------------------------------------------
 
 def test_regiment_from_dict_basic():
-    d = {'size': 500, 'stats': '4/4/0/0', 'law': 'ln'}
+    d = {'size': 500, 'stats': '4/4/0/0'}
     reg = Regiment.from_dict(d)
     assert reg.size == 500
     assert reg.stats == (4, 4, 0, 0)
-    assert reg.law == 'ln'
     assert reg.position is None
 
 def test_regiment_from_dict_with_position():
     d = {
-        'size': 500, 'stats': '4/4/0/0', 'law': 'ln',
+        'size': 500, 'stats': '4/4/0/0',
         'position': {'x': 1.0, 'y': 2.0, 'z': 3.0, 'cover': 0.1, 'terrain_type': 'hill'},
     }
     reg = Regiment.from_dict(d)
     assert reg.position == Position(x=1.0, y=2.0, z=3.0, cover=0.1, terrain_type='hill')
 
-def test_regiment_from_dict_invalid_law_raises():
-    with pytest.raises(ValueError):
-        Regiment.from_dict({'size': 500, 'stats': '4/4/0/0', 'law': 'xx'})
-
 def test_regiment_from_dict_returns_regiment_instance():
-    reg = Regiment.from_dict({'size': 100, 'stats': '3/3/0/0', 'law': 'sq'})
+    reg = Regiment.from_dict({'size': 100, 'stats': '3/3/0/0'})
     assert isinstance(reg, Regiment)
 
 
@@ -70,7 +65,7 @@ def test_regiment_from_dict_returns_regiment_instance():
 # ---------------------------------------------------------------------------
 
 def test_infantry_from_dict_basic():
-    d = {'size': 800, 'stats': '4/5/1/0', 'law': 'ln', 'subtype': 'line'}
+    d = {'size': 800, 'stats': '4/5/1/0', 'subtype': 'line'}
     reg = InfantryRegiment.from_dict(d)
     assert reg.size == 800
     assert reg.subtype == 'line'
@@ -79,7 +74,7 @@ def test_infantry_from_dict_basic():
 
 def test_infantry_from_dict_with_position():
     d = {
-        'size': 800, 'stats': '4/5/1/0', 'law': 'ln', 'subtype': 'light',
+        'size': 800, 'stats': '4/5/1/0', 'subtype': 'light',
         'position': {'x': 5.0, 'y': 5.0, 'z': 0.0, 'cover': 0.0, 'terrain_type': 'open'},
     }
     reg = InfantryRegiment.from_dict(d)
@@ -87,10 +82,10 @@ def test_infantry_from_dict_with_position():
 
 def test_infantry_from_dict_invalid_subtype_raises():
     with pytest.raises(ValueError, match="subtype"):
-        InfantryRegiment.from_dict({'size': 500, 'stats': '4/4/0/0', 'law': 'ln', 'subtype': 'dragoons'})
+        InfantryRegiment.from_dict({'size': 500, 'stats': '4/4/0/0', 'subtype': 'dragoons'})
 
 def test_infantry_from_dict_returns_infantry_instance():
-    reg = InfantryRegiment.from_dict({'size': 500, 'stats': '4/4/0/0', 'law': 'ln', 'subtype': 'marine'})
+    reg = InfantryRegiment.from_dict({'size': 500, 'stats': '4/4/0/0', 'subtype': 'marine'})
     assert isinstance(reg, InfantryRegiment)
 
 
@@ -99,7 +94,7 @@ def test_infantry_from_dict_returns_infantry_instance():
 # ---------------------------------------------------------------------------
 
 def test_cavalry_from_dict_basic():
-    d = {'size': 400, 'stats': '5/5/0/1', 'law': 'ln', 'subtype': 'light'}
+    d = {'size': 400, 'stats': '5/5/0/1', 'subtype': 'light'}
     reg = CavalryRegiment.from_dict(d)
     assert reg.size == 400
     assert reg.subtype == 'light'
@@ -108,7 +103,7 @@ def test_cavalry_from_dict_basic():
 
 def test_cavalry_from_dict_with_position():
     d = {
-        'size': 300, 'stats': '6/6/0/2', 'law': 'sq', 'subtype': 'heavy',
+        'size': 300, 'stats': '6/6/0/2', 'subtype': 'heavy',
         'position': {'x': 10.0, 'y': 0.0, 'z': 5.0, 'cover': 0.2, 'terrain_type': 'open'},
     }
     reg = CavalryRegiment.from_dict(d)
@@ -116,10 +111,10 @@ def test_cavalry_from_dict_with_position():
 
 def test_cavalry_from_dict_invalid_subtype_raises():
     with pytest.raises(ValueError, match="subtype"):
-        CavalryRegiment.from_dict({'size': 400, 'stats': '5/5/0/0', 'law': 'ln', 'subtype': 'line'})
+        CavalryRegiment.from_dict({'size': 400, 'stats': '5/5/0/0', 'subtype': 'line'})
 
 def test_cavalry_from_dict_returns_cavalry_instance():
-    reg = CavalryRegiment.from_dict({'size': 400, 'stats': '5/5/0/0', 'law': 'ln', 'subtype': 'dragoons'})
+    reg = CavalryRegiment.from_dict({'size': 400, 'stats': '5/5/0/0', 'subtype': 'dragoons'})
     assert isinstance(reg, CavalryRegiment)
 
 
@@ -128,7 +123,7 @@ def test_cavalry_from_dict_returns_cavalry_instance():
 # ---------------------------------------------------------------------------
 
 def test_artillery_from_dict_basic():
-    d = {'size': 56, 'stats': '4/4/0/0', 'law': 'ln', 'guns': 8, 'subtype': 'battery'}
+    d = {'size': 56, 'stats': '4/4/0/0', 'guns': 8, 'subtype': 'battery'}
     bat = ArtilleryBattery.from_dict(d)
     assert bat.size == 56
     assert bat.guns == 8
@@ -138,7 +133,7 @@ def test_artillery_from_dict_basic():
 
 def test_artillery_from_dict_with_position():
     d = {
-        'size': 56, 'stats': '4/4/0/0', 'law': 'ln', 'guns': 8, 'subtype': 'horse battery',
+        'size': 56, 'stats': '4/4/0/0', 'guns': 8, 'subtype': 'horse battery',
         'position': {'x': 3.0, 'y': 3.0, 'z': 0.0, 'cover': 0.0, 'terrain_type': 'open'},
     }
     bat = ArtilleryBattery.from_dict(d)
@@ -146,12 +141,12 @@ def test_artillery_from_dict_with_position():
 
 def test_artillery_from_dict_invalid_subtype_raises():
     with pytest.raises(ValueError, match="subtype"):
-        ArtilleryBattery.from_dict({'size': 56, 'stats': '4/4/0/0', 'law': 'ln', 'guns': 8, 'subtype': 'line'})
+        ArtilleryBattery.from_dict({'size': 56, 'stats': '4/4/0/0', 'guns': 8, 'subtype': 'line'})
 
 def test_artillery_from_dict_returns_artillery_instance():
-    bat = ArtilleryBattery.from_dict({'size': 56, 'stats': '4/4/0/0', 'law': 'ln', 'guns': 8, 'subtype': 'siege battery'})
+    bat = ArtilleryBattery.from_dict({'size': 56, 'stats': '4/4/0/0', 'guns': 8, 'subtype': 'siege battery'})
     assert isinstance(bat, ArtilleryBattery)
 
 def test_artillery_from_dict_effective_guns_correct():
-    bat = ArtilleryBattery.from_dict({'size': 35, 'stats': '4/4/0/0', 'law': 'ln', 'guns': 6, 'subtype': 'battery'})
+    bat = ArtilleryBattery.from_dict({'size': 35, 'stats': '4/4/0/0', 'guns': 6, 'subtype': 'battery'})
     assert bat.effective_guns == 5

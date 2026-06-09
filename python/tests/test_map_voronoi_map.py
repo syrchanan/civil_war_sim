@@ -168,3 +168,25 @@ def test_visualize_cell_property_varying_elevation(built_voronoi):
     for i, cell in enumerate(built_voronoi.get_cells()):
         cell.set_elevation(float(i))
     built_voronoi.visualize_cell_property('elevation')
+
+
+# =============================================================================
+# VoronoiMap.is_in_bounds
+# =============================================================================
+
+def test_is_in_bounds_center(built_voronoi):
+    assert built_voronoi.is_in_bounds(50.0, 50.0) is True
+
+def test_is_in_bounds_corners(built_voronoi):
+    assert built_voronoi.is_in_bounds(0.0, 0.0) is True
+    assert built_voronoi.is_in_bounds(100.0, 100.0) is True
+    assert built_voronoi.is_in_bounds(0.0, 100.0) is True
+    assert built_voronoi.is_in_bounds(100.0, 0.0) is True
+
+def test_is_in_bounds_outside_x(built_voronoi):
+    assert built_voronoi.is_in_bounds(-1.0, 50.0) is False
+    assert built_voronoi.is_in_bounds(101.0, 50.0) is False
+
+def test_is_in_bounds_outside_y(built_voronoi):
+    assert built_voronoi.is_in_bounds(50.0, -1.0) is False
+    assert built_voronoi.is_in_bounds(50.0, 101.0) is False

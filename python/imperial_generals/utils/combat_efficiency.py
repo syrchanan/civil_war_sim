@@ -73,11 +73,13 @@ def get_combat_efficiency(
     # ===========================================
 
     combat_cfg = get_config()['combat']
+    morale_cfg = get_config()['morale']
 
     weapon_multipliers      = combat_cfg['weapon_multipliers']
     xp_boost_per_level      = combat_cfg['xp_boost_per_level']
     morale_boost_per_level  = combat_cfg['morale_boost_per_level']
     melee_penalty_factor    = combat_cfg['melee_penalty_factor']
+    raw_scale_factor        = morale_cfg['raw_scale_factor']
 
     # ===========================================
     # MAX EFFECTIVENESS CALCULATION
@@ -94,7 +96,7 @@ def get_combat_efficiency(
     # ===========================================
 
     # Morale conversion - dynamic morale system tracks granular morale 10-100, which needs to be converted back to 1-10 for coefficient calcs
-    stat_morale_1_10 = round(stat_morale/10, ndigits=0) if stat_morale > 10 else stat_morale
+    stat_morale_1_10 = round(stat_morale / raw_scale_factor, ndigits=0) if stat_morale > raw_scale_factor else stat_morale
 
     # Input clamping to ensure within valid range
     stat_morale_1_10 = max(1, min(10, stat_morale_1_10))

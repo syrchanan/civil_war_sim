@@ -8,6 +8,8 @@ Update `main.py` with 'happy-path' implementation of all features once complete.
 
 ## Done
 
+- [x] **Unit classes — CavalryRegiment, ArtilleryBattery, Position** — `CavalryRegiment` and `ArtilleryBattery` added alongside existing `InfantryRegiment`, each with subtype validation against `config/unit_subtypes.yaml`. `Position` class tracks x/y/z, cover, terrain type; distance methods (`flat`, `true`, `elevation_diff`) on both `Position` and `Regiment`. All units support `from_dict` deserialization. `Regiment.raw_morale` uses config `raw_scale_factor`. All hardcoded morale/config values replaced with `get_config()` calls throughout. 100% test coverage.
+
 - [x] **Admin YAML config** — `config/simulation.yaml` holds all constants; `ConfigLoader` singleton; every class reads from config. 100% test coverage.
 - [x] **Map API cleanup + file reorganisation** — 9 files → 5 (`elevation.py`, `biome.py`, `voronoi.py`, `generator.py`, `Cell.py`). `MapResult` replaces raw dict return. `MapGenerator.from_preset()` / `from_config()` factory methods. `MapConfig` extended with `num_rivers`, `num_lakes`, `num_roads` stubs. 100% test coverage.
 - [x] **Split config into per-section files** — `simulation.yaml` → 7 dedicated files (`combat.yaml`, `morale.yaml`, `map.yaml`, `cover.yaml`, `weather.yaml`, `movement.yaml`, `visualization.yaml`). `ConfigLoader` now supports directory loading (merges all `.yaml` files). API unchanged. 100% test coverage.
@@ -71,6 +73,16 @@ Update `main.py` with 'happy-path' implementation of all features once complete.
   - `dz = attacker_elevation − target_elevation`
   - `elevation_modifier = clamp(dz / ELEVATION_SCALE, −0.15, +0.15)`
   - Additive with cover penalty
+
+- [ ] **Flanking / unequal front-size modifier** (melee combat)
+  - Current linear law: `rate_A = -coef_B × front_A × front_B` (symmetric product)
+  - When fronts are unequal, the excess men on the larger side should gain a flanking advantage
+    rather than simply inflating the product symmetrically
+  - Proposed approach: adjust `coef` at simulation time based on front-size ratio
+    - e.g. if `front_A > front_B`, A's effective `coef` vs B increases (flanking bonus)
+    - B's effective `coef` vs A decreases (flanked, compressed)
+  - Needs design: how aggressive the scaling is, whether it's a multiplier or additive modifier,
+    and how it interacts with the existing `melee_penalty_factor` in combat.yaml
 
 - [ ] **Compose full combat efficiency pipeline** (SPEC §3.6)
   ```

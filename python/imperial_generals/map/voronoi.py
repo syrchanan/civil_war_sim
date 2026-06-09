@@ -213,6 +213,10 @@ class VoronoiMap:
                 return cell
         return None
 
+    def is_in_bounds(self, x: float, y: float) -> bool:
+        """Return True if (x, y) lies within the map boundary [0, width] × [0, height]."""
+        return 0.0 <= x <= self.width and 0.0 <= y <= self.height
+
     # ------------------------------------------------------------------
     # Visualisation
     # ------------------------------------------------------------------

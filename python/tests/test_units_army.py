@@ -12,7 +12,7 @@ def load_army_golden_cases():
 
 
 def make_reg(obj):
-    return Regiment(obj["size"], obj["stats"], obj["law"])
+    return Regiment(obj["size"], obj["stats"])
 
 
 @pytest.mark.parametrize("case", load_army_golden_cases())
@@ -49,7 +49,7 @@ def test_add_regiment_invalid_type_raises():
 
 def test_army_str():
     army = Army("Confederate")
-    reg = Regiment(1000, '4/4/0/0', 'sq')
+    reg = Regiment(1000, '4/4/0/0')
     army.add_regiment("1st VA", reg)
     s = str(army)
     assert 'Confederate' in s

@@ -5,15 +5,13 @@
     "inputs": {
       "size": 1200,
       "stats": "3/4/2/1",
-      "law": "ln",
       "subtype": "line"
     },
     "expected": {
       "unit_type": "inf",
       "subtype": "line",
       "size": 1200,
-      "stats": [3, 4, 2, 1],
-      "law": "ln"
+      "stats": [3, 4, 2, 1]
     }
   },
   {
@@ -22,7 +20,6 @@
     "inputs": {
       "size": 1000,
       "stats": "4/4/0/0",
-      "law": "ln",
       "subtype": "light"
     },
     "actions": [
@@ -42,7 +39,6 @@
     "inputs": {
       "size": 1000,
       "stats": "4/4/0/0",
-      "law": "ln",
       "subtype": "line"
     },
     "actions": [
@@ -61,7 +57,6 @@
     "inputs": {
       "size": 1000,
       "stats": "4/4/0/0",
-      "law": "ln",
       "subtype": "irregulars"
     },
     "actions": [
