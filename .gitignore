@@ -41,8 +41,6 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
-docs/
 
 # translation temp files
 po/*~
@@ -69,3 +67,5 @@ __pycache__/
 # Claude Code ----
 
 .claude/
+
+# Custom ----

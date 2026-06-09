@@ -17,8 +17,6 @@ class ArtilleryBattery(Regiment):
         Number of crew members.
     stats : str
         Slash-separated string of four integers: experience/morale/weapon/melee.
-    law : str
-        Combat law, either 'ln' or 'sq'.
     guns : int
         Number of cannons.
     position : Position | None
@@ -28,7 +26,7 @@ class ArtilleryBattery(Regiment):
     unit_type: str = "art"
     MIN_CREW_PER_GUN: int = 7
 
-    def __init__(self, size: int, stats: str, law: str, guns: int, *, subtype: str, position: Position | None = None) -> None:
+    def __init__(self, size: int, stats: str, guns: int, *, subtype: str, position: Position | None = None) -> None:
         if not isinstance(guns, int):
             raise TypeError(f"guns must be an int, got {type(guns).__name__}.")
         if guns < 0:
@@ -38,7 +36,7 @@ class ArtilleryBattery(Regiment):
                 f"subtype '{subtype}' is not valid for artillery. "
                 f"Must be one of: {sorted(UNIT_SUBTYPES['art'])}."
             )
-        super().__init__(size, stats, law, position=position)
+        super().__init__(size, stats, position=position)
         self.guns: int = guns
         self.subtype: str = subtype
 
@@ -83,4 +81,4 @@ class ArtilleryBattery(Regiment):
     @classmethod
     def from_dict(cls, d: dict) -> 'ArtilleryBattery':
         position = Position.from_dict(d['position']) if 'position' in d else None
-        return cls(size=d['size'], stats=d['stats'], law=d['law'], guns=d['guns'], subtype=d['subtype'], position=position)
+        return cls(size=d['size'], stats=d['stats'], guns=d['guns'], subtype=d['subtype'], position=position)

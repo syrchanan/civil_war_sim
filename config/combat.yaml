@@ -1,0 +1,31 @@
+# =============================================================================
+# COMBAT
+# Coefficients used in the base combat efficiency calculation.
+# The final efficiency is a value in [0, 1] fed into the Lanchester equations.
+# =============================================================================
+combat:
+
+  # Kill-rate multiplier for each weapon type.
+  # Keys are the integer weapon codes used in regiment stats (stat_weapon).
+  #   -2 = Unarmed / Pikemen
+  #   -1 = Smoothbore matchlock
+  #    0 = Smoothbore musket  (standard baseline)
+  #    1 = Rifled musket
+  #    2 = Needler rifle
+  weapon_multipliers:
+    '-2': 0.2
+    '-1': 0.5
+    '0':  1.0
+    '1':  1.5
+    '2':  2.5
+
+  # Fractional boost to combat efficiency per XP level above 1 (scale 1–10).
+  # e.g. 0.04 means a level-5 unit gains +16% over a level-1 unit.
+  xp_boost_per_level: 0.04
+
+  # Fractional boost to combat efficiency per morale level above 1 (scale 1–10).
+  morale_boost_per_level: 0.02
+
+  # Multiplier applied to efficiency when a unit is in melee combat.
+  # < 1.0 means melee is less effective than ranged fire.
+  melee_penalty_factor: 0.70

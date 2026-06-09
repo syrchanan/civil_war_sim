@@ -1,0 +1,19 @@
+# =============================================================================
+# VISUALIZATION
+# Colour palette for map views. Hex colour codes (#RRGGBB).
+# Applied to terrain_type categorical map views.
+# Keep colours intuitive — forest = green, water = blue, etc.
+# =============================================================================
+visualization:
+  terrain_colors:
+    open: '#d4e8a0'       # Light yellow-green — farmland / open fields
+    forest: '#4a7c3f'     # Medium green — wooded areas
+    hill: '#c4a882'       # Tan / khaki — rolling hills
+    rough: '#8b6355'      # Dark earthy brown — badlands / broken ground
+    mountain: '#9e9e9e'   # Grey — rocky peaks
+    beach: '#f5e6a3'      # Sandy yellow — coastal beaches
+    sand: '#e8d88a'       # Darker sandy yellow — dunes
+    river: '#6b9eb8'      # Steel blue — river channels
+    lake: '#2c6e9e'       # Deep blue — lakes
+    road: '#7a6652'       # Dark brown — dirt roads
+    cliff: '#6b6b6b'      # Medium grey — rocky cliff face

@@ -1,4 +1,9 @@
 import math
+from imperial_generals.config import get_config
+
+
+def _load_valid_terrain_types() -> frozenset:
+    return frozenset(get_config()['movement']['terrain_modifiers'].keys())
 
 
 class Position:
@@ -16,20 +21,10 @@ class Position:
     cover : float
         Cover percentage, must be in [0.0, 1.0].
     terrain_type : str
-        Terrain type, must be one of VALID_TERRAIN_TYPES.
+        Terrain type, must be one of VALID_TERRAIN_TYPES (derived from movement config).
     """
 
-    # TODO: replace this hardcoded set with values derived from the biome/terrain
-    # system (TerrainZone / BiomePresets) once the map module is hooked up.
-    VALID_TERRAIN_TYPES: frozenset[str] = frozenset({
-        'open',
-        'forest',
-        'hill',
-        'swamp',
-        'road',
-        'urban',
-        'water',
-    })
+    VALID_TERRAIN_TYPES: frozenset = _load_valid_terrain_types()
 
     def __init__(self, x: float, y: float, z: float, cover: float, terrain_type: str) -> None:
         if not (0.0 <= cover <= 1.0):
@@ -91,4 +86,15 @@ class Position:
         return cls(
             x=d['x'], y=d['y'], z=d['z'],
             cover=d['cover'], terrain_type=d['terrain_type'],
+        )
+
+    @classmethod
+    def from_cell(cls, cell) -> 'Position':
+        """Construct a Position from a map Cell, using its center, elevation, terrain, and cover."""
+        return cls(
+            x=cell.center[0],
+            y=cell.center[1],
+            z=cell.elevation,
+            cover=cell.cover_value,
+            terrain_type=cell.terrain_type,
         )

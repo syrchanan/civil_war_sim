@@ -1,0 +1,19 @@
+# =============================================================================
+# COVER
+# Accuracy penalties applied against the attacker when the target has cover.
+# All penalties are additive and summed before subtracting from base accuracy.
+# Values are fractional (0.0 = no penalty, 1.0 = total suppression).
+# =============================================================================
+cover:
+
+  # Target is inside a forest cell.
+  forest_penalty: 0.30
+
+  # Target is in rough / badlands terrain.
+  rough_penalty: 0.15
+
+  # Target's cell has a fence on its boundary (unit is sheltering behind it).
+  fence_on_cell_penalty: 0.15
+
+  # The LoS ray from attacker to target crosses a fenced edge.
+  fence_on_ray_penalty: 0.10

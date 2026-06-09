@@ -52,3 +52,13 @@ def test_points_within_bounds():
     for x, y in points:
         assert 0 <= x < 20
         assert 0 <= y < 30
+
+
+def test_k_non_integer_raises_type_error():
+    with pytest.raises(TypeError):
+        PoissonDiscSampler.generate(100, 100, 10, k='20')
+
+
+def test_k_zero_raises_value_error():
+    with pytest.raises(ValueError):
+        PoissonDiscSampler.generate(100, 100, 10, k=0)

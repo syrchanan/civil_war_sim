@@ -15,3 +15,13 @@ def test_get_combat_efficiency_golden(case):
         # checking that result is within range
         lo, hi = case["expectedRange"]
         assert lo <= result <= hi
+
+
+def test_none_input_raises_value_error():
+    with pytest.raises(ValueError, match="stat_xp must be provided"):
+        get_combat_efficiency(stat_xp=None, stat_morale=50, stat_weapon=0, stat_melee=0)
+
+
+def test_non_integer_input_raises_type_error():
+    with pytest.raises(TypeError, match="stat_xp must be an integer"):
+        get_combat_efficiency(stat_xp=5.5, stat_morale=50, stat_weapon=0, stat_melee=0)

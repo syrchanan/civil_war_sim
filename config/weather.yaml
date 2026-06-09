@@ -1,0 +1,58 @@
+# =============================================================================
+# WEATHER
+# Static per-battle weather. Affects visibility (effective weapon range).
+# Season weights control random weather selection at battle setup.
+# =============================================================================
+weather:
+
+  # Multiplier applied to a unit's max_range to get effective range.
+  # 1.0 = full range (clear skies), lower values reduce effective range.
+  visibility_modifiers:
+    clear: 1.0
+    overcast: 0.90
+    light_rain: 0.75
+    heavy_rain: 0.60
+    fog: 0.40
+    storm: 0.50
+    snow: 0.65
+
+  # Additional multiplier applied to visibility for cells containing water features
+  # (river or lake). Amplifies fog and rain effects near water.
+  # TBD — placeholder value.
+  water_feature_amplifier: 0.85
+
+  # Probability weights for random weather selection, by season.
+  # Each season's weights must sum to 1.0.
+  season_weights:
+    spring:
+      clear: 0.25
+      overcast: 0.25
+      light_rain: 0.25
+      heavy_rain: 0.10
+      fog: 0.10
+      storm: 0.03
+      snow: 0.02
+    summer:
+      clear: 0.45
+      overcast: 0.20
+      light_rain: 0.15
+      heavy_rain: 0.10
+      fog: 0.05
+      storm: 0.05
+      snow: 0.00
+    autumn:
+      clear: 0.20
+      overcast: 0.25
+      light_rain: 0.25
+      heavy_rain: 0.10
+      fog: 0.15
+      storm: 0.03
+      snow: 0.02
+    winter:
+      clear: 0.20
+      overcast: 0.20
+      light_rain: 0.10
+      heavy_rain: 0.05
+      fog: 0.15
+      storm: 0.05
+      snow: 0.25
