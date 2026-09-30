@@ -85,6 +85,7 @@ class UnitReport:
     broken: bool
     broke_at: float | None      # game minute it broke, if it broke this round
     captured: int = 0           # men taken prisoner as it routed this round
+    guns_lost: int = 0          # artillery: guns captured this round (overrun, or abandoned on breaking)
 
 
 @dataclass(frozen=True)
@@ -96,6 +97,7 @@ class RoundReport:
     units: dict                 # uid -> UnitReport
     events: tuple = ()          # CasualtyEvent per casualty, when record_events=True
     prisoners: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> prisoners taken this round
+    guns_captured: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> enemy guns taken this round
 
 
 @dataclass(frozen=True)
@@ -110,6 +112,7 @@ class UnitOutcome:
     wounded_returned: int       # wounded who recover and rejoin (added back to strength)
     captured_in_rout: int       # taken prisoner as the unit broke
     final_size: int
+    guns_lost: int = 0          # artillery: guns captured over the whole battle
 
 
 @dataclass(frozen=True)
@@ -117,6 +120,7 @@ class BattleResult:
     field_held_by: int | None
     units: dict                 # uid -> UnitOutcome
     prisoners: dict             # side -> prisoners taken over the whole battle
+    guns_captured: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> enemy guns taken
 
 
 @dataclass
@@ -132,6 +136,7 @@ class BattleUnit:
     losses: int = 0
     inflicted: int = 0
     captured: int = 0
+    guns_lost: int = 0
 
     @property
     def size(self) -> int:
@@ -185,6 +190,7 @@ class Battle:
         self.round: int = 0
         self.history: list[RoundReport] = []
         self.prisoners: dict[int, int] = {0: 0, 1: 0}
+        self.guns_captured: dict[int, int] = {0: 0, 1: 0}
         self.finished: bool = False
         self._broken_before_round: set[str] = set()
 
@@ -345,8 +351,21 @@ class Battle:
         share = min(1.0, max(0.0, share))
         return int(share * n + 0.5)
 
-    def _rout(self, gone: set, arrows: list, prisoners: dict) -> None:
-        """Take prisoners from units that just broke (more if enemy cavalry is attacking them)."""
+    def _lose_guns(self, unit: BattleUnit, keep: int, guns: dict) -> None:
+        """A battery keeps ``keep`` guns; the rest are captured by the other side."""
+        battery = unit.regiment
+        lost = battery.guns - keep
+        if lost > 0:
+            battery.update_guns(keep)
+            unit.guns_lost += lost
+            guns[1 - unit.side] += lost
+            self.guns_captured[1 - unit.side] += lost
+
+    def _rout(self, gone: set, arrows: list, prisoners: dict, guns: dict) -> None:
+        """
+        Take prisoners from units that just broke (more if enemy cavalry is attacking them). A breaking battery
+        escapes with only the guns its remaining crew can man; the rest are captured.
+        """
         after = self.params.aftermath
         for uid in sorted(gone, key=lambda u: self.units[u].index):
             unit = self.units[uid]
@@ -359,6 +378,8 @@ class Battle:
             unit.captured += taken
             prisoners[1 - unit.side] += taken
             self.prisoners[1 - unit.side] += taken
+            if isinstance(unit.regiment, ArtilleryBattery):
+                self._lose_guns(unit, unit.regiment.effective_guns, guns)
 
     def resolve_round(self, duration: float, orders: dict, record_events: bool = False) -> RoundReport:
         """
@@ -377,8 +398,9 @@ class Battle:
         self.round += 1
         start = self.time
         end = start + duration
-        before = {uid: (u.losses, u.inflicted, u.captured) for uid, u in self.units.items()}
+        before = {uid: (u.losses, u.inflicted, u.captured, u.guns_lost) for uid, u in self.units.items()}
         prisoners = {0: 0, 1: 0}
+        guns = {0: 0, 1: 0}
         self._broken_before_round = {uid for uid, u in self.units.items() if u.morale.broken}
         broke_at: dict[str, float] = {}
         cancelled: set[str] = set()
@@ -408,7 +430,7 @@ class Battle:
                 self._advance(end - t, engaged)
                 self._sync(engaged)
                 t = end
-                self._rout(self._newly_broken(engaged, broke_at, t), arrows, prisoners)
+                self._rout(self._newly_broken(engaged, broke_at, t), arrows, prisoners, guns)
                 break
 
             # weighted pick of the arrow that caused this casualty
@@ -439,9 +461,11 @@ class Battle:
             # a unit can break from its losses or from the in-combat drain; either way (or if wiped out)
             # its attackers stand down and the arrow structure is rebuilt
             gone = self._newly_broken(engaged, broke_at, t)
-            self._rout(gone, arrows, prisoners)
+            self._rout(gone, arrows, prisoners, guns)
             if victim.size == 0:
                 gone.add(victim.uid)
+                if isinstance(victim.regiment, ArtilleryBattery):
+                    self._lose_guns(victim, 0, guns)            # overrun: no crew left, every gun is taken
             if gone:
                 cancelled.update(uid for uid, order in valid.items() if order.target in gone)
                 slots, contacts = self._plan(valid, cancelled)
@@ -461,11 +485,13 @@ class Battle:
                     broken=u.morale.broken,
                     broke_at=broke_at.get(uid),
                     captured=u.captured - before[uid][2],
+                    guns_lost=u.guns_lost - before[uid][3],
                 )
                 for uid, u in self.units.items()
             },
             events=tuple(events),
             prisoners=prisoners,
+            guns_captured=guns,
         )
         self.history.append(report)
         return report
@@ -530,7 +556,9 @@ class Battle:
             outcomes[uid] = UnitOutcome(
                 hits=hits, killed=killed, wounded=wounded, walking_wounded=walking, wounded_captured=captured,
                 wounded_returned=returned, captured_in_rout=unit.captured, final_size=unit.size,
+                guns_lost=unit.guns_lost,
             )
 
         self.finished = True
-        return BattleResult(field_held_by=holder, units=outcomes, prisoners=dict(self.prisoners))
+        return BattleResult(field_held_by=holder, units=outcomes, prisoners=dict(self.prisoners),
+                            guns_captured=dict(self.guns_captured))
