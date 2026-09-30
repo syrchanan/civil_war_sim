@@ -1,278 +1,244 @@
 # Imperial Generals — Roadmap
 
-> Single source of truth for features, design decisions, and implementation order.
-> Python TDD prototype first; JavaScript library port after Python is stable.
-> Status: ✓ done · ► next · ○ backlog
+> Single source of truth for goals, priorities, and design decisions.
+> Status: ✓ done · ► next · ○ backlog · ⏸ parked
+
+---
+
+## What we're optimising for
+
+This project replaces the battle resolution in the admin-run game at
+[imperial-generals.connorhanan.com](https://imperial-generals.connorhanan.com/). Today admins invent casualty numbers
+with no formula. The goal is a **combat resolver** that admins trust:
+
+- Admins/players **place units interactively**; the engine does **not** handle movement.
+- A battle is a sequence of **rounds of fixed game time**. The admin picks the round length and the number of rounds
+  based on the battle's scale.
+- Each round, the engine resolves combat between the engaged units and reports casualties and morale.
+- The Lanchester structure is correct. The work is to **tune it** so each stat and unit-type combination performs
+  sensibly, including rock-paper-scissors advantages between unit types.
+
+Two audiences, two languages:
+
+| Audience | Surface | Language |
+|---|---|---|
+| Developer tuning the math (RL / parameter search) | Plain step API + CLI | Python |
+| Players and admins trying it out | Static client-side page on GitHub Pages | TypeScript |
+
+Long term the whole battle system lives in TypeScript, with a **player mode** (fuzzy estimates) and an **admin mode**
+(exact seeded result).
+
+Out of scope for now: movement, terrain effects, line of sight, weather. Battles are assumed to be on flat, open ground
+with unlimited line of sight. The map pipeline is kept but parked.
 
 ---
 
 ## Status Summary
 
-| # | Feature | Status |
+### Phase A — Tunable Python core
+| # | Item | Status |
 |---|---|---|
-| 1 | Admin YAML config | ✓ |
-| 2 | Map API cleanup + file reorganisation | ✓ |
-| 3 | River generation | ✓ |
-| 4 | Streamlit prototype UI | ► |
-| 5 | Lake generation | ○ |
-| 6 | River→Lake termination update | ○ |
-| 7 | Road generation | ○ |
-| 8 | Fence auto-generation | ○ |
-| 9 | Weather system | ○ |
-| 10 | Morale break / retreat | ○ |
-| 11 | LoS ray cast + flanking design | ○ |
-| 12 | Cover calculation | ○ |
-| 13 | Range/distance accuracy model | ○ |
-| 14 | Elevation accuracy modifier | ○ |
-| 15 | Brigade-level targeting | ○ |
-| 16 | Full combat efficiency pipeline | ○ |
-| 17 | Movement system | ○ |
-| 18 | Battle state serialization | ○ |
-| 19 | Admin effect modifier | ○ |
-| 20 | JavaScript library port | ○ |
+| A1 | Cross-language seeded RNG | ► |
+| A2 | Morale formula fixes | ○ |
+| A3 | Per-battle parameter set + fast event log | ○ |
+| A4 | Round engine: N regiments per side, `resolve_round` | ○ |
+| A5 | Engagements / brigade targeting (pairwise Lanchester) | ○ |
+| A6 | Morale break / retreat | ○ |
+| A7 | Unit-type matchup matrix | ○ |
+| A8 | Battle state serialization (JSON contract) | ○ |
+| A9 | Step API + CLI | ○ |
+| A10 | Tuning harness: batch runner + matchup stats | ○ |
+
+### Phase B — Playable web client
+| # | Item | Status |
+|---|---|---|
+| B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ○ |
+| B2 | Parity fixtures: Python ↔ TS identical results | ○ |
+| B3 | GitHub Pages client: place units, set round length, resolve | ○ |
+| B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ○ |
+
+### Phase C — Later
+| Item | Status |
+|---|---|
+| Admin effect modifier | ○ |
+| Weapon range stat + range/distance accuracy | ○ |
+| Map in the web client (port of map pipeline) | ○ |
+| Terrain effects: elevation, cover, fences, LoS, flanking | ⏸ |
+| Weather | ⏸ |
+| Lakes, river→lake termination, roads, fences (map stages 4–6) | ⏸ |
+| Movement system | ⏸ (admins place units instead) |
+| Streamlit prototype UI | ⏸ (first version works; frozen) |
+
+### Done
+| Item | Status |
+|---|---|
+| Admin YAML config (`ConfigLoader`) | ✓ |
+| Units: Infantry/Cavalry/Artillery, Army, Position, subtypes | ✓ |
+| Regiment combat modes (idle / ranged / melee, Lanchester law dispatch) | ✓ |
+| Map pipeline stages 1–3 (Voronoi, biome/elevation, rivers) | ✓ |
+| Streamlit prototype v1 (`streamlit run streamlit/app.py`) | ✓ |
 
 ---
 
-## 1. Admin YAML Config ✓
-All tunable constants live in `config/` (8 YAML files). `ConfigLoader` singleton merges them at startup. Nothing hardcoded in logic files — all defaults use `field(default_factory=lambda: get_config()[...])`.
+## Phase A — Tunable Python core
 
-Files: `combat.yaml`, `morale.yaml`, `map.yaml`, `cover.yaml`, `weather.yaml`, `movement.yaml`, `visualization.yaml`, `unit_subtypes.yaml`
+### A1. Cross-language seeded RNG ►
+`Simulation` currently draws from the global `np.random`, so battles can't be reproduced.
 
----
+- Inject an RNG object into the engine; no global randomness anywhere.
+- Implement a **small, specified PRNG** (e.g. PCG32 or xoshiro128\*\*) plus an inverse-CDF exponential sampler, in
+  pure Python, and later identically in TypeScript. Same seed + same state → **bit-identical** results in both
+  languages. (numpy's generators can't be reproduced in JS, so we can't use them for this.)
+- Unlocks: fair A/B tuning comparisons, replays, admin/player result agreement, Python↔TS parity tests (B2).
 
-## 2. Map System ✓
+### A2. Morale formula fixes ○
+Found in `Simulation.update_morale_losses`; fix these before tuning, or tuning will fit the bugs:
+- Rules A–D apply **cumulative** losses on every event, although the docstring specifies casualties *this step*.
+  Morale therefore falls faster the longer a fight runs.
+- Rules C/D use `time - t` (time *remaining*) as `delta_t` instead of the elapsed step length.
+- Confirm the intended semantics, write failing tests, then fix.
 
-### Pipeline
-`MapGenerator.generate_map()` runs stages in order, each mutating cells in place:
+### A3. Per-battle parameter set + fast event log ○
+- A `BattleParams` object (combat + morale + matchup constants) built from YAML defaults and passed to the engine.
+  Overrides go per battle, so an RL/parameter search can run many parameter sets in one process without mutating
+  the global config.
+- Replace the per-event `pd.concat` (quadratic) with list appends / preallocated arrays; build a DataFrame only on
+  request. Rollout speed matters for tuning.
 
-| Stage | Feature | Status |
-|---|---|---|
-| 1 | Voronoi mesh (Poisson disc → diagram → clipped cells) | ✓ |
-| 2 | Biome / elevation assignment | ✓ |
-| 3 | River generation | ✓ |
-| 4 | Lake generation | ○ |
-| 5 | Road generation | ○ |
-| 6 | Fence auto-generation | ○ |
+### A4. Round engine ○
+- `Battle` holds N regiments per side (`Army`), round number, RNG state, params.
+- `resolve_round(duration, engagements)` runs the continuous-time Markov/Lanchester process for `duration` game
+  time, then returns a round report (casualties, morale, broken units per regiment).
+- Round length is arbitrary and admin-chosen. The engine never assumes a unit of time beyond "game time".
 
-### API
-```python
-MapGenerator.from_config(preset='mixed_battlefield')          # reads config defaults
-MapGenerator.from_preset('mixed_battlefield', seed=42, ...)   # explicit dims
-MapGenerator(MapConfig(...)).generate_map()                    # full custom config
+### A5. Engagements / brigade targeting ○
+No movement, so the admin supplies the engagements for each round:
 ```
+engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
+```
+- All pairs resolve simultaneously via per-pair Lanchester rates.
+- Several attackers on one target: their kill rates stack against it.
+- A unit's losses come only from units engaging it.
+- Open design points: a unit splitting fire across targets; defaults for units with no engagement (idle).
 
-### Rivers ✓
-- Source-to-sink greedy downhill walk (STRtree-accelerated neighbour graph, BFS fallback)
-- Terminates at map edge, or at a lake cell once lakes exist (see #6)
-- `terrain_type = 'river'`; fordable, movement penalty (TBD multiplier)
-- River cells amplify fog/rain weather modifiers (TBD)
+### A6. Morale break / retreat ○
+- Morale below a configurable **break threshold** → the regiment is broken and stops fighting for the rest of the round.
+- Units rout before annihilation, which is the historical reality.
+- Open: whether broken units can recover in later rounds (admin decision vs timed rule). Thresholds live in
+  `morale.yaml` / `BattleParams`.
 
-### Lakes ○
-- Contiguous cell clusters seeded at low-elevation areas
-- `num_lakes` drives count; lakes may not touch each other
-- `terrain_type = 'lake'`; impassable, same weather amplification as rivers
+### A7. Unit-type matchup matrix ○
+Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.
+- A `type × type × mode` multiplier matrix (infantry / cavalry / artillery, later subtypes) applied to the attacker's
+  coef against a given target. Rock-paper-scissors style: e.g. cavalry strong vs artillery in melee, weak vs
+  infantry at range.
+- Config-driven, so it's tunable in A10.
+- Open: should subtypes do more than change the matrix (e.g. cavalry charge bonus in the first round of melee)?
 
-### Roads ○
-- Edge-to-edge paths (straight or gently curved)
-- `num_roads` drives count; multiple roads must intersect somewhere on the map
-- Routes around lakes; may cross rivers
-- `has_road = True` flag on `Cell`; movement speed bonus (TBD multiplier)
+### A8. Battle state serialization ○
+This is the contract between Python, TypeScript, and the admin site. Fully deterministic: same state + seed → same result.
+```json
+{
+  "version": "1.0",
+  "seed": 42,
+  "round": 0,
+  "params_overrides": {},
+  "units": [
+    { "id": "reg_001", "side": 0, "type": "infantry", "subtype": null,
+      "size": 4000, "stats": "4/4/0/0", "morale_raw": 40.0, "broken": false,
+      "position": [102.4, 87.3] }
+  ],
+  "history": [
+    { "round": 1, "duration": 30, "engagements": [], "report": {} }
+  ]
+}
+```
+Positions are stored for display only. They don't affect combat until range/terrain effects return.
 
-### Fences ○
-- Auto-generated on shared edges between `terrain_type = 'open'` and any non-open cell
-- Not player-configurable — derived from biome layout
-- `fenced_edges: set` per `Cell` (which edges carry a fence)
-- Cover modifier — see §Combat
+### A9. Step API + CLI ○
+- Plain Python API; no Gymnasium/PettingZoo dependency:
+  `Battle.from_state(json)`, `battle.resolve_round(duration, engagements)`, `battle.to_state()`.
+- CLI: `python -m imperial_generals resolve state.json --duration 30 --engagements e.json` → new state + report;
+  plus a batch mode for tuning runs.
 
-### River→Lake Termination Update ○
-After lakes are generated, update `RiverGenerator` so the downhill walk terminates when it reaches a lake cell rather than continuing to the map edge.
-
----
-
-## 3. Streamlit Prototype UI ►
-Local-only app for development, testing, and demonstration. **Replaces `MapViewer`** (which is deleted). Grows alongside new Python features — each new capability gets a UI surface as it is implemented.
-
-Run: `streamlit run app.py`
-
-### Tab 1 — Setup
-- Map config: biome preset, seed, width/height, min_distance, num_rivers/lakes/roads, weather, season
-- Army builder: two sides; each side has one or more regiments (type, size, stats string, law, position)
-- **Run** button → generates map + runs simulation → populates Tab 2
-
-### Tab 2 — Results
-- Map view: static matplotlib figure (terrain layer default; elevation/cover selectable)
-- Per-regiment plots: size over time, morale over time, combat efficiency over time
-- Battle outcome: winner, final sizes, turn count
-- Export button: download current setup as serialization JSON (§Battle State)
-
-### Constraints
-- Static map render — no keyboard shortcuts; matplotlib figure saved to buffer → `st.image()`
-- Local only; no auth, no deployment
-
----
-
-## 4. Weather System ○
-
-| Type | Code | Visibility modifier |
-|---|---|---|
-| Clear | `clear` | 1.0× |
-| Overcast | `overcast` | 0.9× |
-| Light Rain | `light_rain` | 0.75× |
-| Heavy Rain | `heavy_rain` | 0.6× |
-| Fog | `fog` | 0.4× |
-| Storm | `storm` | 0.5× |
-| Snow | `snow` | 0.65× |
-
-- Static for the full battle; map-wide (no per-zone variation)
-- Randomised at battle setup, weighted by season (spring/summer/autumn/winter); weights in `weather.yaml`
-- Visibility modifier is a multiplier on each unit's `max_range`
-- River and lake cells further amplify fog/rain modifiers (TBD value in `weather.yaml`)
+### A10. Tuning harness ○
+- Batch runner: many seeded battles across stat / type / size combinations → outcome tables (win rate, casualty
+  ratio, rounds-to-break, variance).
+- Matchup heatmaps to spot dominant or useless combinations.
+- The user's own RL / parameter-search loop sits on top of A9 + A10.
 
 ---
 
-## 5. Morale & Retreat ○
+## Phase B — Playable web client
 
-### Morale Drop
-Losses each Lanchester step cause a morale drop proportional to fractional casualties. Rate constant in `morale.yaml`.
+### B1. TypeScript port ○
+Port the Phase A engine (RNG, params, round engine, engagements, morale, matchups, serialization) to TypeScript. The
+existing `typescript/` directory is a stale v0.2 port of the old 1-v-1 `Simulation` and gets replaced.
 
-### Morale Break
-- Morale below a configurable **break threshold** → regiment exits combat immediately
-- Simulates historical reality: units rout before annihilation
-- Broken regiment may not re-engage (or requires a recovery period — TBD)
-- Threshold and recovery rules in `morale.yaml`
+### B2. Parity fixtures ○
+Shared JSON fixtures (state + seed + round inputs → expected report) generated by Python, asserted in both test
+suites. The TS port must match the Python engine exactly.
 
-### Open question: unit subtypes
-Should subtypes do more than validation (e.g. a cavalry charge, a longer artillery range)?
+### B3. GitHub Pages client ○
+A static client-side page. No backend. Build armies, drop units on a plain field, pick round length, set engagements,
+resolve, and see casualties and morale per round. Import/export state JSON.
+
+### B4. Player vs admin mode ○
+- **Admin mode**: exact seeded result.
+- **Player mode**: fuzzy estimate, e.g. Monte Carlo over N seeds, shown as ranges/quantiles rather than exact
+  numbers.
 
 ---
 
-## 6. Combat Efficiency ○
+## Phase C — Later / parked
 
-### Existing ✓
-`get_combat_efficiency(stat_xp, stat_morale, stat_weapon, stat_melee)` → coefficient [0, 1], feeds Lanchester kill-rate equations.
+### Admin effect modifier ○
+Per-side scalar on combat efficiency at battle setup (commander quality, supply, events). Default 1.0; range TBD
+(e.g. 0.7–1.3). Applied last. Cheap, and it fits the admin-run game, so it may move up.
 
-### Range & Distance Accuracy
+### Weapon range + range/distance accuracy ○
+Only relevant once position matters. Possible extra weapon stat.
 | Zone | Condition | Accuracy |
 |---|---|---|
 | Close | `distance ≤ max_range × 0.5` | ~90% (TBD) |
 | Effective | `distance ≤ max_range` | ~70% (TBD) |
 | Beyond | `distance > max_range` | Exponential decay (TBD) |
 
-Weather visibility modifier applied to `max_range` before zone evaluation.
+### Terrain effects ⏸
+Kept for when the map returns to combat. Spatial queries use nearest centroid / `get_cell_at_position`, Euclidean
+distance, and ray-cast LoS (no neighbour graph).
+- **Elevation modifier**: `clamp((attacker_elev − target_elev) / ELEVATION_SCALE, −0.15, +0.15)`, additive.
+- **Cover penalty** (additive, floored at 0): target in forest −30%, rough/badlands −15%, fence on target's cell
+  boundary −15%, fence crossed by LoS ray −10%.
+- **Line of sight**: any cell on the ray with `elevation > max(attacker, target)` blocks fire.
+- **Flanking / field of view** (needs design): front width → FOV angle θ; attacks from outside θ get a coef boost.
+  Open: formula for θ; boost scaling; does high ground negate a flank?
+- **Full composition**:
+  ```
+  final_coef = base_coef × matchup × accuracy(range, weather) (+ elevation − cover) × flanking × admin_modifier
+  ```
 
-### Cover Accuracy Penalty (additive, floored at 0)
-| Source | Penalty |
-|---|---|
-| Target in forest | −30% |
-| Target in rough/badlands | −15% |
-| Fence on target's cell boundary | −15% |
-| Fence crossed by LoS ray | −10% |
+### Weather ⏸
+Static, map-wide, randomised by season (weights in `weather.yaml`). Multiplies `max_range`: clear 1.0, overcast 0.9,
+light rain 0.75, heavy rain 0.6, fog 0.4, storm 0.5, snow 0.65. River/lake cells amplify fog/rain (TBD).
 
-### Elevation Accuracy Modifier
-`dz = attacker_elevation − target_elevation`
-`elevation_modifier = clamp(dz / ELEVATION_SCALE, −0.15, +0.15)` — additive with cover.
+### Map stages 4–6 ⏸
+`MapGenerator.generate_map()` runs stages in order, mutating cells in place. Stages 1–3 are done.
+- **Lakes**: contiguous low-elevation clusters; `num_lakes`; lakes don't touch; `terrain_type='lake'`, impassable.
+  Then update `RiverGenerator` to terminate at lake cells.
+- **Roads**: edge-to-edge paths; `num_roads`; multiple roads intersect; route around lakes; `Cell.has_road`.
+- **Fences**: auto-generated on edges between `open` and non-open cells; `Cell.fenced_edges`; feeds cover.
 
-### Line of Sight
-- Ray from attacker position → target position
-- Any intersecting cell with `elevation > max(attacker_elev, target_elev)` blocks LoS → no fire
-- Fence crossings on the ray feed the cover penalty
-
-### Flanking / Field-of-View ○ (needs design)
-Front width → field-of-view angle θ (smaller front = smaller θ). Attacks arriving outside θ are flanking attacks — attacker receives a coef boost (TBD). The front-arc may double as the LoS cone for ranged fire.
-
-Design needed: formula mapping front_width → θ; coef scaling function; does high ground negate a flank?
-
-### Full Efficiency Composition
-```
-base_coef       = get_combat_efficiency(xp, morale, weapon, melee)
-effective_range = max_range × weather_visibility_modifier
-accuracy        = range_accuracy(distance, effective_range)
-accuracy       += elevation_modifier
-accuracy       -= cover_penalty  (floor 0)
-flanking_mult   = flanking_modifier(attacker_bearing, target_facing, front_width)
-final_coef      = base_coef × accuracy × flanking_mult
+Map API:
+```python
+MapGenerator.from_config(preset='mixed_battlefield')
+MapGenerator.from_preset('mixed_battlefield', seed=42, width=200, height=200, min_distance=3)
+MapGenerator(MapConfig(...)).generate_map()
 ```
 
----
+### Movement ⏸
+Superseded by admins placing units. Terrain speed modifiers kept in `movement.yaml` for reference.
 
-## 7. Brigade-Level Targeting ○
-Each regiment is assigned a **target regiment** each turn. All (attacker → target) pairs resolve simultaneously via per-pair Lanchester equations.
-
-- Multiple attackers targeting the same regiment: kill rates stack against that regiment
-- Each attacker's losses come only from regiment(s) targeting it back
-- Assignments set once per turn (player-controlled or AI-assigned)
-- Needs design: idle regiments (no target), AI targeting priority, multi-target-one fairness
-
----
-
-## 8. Movement System ○
-Turn-based. Each unit has a `speed` stat → max distance per turn, modified by terrain.
-
-| Terrain | Modifier |
-|---|---|
-| Open / farmland | 1.0× |
-| Forest | 0.6× |
-| Hill | 0.7× |
-| Rough / badlands | 0.5× |
-| Road | 1.3× |
-| River (fording) | 0.2× |
-| Lake | impassable |
-
-Facing direction TBD — changes cost movement points.
-
----
-
-## 9. Battle State Serialization ○
-Single JSON document. Fully deterministic: same seed + params → identical map and unit state every time. Intended for collaborative play — users share/upload state files to resume the same battle.
-
-```json
-{
-  "version": "1.0",
-  "map": {
-    "seed": 42,
-    "width": 200,
-    "height": 200,
-    "min_distance": 3,
-    "biome_preset": "mixed_battlefield",
-    "num_rivers": 2,
-    "num_lakes": 1,
-    "num_roads": 1,
-    "weather": "light_rain",
-    "season": "autumn"
-  },
-  "config_overrides": {},
-  "units": [
-    {
-      "id": "reg_001",
-      "side": 0,
-      "type": "infantry",
-      "size": 4000,
-      "stats": "4/4/0/0",
-      "law": "sq",
-      "position": [102.4, 87.3],
-      "facing": 270
-    }
-  ],
-  "turn": 0
-}
-```
-
-All random elements derive from seed. Config overrides allow per-battle tuning without changing global YAML.
-
----
-
-## 10. Admin Effect Modifier ○
-Scalar multiplier applied to one side's overall combat efficiency at run time. Accounts for unmodelled factors (commander quality, supply, events). Applied last, after all other efficiency calculations.
-
-- Per-side at battle setup (not per-regiment); default 1.0; range TBD (e.g. 0.7–1.3)
-- **Lowest priority** — implement after all other combat factors
-
----
-
-## 11. JavaScript Library ○
-After Python is stable and fully tested: port simulation logic to a JavaScript library for embedding in a web application.
-
-- Exposes: map generation, battle simulation, state serialization/deserialization
-- Web UI (separate repo) consumes the library
-- All state round-trips through the serialization format (§9)
-- Seed reproduces exact same map
+### Streamlit prototype ⏸
+`streamlit run streamlit/app.py`: Setup + Results pages, map layers, army builder, 1-v-1 sim plots. Frozen. The
+Python side is API/CLI-first and the web client replaces it for players.
