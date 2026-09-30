@@ -159,11 +159,17 @@ def test_arrows_on_one_target_stack():
         K_R * (coef('4/5/0/0', 'ranged') * 500 + coef('4/5/1/0', 'ranged') * 300))
 
 
+def melee_coef(stats):
+    """Round-engine melee coef for a plain Regiment: default melee rating, firearm irrelevant."""
+    xp, morale = (int(s) for s in stats.split('/')[:2])
+    return P.combat.melee_efficiency(xp, morale, P.matchups.melee_ratings['default']) * P.matchups.melee['inf']['inf']
+
+
 def test_melee_one_on_one_matches_front_times_front():
     b = make_battle({'a': (0, 500, '4/5/1/0', 200), 'x': (1, 400, '4/5/0/0', 150)})
     r = rates(b.engagements({'a': {'target': 'x', 'mode': 'melee'}}))
-    assert r[('a', 'x')] == pytest.approx(K_M * coef('4/5/1/0', 'melee') * 200 * 150)
-    assert r[('x', 'a')] == pytest.approx(K_M * coef('4/5/0/0', 'melee') * 150 * 200)
+    assert r[('a', 'x')] == pytest.approx(K_M * melee_coef('4/5/1/0') * 200 * 150)
+    assert r[('x', 'a')] == pytest.approx(K_M * melee_coef('4/5/0/0') * 150 * 200)
 
 
 def test_melee_is_mutual_and_forcing():
@@ -205,10 +211,10 @@ def test_melee_only_unit_cannot_fire():
     assert b.engagements({'p': {'target': 'x', 'mode': 'ranged'}}) == ()
 
 
-def test_melee_only_unit_fights_at_full_strength_in_melee():
+def test_melee_only_unit_fights_in_melee_with_its_rating():
     b = make_battle({'p': (0, 500, '4/5/0/1'), 'x': (1, 500, '4/5/0/0')})
     r = rates(b.engagements({'p': {'target': 'x', 'mode': 'melee'}}))
-    assert r[('p', 'x')] == pytest.approx(K_M * P.combat.efficiency(4, 5, 0) * 500 * 500)
+    assert r[('p', 'x')] == pytest.approx(K_M * melee_coef('4/5/0/1') * 500 * 500)
 
 
 def test_broken_unit_can_be_pursued_but_does_not_fight_back():

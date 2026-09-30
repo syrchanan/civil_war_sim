@@ -8,6 +8,7 @@ battle and never touch the global config, so a tuning or RL loop can run many pa
 ``to_dict`` / ``from_dict`` are JSON-safe, for the battle state file (A8).
 """
 
+import copy
 from dataclasses import dataclass, field, fields, replace
 from functools import lru_cache
 
@@ -41,6 +42,7 @@ class CombatParams:
     melee_penalty_factor: float = _config_default('combat', 'melee_penalty_factor')
     ranged_kill_rate: float = _config_default('combat', 'ranged_kill_rate')
     melee_kill_rate: float = _config_default('combat', 'melee_kill_rate')
+    artillery_kill_rate_per_gun: float = _config_default('combat', 'artillery_kill_rate_per_gun')
 
     def __post_init__(self) -> None:
         multipliers = {int(k): float(v) for k, v in self.weapon_multipliers.items()}
@@ -51,7 +53,7 @@ class CombatParams:
         for name in ('xp_boost_per_level', 'morale_boost_per_level'):
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} must be >= 0.")
-        for name in ('melee_penalty_factor', 'ranged_kill_rate', 'melee_kill_rate'):
+        for name in ('melee_penalty_factor', 'ranged_kill_rate', 'melee_kill_rate', 'artillery_kill_rate_per_gun'):
             if not getattr(self, name) > 0:
                 raise ValueError(f"{name} must be > 0.")
 
@@ -70,17 +72,32 @@ class CombatParams:
         ``morale`` may be a 1–10 stat or a raw 10–100 value (converted when above the raw scale factor).
         Inputs are clamped: xp and morale to 1–10, weapon to -2..2, melee to 0/1.
         """
-        morale_1_10 = round(morale / self._raw_scale, ndigits=0) if morale > self._raw_scale else morale
-        morale_1_10 = max(1, min(10, morale_1_10))
-        xp = max(1, min(10, xp))
         weapon = max(-2, min(2, weapon))
         melee = max(0, min(1, melee))
-
-        eff_adj = 1 + (xp - 1) * self.xp_boost_per_level + (morale_1_10 - 1) * self.morale_boost_per_level
-        raw = self.weapon_multipliers[weapon] * eff_adj
+        raw = self.weapon_multipliers[weapon] * self._eff_adj(xp, morale)
         if melee == 1:
             raw *= self.melee_penalty_factor
         return raw / self._max_raw
+
+    def _eff_adj(self, xp: int, morale: float) -> float:
+        """Experience and morale boost: 1 at xp 1 / morale 1. Morale may be a 1–10 stat or raw 10–100."""
+        morale_1_10 = round(morale / self._raw_scale, ndigits=0) if morale > self._raw_scale else morale
+        morale_1_10 = max(1, min(10, morale_1_10))
+        xp = max(1, min(10, xp))
+        return 1 + (xp - 1) * self.xp_boost_per_level + (morale_1_10 - 1) * self.morale_boost_per_level
+
+    def melee_efficiency(self, xp: int, morale: float, rating: float) -> float:
+        """
+        Melee coefficient for the round engine: the unit's melee rating (per subtype, on the weapon-multiplier
+        scale) boosted by experience and morale, on the same normalised scale as ``efficiency``. The firearm
+        and the global melee penalty play no part.
+        """
+        key = ('melee', xp, morale, rating)
+        cached = self._coef_cache.get(key)
+        if cached is None:
+            cached = rating * self._eff_adj(xp, morale) / self._max_raw
+            self._coef_cache[key] = cached
+        return cached
 
     def unit_coef(self, stats: tuple[int, int, int, int], combat_mode: str) -> float:
         """
@@ -171,8 +188,123 @@ class AftermathParams:
 
 
 # =============================================================================
+# Matchups
+# =============================================================================
+
+UNIT_TYPES = ('inf', 'cav', 'art')
+_MATCHUP_MODES = ('ranged', 'melee')
+
+
+def _matchups_default(key: str):
+    return field(default_factory=lambda: copy.deepcopy(get_config()['matchups'][key]))
+
+
+def _valid_unit_key(key: str, allow_any: bool = False) -> bool:
+    """'type' or 'type/subtype' (or '*' when allowed), with the subtype known for that type."""
+    from imperial_generals.utils.unit_types import UNIT_SUBTYPES   # lazy: utils imports this module
+    if allow_any and key == '*':
+        return True
+    unit_type, _, subtype = key.partition('/')
+    if unit_type not in UNIT_TYPES:
+        return False
+    return not subtype or subtype in UNIT_SUBTYPES[unit_type]
+
+
+@dataclass(frozen=True)
+class MatchupParams:
+    """
+    Unit-type advantage and melee strength; defaults from config/matchups.yaml.
+
+    ``ranged`` / ``melee``: attacker type → target type → multiplier on the attacker's casualty rate.
+    ``overrides``: subtype-specific replacements (most specific match wins, see ``multiplier``).
+    ``melee_ratings``: melee strength per 'type/subtype' (plus 'default'), on the weapon-multiplier scale.
+    """
+
+    ranged: dict = _matchups_default('ranged')
+    melee: dict = _matchups_default('melee')
+    overrides: tuple = _matchups_default('overrides')
+    melee_ratings: dict = _matchups_default('melee_ratings')
+
+    def __post_init__(self) -> None:
+        for mode in _MATCHUP_MODES:
+            table = getattr(self, mode)
+            for a in UNIT_TYPES:
+                row = table.get(a) if isinstance(table, dict) else None
+                if not isinstance(row, dict) or set(row) != set(UNIT_TYPES):
+                    raise ValueError(f"{mode} table needs a full {UNIT_TYPES} x {UNIT_TYPES} grid (row {a!r}).")
+                if any(not v >= 0 for v in row.values()):
+                    raise ValueError(f"{mode} multipliers must be >= 0 (row {a!r}).")
+
+        lookup = {}
+        for o in self.overrides:
+            if not isinstance(o, dict) or set(o) != {'attacker', 'target', 'mode', 'multiplier'}:
+                raise ValueError(f"An override needs exactly attacker, target, mode, multiplier: {o!r}.")
+            if o['mode'] not in _MATCHUP_MODES:
+                raise ValueError(f"Override mode must be ranged or melee: {o!r}.")
+            if not _valid_unit_key(o['attacker']) or not _valid_unit_key(o['target'], allow_any=True):
+                raise ValueError(f"Unknown unit type/subtype in override: {o!r}.")
+            if o['target'] == '*' and '/' not in o['attacker']:
+                raise ValueError(f"target '*' needs an attacker subtype (use the type table otherwise): {o!r}.")
+            if not o['multiplier'] >= 0:
+                raise ValueError(f"Override multiplier must be >= 0: {o!r}.")
+            lookup[(o['attacker'], o['target'], o['mode'])] = float(o['multiplier'])
+
+        if 'default' not in self.melee_ratings:
+            raise ValueError("melee_ratings needs a 'default' entry.")
+        for key, value in self.melee_ratings.items():
+            if key != 'default' and ('/' not in key or not _valid_unit_key(key)):
+                raise ValueError(f"Unknown melee rating key {key!r} (use 'type/subtype').")
+            if not value >= 0:
+                raise ValueError(f"Melee rating must be >= 0: {key!r}.")
+
+        object.__setattr__(self, 'overrides', tuple(dict(o) for o in self.overrides))
+        object.__setattr__(self, '_lookup', lookup)
+        object.__setattr__(self, '_cache', {})
+
+    def multiplier(self, attacker: tuple, target: tuple, mode: str) -> float:
+        """
+        Multiplier for ``attacker`` (type, subtype | None) against ``target`` in ``mode``. Most specific first:
+        attacker subtype + target subtype, attacker subtype + target type, attacker subtype + any target,
+        attacker type + target subtype, then the type table.
+        """
+        key = (attacker, target, mode)
+        cached = self._cache.get(key)
+        if cached is not None:
+            return cached
+        a_type, a_sub = attacker
+        t_type, t_sub = target
+        a_full = f"{a_type}/{a_sub}" if a_sub else None
+        t_full = f"{t_type}/{t_sub}" if t_sub else None
+        candidates = []
+        if a_full:
+            candidates += [(a_full, t_full), (a_full, t_type), (a_full, '*')]
+        candidates.append((a_type, t_full))
+        value = next(
+            (self._lookup[(a, t, mode)] for a, t in candidates if t is not None and (a, t, mode) in self._lookup),
+            getattr(self, mode)[a_type][t_type],
+        )
+        self._cache[key] = value
+        return value
+
+    def melee_rating(self, unit: tuple) -> float:
+        """Melee rating for (type, subtype | None); units without a listed subtype use 'default'."""
+        unit_type, subtype = unit
+        return self.melee_ratings.get(f"{unit_type}/{subtype}", self.melee_ratings['default'])
+
+
+# =============================================================================
 # Battle
 # =============================================================================
+
+def _deep_merge(base: dict, changes: dict) -> dict:
+    merged = dict(base)
+    for key, value in changes.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = _deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
 
 def _apply(section_params, overrides: dict, section: str):
     known = {f.name for f in fields(section_params)}
@@ -180,9 +312,12 @@ def _apply(section_params, overrides: dict, section: str):
     if unknown:
         raise ValueError(f"Unknown {section} parameter(s): {sorted(unknown)}.")
     changes = dict(overrides)
-    if 'weapon_multipliers' in changes:
-        partial = {int(k): v for k, v in changes['weapon_multipliers'].items()}
-        changes['weapon_multipliers'] = {**section_params.weapon_multipliers, **partial}
+    for name, value in overrides.items():
+        current = getattr(section_params, name)
+        if name == 'weapon_multipliers':
+            changes[name] = {**current, **{int(k): v for k, v in value.items()}}
+        elif isinstance(current, dict) and isinstance(value, dict):
+            changes[name] = _deep_merge(current, value)      # partial table / rating overrides merge in
     return replace(section_params, **changes)
 
 
@@ -193,6 +328,7 @@ class BattleParams:
     combat: CombatParams = field(default_factory=CombatParams)
     morale: MoraleParams = field(default_factory=MoraleParams)
     aftermath: AftermathParams = field(default_factory=AftermathParams)
+    matchups: MatchupParams = field(default_factory=MatchupParams)
 
     def with_overrides(self, overrides: dict) -> 'BattleParams':
         """
@@ -212,12 +348,13 @@ class BattleParams:
     def to_dict(self) -> dict:
         """JSON-safe dict of every parameter (weapon codes as string keys)."""
         data = {
-            f.name: {g.name: getattr(getattr(self, f.name), g.name) for g in fields(getattr(self, f.name))}
+            f.name: {g.name: copy.deepcopy(getattr(getattr(self, f.name), g.name)) for g in fields(getattr(self, f.name))}
             for f in fields(self)
         }
         data['combat']['weapon_multipliers'] = {
             str(k): v for k, v in sorted(data['combat']['weapon_multipliers'].items())
         }
+        data['matchups']['overrides'] = list(data['matchups']['overrides'])
         return data
 
     @classmethod

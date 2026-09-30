@@ -1,0 +1,42 @@
+# =============================================================================
+# MATCHUPS (roadmap A7)
+# Ranged strength comes from a unit's arms (weapon stat); melee strength from its subtype's melee rating;
+# these multipliers are the situational advantage of an attacker type against a target type.
+# First-draft numbers — tune in A10.
+# =============================================================================
+matchups:
+
+  # attacker type -> target type -> multiplier on the attacker's casualty rate
+  ranged:
+    inf: {inf: 1.0, cav: 1.2, art: 0.8}     # horses are big targets; gun crews are dispersed
+    cav: {inf: 0.6, cav: 0.6, art: 0.5}     # carbines and pistols from horseback
+    art: {inf: 1.0, cav: 1.2, art: 0.6}     # counter-battery fire is inefficient
+
+  melee:
+    inf: {inf: 1.0, cav: 0.7, art: 1.2}     # formed infantry v a charge; overrunning a battery
+    cav: {inf: 1.5, cav: 1.0, art: 2.0}     # the charge; sabring gunners
+    art: {inf: 1.0, cav: 1.0, art: 1.0}     # crews' weakness is in their melee rating
+
+  # Subtype-specific replacements. Most specific match wins:
+  #   attacker subtype + target subtype > attacker subtype + target type > attacker subtype + '*'
+  #   > attacker type + target subtype > the type tables above.
+  overrides:
+    - {attacker: inf/pikes, target: cav, mode: melee, multiplier: 2.0}
+    - {attacker: cav/dragoons, target: '*', mode: ranged, multiplier: 0.9}
+    - {attacker: cav/dragoons, target: art, mode: ranged, multiplier: 0.75}
+
+  # Melee strength per subtype, on the same scale as weapon multipliers (smoothbore = 1.0).
+  # Replaces the firearm multiplier and the global melee penalty in the round engine.
+  melee_ratings:
+    default: 0.7              # units without a subtype
+    inf/line: 0.7
+    inf/light: 0.6
+    inf/marine: 0.8
+    inf/pikes: 1.2
+    inf/irregulars: 0.5
+    cav/light: 1.0
+    cav/heavy: 1.4
+    cav/dragoons: 0.9
+    art/battery: 0.25
+    art/horse battery: 0.3
+    art/siege battery: 0.2

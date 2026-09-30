@@ -301,6 +301,60 @@ Most remaining design work goes here. Stats (xp / morale / weapon / melee) are c
   placeholder. The matchup matrix should carry per-type melee strength, and A10 should report melee outcomes
   separately.
 
+**Decisions** (2026-09-30):
+- **Ranged strength = the unit's arms. Melee strength = its subtype. Matchups = situational advantage.**
+  - Ranged: weapon stat as today. The stats melee-only flag (`stats[3]`) still decides whether a unit can fire at
+    all. It stays because players choose each unit's arms; types and subtypes are approximations.
+  - Melee: a per-subtype **melee rating** replaces the firearm multiplier and the global melee penalty in the round
+    engine. Fixes a bug where pikes (weapon −2 → 0.2×) fought hand-to-hand at 20% strength. The legacy 1-v-1
+    `Simulation` keeps the old penalty.
+  - Matchups: a **type table** (inf / cav / art × target type, per mode) plus **subtype overrides** where a subtype
+    really differs. Lookup, most specific first: attacker subtype + target subtype → attacker subtype + target type
+    → attacker subtype + any target → attacker type + target subtype → type table.
+- **Artillery fires per manned gun**: `coef × effective_guns × artillery_kill_rate_per_gun × matchup`. Losing crew
+  below 7 per gun silences guns. Range bands (canister v round shot) come with positions.
+- Plain `Regiment` (no type) counts as infantry with the default melee rating.
+
+First-draft numbers (to tune; artillery's melee weakness lives in its rating, so its melee row is neutral):
+
+| Attacker → target | Infantry | Cavalry | Artillery |
+|---|---|---|---|
+| Infantry, ranged | 1.0 | 1.2 | 0.8 |
+| Infantry, melee | 1.0 | 0.7 (pikes 2.0) | 1.2 |
+| Cavalry, ranged | 0.6 (dragoons 0.9) | 0.6 (dragoons 0.9) | 0.5 (dragoons 0.75) |
+| Cavalry, melee | 1.5 | 1.0 | 2.0 |
+| Artillery, ranged | 1.0 | 1.2 | 0.6 |
+| Artillery, melee | 1.0 | 1.0 | 1.0 |
+
+Melee ratings (same scale as weapon multipliers; line infantry 0.7 matches the old smoothbore × 0.7 penalty):
+line 0.7, light 0.6, marine 0.8, pikes 1.2, irregulars 0.5; light cav 1.0, heavy cav 1.4, dragoons 0.9;
+battery 0.25, horse battery 0.3, siege battery 0.2; default 0.7.
+
+Still open: a cavalry charge bonus (extra shock at the start of a melee), and guns captured when a battery is
+overrun.
+
+**Built**:
+- `config/matchups.yaml` → `BattleParams.matchups` (`MatchupParams`: type tables, validated subtype overrides,
+  melee ratings; partial overrides deep-merge).
+- `CombatParams.melee_efficiency` and `artillery_kill_rate_per_gun` (placeholder 0.12 ≈ 30 muskets per gun).
+- The round engine applies matchups per arrow, uses melee ratings, and fires artillery per manned gun.
+
+**First probe** (one 90-min round, 1000 men or a 6-gun / 120-man battery, 200 seeds):
+
+| Round | Attacker lost | Defender lost | |
+|---|---|---|---|
+| Line v line firefight | 11% | 11% | ✓ |
+| Rifles v muskets | 11% | 16% | ✓ |
+| Battery v line firefight | 33%, breaks | 0.7% | ✗ artillery hopeless without range |
+| Heavy cav charges line | 6% | 40%, breaks | ✗ too strong (4.3× stacked edge) |
+| Heavy cav charges pikes | 33%, breaks 92% | 24% | ✓ |
+| Light cav charges battery | 0.4% | 40%, breaks | ✓ |
+| Heavy v light cav | 19% | 42%, breaks | ✓ |
+
+To decide:
+- **Artillery**: raise the per-gun rate and/or cut infantry fire on batteries (0.8 → ~0.3) until range exists.
+- **Cavalry v infantry melee**: set both directions to 1.0, leaving heavy cavalry's rating as the edge.
+
 ### A8. Battle state serialization ○
 This is the contract between Python, TypeScript, and the admin site. Fully deterministic: same state + seed → same result.
 ```json
