@@ -8,14 +8,31 @@ matchups:
 
   # attacker type -> target type -> multiplier on the attacker's casualty rate
   ranged:
-    inf: {inf: 1.0, cav: 1.2, art: 0.8}     # horses are big targets; gun crews are dispersed
-    cav: {inf: 0.6, cav: 0.6, art: 0.5}     # carbines and pistols from horseback
+    inf: {inf: 1.0, cav: 1.2, art: 0.1}     # horses are big targets; batteries fight beyond effective musket
+                                            # range with dispersed crews: charge the guns
+    cav: {inf: 0.6, cav: 0.6, art: 0.1}     # carbines and pistols from horseback
     art: {inf: 1.0, cav: 1.2, art: 0.6}     # counter-battery fire is inefficient
 
   melee:
-    inf: {inf: 1.0, cav: 0.7, art: 1.2}     # formed infantry v a charge; overrunning a battery
-    cav: {inf: 1.5, cav: 1.0, art: 2.0}     # the charge; sabring gunners
+    inf: {inf: 1.0, cav: 1.0, art: 1.2}     # overrunning a battery
+    cav: {inf: 0.5, cav: 1.0, art: 2.0}     # sabring gunners; v infantry: formed bayonets hold, and the
+                                            # charge factor below decides (fresh line at even numbers ≈ 1.4×
+                                            # heavy-cav edge from its rating; outnumbered cavalry loses)
     art: {inf: 1.0, cav: 1.0, art: 1.0}     # crews' weakness is in their melee rating
+
+  # When cavalry charges infantry (its own melee order on that unit), its rate is also multiplied by:
+  #   steadiness = resolve × (1 − veterancy_weight + veterancy_weight·(xp−1)/9) / (1 + shock_weight·shock)
+  #   factor     = (cav_size / inf_size)^size_exponent × (1 + unsteadiness_bonus × (1 − steadiness)),
+  #                clamped to [min_factor, max_factor]
+  # Cohesive infantry that outnumbers the cavalry repels it (< 1); shaken or green infantry is ridden down.
+  # Recomputed as the fight goes on (resolve, shock and sizes change).
+  cavalry_charge:
+    size_exponent: 1.0
+    unsteadiness_bonus: 1.5
+    veterancy_weight: 0.5
+    shock_weight: 2.0
+    min_factor: 0.25
+    max_factor: 3.0
 
   # Subtype-specific replacements. Most specific match wins:
   #   attacker subtype + target subtype > attacker subtype + target type > attacker subtype + '*'
@@ -23,7 +40,7 @@ matchups:
   overrides:
     - {attacker: inf/pikes, target: cav, mode: melee, multiplier: 2.0}
     - {attacker: cav/dragoons, target: '*', mode: ranged, multiplier: 0.9}
-    - {attacker: cav/dragoons, target: art, mode: ranged, multiplier: 0.75}
+    - {attacker: cav/dragoons, target: art, mode: ranged, multiplier: 0.15}
 
   # Melee strength per subtype, on the same scale as weapon multipliers (smoothbore = 1.0).
   # Replaces the firearm multiplier and the global melee penalty in the round engine.

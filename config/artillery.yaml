@@ -1,0 +1,13 @@
+# =============================================================================
+# ARTILLERY
+# Standard battery template; players adjust guns and crew from here.
+# =============================================================================
+artillery:
+
+  # A standard battery: 8 guns with 9 crew each (72 men).
+  guns: 8
+  crew_per_gun: 9
+
+  # A gun needs at least this many crew to fire. Crew pool across guns:
+  # manned guns = min(guns, crew // min_crew_per_gun).
+  min_crew_per_gun: 7

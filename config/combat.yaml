@@ -41,6 +41,14 @@ combat:
   # Placeholder: two 500-man fronts in melee lose ~3× the ranged per-man rate. Tune in A10.
   melee_kill_rate: 0.000024
 
-  # Artillery (round engine): casualties/min = coef × effective_guns × artillery_kill_rate_per_gun × matchup.
-  # Placeholder: one manned gun ≈ 30 muskets' worth of fire on average across ranges. Tune in A10.
-  artillery_kill_rate_per_gun: 0.12
+  # Artillery (round engine): casualties/min = coef × effective_guns × per-gun rate for the ordered ammo × matchup.
+  # Ammo is part of the battery's order and fixed for the round (the player chooses; the engine doesn't adapt).
+  # Until positions exist the admin judges whether the range suits the ammo (canister is a close-range load).
+  # Rates in musket-equivalents per gun: round shot ≈ 40, shell ≈ 60, canister ≈ 110. Tune in A10.
+  artillery_ammo:
+    round_shot: 0.15
+    shell: 0.25
+    canister: 0.45
+
+  # Ammo used when an artillery order doesn't say.
+  artillery_default_ammo: round_shot
