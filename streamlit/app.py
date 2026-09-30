@@ -231,9 +231,9 @@ if st.session_state.page == "Setup":
 
         st.divider()
         st.subheader("Simulation")
-        sim_time = int(st.number_input("Turns", min_value=1, max_value=10000,
-                                        value=1, step=1,
-                                        help="1 turn = 1 battle tick"))
+        sim_time = int(st.number_input("Minutes", min_value=1, max_value=1440,
+                                        value=450, step=30,
+                                        help="Game minutes; a day is ~3–5 rounds of 60–120 min"))
         run = st.button("Run Battle", type="primary", use_container_width=True)
 
     # --- Army builder ---

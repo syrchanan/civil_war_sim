@@ -29,3 +29,14 @@ combat:
   # Multiplier applied to efficiency when a unit is in melee combat.
   # < 1.0 means melee is less effective than ranged fire.
   melee_penalty_factor: 0.70
+
+  # --- Kill rates: convert Lanchester rates into casualties per game MINUTE ---
+
+  # Ranged (square law): casualties/min = coef_enemy × ranged_kill_rate × enemy_size.
+  # Calibrated so an even smoothbore firefight (4/5/0/0 each side) costs ~7.5% per hour per side
+  # (historical target: 5–10%/hour). Rifled muskets land near 11%/hour.
+  ranged_kill_rate: 0.004
+
+  # Melee (linear law): casualties/min = coef_enemy × melee_kill_rate × front_self × front_enemy.
+  # Placeholder: two 500-man fronts in melee lose ~3× the ranged per-man rate. Tune in A10.
+  melee_kill_rate: 0.000024

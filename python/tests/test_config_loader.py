@@ -137,10 +137,13 @@ class TestMoraleSection:
     def test_required_keys_present(self):
         loader = ConfigLoader(CONFIG_PATH)
         morale = loader['morale']
-        for key in ['min_raw', 'max_raw', 'raw_scale_factor',
-                    'loss_constant_a', 'gain_constant_b',
-                    'loss_constant_c', 'gain_constant_d']:
+        for key in ['min_raw', 'max_raw', 'raw_scale_factor', 'model']:
             assert key in morale, f"Missing morale key: {key}"
+
+    def test_old_rule_constants_removed(self):
+        morale = ConfigLoader(CONFIG_PATH)['morale']
+        for key in ['loss_constant_a', 'gain_constant_b', 'loss_constant_c', 'gain_constant_d']:
+            assert key not in morale
 
     def test_raw_bounds_valid(self):
         loader = ConfigLoader(CONFIG_PATH)
@@ -161,12 +164,10 @@ class TestMoraleSection:
         assert model['break_fraction_min'] == 0.15
         assert model['break_fraction_max'] == 0.75
 
-    def test_constants_are_small_positives(self):
-        loader = ConfigLoader(CONFIG_PATH)
-        morale = loader['morale']
-        for key in ['loss_constant_a', 'gain_constant_b', 'loss_constant_c', 'gain_constant_d']:
-            assert morale[key] > 0, f"{key} must be positive"
-            assert morale[key] < 1, f"{key} should be a small fractional value"
+    def test_kill_rates_are_small_positives(self):
+        combat = ConfigLoader(CONFIG_PATH)['combat']
+        for key in ['ranged_kill_rate', 'melee_kill_rate']:
+            assert 0 < combat[key] < 1, f"{key} should be a small positive per-minute rate"
 
 
 # =============================================================================

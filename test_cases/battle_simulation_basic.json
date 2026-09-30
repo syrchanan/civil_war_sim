@@ -13,14 +13,14 @@
     "outputShouldIncludeAtLeastRows": 1
   },
   {
-    "description": "Battle ends on wipeout: both sides with 1 soldier, long time",
+    "description": "Battle ends on wipeout: both sides with 1 soldier, long time (game minutes)",
     "function": "simulateBattle",
     "inputs": {
       "units": [
         {"size": 1, "stats": "4/5/2/1"},
         {"size": 1, "stats": "3/6/1/0"}
       ],
-      "time": 10.0
+      "time": 100000.0
     },
     "atLeastOneZeroIn": ["size_1", "size_2"]
   }
