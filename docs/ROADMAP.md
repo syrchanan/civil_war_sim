@@ -141,6 +141,9 @@ Losses each Lanchester step cause a morale drop proportional to fractional casua
 - Broken regiment may not re-engage (or requires a recovery period — TBD)
 - Threshold and recovery rules in `morale.yaml`
 
+### Open question: unit subtypes
+Should subtypes do more than validation (e.g. a cavalry charge, a longer artillery range)?
+
 ---
 
 ## 6. Combat Efficiency ○
@@ -177,7 +180,7 @@ Weather visibility modifier applied to `max_range` before zone evaluation.
 ### Flanking / Field-of-View ○ (needs design)
 Front width → field-of-view angle θ (smaller front = smaller θ). Attacks arriving outside θ are flanking attacks — attacker receives a coef boost (TBD). The front-arc may double as the LoS cone for ranged fire.
 
-Design needed: formula mapping front_width → θ; coef scaling function.
+Design needed: formula mapping front_width → θ; coef scaling function; does high ground negate a flank?
 
 ### Full Efficiency Composition
 ```
