@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from imperial_generals.utils.fdlibm import log
+from imperial_generals.utils.fdlibm import exp, log
 
 
 # Expected values are V8's Math.log (itself an fdlibm port), so the TypeScript
@@ -28,6 +28,8 @@ V8_LOG = [
     (0.1, -2.3025850929940455),
     (0.3, -1.2039728043259361),
     (0.7, -0.35667494393873245),
+    (1.4, 0.33647223662121284),                  # k == 0, i > 0 branch
+    (1.39, 0.3293037471426003),
 ]
 
 
@@ -47,3 +49,55 @@ def test_log_negative_is_nan():
 def test_log_infinity_and_nan_pass_through():
     assert log(math.inf) == math.inf
     assert math.isnan(log(math.nan))
+
+
+# =============================================================================
+# exp (V8 Math.exp goldens)
+# =============================================================================
+
+V8_EXP = [
+    (0.0, 1.0),
+    (1.0, 2.718281828459045),
+    (-1.0, 0.36787944117144233),
+    (0.5, 1.6487212707001282),
+    (-0.5, 0.6065306597126334),
+    (0.34657359027997264, 1.414213562373095),     # |x| just above 0.5*ln2
+    (0.3, 1.3498588075760032),
+    (1.0397207708399179, 2.82842712474619),       # 0.5*ln2 < |x| < 1.5*ln2 branch
+    (1.2, 3.3201169227365472),
+    (2.0, 7.38905609893065),
+    (-2.0, 0.1353352832366127),
+    (10.0, 22026.465794806718),
+    (-10.0, 0.00004539992976248485),
+    (-0.0001, 0.9999000049998333),
+    (1e-9, 1.000000001),
+    (-1e-9, 0.999999999),
+    (1e-30, 1.0),                                  # |x| < 2**-28 branch
+    (100.0, 2.6881171418161356e+43),
+    (-100.0, 3.720075976020836e-44),
+    (700.0, 1.0142320547350045e+304),
+    (709.7, 1.6549840276802644e+308),
+    (-708.0, 3.307553003638408e-308),
+    (-740.0, 4.2e-322),                            # subnormal result
+    (-745.1, 5e-324),
+    (-746.0, 0.0),                                 # underflow
+    (-0.6931471805599453, 0.5),
+    (-3.4657359027997265, 0.03125),
+    (-0.013862943611198907, 0.9862327044933592),   # shock-decay-sized steps
+    (-5.545177444479562, 0.003906250000000001),
+]
+
+
+@pytest.mark.parametrize("x, expected", V8_EXP)
+def test_exp_matches_v8_bit_for_bit(x, expected):
+    assert exp(x) == expected
+
+
+def test_exp_overflow_is_infinity():
+    assert exp(709.8) == math.inf
+
+
+def test_exp_infinities_and_nan():
+    assert exp(math.inf) == math.inf
+    assert exp(-math.inf) == 0.0
+    assert math.isnan(exp(math.nan))
