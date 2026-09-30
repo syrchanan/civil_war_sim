@@ -16,11 +16,11 @@ unit order, so a one-on-one battle draws exactly like ``Simulation``.
 """
 
 import secrets
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams
-from imperial_generals.units import Regiment
+from imperial_generals.units import CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
 
 MODES = frozenset({'idle', 'ranged', 'melee'})
@@ -72,12 +72,13 @@ class CasualtyEvent:
 
 @dataclass(frozen=True)
 class UnitReport:
-    losses: int
+    losses: int                 # men hit by fire this round (killed or wounded; split in Battle.finish)
     inflicted: int
     size: int
     morale: float
     broken: bool
     broke_at: float | None      # game minute it broke, if it broke this round
+    captured: int = 0           # men taken prisoner as it routed this round
 
 
 @dataclass(frozen=True)
@@ -88,6 +89,28 @@ class RoundReport:
     engagements: tuple          # Engagement arrows at the start of the round
     units: dict                 # uid -> UnitReport
     events: tuple = ()          # CasualtyEvent per casualty, when record_events=True
+    prisoners: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> prisoners taken this round
+
+
+@dataclass(frozen=True)
+class UnitOutcome:
+    """One unit's casualty accounting once the battle is over."""
+
+    hits: int                   # men hit by fire over the whole battle
+    killed: int
+    wounded: int
+    walking_wounded: int        # losing side only: wounded who left with their unit
+    wounded_captured: int       # losing side only: left-behind wounded taken by the field holder
+    wounded_returned: int       # wounded who recover and rejoin (added back to strength)
+    captured_in_rout: int       # taken prisoner as the unit broke
+    final_size: int
+
+
+@dataclass(frozen=True)
+class BattleResult:
+    field_held_by: int | None
+    units: dict                 # uid -> UnitOutcome
+    prisoners: dict             # side -> prisoners taken over the whole battle
 
 
 @dataclass
@@ -100,6 +123,7 @@ class BattleUnit:
     index: int
     losses: int = 0
     inflicted: int = 0
+    captured: int = 0
 
     @property
     def size(self) -> int:
@@ -150,6 +174,8 @@ class Battle:
         self.time: float = 0.0
         self.round: int = 0
         self.history: list[RoundReport] = []
+        self.prisoners: dict[int, int] = {0: 0, 1: 0}
+        self.finished: bool = False
         self._broken_before_round: set[str] = set()
 
     # -------------------------------------------------------------------------
@@ -267,13 +293,41 @@ class Battle:
                 gone.add(uid)
         return gone
 
+    def _draw_count(self, mean_share: float, n: int) -> int:
+        """
+        Semi-random whole-number share of ``n`` men: share = mean × (1 ± share_spread) from one uniform draw,
+        clamped to [0, 1], then rounded half up.
+        """
+        spread = self.params.aftermath.share_spread
+        share = mean_share * (1 + spread * (2 * self.rng.random() - 1))
+        share = min(1.0, max(0.0, share))
+        return int(share * n + 0.5)
+
+    def _rout(self, gone: set, arrows: list, prisoners: dict) -> None:
+        """Take prisoners from units that just broke (more if enemy cavalry is attacking them)."""
+        after = self.params.aftermath
+        for uid in sorted(gone, key=lambda u: self.units[u].index):
+            unit = self.units[uid]
+            if not unit.morale.broken or unit.size == 0:
+                continue
+            cavalry = any(a[1] == uid and isinstance(self.units[a[0]].regiment, CavalryRegiment) for a in arrows)
+            mean = min(1.0, after.rout_capture_share * (after.cavalry_capture_multiplier if cavalry else 1.0))
+            taken = self._draw_count(mean, unit.size)
+            unit.regiment.update_size(unit.size - taken)
+            unit.captured += taken
+            prisoners[1 - unit.side] += taken
+            self.prisoners[1 - unit.side] += taken
+
     def resolve_round(self, duration: float, orders: dict, record_events: bool = False) -> RoundReport:
         """
         Fight one round of ``duration`` game minutes under ``orders`` and return its report.
 
         Units left out of ``orders`` are idle. When a unit breaks or is wiped out, the units targeting it stand down
-        for the rest of the round. Broken units can be targeted (pursued) but don't fight back.
+        for the rest of the round. A unit that breaks loses a share of its remaining men as prisoners (more if
+        enemy cavalry is attacking it). Broken units can be targeted (pursued) but don't fight back.
         """
+        if self.finished:
+            raise RuntimeError("This battle is finished.")
         if not duration > 0:
             raise ValueError(f"duration must be > 0, got {duration}.")
         valid = self._validate_orders(orders)
@@ -281,7 +335,8 @@ class Battle:
         self.round += 1
         start = self.time
         end = start + duration
-        before = {uid: (u.losses, u.inflicted) for uid, u in self.units.items()}
+        before = {uid: (u.losses, u.inflicted, u.captured) for uid, u in self.units.items()}
+        prisoners = {0: 0, 1: 0}
         self._broken_before_round = {uid for uid, u in self.units.items() if u.morale.broken}
         broke_at: dict[str, float] = {}
         cancelled: set[str] = set()
@@ -311,7 +366,7 @@ class Battle:
                 self._advance(end - t, engaged)
                 self._sync(engaged)
                 t = end
-                self._newly_broken(engaged, broke_at, t)
+                self._rout(self._newly_broken(engaged, broke_at, t), arrows, prisoners)
                 break
 
             # weighted pick of the arrow that caused this casualty
@@ -342,6 +397,7 @@ class Battle:
             # a unit can break from its losses or from the in-combat drain; either way (or if wiped out)
             # its attackers stand down and the arrow structure is rebuilt
             gone = self._newly_broken(engaged, broke_at, t)
+            self._rout(gone, arrows, prisoners)
             if victim.size == 0:
                 gone.add(victim.uid)
             if gone:
@@ -362,10 +418,77 @@ class Battle:
                     morale=float(u.morale.morale),
                     broken=u.morale.broken,
                     broke_at=broke_at.get(uid),
+                    captured=u.captured - before[uid][2],
                 )
                 for uid, u in self.units.items()
             },
             events=tuple(events),
+            prisoners=prisoners,
         )
         self.history.append(report)
         return report
+
+    # -------------------------------------------------------------------------
+    # After the battle
+    # -------------------------------------------------------------------------
+
+    def _auto_field_holder(self) -> int | None:
+        """The side still standing when every unit of the other side is broken or wiped out; else None."""
+        out = {side: all(not u.active for u in self.units.values() if u.side == side) for side in (0, 1)}
+        if out[1] and not out[0]:
+            return 0
+        if out[0] and not out[1]:
+            return 1
+        return None
+
+    def finish(self, field_held_by='auto') -> BattleResult:
+        """
+        End the battle and settle its casualties.
+
+        Men hit by fire split into killed and wounded. On the side that lost the field, some wounded leave with
+        their unit (walking wounded) and a share of the rest are captured by the side holding it. A share of the
+        wounded who weren't captured recover and rejoin, restoring the unit's strength. All shares are semi-random
+        draws from the battle's seed.
+
+        Parameters
+        ----------
+        field_held_by : 0, 1, None or 'auto'
+            Side holding the field at the end. 'auto' picks the side still standing when the other is entirely
+            broken or wiped out, else None (no wounded captured).
+
+        Raises
+        ------
+        RuntimeError
+            If the battle is already finished.
+        ValueError
+            If field_held_by is not 0, 1, None or 'auto'.
+        """
+        if self.finished:
+            raise RuntimeError("This battle is already finished.")
+        if field_held_by == 'auto':
+            holder = self._auto_field_holder()
+        elif field_held_by is None or (type(field_held_by) is int and field_held_by in (0, 1)):
+            holder = field_held_by
+        else:
+            raise ValueError(f"field_held_by must be 0, 1, None or 'auto', got {field_held_by!r}.")
+
+        after = self.params.aftermath
+        outcomes = {}
+        for uid, unit in self.units.items():
+            hits = unit.losses
+            killed = self._draw_count(after.killed_share, hits)
+            wounded = hits - killed
+            walking = captured = 0
+            if holder is not None and unit.side != holder:
+                walking = self._draw_count(after.walking_wounded_share, wounded)
+                captured = self._draw_count(after.wounded_captured_share, wounded - walking)
+                self.prisoners[holder] += captured
+            returned = self._draw_count(after.wounded_return_share, wounded - captured)
+            unit.regiment.update_size(unit.size + returned)
+            outcomes[uid] = UnitOutcome(
+                hits=hits, killed=killed, wounded=wounded, walking_wounded=walking, wounded_captured=captured,
+                wounded_returned=returned, captured_in_rout=unit.captured, final_size=unit.size,
+            )
+
+        self.finished = True
+        return BattleResult(field_held_by=holder, units=outcomes, prisoners=dict(self.prisoners))
