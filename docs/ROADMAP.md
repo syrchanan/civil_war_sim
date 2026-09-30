@@ -40,8 +40,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 |---|---|---|
 | A1 | Cross-language seeded RNG | ✓ |
 | A2 | Morale model + time calibration (minutes) | ✓ |
-| A3 | Per-battle parameter set + fast event log | ► |
-| A4 | Round engine: N regiments per side, `resolve_round` | ○ |
+| A3 | Per-battle parameter set + fast event log | ✓ |
+| A4 | Round engine: N regiments per side, `resolve_round` | ► |
 | A5 | Engagements / brigade targeting (pairwise Lanchester) | ○ |
 | A6 | Morale break / retreat | ○ |
 | A7 | Unit-type matchup matrix | ○ |
@@ -160,14 +160,29 @@ Open for tuning (A10):
   (pursuit, prisoners), which aren't modelled yet (see A6).
 - `melee_kill_rate` is a placeholder.
 
-### A3. Per-battle parameter set + fast event log ►
-- A `BattleParams` object (combat + morale + matchup constants) built from YAML defaults and passed to the engine.
-  Overrides go per battle, so an RL/parameter search can run many parameter sets in one process without mutating
-  the global config.
-- Replace the per-event `pd.concat` (quadratic) with list appends / preallocated arrays; build a DataFrame only on
-  request. Rollout speed matters for tuning.
+### A3. Per-battle parameter set + fast event log ✓
+**Built** (`imperial_generals/params.py`):
+- `BattleParams(combat=CombatParams(), morale=MoraleParams())`: frozen, validated, defaults from YAML.
+- `with_overrides({'combat': {...}, 'morale': {...}})`: nested; a partial `weapon_multipliers` merges into the
+  defaults; unknown keys raise. `to_dict` / `from_dict` are JSON-safe for A8.
+- `Simulation(forces, rng, params=)`. Overrides never touch the global config or other regiments.
+- `CombatParams.efficiency` / `unit_coef` is the single implementation of the effectiveness formula
+  (`get_combat_efficiency` and `Regiment.coef` delegate to it).
+- Matchup constants (A7) will join as a third section.
 
-### A4. Round engine ○
+**Speed**: 7.5k → 42k casualty events/s; a 4,000 v 4,000 day went from 293 ms to 52 ms. Every change is exact:
+- Per-event rows appended to a list, one DataFrame per run; `record_history=False` skips rows for rollouts.
+- Coefficients come from the params object; before, each casualty rebuilt and re-parsed a stats string and
+  re-read the config.
+- The morale → stat lookup is arithmetic instead of a numpy scan, and is recomputed only when the stat changes.
+- The debug log line is only formatted when debug logging is on.
+- Competing clocks are sampled directly: one Exp(r₀ + r₁) draw for *when*, plus one uniform for *who*
+  (P = rᵢ / (r₀ + r₁)), the same distribution as two separate clocks. Who is hit no longer depends on `log`.
+
+Next speed lever: run battles across CPU cores in the A10 batch runner. The remaining cost is spread thinly
+across Python overhead.
+
+### A4. Round engine ►
 - `Battle` holds N regiments per side (`Army`), round number, RNG state, params.
 - `resolve_round(duration, engagements)` runs the continuous-time Markov/Lanchester process for `duration` game
   time, then returns a round report (casualties, morale, broken units per regiment).
@@ -193,9 +208,12 @@ engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
 - Thresholds live in `morale.yaml` / `BattleParams`.
 - Break detection is done (A2). What's left for the round engine: the broken unit leaves its engagements, and other
   units' targets update.
-- Open: **rout losses**. A breaking unit historically lost extra men to pursuit and capture, which is most of why
-  losers lose more than winners. Candidate: a one-off loss of a tunable fraction on breaking, larger if the enemy
-  has cavalry.
+- **Rout losses (captured)**: when a unit breaks it takes a one-off loss of a tunable fraction of its remaining men
+  as prisoners, increased if enemy cavalry is engaged with it. This is most of why losers historically lost more
+  than winners (the probe shows even-fight winners bleeding almost as much as losers without it).
+- **Wounded recovered after the battle**: once the engagement ends, a semi-random share of each unit's casualties
+  returns as wounded who recover. Seeded like everything else (drawn from the battle's `Rng`), with the share
+  tunable. Captured men do not return. Reports should split casualties into killed, wounded (returned) and captured.
 
 ### A7. Unit-type matchup matrix ○
 Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.
@@ -204,6 +222,15 @@ Most remaining design work goes here. Stats (xp / morale / weapon / melee) are c
   infantry at range.
 - Config-driven, so it's tunable in A10.
 - Open: should subtypes do more than change the matrix (e.g. cavalry charge bonus in the first round of melee)?
+- **Watch melee effectiveness closely.** Two kinds of unit:
+  - **Melee-only** (pikes, light cavalry): effectiveness is 0 until they close to melee, so at range they can only
+    take fire (and pay the helplessness morale cost).
+  - **Dual-mode** (line infantry, dragoons): fire at range, and also fight in melee at a penalty that should
+    differ by type (dragoons dismount or charge; line infantry uses the bayonet).
+
+  Today that's `stats[3]` (melee-only flag) plus one global `melee_penalty_factor`, and `melee_kill_rate` is a
+  placeholder. The matchup matrix should carry per-type melee strength, and A10 should report melee outcomes
+  separately.
 
 ### A8. Battle state serialization ○
 This is the contract between Python, TypeScript, and the admin site. Fully deterministic: same state + seed → same result.

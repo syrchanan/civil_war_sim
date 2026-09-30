@@ -1,13 +1,15 @@
 
 import numpy as np
-from imperial_generals.config import get_config
+
+from imperial_generals.params import CombatParams, default_combat_params
 
 
 def get_combat_efficiency(
     stat_xp: int | np.integer = None,
     stat_morale: int | np.integer = None,
     stat_weapon: int | np.integer = None,
-    stat_melee: int | np.integer = None
+    stat_melee: int | np.integer = None,
+    params: CombatParams | None = None,
 ) -> float:
     """
     Calculate the combat efficiency coefficient for a regiment based on experience, morale, weapon, and melee status.
@@ -31,6 +33,8 @@ def get_combat_efficiency(
         Must be provided and an integer.
     stat_melee : int
         Whether the unit is in melee combat (0 = no, 1 = yes). Must be provided and an integer.
+    params : CombatParams, optional
+        Per-battle constants; defaults to config (see ``imperial_generals.params``).
 
     Returns
     -------
@@ -49,13 +53,8 @@ def get_combat_efficiency(
     - Morale is converted from a 10-100 scale to 1-10 for calculations.
     - Inputs are clamped to valid ranges.
     - Melee combat applies a penalty to effectiveness.
-    - All constants are loaded from simulation.yaml via ConfigLoader.
-
+    - The formula lives in ``CombatParams.efficiency``.
     """
-
-    # ===========================================
-    # INPUT VALIDATION
-    # ===========================================
 
     for name, value in [
         ("stat_xp", stat_xp),
@@ -68,53 +67,7 @@ def get_combat_efficiency(
         if not isinstance(value, (int, np.integer)):
             raise TypeError(f"{name} must be an integer.")
 
-    # ===========================================
-    # CONSTANTS (loaded from simulation.yaml)
-    # ===========================================
-
-    combat_cfg = get_config()['combat']
-    morale_cfg = get_config()['morale']
-
-    weapon_multipliers      = combat_cfg['weapon_multipliers']
-    xp_boost_per_level      = combat_cfg['xp_boost_per_level']
-    morale_boost_per_level  = combat_cfg['morale_boost_per_level']
-    melee_penalty_factor    = combat_cfg['melee_penalty_factor']
-    raw_scale_factor        = morale_cfg['raw_scale_factor']
-
-    # ===========================================
-    # MAX EFFECTIVENESS CALCULATION
-    # ===========================================
-
-    # Fixed value ensures the final coefficient is between 0 and 1, where 1 is highest possible effectiveness (one shot, one kill principle)
-    max_weapon_base = max(weapon_multipliers.values())
-    max_xp_adj = (10 - 1) * xp_boost_per_level
-    max_morale_adj = (10 - 1) * morale_boost_per_level
-    max_possible_raw_coefficient = max_weapon_base * (1 + max_xp_adj + max_morale_adj)
-
-    # ===========================================
-    # FUNCTION LOGIC
-    # ===========================================
-
-    # Morale conversion - dynamic morale system tracks granular morale 10-100, which needs to be converted back to 1-10 for coefficient calcs
-    stat_morale_1_10 = round(stat_morale / raw_scale_factor, ndigits=0) if stat_morale > raw_scale_factor else stat_morale
-
-    # Input clamping to ensure within valid range
-    stat_morale_1_10 = max(1, min(10, stat_morale_1_10))
-    stat_xp = max(1, min(10, stat_xp))
-    stat_weapon = max(-2, min(2, stat_weapon))
-    stat_melee = max(0, min(1, stat_melee))
-
-    # XP & Morale adjustments
-    eff_adj = 1 + (stat_xp - 1) * xp_boost_per_level + (stat_morale_1_10 - 1) * morale_boost_per_level
-
-    # Final positive efficiency
-    raw_coef = weapon_multipliers.get(str(stat_weapon)) * eff_adj
-
-    # Apply melee penalty if needed
-    coef = raw_coef * melee_penalty_factor if stat_melee == 1 else raw_coef
-
-    # Scale and return result
-    return coef / max_possible_raw_coefficient
+    return (params or default_combat_params()).efficiency(stat_xp, stat_morale, stat_weapon, stat_melee)
 
 
 if __name__ == "__main__":  # pragma: no cover

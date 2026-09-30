@@ -2,6 +2,7 @@ import re
 
 from imperial_generals.utils import get_closest_morale_stat, get_combat_efficiency, Position
 from imperial_generals.config import get_config
+from imperial_generals.params import CombatParams, default_combat_params
 
 # experience/morale/weapon/melee; only weapon may be negative (-2 unarmed/pikes, -1 matchlock)
 _STATS_PATTERN = re.compile(r'^(\d+)/(\d+)/(-?\d+)/(\d+)$')
@@ -72,17 +73,17 @@ class Regiment:
     @property
     def coef(self) -> float:
         """
-        Combat efficiency coefficient, adjusted for current combat mode.
+        Combat efficiency coefficient with config-default constants, adjusted for current combat mode.
 
         - Melee-only unit firing at range: 0.0 (cannot shoot).
         - Ranged unit in melee: base coef * melee_penalty_factor.
         - All other modes: base coef.
         """
-        if self.is_melee_only and self.combat_mode == 'ranged':
-            return 0.0
-        if not self.is_melee_only and self.combat_mode == 'melee':
-            return self._base_coef * get_config()['combat']['melee_penalty_factor']
-        return self._base_coef
+        return self.coef_with(default_combat_params())
+
+    def coef_with(self, params: CombatParams) -> float:
+        """Combat efficiency coefficient in the current combat mode under the given per-battle constants."""
+        return params.unit_coef(self.stats, self.combat_mode)
 
     @property
     def effective_law(self) -> str:
@@ -237,8 +238,11 @@ class Regiment:
         self.raw_morale = new_morale
         new_stat = get_closest_morale_stat(new_morale)
 
-        # update stats & coef
-        self.update_stats(f"{self.stats[0]}/{new_stat}/{self.stats[2]}/{self.stats[3]}")
+        # the stat only moves every ~raw_scale_factor points, so skip the coef recompute when it hasn't changed;
+        # set the tuple directly rather than formatting a stats string and re-parsing it
+        if new_stat != self.stats[1]:
+            self.stats = (self.stats[0], new_stat, self.stats[2], self.stats[3])
+            self._base_coef = get_combat_efficiency(self.stats[0], self.stats[1], self.stats[2], 0)
 
     def deploy_to_cell(self, cell) -> None:
         """Deploy regiment to a map Cell, deriving position from cell data."""

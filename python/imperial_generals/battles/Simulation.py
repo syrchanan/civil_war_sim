@@ -11,9 +11,9 @@ import pandas as pd
 
 # local imports
 from imperial_generals.units import Regiment
-from imperial_generals.config import get_config
 from imperial_generals.utils import Rng
-from imperial_generals.battles.morale import MoraleParams, MoraleState
+from imperial_generals.params import BattleParams
+from imperial_generals.battles.morale import MoraleState
 
 class Simulation:
     """
@@ -31,7 +31,7 @@ class Simulation:
     """
 
     def __init__(self, forces: Tuple[Regiment, Regiment], rng: Rng | None = None,
-                 morale_params: MoraleParams | None = None):
+                 params: BattleParams | None = None):
         """
         Initialize the Simulation with two regiments.
 
@@ -39,12 +39,13 @@ class Simulation:
             forces (Tuple[Regiment, Regiment]): The two opposing Regiment instances.
             rng (Rng | None): Seeded generator for all randomness. Pass Rng(seed) for a
                 reproducible battle; defaults to a randomly seeded Rng.
-            morale_params (MoraleParams | None): Morale model constants for both sides;
-                defaults to config.
+            params (BattleParams | None): Per-battle combat and morale constants;
+                defaults to config. Never modifies the global config.
 
         Sets:
             self.forces: Tuple[Regiment, Regiment]
             self.rng: Rng
+            self.params: BattleParams
             self.morale_states: Tuple[MoraleState, MoraleState]
             self.casualties: dict[str, list[int, int] | np.ndarray]
                 - 'initial_size': list[int, int]
@@ -58,12 +59,17 @@ class Simulation:
         if rng is not None and not isinstance(rng, Rng):
             raise TypeError(f"rng must be an Rng instance, got {type(rng).__name__}.")
 
+        if params is not None and not isinstance(params, BattleParams):
+            raise TypeError(f"params must be a BattleParams instance, got {type(params).__name__}.")
+
         self.forces: Tuple[Regiment, Regiment] = forces
         self.rng: Rng = rng if rng is not None else Rng(secrets.randbits(32))
+        self.params: BattleParams = params if params is not None else BattleParams()
+        self.time: float = 0.0   # game minutes elapsed
 
         reg1, reg2 = forces
         self.morale_states: Tuple[MoraleState, MoraleState] = tuple(
-            MoraleState(size=reg.size, xp=reg.stats[0], morale_stat=reg.stats[1], params=morale_params)
+            MoraleState(size=reg.size, xp=reg.stats[0], morale_stat=reg.stats[1], params=self.params.morale)
             for reg in forces
         )
         self.casualties: dict[str, list[int, int] | np.ndarray] = {
@@ -135,27 +141,33 @@ class Simulation:
             'morale_2': self.casualties['morale'][1],
         }
 
-    def run_simulation(self, time: float) -> None:
+    def run_simulation(self, time: float, record_history: bool = True) -> None:
         """
         Run the battle until game time ``time`` (minutes), a side breaks or is wiped out, or nobody can fire.
 
         Continuous-time Markov chain: each side's casualty rate comes from the Lanchester law for its combat
-        mode, scaled to casualties per minute by the kill rates in combat.yaml. The next casualty time is drawn
+        mode, scaled to casualties per minute by the per-battle kill rates. The next casualty time is drawn
         from an exponential per side; the earliest one happens. Morale advances through the elapsed time
         (shock fades, engaged units drain), then the casualty is applied to both sides' morale.
-        """
-        combat_cfg = get_config()['combat']
-        kill_rate = {'sq': combat_cfg['ranged_kill_rate'], 'ln': combat_cfg['melee_kill_rate']}
 
-        t = float(self.sim_output['time'].iloc[-1])
+        With ``record_history=False`` no per-event rows are kept (``sim_output`` is left as is); the final state
+        is still on ``forces``, ``morale_states`` and ``casualties``. Use it for fast batch/RL rollouts.
+        """
+        combat = self.params.combat
+        kill_rate = {'sq': combat.ranged_kill_rate, 'ln': combat.melee_kill_rate}
+        # checked once: formatting the debug line on every event is expensive even when it's never emitted
+        debug = logging.getLogger().isEnabledFor(logging.DEBUG)
+
+        t = self.time
         rows = []
 
         while t < time:
             sizes = [reg.size for reg in self.forces]
-            coef = [reg.coef for reg in self.forces]
+            coef = [reg.coef_with(combat) for reg in self.forces]
             front_sizes = [min(reg.size, reg.front_size) for reg in self.forces]
 
-            logging.debug(f"At time {t:.2f}, sizes: {sizes}, fronts: {front_sizes}, coefs: {coef}, morale: {self.casualties['morale'].tolist()}")
+            if debug:
+                logging.debug(f"At time {t:.2f}, sizes: {sizes}, fronts: {front_sizes}, coefs: {coef}, morale: {self.casualties['morale'].tolist()}")
 
             # casualties per minute suffered by each side (non-negative)
             casualty = [
@@ -165,27 +177,33 @@ class Simulation:
             ]
 
             # rate 0 means the other side cannot inflict casualties (e.g. melee-only unit at range)
-            clocks = [self.rng.exponential(r) if r > 0 else float('inf') for r in casualty]
+            total_rate = casualty[0] + casualty[1]
 
             # a side is engaged if it is firing (the enemy is taking casualties) or under fire
             engaged = [casualty[i] > 0 or casualty[1 - i] > 0 for i in (0, 1)]
 
             # neither side can inflict casualties: nothing more will happen
-            if min(clocks) == float('inf'):
+            if total_rate == 0:
                 break
 
+            # Competing exponential clocks, sampled directly: the first of two independent exponentials
+            # (rates r0, r1) arrives after Exp(r0 + r1), and it is side i's with probability ri / (r0 + r1).
+            # One exponential + one uniform per casualty instead of two exponentials; and who is hit
+            # depends only on exact arithmetic, not on log.
+            dt = self.rng.exponential(total_rate)
+
             # the next casualty falls after the time limit: let morale run to the limit and stop
-            if t + min(clocks) >= time:
+            if t + dt >= time:
                 for i in (0, 1):
                     self.morale_states[i].advance(time - t, engaged=engaged[i])
                     self._sync_morale(i)
                 t = time
-                rows.append(self._row(t))
+                if record_history:
+                    rows.append(self._row(t))
                 break
 
-            dt = min(clocks)
+            victim = 0 if self.rng.random() * total_rate < casualty[0] else 1
             t += dt
-            victim = int(np.argmin(clocks))
 
             for i in (0, 1):
                 self.morale_states[i].advance(dt, engaged=engaged[i])
@@ -197,7 +215,8 @@ class Simulation:
 
             for i in (0, 1):
                 self._sync_morale(i)
-            rows.append(self._row(t))
+            if record_history:
+                rows.append(self._row(t))
 
             if self.forces[victim].size == 0:
                 logging.info(f"Simulation ended at {t:.1f} min: a regiment was wiped out. Final sizes: {[r.size for r in self.forces]}")
@@ -206,6 +225,7 @@ class Simulation:
                 logging.info(f"Simulation ended at {t:.1f} min: a regiment broke. Final sizes: {[r.size for r in self.forces]}")
                 break
 
+        self.time = t
         if rows:
             self.sim_output = pd.concat([self.sim_output, pd.DataFrame(rows)], ignore_index=True)
 

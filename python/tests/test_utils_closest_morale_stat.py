@@ -21,6 +21,23 @@ def test_non_numeric_raises_type_error():
         get_closest_morale_stat(None)
 
 
+# Exact behaviour on a fine grid, including ties (x5 rounds down, matching the original first-minimum scan)
+@pytest.mark.parametrize("morale, expected", [
+    (0, 1), (0.0, 1), (4.99, 1), (10, 1), (14.999, 1), (15, 1), (15.0001, 2),
+    (25, 2), (35, 3), (54.5, 5), (55, 5), (55.5, 6), (85, 8), (94.9, 9), (95, 9), (95.1, 10), (100, 10),
+])
+def test_closest_stat_exact_values_and_ties(morale, expected):
+    assert get_closest_morale_stat(morale) == expected
+
+
+def test_closest_stat_on_a_fine_grid_matches_nearest_level_rule():
+    for i in range(0, 10001):
+        m = i / 100
+        levels = list(range(10, 101, 10))
+        nearest = min(levels, key=lambda lv: (abs(lv - m), lv))   # ties go to the lower level
+        assert get_closest_morale_stat(m) == nearest // 10, m
+
+
 def test_out_of_range_raises_value_error():
     with pytest.raises(ValueError):
         get_closest_morale_stat(-1)

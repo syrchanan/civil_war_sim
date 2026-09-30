@@ -6,6 +6,8 @@ from imperial_generals.units.Regiment import Regiment
 from imperial_generals.battles.Simulation import Simulation
 from imperial_generals.utils import Rng
 from imperial_generals.battles.morale import MoraleParams, MoraleState, break_fraction
+from imperial_generals.params import BattleParams, CombatParams
+from imperial_generals.config import get_config
 
 
 def make_regiment(obj):
@@ -179,12 +181,12 @@ def test_one_sided_fire_lowers_victim_morale():
 # Morale model + game time in minutes (roadmap A2)
 # =============================================================================
 
-def _firefight(size=1000, stats=('4/5/0/0', '4/5/0/0'), minutes=60, seed=0, morale_params=None):
+def _firefight(size=1000, stats=('4/5/0/0', '4/5/0/0'), minutes=60, seed=0, params=None, record_history=True):
     reg1, reg2 = Regiment(size, stats[0]), Regiment(size, stats[1])
     reg1.set_combat_mode('ranged')
     reg2.set_combat_mode('ranged')
-    sim = Simulation((reg1, reg2), rng=Rng(seed), morale_params=morale_params)
-    sim.run_simulation(time=minutes)
+    sim = Simulation((reg1, reg2), rng=Rng(seed), params=params)
+    sim.run_simulation(time=minutes, record_history=record_history)
     return sim
 
 def test_each_side_has_a_morale_state():
@@ -196,9 +198,94 @@ def test_each_side_has_a_morale_state():
     assert s2.break_fraction == break_fraction(7, 3, s2.params)
 
 def test_morale_params_are_passed_to_both_sides():
-    params = MoraleParams(drain_per_hour=0.2)
-    sim = Simulation((Regiment(100, '4/5/0/0'), Regiment(100, '4/5/0/0')), rng=Rng(1), morale_params=params)
-    assert all(s.params is params for s in sim.morale_states)
+    params = BattleParams(morale=MoraleParams(drain_per_hour=0.2))
+    sim = Simulation((Regiment(100, '4/5/0/0'), Regiment(100, '4/5/0/0')), rng=Rng(1), params=params)
+    assert all(s.params is params.morale for s in sim.morale_states)
+
+
+# =============================================================================
+# Per-battle parameters (roadmap A3)
+# =============================================================================
+
+def test_default_params_when_omitted():
+    sim = Simulation((Regiment(100, '4/5/0/0'), Regiment(100, '4/5/0/0')), rng=Rng(1))
+    assert sim.params == BattleParams()
+
+def test_invalid_params_type_raises():
+    with pytest.raises(TypeError):
+        Simulation((Regiment(100, '4/5/0/0'), Regiment(100, '4/5/0/0')), params={'combat': {}})
+
+def _mean_losses(params, stats=('4/5/0/0', '4/5/0/0'), seeds=range(20), minutes=60):
+    totals = [0, 0]
+    for seed in seeds:
+        sim = _firefight(stats=stats, minutes=minutes, seed=seed, params=params)
+        totals[0] += sim.casualties['losses'][0]
+        totals[1] += sim.casualties['losses'][1]
+    return [t / len(seeds) for t in totals]
+
+def test_kill_rate_override_scales_casualties():
+    base = BattleParams()
+    doubled = base.with_overrides({'combat': {'ranged_kill_rate': base.combat.ranged_kill_rate * 2}})
+    ratio = sum(_mean_losses(doubled)) / sum(_mean_losses(base))
+    assert 1.7 < ratio < 2.3
+
+def test_weapon_override_changes_who_wins_the_firefight():
+    stats = ('4/5/1/0', '4/5/0/0')      # rifled v smoothbore
+    assert _mean_losses(BattleParams(), stats)[1] > _mean_losses(BattleParams(), stats)[0]
+    weak_rifles = BattleParams().with_overrides({'combat': {'weapon_multipliers': {'1': 0.3}}})
+    losses = _mean_losses(weak_rifles, stats)
+    assert losses[0] > losses[1]
+
+def test_overrides_do_not_leak_into_global_config_or_regiments():
+    before = get_config()['combat']['ranged_kill_rate']
+    tuned = BattleParams().with_overrides({'combat': {'ranged_kill_rate': 0.05, 'weapon_multipliers': {'0': 2.0}}})
+    sim = _firefight(params=tuned)
+    assert get_config()['combat']['ranged_kill_rate'] == before
+    reg = Regiment(100, '4/5/0/0')
+    assert reg.coef == CombatParams().efficiency(4, 5, 0, 0)
+
+def test_regiment_coef_with_params():
+    reg = Regiment(100, '4/5/1/0')
+    reg.set_combat_mode('melee')
+    p = CombatParams(melee_penalty_factor=0.5)
+    assert reg.coef_with(p) == p.efficiency(4, 5, 1, 0) * 0.5
+    assert reg.coef == reg.coef_with(CombatParams())
+
+def test_who_gets_hit_is_proportional_to_casualty_rates():
+    # huge units over a short window: sizes barely change, so rates stay ~fixed.
+    # Side 1 (smoothbore) suffers the rifled side's rate, 1.5x what side 0 suffers.
+    losses = [0, 0]
+    for seed in range(10):
+        sim = _firefight(size=20_000, stats=('4/5/1/0', '4/5/0/0'), minutes=5, seed=seed, record_history=False)
+        losses[0] += sim.casualties['losses'][0]
+        losses[1] += sim.casualties['losses'][1]
+    assert losses[1] / losses[0] == pytest.approx(1.5, rel=0.05)
+
+def test_each_casualty_uses_one_exponential_and_one_uniform_draw(monkeypatch):
+    calls = {'exponential': 0}
+    original = Rng.exponential
+    def counting(self, rate):
+        calls['exponential'] += 1
+        return original(self, rate)
+    monkeypatch.setattr(Rng, 'exponential', counting)
+    sim = _firefight(minutes=30, seed=2, record_history=False)
+    events = int(sim.casualties['losses'].sum())
+    assert calls['exponential'] == events + 1     # +1: the draw that lands past the time limit
+
+def test_debug_logging_emits_per_event_state(caplog):
+    import logging
+    with caplog.at_level(logging.DEBUG):
+        _firefight(size=50, minutes=30, seed=1)
+    assert any('sizes:' in r.getMessage() for r in caplog.records if r.levelno == logging.DEBUG)
+
+def test_record_history_off_gives_identical_outcome():
+    with_history = _firefight(minutes=240, seed=11)
+    without = _firefight(minutes=240, seed=11, record_history=False)
+    assert without.casualties['losses'].tolist() == with_history.casualties['losses'].tolist()
+    assert [s.morale for s in without.morale_states] == [s.morale for s in with_history.morale_states]
+    assert [r.size for r in without.forces] == [r.size for r in with_history.forces]
+    assert len(without.sim_output) == 1          # only the starting row
+    assert len(with_history.sim_output) > 100
 
 def test_even_firefight_costs_5_to_10_percent_per_hour():
     fractions = []
