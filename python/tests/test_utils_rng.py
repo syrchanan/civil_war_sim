@@ -77,6 +77,11 @@ def test_state_round_trip_resumes_sequence():
     assert [resumed.next_u32() for _ in range(20)] == [rng.next_u32() for _ in range(20)]
 
 
+def test_seed_is_remembered():
+    assert Rng(42).seed == 42
+    assert Rng.from_state([1, 2, 3, 4]).seed is None
+
+
 def test_state_is_a_copy():
     rng = Rng(5)
     snapshot = rng.state

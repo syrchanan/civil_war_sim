@@ -45,8 +45,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A5 | Orders / targeting graph (merged into A4) | ✓ |
 | A6 | Morale break / retreat: rout captures, wounded | ✓ |
 | A7 | Unit-type matchup matrix | ✓ |
-| A8 | Battle state serialization (JSON contract) | ► |
-| A9 | Step API + CLI | ○ |
+| A8 | Battle state serialization (JSON contract) | ✓ |
+| A9 | Step API + CLI | ► |
 | A10 | Tuning harness: batch runner + matchup stats | ○ |
 
 ### Phase B — Playable web client
@@ -392,27 +392,30 @@ Deferred until range exists (decided 2026-09-30):
 
 Watch in tuning: heavy cavalry at even numbers still beats fresh average line infantry.
 
-### A8. Battle state serialization ►
-This is the contract between Python, TypeScript, and the admin site. Fully deterministic: same state + seed → same result.
-```json
-{
-  "version": "1.0",
-  "seed": 42,
-  "round": 0,
-  "params_overrides": {},
-  "units": [
-    { "id": "reg_001", "side": 0, "type": "infantry", "subtype": null,
-      "size": 4000, "stats": "4/4/0/0", "morale_raw": 40.0, "broken": false,
-      "position": [102.4, 87.3] }
-  ],
-  "history": [
-    { "round": 1, "duration": 30, "engagements": [], "report": {} }
-  ]
-}
-```
-Positions are stored for display only. They don't affect combat until range/terrain effects return.
+### A8. Battle state serialization ✓
+The contract between Python, TypeScript and the game site: `battle.to_json()` / `Battle.from_json(text)`
+(`battles/state.py`). **Resolving the next round of a reloaded battle gives exactly the result it would have had
+without saving** (tested mid-battle, including `finish()`).
 
-### A9. Step API + CLI ○
+- `format: "imperial-generals-battle"`, `version: 1`. Loading any other format or version raises.
+- `meta`: free-form battle details (name, date, location, notes), round-tripped untouched.
+- `seed` (informational) and `rng_state` (the 4 generator words: what actually matters).
+- `params`: the **full** parameter set, not just overrides, so a later config change can't alter a saved battle.
+- `time`, `round`, `finished`, `prisoners` and `guns_captured` per side.
+- `units` (in unit order, which breaks ties): id, **name** (defaults to the id), side, type/subtype, size and
+  initial size, stats and initial stats, front size, guns, raw morale, combat mode, position, live morale
+  (resolve, shock, lost, broken), losses, inflicted, captured, guns lost, and free-form **meta** (player, army
+  ids, ...).
+- `history`: every round's report, now including the **orders given**, engagements, per-unit results, prisoners,
+  guns and (if recorded) events.
+
+Units are built with names and meta via the dict form:
+`Battle({'reg_001': {'side': 0, 'regiment': ..., 'name': '1st Minnesota', 'meta': {...}}}, meta={...})`.
+Reference file: `test_cases/battle_state_v1.json`. A test checks it round-trips unchanged, so format changes are
+deliberate; it's also the starting fixture for the TypeScript parity tests (B2). Positions are stored but don't
+affect combat until range/terrain effects return.
+
+### A9. Step API + CLI ►
 - Plain Python API; no Gymnasium/PettingZoo dependency:
   `Battle.from_state(json)`, `battle.resolve_round(duration, engagements)`, `battle.to_state()`.
 - CLI: `python -m imperial_generals resolve state.json --duration 30 --engagements e.json` → new state + report;
