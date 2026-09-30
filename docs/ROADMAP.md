@@ -38,8 +38,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 ### Phase A — Tunable Python core
 | # | Item | Status |
 |---|---|---|
-| A1 | Cross-language seeded RNG | ► |
-| A2 | Morale formula fixes | ○ |
+| A1 | Cross-language seeded RNG | ✓ |
+| A2 | Morale formula fixes | ► |
 | A3 | Per-battle parameter set + fast event log | ○ |
 | A4 | Round engine: N regiments per side, `resolve_round` | ○ |
 | A5 | Engagements / brigade targeting (pairwise Lanchester) | ○ |
@@ -82,16 +82,19 @@ with unlimited line of sight. The map pipeline is kept but parked.
 
 ## Phase A — Tunable Python core
 
-### A1. Cross-language seeded RNG ►
-`Simulation` currently draws from the global `np.random`, so battles can't be reproduced.
+### A1. Cross-language seeded RNG ✓
+`utils/rng.py` (`Rng`) is injected into `Simulation(forces, rng=Rng(seed))`. There is no global randomness in combat.
+Same seed + same state → **bit-identical** results in Python and JS. The spec the TS port must follow:
+- **Seeding**: a 32-bit seed is expanded to 4 state words with splitmix32.
+- **Core**: xoshiro128\*\* (32-bit ops only: `Math.imul`, `>>> 0`; no BigInt).
+- **`random()`**: 53-bit float from two draws: `((hi >>> 5) * 2^26 + (lo >>> 6)) / 2^53`.
+- **`exponential(rate)`**: `-log(1 - random()) / rate`, where `log` is `utils/fdlibm.py`, a pure-arithmetic fdlibm
+  port. The Windows CRT `log` differs from V8 in the last bit (1 in 3 samples in testing). The port matched V8's
+  `Math.log` on 300k random inputs with 0 mismatches.
+- **`state` / `Rng.from_state`**: 4 uint32 words, for serialization (A8).
+- Test goldens in `test_utils_rng.py` / `test_utils_fdlibm.py` come from JS/V8 and double as B2 parity fixtures.
 
-- Inject an RNG object into the engine; no global randomness anywhere.
-- Implement a **small, specified PRNG** (e.g. PCG32 or xoshiro128\*\*) plus an inverse-CDF exponential sampler, in
-  pure Python, and later identically in TypeScript. Same seed + same state → **bit-identical** results in both
-  languages. (numpy's generators can't be reproduced in JS, so we can't use them for this.)
-- Unlocks: fair A/B tuning comparisons, replays, admin/player result agreement, Python↔TS parity tests (B2).
-
-### A2. Morale formula fixes ○
+### A2. Morale formula fixes ►
 Found in `Simulation.update_morale_losses`; fix these before tuning, or tuning will fit the bugs:
 - Rules A–D apply **cumulative** losses on every event, although the docstring specifies casualties *this step*.
   Morale therefore falls faster the longer a fight runs.
@@ -112,20 +115,23 @@ Found in `Simulation.update_morale_losses`; fix these before tuning, or tuning w
 - Round length is arbitrary and admin-chosen. The engine never assumes a unit of time beyond "game time".
 
 ### A5. Engagements / brigade targeting ○
-No movement, so the admin supplies the engagements for each round:
+No movement. The admin/player enters every unit (where, what type, what stats) and the engagements for each round:
 ```
 engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
 ```
+- **One target per unit per round.** A unit fires on at most one target, but can receive fire from 0 or more units.
 - All pairs resolve simultaneously via per-pair Lanchester rates.
 - Several attackers on one target: their kill rates stack against it.
 - A unit's losses come only from units engaging it.
-- Open design points: a unit splitting fire across targets; defaults for units with no engagement (idle).
+- A unit with no engagement is idle for the round.
 
 ### A6. Morale break / retreat ○
 - Morale below a configurable **break threshold** → the regiment is broken and stops fighting for the rest of the round.
 - Units rout before annihilation, which is the historical reality.
-- Open: whether broken units can recover in later rounds (admin decision vs timed rule). Thresholds live in
-  `morale.yaml` / `BattleParams`.
+- **No recovery within a battle.** A broken unit stays broken for all remaining rounds of that engagement.
+- Later (Phase C): the user can force a broken unit back into the fight, at a penalty: lower effectiveness and
+  higher casualty rate.
+- Thresholds live in `morale.yaml` / `BattleParams`.
 
 ### A7. Unit-type matchup matrix ○
 Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.
@@ -192,6 +198,10 @@ resolve, and see casualties and morale per round. Import/export state JSON.
 
 ## Phase C — Later / parked
 
+### Rally override for broken units ○
+The user can force a broken unit back into combat. It fights at reduced effectiveness and takes more casualties
+(penalties TBD, config-driven).
+
 ### Admin effect modifier ○
 Per-side scalar on combat efficiency at battle setup (commander quality, supply, events). Default 1.0; range TBD
 (e.g. 0.7–1.3). Applied last. Cheap, and it fits the admin-run game, so it may move up.
@@ -228,6 +238,7 @@ light rain 0.75, heavy rain 0.6, fog 0.4, storm 0.5, snow 0.65. River/lake cells
   Then update `RiverGenerator` to terminate at lake cells.
 - **Roads**: edge-to-edge paths; `num_roads`; multiple roads intersect; route around lakes; `Cell.has_road`.
 - **Fences**: auto-generated on edges between `open` and non-open cells; `Cell.fenced_edges`; feeds cover.
+- **Before porting the map to TS**: `voronoi.py` still uses global `np.random`, and `river.py` uses `random.Random`. Move both to `Rng`.
 
 Map API:
 ```python
