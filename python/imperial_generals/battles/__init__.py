@@ -1,11 +1,13 @@
 from .Simulation import Simulation
-from .battle import Battle, Order, Engagement, RoundReport, UnitReport
+from .battle import Battle, BattleResult, Engagement, Order, RoundReport, UnitOutcome, UnitReport
 
 __all__ = [
     'Simulation',
     'Battle',
-    'Order',
+    'BattleResult',
     'Engagement',
+    'Order',
     'RoundReport',
+    'UnitOutcome',
     'UnitReport',
 ]

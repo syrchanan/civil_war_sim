@@ -146,6 +146,31 @@ class MoraleParams:
 
 
 # =============================================================================
+# Aftermath
+# =============================================================================
+
+@dataclass(frozen=True)
+class AftermathParams:
+    """Rout captures and end-of-battle casualty accounting; defaults from config/aftermath.yaml."""
+
+    rout_capture_share: float = _config_default('aftermath', 'rout_capture_share')
+    cavalry_capture_multiplier: float = _config_default('aftermath', 'cavalry_capture_multiplier')
+    killed_share: float = _config_default('aftermath', 'killed_share')
+    walking_wounded_share: float = _config_default('aftermath', 'walking_wounded_share')
+    wounded_captured_share: float = _config_default('aftermath', 'wounded_captured_share')
+    wounded_return_share: float = _config_default('aftermath', 'wounded_return_share')
+    share_spread: float = _config_default('aftermath', 'share_spread')
+
+    def __post_init__(self) -> None:
+        for name in ('rout_capture_share', 'killed_share', 'walking_wounded_share', 'wounded_captured_share',
+                     'wounded_return_share', 'share_spread'):
+            if not 0 <= getattr(self, name) <= 1:
+                raise ValueError(f"{name} must be in [0, 1].")
+        if self.cavalry_capture_multiplier < 0:
+            raise ValueError("cavalry_capture_multiplier must be >= 0.")
+
+
+# =============================================================================
 # Battle
 # =============================================================================
 
@@ -167,6 +192,7 @@ class BattleParams:
 
     combat: CombatParams = field(default_factory=CombatParams)
     morale: MoraleParams = field(default_factory=MoraleParams)
+    aftermath: AftermathParams = field(default_factory=AftermathParams)
 
     def with_overrides(self, overrides: dict) -> 'BattleParams':
         """
@@ -175,20 +201,24 @@ class BattleParams:
         A partial ``weapon_multipliers`` dict merges into the current one. Unknown sections or keys, and invalid
         values, raise ValueError.
         """
-        unknown = set(overrides) - {'combat', 'morale'}
+        sections = {f.name for f in fields(self)}
+        unknown = set(overrides) - sections
         if unknown:
             raise ValueError(f"Unknown parameter section(s): {sorted(unknown)}.")
-        return BattleParams(
-            combat=_apply(self.combat, overrides.get('combat', {}), 'combat'),
-            morale=_apply(self.morale, overrides.get('morale', {}), 'morale'),
-        )
+        return BattleParams(**{
+            name: _apply(getattr(self, name), overrides.get(name, {}), name) for name in sections
+        })
 
     def to_dict(self) -> dict:
         """JSON-safe dict of every parameter (weapon codes as string keys)."""
-        combat = {f.name: getattr(self.combat, f.name) for f in fields(self.combat)}
-        combat['weapon_multipliers'] = {str(k): v for k, v in sorted(combat['weapon_multipliers'].items())}
-        morale = {f.name: getattr(self.morale, f.name) for f in fields(self.morale)}
-        return {'combat': combat, 'morale': morale}
+        data = {
+            f.name: {g.name: getattr(getattr(self, f.name), g.name) for g in fields(getattr(self, f.name))}
+            for f in fields(self)
+        }
+        data['combat']['weapon_multipliers'] = {
+            str(k): v for k, v in sorted(data['combat']['weapon_multipliers'].items())
+        }
+        return data
 
     @classmethod
     def from_dict(cls, data: dict) -> 'BattleParams':

@@ -39,7 +39,7 @@ class TestConfigLoaderConstruction:
 
     def test_top_level_sections_present(self):
         loader = ConfigLoader(CONFIG_PATH)
-        for section in ['combat', 'morale', 'map', 'cover', 'weather', 'movement', 'visualization']:
+        for section in ['combat', 'morale', 'aftermath', 'map', 'cover', 'weather', 'movement', 'visualization']:
             assert section in loader, f"Missing top-level section: {section}"
 
     def test_loads_from_directory(self):

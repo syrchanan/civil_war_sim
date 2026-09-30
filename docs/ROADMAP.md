@@ -43,8 +43,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A3 | Per-battle parameter set + fast event log | ✓ |
 | A4 | Round engine: N regiments per side, `resolve_round` | ✓ |
 | A5 | Orders / targeting graph (merged into A4) | ✓ |
-| A6 | Morale break / retreat: rout captures, wounded | ► |
-| A7 | Unit-type matchup matrix | ○ |
+| A6 | Morale break / retreat: rout captures, wounded | ✓ |
+| A7 | Unit-type matchup matrix | ► |
 | A8 | Battle state serialization (JSON contract) | ○ |
 | A9 | Step API + CLI | ○ |
 | A10 | Tuning harness: batch runner + matchup stats | ○ |
@@ -238,7 +238,7 @@ Python work per event (advancing and syncing every engaged unit's morale). Next 
 and lazy morale updates (bring a unit up to date only when it's touched). Lazy updates would change floating-point
 rounding slightly, so they'd need a parity decision first.
 
-### A6. Morale break / retreat ►
+### A6. Morale break / retreat ✓
 - Morale reaches the break line (budget spent; see A2 `f_break`) → the regiment is broken and stops fighting.
 - Units rout before annihilation, which is the historical reality.
 - **No recovery within a battle.** A broken unit stays broken for all remaining rounds of that engagement.
@@ -257,7 +257,34 @@ rounding slightly, so they'd need a parity decision first.
   Others are "walking wounded" who leave with their unit when it breaks.
 - **Pursuit**: broken units can be targeted in later rounds (A4). Range will matter here once positions do.
 
-### A7. Unit-type matchup matrix ○
+**Built** (defaults in `config/aftermath.yaml`, tunable as `BattleParams.aftermath`):
+- **At the break**: the unit loses `rout_capture_share` (10%) of its remaining men as prisoners, ×2 if enemy
+  cavalry is attacking it at that moment. `UnitReport.captured` and `RoundReport.prisoners` report it; the
+  running total is `Battle.prisoners`.
+- **`battle.finish(field_held_by='auto')`**: `'auto'` means the side still standing when the other is entirely
+  broken or wiped out, else nobody. It returns a `BattleResult` with per-unit `UnitOutcome`:
+  - hits split into killed (22%) and wounded;
+  - on the losing side, walking wounded (40%) leave with their unit, and 60% of the rest are captured by the
+    field holder;
+  - 40% of uncaptured wounded return, and are added back to strength.
+
+  The battle is closed afterwards.
+- Every share is `mean × (1 ± share_spread)` from one uniform draw of the battle's `Rng`, rounded half up.
+
+**Probe** (one day, 5 × 90 min, 1000 v 1000, 200 seeds, no pursuit of broken units):
+
+| Matchup | Loser total (k + w + captured) | Loser prisoners | Winner total |
+|---|---|---|---|
+| Even 5/5 | 35% | 15% | 26% |
+| Rifled v smoothbore | 35% | 15% | 18% |
+| Veteran 8/8 v green 2/3 | 25% | 13% | 12% |
+| Dragoons v infantry | 39% | 19% | 26% |
+
+Even fights now have a loser/winner gap, and it comes from prisoners. Losers sit at the top of the 25–35% band,
+and prisoners are about 40% of loser casualties, which may be high. Tune in A10. Pursuing broken units for hours
+(admin choice) pushes loser totals past 50%.
+
+### A7. Unit-type matchup matrix ►
 Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.
 - A `type × type × mode` multiplier matrix (infantry / cavalry / artillery, later subtypes) applied to the attacker's
   coef against a given target. Rock-paper-scissors style: e.g. cavalry strong vs artillery in melee, weak vs

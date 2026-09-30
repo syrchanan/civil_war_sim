@@ -1,0 +1,32 @@
+# =============================================================================
+# AFTERMATH (roadmap A6)
+# Prisoners when a unit breaks, and the casualty accounting once a battle ends.
+# Shares are drawn semi-randomly from the battle's seed: mean × (1 ± share_spread), then rounded to whole men.
+# First-guess defaults; calibrate against Fox (1889) / Livermore (1900).
+# =============================================================================
+aftermath:
+
+  # --- At the moment a unit breaks ---
+
+  # Share of its remaining men captured as it routs.
+  rout_capture_share: 0.10
+
+  # Rout captures are multiplied by this when enemy cavalry is attacking the unit as it breaks.
+  cavalry_capture_multiplier: 2.0
+
+  # --- When the battle ends (Battle.finish) ---
+
+  # Share of men hit by fire who were killed; the rest are wounded (Civil War ≈ 1 killed : 3.5 wounded).
+  killed_share: 0.22
+
+  # Side that lost the field: share of its wounded who leave with their unit ("walking wounded").
+  walking_wounded_share: 0.40
+
+  # Side that lost the field: share of the remaining (left-behind) wounded captured by whoever holds the field.
+  wounded_captured_share: 0.60
+
+  # Share of wounded not captured who recover and return to their unit's strength.
+  wounded_return_share: 0.40
+
+  # Relative randomness of every share above: 0.25 → each draw lands in [0.75, 1.25] × the mean.
+  share_spread: 0.25

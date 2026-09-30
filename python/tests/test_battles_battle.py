@@ -254,7 +254,7 @@ def test_losses_are_conserved_and_sizes_updated():
     units = report.units
     assert sum(u.losses for u in units.values()) == sum(u.inflicted for u in units.values()) > 0
     for uid, u in units.items():
-        assert u.size == b.units[uid].initial_size - u.losses == b.units[uid].regiment.size
+        assert u.size == b.units[uid].initial_size - u.losses - u.captured == b.units[uid].regiment.size
     assert units['y'].losses == 0          # nobody targets y
 
 
