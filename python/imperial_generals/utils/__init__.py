@@ -1,9 +1,11 @@
 from .closest_morale_stat import get_closest_morale_stat
 from .combat_efficiency import get_combat_efficiency
 from .position import Position
+from .rng import Rng
 
 __all__ = [
     "get_closest_morale_stat",
     "get_combat_efficiency",
     "Position",
+    "Rng",
 ]

@@ -2,6 +2,7 @@
 
 # base libs
 import logging
+import secrets
 from typing import Tuple
 
 # ext libs
@@ -11,6 +12,7 @@ import pandas as pd
 # local imports
 from imperial_generals.units import Regiment
 from imperial_generals.config import get_config
+from imperial_generals.utils import Rng
 
 class Simulation:
     """
@@ -27,15 +29,18 @@ class Simulation:
         sim_output pd.DataFrame: Tracks simulation time, sizes, and morale history.
     """
 
-    def __init__(self, forces: Tuple[Regiment, Regiment]):
+    def __init__(self, forces: Tuple[Regiment, Regiment], rng: Rng | None = None):
         """
         Initialize the Simulation with two regiments.
 
         Args:
             forces (Tuple[Regiment, Regiment]): The two opposing Regiment instances.
+            rng (Rng | None): Seeded generator for all randomness. Pass Rng(seed) for a
+                reproducible battle; defaults to a randomly seeded Rng.
 
         Sets:
             self.forces: Tuple[Regiment, Regiment]
+            self.rng: Rng
             self.casualties: dict[str, list[int, int] | np.ndarray]
                 - 'initial_size': list[int, int]
                 - 'losses': np.ndarray
@@ -45,7 +50,11 @@ class Simulation:
         if not isinstance(forces, tuple) or not all(isinstance(r, Regiment) for r in forces) or len(forces) != 2:
             raise ValueError("forces must be a tuple of two Regiment instances.")
 
+        if rng is not None and not isinstance(rng, Rng):
+            raise TypeError(f"rng must be an Rng instance, got {type(rng).__name__}.")
+
         self.forces: Tuple[Regiment, Regiment] = forces
+        self.rng: Rng = rng if rng is not None else Rng(secrets.randbits(32))
 
         reg1, reg2 = forces
         self.casualties: dict[str, list[int, int] | np.ndarray] = {
@@ -190,7 +199,7 @@ class Simulation:
 
             # `exponential` here introduces the randomness and continuous-time aspect to the Markov chain by sampling the time to the next event from an exponential distribution, where the rate of that distribution is determined by the current casualty rates calculated from the Lanchester equations -- allowing for the simulation to model the inherently unpredictable nature of combat
             # rate=0 means this side cannot inflict casualties (e.g. melee-only unit at range)
-            clocks = [np.random.exponential(scale=1/r) if r > 0 else float('inf') for r in casualty]
+            clocks = [self.rng.exponential(r) if r > 0 else float('inf') for r in casualty]
 
             # increment time by the minimum clock
             t += min(clocks)
@@ -238,6 +247,6 @@ if __name__ == "__main__":  # pragma: no cover
     reg1 = Regiment(4000, '4/4/0/0')
     reg2 = Regiment(3500, '4/6/1/0')
 
-    sim = Simulation((reg1, reg2))
+    sim = Simulation((reg1, reg2), rng=Rng(42))
     sim.run_simulation(time=1)
     print(sim)

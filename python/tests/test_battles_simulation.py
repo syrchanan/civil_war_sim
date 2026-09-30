@@ -4,6 +4,7 @@ import pytest
 import pandas as pd
 from imperial_generals.units.Regiment import Regiment
 from imperial_generals.battles.Simulation import Simulation
+from imperial_generals.utils import Rng
 
 
 def make_regiment(obj):
@@ -119,6 +120,37 @@ def test_compute_rate_melee_only_ranged_is_zero_coef():
     rate = Simulation._compute_rate(reg, sizes, coef, front_sizes, 0)
     # Rate uses coef[1-0]=coef[1], independent of this regiment's coef
     assert rate == pytest.approx(-coef[1] * sizes[1])
+
+# =============================================================================
+# Seeded RNG — reproducible battles
+# =============================================================================
+
+def _run_seeded(seed):
+    sim = Simulation((Regiment(300, '4/4/0/0'), Regiment(250, '3/5/0/0')), rng=Rng(seed))
+    sim.run_simulation(time=1)
+    return sim.sim_output
+
+def test_same_seed_reproduces_battle():
+    pd.testing.assert_frame_equal(_run_seeded(42), _run_seeded(42))
+
+def test_different_seed_changes_battle():
+    assert not _run_seeded(1).equals(_run_seeded(2))
+
+def test_simulation_does_not_use_global_numpy_random(monkeypatch):
+    import numpy as np
+    def boom(*args, **kwargs):
+        raise AssertionError("global np.random used")
+    monkeypatch.setattr(np.random, 'exponential', boom)
+    _run_seeded(3)
+
+def test_default_rng_is_created_when_not_given():
+    sim = Simulation((Regiment(100, '4/4/0/0'), Regiment(100, '4/4/0/0')))
+    assert isinstance(sim.rng, Rng)
+
+def test_invalid_rng_raises():
+    with pytest.raises(TypeError):
+        Simulation((Regiment(100, '4/4/0/0'), Regiment(100, '4/4/0/0')), rng=42)
+
 
 def test_simulation_melee_only_vs_ranged_no_zero_division():
     # melee-only unit in ranged mode has coef=0 — must not raise ZeroDivisionError
