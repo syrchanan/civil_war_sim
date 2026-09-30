@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 
 from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams
-from imperial_generals.units import CavalryRegiment, Regiment
+from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
 
 MODES = frozenset({'idle', 'ranged', 'melee'})
@@ -121,6 +121,8 @@ class BattleUnit:
     morale: MoraleState
     initial_size: int
     index: int
+    key: tuple = ('inf', None)       # (unit type, subtype | None) for matchups; plain Regiment = infantry
+    melee_rating: float = 0.0
     losses: int = 0
     inflicted: int = 0
     captured: int = 0
@@ -169,7 +171,9 @@ class Battle:
                 raise TypeError(f"{uid!r} must be a Regiment, got {type(regiment).__name__}.")
             morale = MoraleState(size=regiment.size, xp=regiment.stats[0], morale_stat=regiment.stats[1],
                                  params=self.params.morale)
-            self.units[uid] = BattleUnit(uid, side, regiment, morale, regiment.size, index)
+            key = (getattr(regiment, 'unit_type', 'inf'), getattr(regiment, 'subtype', None))
+            self.units[uid] = BattleUnit(uid, side, regiment, morale, regiment.size, index, key=key,
+                                         melee_rating=self.params.matchups.melee_rating(key))
 
         self.time: float = 0.0
         self.round: int = 0
@@ -229,17 +233,20 @@ class Battle:
                     if b not in partners:
                         partners.append(b)
 
+        matchups = self.params.matchups
         slots = []
         for uid, partners in contacts.items():
             unit = units[uid]
-            # a broken unit in contact doesn't fight back; coef > 0 in melee for every valid unit
-            if unit.active and combat.unit_coef(unit.regiment.stats, 'melee') > 0:
-                slots.extend((uid, p, 'melee') for p in partners)
+            # a broken unit in contact doesn't fight back
+            if unit.active and unit.melee_rating > 0:
+                slots.extend((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'))
+                             for p in partners)
         for uid, order in live.items():
-            # a unit in melee doesn't fire its ranged order; a melee-only unit can't fire at all
+            # a unit in melee doesn't fire its ranged order; a melee-only unit (stats flag) can't fire at all
             if order.mode == 'ranged' and uid not in contacts \
                     and combat.unit_coef(units[uid].regiment.stats, 'ranged') > 0:
-                slots.append((uid, order.target, 'ranged'))
+                slots.append((uid, order.target, 'ranged',
+                              matchups.multiplier(units[uid].key, units[order.target].key, 'ranged')))
 
         slots.sort(key=lambda s: (units[s[1]].index, units[s[0]].index))
         return slots, contacts
@@ -250,19 +257,27 @@ class Battle:
         combat = self.params.combat
         total_fronts = {uid: sum(units[p].front for p in partners) for uid, partners in contacts.items()}
         arrows = []
-        for attacker, target, mode in slots:
+        for attacker, target, mode, matchup in slots:
             unit = units[attacker]
-            c = combat.unit_coef(unit.regiment.stats, mode)
+            stats = unit.regiment.stats
             if mode == 'melee':
                 total_front = total_fronts[attacker]
                 if total_front <= 0:
                     continue
+                # melee strength from the subtype's rating, not the firearm
+                c = combat.melee_efficiency(stats[0], stats[1], unit.melee_rating)
                 front_t = units[target].front
                 # fighters split in proportion to contact fronts; the target is exposed along its whole front
-                rate = combat.melee_kill_rate * c * unit.front * (front_t / total_front) * front_t
+                rate = combat.melee_kill_rate * c * unit.front * (front_t / total_front) * front_t * matchup
+            elif isinstance(unit.regiment, ArtilleryBattery):
+                # artillery fires per manned gun
+                c = combat.unit_coef(stats, 'ranged')
+                rate = c * unit.regiment.effective_guns * combat.artillery_kill_rate_per_gun * matchup
             else:
-                # (coef * size) * kill_rate: same operation order as Simulation, for bit-identical 1-v-1 draws
-                rate = c * unit.size * combat.ranged_kill_rate
+                c = combat.unit_coef(stats, 'ranged')
+                # (coef * size) * kill_rate first: same operation order as Simulation, for bit-identical
+                # 1-v-1 draws (the infantry-v-infantry matchup is 1.0, an exact multiply)
+                rate = c * unit.size * combat.ranged_kill_rate * matchup
             if rate > 0:
                 arrows.append((attacker, target, mode, rate))
         return arrows

@@ -127,7 +127,7 @@ def test_invalid_override_value_raises():
 def test_to_dict_is_json_safe_and_round_trips():
     tuned = BattleParams().with_overrides({'combat': {'weapon_multipliers': {'2': 3.0}}, 'morale': {'acceleration': 2.0}})
     data = json.loads(json.dumps(tuned.to_dict()))
-    assert set(data) == {'combat', 'morale', 'aftermath'}
+    assert set(data) == {'combat', 'morale', 'aftermath', 'matchups'}
     assert data['combat']['weapon_multipliers']['2'] == 3.0
     assert BattleParams.from_dict(data) == tuned
 

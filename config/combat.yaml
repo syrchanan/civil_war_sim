@@ -40,3 +40,7 @@ combat:
   # Melee (linear law): casualties/min = coef_enemy × melee_kill_rate × front_self × front_enemy.
   # Placeholder: two 500-man fronts in melee lose ~3× the ranged per-man rate. Tune in A10.
   melee_kill_rate: 0.000024
+
+  # Artillery (round engine): casualties/min = coef × effective_guns × artillery_kill_rate_per_gun × matchup.
+  # Placeholder: one manned gun ≈ 30 muskets' worth of fire on average across ranges. Tune in A10.
+  artillery_kill_rate_per_gun: 0.12
