@@ -1,3 +1,4 @@
+from imperial_generals.config import get_config
 from imperial_generals.units import Regiment
 from imperial_generals.utils import Position
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
@@ -24,7 +25,13 @@ class ArtilleryBattery(Regiment):
     """
 
     unit_type: str = "art"
-    MIN_CREW_PER_GUN: int = 7
+    MIN_CREW_PER_GUN: int = get_config()['artillery']['min_crew_per_gun']
+
+    @classmethod
+    def standard(cls, stats: str, *, subtype: str, position: Position | None = None) -> 'ArtilleryBattery':
+        """A battery from the standard template in config/artillery.yaml (8 guns × 9 crew)."""
+        cfg = get_config()['artillery']
+        return cls(cfg['guns'] * cfg['crew_per_gun'], stats, cfg['guns'], subtype=subtype, position=position)
 
     def __init__(self, size: int, stats: str, guns: int, *, subtype: str, position: Position | None = None) -> None:
         if not isinstance(guns, int):

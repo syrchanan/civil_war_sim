@@ -42,7 +42,8 @@ class CombatParams:
     melee_penalty_factor: float = _config_default('combat', 'melee_penalty_factor')
     ranged_kill_rate: float = _config_default('combat', 'ranged_kill_rate')
     melee_kill_rate: float = _config_default('combat', 'melee_kill_rate')
-    artillery_kill_rate_per_gun: float = _config_default('combat', 'artillery_kill_rate_per_gun')
+    artillery_ammo: dict = field(default_factory=lambda: dict(get_config()['combat']['artillery_ammo']))
+    artillery_default_ammo: str = _config_default('combat', 'artillery_default_ammo')
 
     def __post_init__(self) -> None:
         multipliers = {int(k): float(v) for k, v in self.weapon_multipliers.items()}
@@ -53,9 +54,13 @@ class CombatParams:
         for name in ('xp_boost_per_level', 'morale_boost_per_level'):
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} must be >= 0.")
-        for name in ('melee_penalty_factor', 'ranged_kill_rate', 'melee_kill_rate', 'artillery_kill_rate_per_gun'):
+        for name in ('melee_penalty_factor', 'ranged_kill_rate', 'melee_kill_rate'):
             if not getattr(self, name) > 0:
                 raise ValueError(f"{name} must be > 0.")
+        if not self.artillery_ammo or any(not v > 0 for v in self.artillery_ammo.values()):
+            raise ValueError("artillery_ammo needs at least one ammo type, each with a per-gun rate > 0.")
+        if self.artillery_default_ammo not in self.artillery_ammo:
+            raise ValueError(f"artillery_default_ammo {self.artillery_default_ammo!r} is not in artillery_ammo.")
 
         object.__setattr__(self, 'weapon_multipliers', multipliers)
         # Normaliser: the best possible unit (top weapon, xp 10, morale 10) has efficiency 1.
@@ -224,8 +229,23 @@ class MatchupParams:
     melee: dict = _matchups_default('melee')
     overrides: tuple = _matchups_default('overrides')
     melee_ratings: dict = _matchups_default('melee_ratings')
+    cavalry_charge: dict = _matchups_default('cavalry_charge')
+
+    _CHARGE_KEYS = frozenset({'size_exponent', 'unsteadiness_bonus', 'veterancy_weight', 'shock_weight',
+                              'min_factor', 'max_factor'})
 
     def __post_init__(self) -> None:
+        ch = self.cavalry_charge
+        if not isinstance(ch, dict) or set(ch) != self._CHARGE_KEYS:
+            raise ValueError(f"cavalry_charge needs exactly {sorted(self._CHARGE_KEYS)}.")
+        for name in ('size_exponent', 'unsteadiness_bonus', 'shock_weight', 'min_factor'):
+            if not ch[name] >= 0:
+                raise ValueError(f"cavalry_charge.{name} must be >= 0.")
+        if not 0 <= ch['veterancy_weight'] <= 1:
+            raise ValueError("cavalry_charge.veterancy_weight must be in [0, 1].")
+        if not ch['min_factor'] <= ch['max_factor']:
+            raise ValueError("cavalry_charge.min_factor must be <= max_factor.")
+
         for mode in _MATCHUP_MODES:
             table = getattr(self, mode)
             for a in UNIT_TYPES:
@@ -285,6 +305,28 @@ class MatchupParams:
         )
         self._cache[key] = value
         return value
+
+    def charge_factor(self, cav_size: int, inf_size: int, resolve: float, xp: int, shock: float) -> float:
+        """
+        Multiplier on cavalry charging infantry. Cohesive infantry (high resolve, veteran, unshaken) that
+        outnumbers the cavalry repels it (< 1); shaken or green infantry is ridden down. See matchups.yaml.
+        Powers go through fdlibm for cross-platform agreement.
+        """
+        ch = self.cavalry_charge
+        if cav_size <= 0 or inf_size <= 0:
+            return ch['min_factor']
+        xp_norm = (max(1, min(10, xp)) - 1) / 9
+        w = ch['veterancy_weight']
+        steadiness = resolve * (1 - w + w * xp_norm) / (1 + ch['shock_weight'] * shock)
+        exponent = ch['size_exponent']
+        ratio = cav_size / inf_size
+        if exponent == 1.0:
+            numbers = ratio
+        else:
+            from imperial_generals.utils.fdlibm import exp, log   # lazy: utils imports this module
+            numbers = exp(exponent * log(ratio))
+        factor = numbers * (1 + ch['unsteadiness_bonus'] * (1 - steadiness))
+        return min(ch['max_factor'], max(ch['min_factor'], factor))
 
     def melee_rating(self, unit: tuple) -> float:
         """Melee rating for (type, subtype | None); units without a listed subtype use 'default'."""

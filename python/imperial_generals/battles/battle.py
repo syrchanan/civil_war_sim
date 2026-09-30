@@ -28,10 +28,14 @@ MODES = frozenset({'idle', 'ranged', 'melee'})
 
 @dataclass(frozen=True)
 class Order:
-    """One regiment's order for a round: whom it targets and how."""
+    """
+    One regiment's order for a round: whom it targets and how. Artillery may name its ``ammo`` (e.g. 'round_shot',
+    'shell', 'canister'); it is fixed for the round, and defaults to ``artillery_default_ammo``.
+    """
 
     target: str | None = None
     mode: str = 'idle'
+    ammo: str | None = None
 
     def __post_init__(self) -> None:
         if self.mode not in MODES:
@@ -40,6 +44,8 @@ class Order:
             raise ValueError("An idle order has no target.")
         if self.mode != 'idle' and self.target is None:
             raise ValueError(f"A {self.mode} order needs a target.")
+        if self.ammo is not None and self.mode != 'ranged':
+            raise ValueError("Only a ranged order can choose ammo.")
 
     @classmethod
     def coerce(cls, value) -> 'Order':
@@ -206,6 +212,12 @@ class Battle:
                 raise ValueError(f"{uid!r} can't target {order.target!r}: same side.")
             if target.size == 0:
                 raise ValueError(f"{uid!r} targets {order.target!r}, which is wiped out.")
+            if order.ammo is not None:
+                if not isinstance(unit.regiment, ArtilleryBattery):
+                    raise ValueError(f"{uid!r} isn't artillery and can't choose ammo.")
+                if order.ammo not in self.params.combat.artillery_ammo:
+                    raise ValueError(f"{uid!r}: unknown ammo {order.ammo!r}; "
+                                     f"one of {sorted(self.params.combat.artillery_ammo)}.")
             valid[uid] = order
         return valid
 
@@ -239,14 +251,24 @@ class Battle:
             unit = units[uid]
             # a broken unit in contact doesn't fight back
             if unit.active and unit.melee_rating > 0:
-                slots.extend((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'))
-                             for p in partners)
+                order = live.get(uid)
+                for p in partners:
+                    # a cavalry charge: cavalry whose own melee order targets this infantry unit
+                    charge = (unit.key[0] == 'cav' and units[p].key[0] == 'inf'
+                              and order is not None and order.mode == 'melee' and order.target == p)
+                    slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'),
+                                  charge, None))
         for uid, order in live.items():
             # a unit in melee doesn't fire its ranged order; a melee-only unit (stats flag) can't fire at all
             if order.mode == 'ranged' and uid not in contacts \
                     and combat.unit_coef(units[uid].regiment.stats, 'ranged') > 0:
+                # artillery: per-gun rate of the ordered ammo, fixed for the round
+                gun_rate = None
+                if isinstance(units[uid].regiment, ArtilleryBattery):
+                    gun_rate = combat.artillery_ammo[order.ammo or combat.artillery_default_ammo]
                 slots.append((uid, order.target, 'ranged',
-                              matchups.multiplier(units[uid].key, units[order.target].key, 'ranged')))
+                              matchups.multiplier(units[uid].key, units[order.target].key, 'ranged'),
+                              False, gun_rate))
 
         slots.sort(key=lambda s: (units[s[1]].index, units[s[0]].index))
         return slots, contacts
@@ -257,7 +279,7 @@ class Battle:
         combat = self.params.combat
         total_fronts = {uid: sum(units[p].front for p in partners) for uid, partners in contacts.items()}
         arrows = []
-        for attacker, target, mode, matchup in slots:
+        for attacker, target, mode, matchup, charge, gun_rate in slots:
             unit = units[attacker]
             stats = unit.regiment.stats
             if mode == 'melee':
@@ -266,13 +288,18 @@ class Battle:
                     continue
                 # melee strength from the subtype's rating, not the firearm
                 c = combat.melee_efficiency(stats[0], stats[1], unit.melee_rating)
+                if charge:
+                    # depends on the infantry's current resolve, shock and numbers, so evaluated per event
+                    inf = units[target]
+                    matchup = matchup * self.params.matchups.charge_factor(
+                        unit.size, inf.size, inf.morale.resolve, inf.regiment.stats[0], inf.morale.shock)
                 front_t = units[target].front
                 # fighters split in proportion to contact fronts; the target is exposed along its whole front
                 rate = combat.melee_kill_rate * c * unit.front * (front_t / total_front) * front_t * matchup
-            elif isinstance(unit.regiment, ArtilleryBattery):
-                # artillery fires per manned gun
+            elif gun_rate is not None:
+                # artillery fires per manned gun, at the rate of the ammo it was ordered to use
                 c = combat.unit_coef(stats, 'ranged')
-                rate = c * unit.regiment.effective_guns * combat.artillery_kill_rate_per_gun * matchup
+                rate = c * unit.regiment.effective_guns * gun_rate * matchup
             else:
                 c = combat.unit_coef(stats, 'ranged')
                 # (coef * size) * kill_rate first: same operation order as Simulation, for bit-identical

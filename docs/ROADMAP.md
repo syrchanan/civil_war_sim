@@ -351,9 +351,40 @@ overrun.
 | Light cav charges battery | 0.4% | 40%, breaks | ✓ |
 | Heavy v light cav | 19% | 42%, breaks | ✓ |
 
-To decide:
-- **Artillery**: raise the per-gun rate and/or cut infantry fire on batteries (0.8 → ~0.3) until range exists.
-- **Cavalry v infantry melee**: set both directions to 1.0, leaving heavy cavalry's rating as the edge.
+**Decided and built** (2026-09-30, after that probe):
+- **Standard battery = 8 guns × 9 crew (72)** (`config/artillery.yaml`, `ArtilleryBattery.standard`); players adjust
+  from there. A gun needs 7 crew, and crew pool across guns: manned guns = min(guns, crew // 7).
+- **Ammo is part of the battery's order**, fixed for the round; the engine never switches ammo by itself.
+  `{'mode': 'ranged', 'target': ..., 'ammo': 'canister'}`. Per-gun rates: round shot 0.15, shell 0.25, canister
+  0.45 (≈40 / 60 / 110 muskets); round shot if unspecified. Until positions exist, the admin judges whether the
+  range suits the ammo.
+- **Infantry fire on batteries cut to 0.1** (cavalry 0.1, dragoons 0.15): dispersed crews, beyond effective musket
+  range. The way to silence guns is to charge them.
+- **Cavalry charge factor** (cavalry charging infantry with its own melee order), recomputed per event:
+  `(cav/inf numbers)^1 × (1 + 1.5 × (1 − steadiness))`, clamped to [0.25, 3], where steadiness blends the
+  infantry's resolve, veterancy and recent shock. The static cavalry → infantry melee value is 0.5 and
+  infantry → cavalry 1.0. Cohesive infantry repels a charge; outnumbered cavalry loses; shaken or green infantry
+  is ridden down.
+
+**Probe after** (one 90-min round, 200 seeds):
+
+| Round | Attacker lost | Defender lost |
+|---|---|---|
+| Battery (round shot) v line firefight | 16% (breaks 3%) | 3% |
+| Battery (canister) v line firefight | 15% | 10% |
+| Line charges battery | 0.6% | 34%, breaks |
+| 500 heavy cav charge 1000 line | 34%, breaks | 9% |
+| 1000 heavy cav charge 1000 line | 13% | 40%, breaks |
+| 1000 heavy cav charge 1000 veteran line | 34%, breaks 62% | 47%, breaks 38% |
+| 500 heavy cav charge line after 60 min of rifle fire | 20% | 26%, breaks 90% |
+| 500 light cav charge 1000 line | 34%, breaks | 6% |
+| 500 heavy cav charge 1000 pikes | 32%, breaks | 2% |
+
+Open:
+- Infantry fire on a battery is 0.1 whatever ammo the battery uses. A battery firing canister is within musket
+  range, so it could arguably be exposed more. Revisit when ranges exist, or tie it to the ordered ammo.
+- Heavy cavalry at even numbers still beats fresh average line infantry.
+- Guns captured when a battery is overrun.
 
 ### A8. Battle state serialization ○
 This is the contract between Python, TypeScript, and the admin site. Fully deterministic: same state + seed → same result.
