@@ -1,7 +1,17 @@
 import math
+from functools import lru_cache
 
 import numpy as np
 from imperial_generals.config import get_config
+
+
+@lru_cache(maxsize=1)
+def _levels() -> tuple:
+    """(min_raw, max_raw, scale, last_index), read once: config never changes at runtime."""
+    morale_cfg = get_config()['morale']
+    min_raw, max_raw, scale = morale_cfg['min_raw'], morale_cfg['max_raw'], morale_cfg['raw_scale_factor']
+    return min_raw, max_raw, scale, (max_raw - min_raw) // scale
+
 
 def get_closest_morale_stat(morale: float) -> int:
     """
@@ -21,16 +31,12 @@ def get_closest_morale_stat(morale: float) -> int:
     if not isinstance(morale, (int, float, np.integer, np.floating)):
         raise TypeError(f"morale must be a number (int, float, or numpy numeric), got {type(morale).__name__}")
 
-    morale_cfg = get_config()['morale']
-    min_raw = morale_cfg['min_raw']
-    max_raw = morale_cfg['max_raw']
-    scale   = morale_cfg['raw_scale_factor']
+    min_raw, max_raw, scale, last_index = _levels()
 
     if morale < 0 or morale > max_raw:
         raise ValueError(f"morale must be in the range 0 to {max_raw}, got {morale}")
 
     # index of the nearest level; ceil(x - 0.5) sends exact halves down, like the old first-minimum scan
-    last_index = (max_raw - min_raw) // scale
     index = max(0, min(last_index, math.ceil((morale - min_raw) / scale - 0.5)))
     return int((min_raw + index * scale) // scale)
 

@@ -19,6 +19,24 @@ _LN2 = 0.6931471805599453
 _BREAK_EPSILON = 1e-9
 
 
+_last_decay = (None, None, 1.0)   # (minutes, half_life, factor)
+
+
+def _shock_decay(minutes: float, half_life: float) -> float:
+    """
+    exp(-minutes·ln2 / half_life), remembering the last result.
+
+    In a battle every unit advances by the same elapsed time with the same half-life, back to back, so after the
+    first unit the rest reuse the identical value instead of recomputing exp.
+    """
+    global _last_decay
+    if _last_decay[0] == minutes and _last_decay[1] == half_life:
+        return _last_decay[2]
+    factor = exp(-minutes * _LN2 / half_life)
+    _last_decay = (minutes, half_life, factor)
+    return factor
+
+
 def _power(base: float, exponent: float) -> float:
     """base ** exponent for base > 0, via fdlibm so every platform agrees."""
     return exp(exponent * log(base))
@@ -95,7 +113,8 @@ class MoraleState:
         """
         if minutes < 0:
             raise ValueError(f"minutes must be >= 0, got {minutes}.")
-        self.shock *= exp(-minutes * _LN2 / self.params.shock_half_life)
+        if self.shock:                         # nothing to fade otherwise
+            self.shock *= _shock_decay(minutes, self.params.shock_half_life)
         if engaged and not self.broken:
             self._spend(self.params.drain_per_hour * minutes / 60)
 
