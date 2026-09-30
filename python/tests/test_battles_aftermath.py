@@ -195,6 +195,69 @@ def test_finish_is_seeded():
     assert r1 == r2
 
 
+# =============================================================================
+# Guns captured: overrun (no crew left) or abandoned when a battery breaks
+# =============================================================================
+
+def charged_battery(crew=72, guns=8, seed=3, params=None):
+    from imperial_generals.units import ArtilleryBattery
+    battery = ArtilleryBattery(crew, '4/4/0/0', guns, subtype='battery')
+    b = Battle({'c': (0, CavalryRegiment(1000, '6/6/0/1', subtype='heavy')), 'g': (1, battery)},
+               rng=Rng(seed), params=params or exact())
+    report = b.resolve_round(600, {'c': {'target': 'g', 'mode': 'melee'}})
+    return b, battery, report
+
+
+def test_broken_battery_escapes_only_with_guns_it_can_crew():
+    b, battery, report = charged_battery()
+    g = report.units['g']
+    assert g.broken and g.size > 0
+    kept = min(8, g.size // 7)
+    assert battery.guns == kept
+    assert g.guns_lost == 8 - kept > 0
+    assert report.guns_captured == {0: 8 - kept, 1: 0}
+    assert b.guns_captured == {0: 8 - kept, 1: 0}
+
+
+def test_overrun_battery_loses_every_gun():
+    b, battery, report = charged_battery(crew=1)
+    g = report.units['g']
+    assert g.size == 0
+    assert battery.guns == 0
+    assert g.guns_lost == 8
+    assert b.guns_captured[0] == 8
+
+
+def test_pursued_broken_battery_overrun_later_loses_the_rest():
+    b, battery, first = charged_battery(crew=40, guns=8)     # can crew 5 guns
+    assert first.units['g'].broken
+    kept = battery.guns
+    lost_first = first.units['g'].guns_lost
+    while battery.size > 0:
+        b.resolve_round(600, {'c': {'target': 'g', 'mode': 'melee'}})
+    assert battery.guns == 0
+    assert b.guns_captured[0] == lost_first + kept == 8
+
+
+def test_battery_with_enough_crew_keeps_all_guns_when_it_breaks():
+    b, battery, report = charged_battery(crew=200, guns=4)
+    assert report.units['g'].broken and battery.size >= 28      # enough crew left for all 4 guns
+    assert battery.guns == 4 and report.units['g'].guns_lost == 0
+
+
+def test_non_artillery_never_loses_guns():
+    _, report = rout_battle()
+    assert all(u.guns_lost == 0 for u in report.units.values())
+    assert report.guns_captured == {0: 0, 1: 0}
+
+
+def test_battle_result_reports_guns_captured():
+    b, battery, _ = charged_battery()
+    result = b.finish()
+    assert result.guns_captured == b.guns_captured
+    assert result.units['g'].guns_lost == 8 - battery.guns
+
+
 def test_auto_holder_can_be_side_1():
     b = Battle({'x': (0, Regiment(400, '2/2/0/0')), 'a': (1, Regiment(1000, '8/8/1/0'))}, rng=Rng(3), params=exact())
     b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}})

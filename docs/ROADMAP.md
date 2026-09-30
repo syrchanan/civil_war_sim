@@ -44,8 +44,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A4 | Round engine: N regiments per side, `resolve_round` | ✓ |
 | A5 | Orders / targeting graph (merged into A4) | ✓ |
 | A6 | Morale break / retreat: rout captures, wounded | ✓ |
-| A7 | Unit-type matchup matrix | ► |
-| A8 | Battle state serialization (JSON contract) | ○ |
+| A7 | Unit-type matchup matrix | ✓ |
+| A8 | Battle state serialization (JSON contract) | ► |
 | A9 | Step API + CLI | ○ |
 | A10 | Tuning harness: batch runner + matchup stats | ○ |
 
@@ -284,7 +284,7 @@ Even fights now have a loser/winner gap, and it comes from prisoners. Losers sit
 and prisoners are about 40% of loser casualties, which may be high. Tune in A10. Pursuing broken units for hours
 (admin choice) pushes loser totals past 50%.
 
-### A7. Unit-type matchup matrix ►
+### A7. Unit-type matchup matrix ✓
 Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.
 - A `type × type × mode` multiplier matrix (infantry / cavalry / artillery, later subtypes) applied to the attacker's
   coef against a given target. Rock-paper-scissors style: e.g. cavalry strong vs artillery in melee, weak vs
@@ -380,13 +380,19 @@ overrun.
 | 500 light cav charge 1000 line | 34%, breaks | 6% |
 | 500 heavy cav charge 1000 pikes | 32%, breaks | 2% |
 
-Open:
-- Infantry fire on a battery is 0.1 whatever ammo the battery uses. A battery firing canister is within musket
-  range, so it could arguably be exposed more. Revisit when ranges exist, or tie it to the ordered ammo.
-- Heavy cavalry at even numbers still beats fresh average line infantry.
-- Guns captured when a battery is overrun.
+- **Guns captured**: a battery **overrun** (crew reaches 0: all killed, wounded or captured) loses every remaining
+  gun. A battery that **breaks** takes the usual rout prisoners, then escapes with only the guns its remaining crew
+  can man (`min(guns, crew // 7)`); the rest are captured. Reported as `UnitReport.guns_lost`,
+  `RoundReport.guns_captured` / `Battle.guns_captured` (per side) and `BattleResult.guns_captured`.
 
-### A8. Battle state serialization ○
+Deferred until range exists (decided 2026-09-30):
+- Infantry fire on a battery is 0.1 whatever ammo the battery uses. A battery firing canister is within musket
+  range, so it could arguably be exposed more.
+- Whether ammo suits the range (canister is a close-range load).
+
+Watch in tuning: heavy cavalry at even numbers still beats fresh average line infantry.
+
+### A8. Battle state serialization ►
 This is the contract between Python, TypeScript, and the admin site. Fully deterministic: same state + seed → same result.
 ```json
 {
