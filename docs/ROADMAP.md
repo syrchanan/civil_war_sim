@@ -39,7 +39,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | # | Item | Status |
 |---|---|---|
 | A1 | Cross-language seeded RNG | ✓ |
-| A2 | Morale formula fixes | ► |
+| A2 | Morale model + time calibration (minutes) | ► |
 | A3 | Per-battle parameter set + fast event log | ○ |
 | A4 | Round engine: N regiments per side, `resolve_round` | ○ |
 | A5 | Engagements / brigade targeting (pairwise Lanchester) | ○ |
@@ -60,6 +60,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 ### Phase C — Later
 | Item | Status |
 |---|---|
+| Between-battle morale reconciliation / cooling-off | ○ (needs design) |
+| Rally override for broken units | ○ |
 | Admin effect modifier | ○ |
 | Weapon range stat + range/distance accuracy | ○ |
 | Map in the web client (port of map pipeline) | ○ |
@@ -94,12 +96,50 @@ Same seed + same state → **bit-identical** results in Python and JS. The spec 
 - **`state` / `Rng.from_state`**: 4 uint32 words, for serialization (A8).
 - Test goldens in `test_utils_rng.py` / `test_utils_fdlibm.py` come from JS/V8 and double as B2 parity fixtures.
 
-### A2. Morale formula fixes ►
-Found in `Simulation.update_morale_losses`; fix these before tuning, or tuning will fit the bugs:
-- Rules A–D apply **cumulative** losses on every event, although the docstring specifies casualties *this step*.
-  Morale therefore falls faster the longer a fight runs.
-- Rules C/D use `time - t` (time *remaining*) as `delta_t` instead of the elapsed step length.
-- Confirm the intended semantics, write failing tests, then fix.
+### A2. Morale model + time calibration ►
+The old rules A–D are replaced. Measured before the redesign, they barely moved morale: a 4,000-man regiment
+annihilated lost 0.7 of 60 raw morale, so every battle ended in annihilation. They also used cumulative losses on
+every event, depended on unit size, and used time *remaining* in the round as `delta_t`. Bugs fixed separately
+(`5285f24`): one-sided fire recorded no losses; negative weapon codes couldn't be entered.
+
+**Game time is in minutes.** One round is about 60–120 min; a typical engagement (one day) is 3–5 rounds. Longer
+battles are separate engagements, since armies redeploy overnight.
+
+**Break point from veterancy + starting morale.** Each unit has a loss fraction at which pure attrition breaks it:
+```
+w       = α·(xp − 1)/9 + (1 − α)·(morale_stat − 1)/9        # α = weight of experience (default 0.5)
+f_break = 0.15 + 0.60 · w^γ                                 # γ = 1.5 → 1/1: 15%, 5/5: ~33%, 10/10: 75%
+```
+Computed once at battle start from starting stats. Live morale is the **budget** being spent:
+`budget = M₀ − M_break`. Same thresholds for every era for now; era-specific later.
+
+**Per casualty on unit i** (N₀ = starting size, f = fraction lost so far):
+```
+ΔM = −a · (N₀/N_ref)^β · (1 + k·f) · (1 + c·S) · (1 + ψ·[not firing back]) / N₀
+a  = budget / (f_break + k·f_break²/2)       # pure attrition (β=c=ψ=d=0) breaks exactly at f_break
+```
+
+| Term | Covers | "Off" |
+|---|---|---|
+| `(N₀/N_ref)^β` | Unit size. β < 0: big units absorb the same % better | β = 0 (default) |
+| `(1 + k·f)` | Morale falls faster as the unit bleeds | k = 0 |
+| `S`, shock | Per unit: +1/N₀ per loss, fades with half-life H (needs a fdlibm `exp` port) | c = 0 |
+| `ψ` | Taking fire while idle or unable to reply | ψ = 0 |
+| `dM/dt = −d` while engaged | Wear over time in combat, replacing a separate fatigue system; flat when idle | d = 0 |
+| `+b` per fraction of enemy killed | Success lifts morale, **capped at starting morale M₀** | b = 0 |
+
+These depend only on game time and per-unit state, so results don't depend on how the day is cut into rounds.
+Tests should check this, and that the same % lost has the same effect at any size when β = 0.
+
+**Calibration targets** (from Napoleonic / Civil War records; refine against Fox 1889, Livermore 1900, Bodart 1916):
+- Day totals: loser **25–35%**, winner **12–25%**.
+- Break points: morale/xp 5 → **25–35%**; 8–10 → 40–60%; 1–3 → 10–20%. Exceptional stands (1st Minnesota ~82%)
+  are tail events.
+- Even, sustained firefight: **5–10% per hour** per side. A global kill-rate scale in `combat.yaml` sets this;
+  today a 4,000 v 4,000 fight ends in about 1 time unit.
+
+Build order: fdlibm `exp` (V8 goldens) → morale module (pure, per-unit state) → wire into `Simulation` with
+minutes + kill-rate scale → probe against the targets.
 
 ### A3. Per-battle parameter set + fast event log ○
 - A `BattleParams` object (combat + morale + matchup constants) built from YAML defaults and passed to the engine.
@@ -112,7 +152,7 @@ Found in `Simulation.update_morale_losses`; fix these before tuning, or tuning w
 - `Battle` holds N regiments per side (`Army`), round number, RNG state, params.
 - `resolve_round(duration, engagements)` runs the continuous-time Markov/Lanchester process for `duration` game
   time, then returns a round report (casualties, morale, broken units per regiment).
-- Round length is arbitrary and admin-chosen. The engine never assumes a unit of time beyond "game time".
+- Round length is admin-chosen, in minutes (typically 60–120).
 
 ### A5. Engagements / brigade targeting ○
 No movement. The admin/player enters every unit (where, what type, what stats) and the engagements for each round:
@@ -126,7 +166,7 @@ engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
 - A unit with no engagement is idle for the round.
 
 ### A6. Morale break / retreat ○
-- Morale below a configurable **break threshold** → the regiment is broken and stops fighting for the rest of the round.
+- Morale reaches the break line (budget spent; see A2 `f_break`) → the regiment is broken and stops fighting.
 - Units rout before annihilation, which is the historical reality.
 - **No recovery within a battle.** A broken unit stays broken for all remaining rounds of that engagement.
 - Later (Phase C): the user can force a broken unit back into the fight, at a penalty: lower effectiveness and
@@ -197,6 +237,11 @@ resolve, and see casualties and morale per round. Import/export state JSON.
 ---
 
 ## Phase C — Later / parked
+
+### Between-battle morale reconciliation ○ (needs design)
+After an engagement ends, a unit's morale must be settled before its next battle. For example, recovery toward
+baseline over rest days, and a "cooling-off period" so back-to-back battles are harder. Open: recovery rate, whether
+winners and losers recover differently, and how this is stored in the game's unit records.
 
 ### Rally override for broken units ○
 The user can force a broken unit back into combat. It fights at reduced effectiveness and takes more casualties
