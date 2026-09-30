@@ -194,12 +194,17 @@ class Simulation:
             # get amount of casualties
             casualty = [abs(d) for d in full_casualties]
 
-            # get direction (should be negative unless reinforcements are involved)
-            dir = [1 if d >= 0 else -1 for d in full_casualties]
+            # get direction: strictly positive = reinforcement, otherwise a loss
+            # (a side that cannot be hurt has rate -0.0, which must not count as reinforcement)
+            dir = [1 if d > 0 else -1 for d in full_casualties]
 
             # `exponential` here introduces the randomness and continuous-time aspect to the Markov chain by sampling the time to the next event from an exponential distribution, where the rate of that distribution is determined by the current casualty rates calculated from the Lanchester equations -- allowing for the simulation to model the inherently unpredictable nature of combat
             # rate=0 means this side cannot inflict casualties (e.g. melee-only unit at range)
             clocks = [self.rng.exponential(r) if r > 0 else float('inf') for r in casualty]
+
+            # neither side can inflict casualties: nothing more will happen
+            if min(clocks) == float('inf'):
+                break
 
             # increment time by the minimum clock
             t += min(clocks)
@@ -210,15 +215,16 @@ class Simulation:
                 #  3) multiply the dir by that side to get directionality
                 #  4) add to init vector, killing 1st man from fastest side
             tab = np.array([0, 0])
-            tab[np.argmin(clocks)] = 1
+            event_side = int(np.argmin(clocks))
+            tab[event_side] = 1
             sizes = (np.array(sizes) + dir * tab).tolist()
             
             # update reg sizes in Regiment instances
             reg1.update_size(sizes[0])
             reg2.update_size(sizes[1])
 
-            # update regiment losses - if < 0, set to 0 else add to losses
-            if all(d <= 0 for d in dir):
+            # record the event as a loss for the side it hit (reinforcements are not losses)
+            if dir[event_side] < 0:
                 self.casualties['losses'] += tab
 
             # update coefficients for next loop iteration based on casualties taken and initial size
