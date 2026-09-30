@@ -39,8 +39,8 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | # | Item | Status |
 |---|---|---|
 | A1 | Cross-language seeded RNG | ✓ |
-| A2 | Morale model + time calibration (minutes) | ► |
-| A3 | Per-battle parameter set + fast event log | ○ |
+| A2 | Morale model + time calibration (minutes) | ✓ |
+| A3 | Per-battle parameter set + fast event log | ► |
 | A4 | Round engine: N regiments per side, `resolve_round` | ○ |
 | A5 | Engagements / brigade targeting (pairwise Lanchester) | ○ |
 | A6 | Morale break / retreat | ○ |
@@ -96,7 +96,7 @@ Same seed + same state → **bit-identical** results in Python and JS. The spec 
 - **`state` / `Rng.from_state`**: 4 uint32 words, for serialization (A8).
 - Test goldens in `test_utils_rng.py` / `test_utils_fdlibm.py` come from JS/V8 and double as B2 parity fixtures.
 
-### A2. Morale model + time calibration ►
+### A2. Morale model + time calibration ✓
 The old rules A–D are replaced. Measured before the redesign, they barely moved morale: a 4,000-man regiment
 annihilated lost 0.7 of 60 raw morale, so every battle ended in annihilation. They also used cumulative losses on
 every event, depended on unit size, and used time *remaining* in the round as `delta_t`. Bugs fixed separately
@@ -138,10 +138,29 @@ Tests should check this, and that the same % lost has the same effect at any siz
 - Even, sustained firefight: **5–10% per hour** per side. A global kill-rate scale in `combat.yaml` sets this;
   today a 4,000 v 4,000 fight ends in about 1 time unit.
 
-Build order: fdlibm `exp` (V8 goldens) → morale module (pure, per-unit state) → wire into `Simulation` with
-minutes + kill-rate scale → probe against the targets.
+**Built:**
+- `utils/fdlibm.py` `exp`: 0 mismatches vs V8 on 300k inputs.
+- `battles/morale.py`: `MoraleParams`, `MoraleState`, `break_fraction`.
+- `Simulation(..., morale_params=)`: time in minutes; `ranged_kill_rate` / `melee_kill_rate` in `combat.yaml`; the
+  battle ends when a side breaks or is wiped out; no event can land past the time limit.
 
-### A3. Per-battle parameter set + fast event log ○
+**First calibration probe** (defaults, ranged fire, 200 seeds, one 450-min day):
+
+| Matchup | Loser | Winner | Breaks after |
+|---|---|---|---|
+| Even 5/5 smoothbore | 28% | 26% | ~4.3 h |
+| Even 5/5 rifled | 29% | 27% | ~3 h |
+| Veteran 8/8 v green 2/3 | 17% | 12% | ~2 h |
+| Rifled v smoothbore | 28% | 18% | ~2.7 h |
+| 1000 v 2000, even stats | 27% | 6% | ~1.8 h |
+| Elite 10/10 v 10/10 | 65% | 58% | 26% of fights still undecided at nightfall |
+
+Open for tuning (A10):
+- In even fights the winner bleeds nearly as much as the loser. Historically the gap comes largely from rout losses
+  (pursuit, prisoners), which aren't modelled yet (see A6).
+- `melee_kill_rate` is a placeholder.
+
+### A3. Per-battle parameter set + fast event log ►
 - A `BattleParams` object (combat + morale + matchup constants) built from YAML defaults and passed to the engine.
   Overrides go per battle, so an RL/parameter search can run many parameter sets in one process without mutating
   the global config.
@@ -172,6 +191,11 @@ engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
 - Later (Phase C): the user can force a broken unit back into the fight, at a penalty: lower effectiveness and
   higher casualty rate.
 - Thresholds live in `morale.yaml` / `BattleParams`.
+- Break detection is done (A2). What's left for the round engine: the broken unit leaves its engagements, and other
+  units' targets update.
+- Open: **rout losses**. A breaking unit historically lost extra men to pursuit and capture, which is most of why
+  losers lose more than winners. Candidate: a one-off loss of a tunable fraction on breaking, larger if the enemy
+  has cavalry.
 
 ### A7. Unit-type matchup matrix ○
 Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.

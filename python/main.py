@@ -8,9 +8,10 @@ import logging
 from collections import Counter
 
 from imperial_generals.config import get_config
-from imperial_generals.map import MapConfig, MapGenerator, MapViewer, BiomePresets
+from imperial_generals.map import MapConfig, MapGenerator, BiomePresets
 from imperial_generals.units import InfantryRegiment
 from imperial_generals.battles import Simulation
+from imperial_generals.utils import Rng
 
 # ==============================================================================
 # Logging
@@ -48,13 +49,14 @@ if __name__ == "__main__":
     print(f"  Morale boost/level: {combat_cfg['morale_boost_per_level']}")
     print(f"  Melee penalty:      {combat_cfg['melee_penalty_factor']}")
     print(f"  Weapon multipliers: { {k: v for k, v in combat_cfg['weapon_multipliers'].items()} }")
+    print(f"  Kill rate / min:    ranged={combat_cfg['ranged_kill_rate']}  melee={combat_cfg['melee_kill_rate']}")
 
     morale_cfg = cfg['morale']
     print(f"\nMorale:")
     print(f"  Raw bounds:   [{morale_cfg['min_raw']}, {morale_cfg['max_raw']}]")
     print(f"  Scale factor: {morale_cfg['raw_scale_factor']}")
-    print(f"  Loss A={morale_cfg['loss_constant_a']}  Gain B={morale_cfg['gain_constant_b']}")
-    print(f"  Loss C={morale_cfg['loss_constant_c']}  Gain D={morale_cfg['gain_constant_d']}")
+    for key, value in morale_cfg['model'].items():
+        print(f"  {key}: {value}")
 
     # --------------------------------------------------------------------------
     # Map generation
@@ -115,24 +117,6 @@ if __name__ == "__main__":
         print(f"\nCell at (50,50): terrain={hit.terrain_type}  elev={hit.elevation:.2f}  cover={hit.cover_value:.2f}")
 
     # --------------------------------------------------------------------------
-    # Map visualisation
-    #
-    # MapViewer wraps a MapResult and provides three views:
-    #   elevation    — continuous heatmap
-    #   terrain_type — categorical, colours from config/visualization.yaml
-    #                  rivers drawn in a second pass (on top) for visibility
-    #   cover_value  — continuous heatmap
-    #
-    # viewer.view()            — open all three views then block until closed
-    # viewer.view('elevation') — open a single named view and block
-    # viewer.show()            — single interactive figure with ←/→ to cycle views
-    # --------------------------------------------------------------------------
-
-    print("\nOpening map views (close windows to continue)...")
-    viewer = MapViewer(result)
-    viewer.view()  # renders all three figures and blocks until they are closed
-
-    # --------------------------------------------------------------------------
     # Battle simulation
     # --------------------------------------------------------------------------
 
@@ -144,6 +128,15 @@ if __name__ == "__main__":
     print(f"\n{regA}")
     print(f"{regB}")
 
-    sim = Simulation((regA, regB))
-    sim.run_simulation(time=1)
+    regA.set_combat_mode('ranged')
+    regB.set_combat_mode('ranged')
+
+    # one engagement day: 5 rounds of 90 game minutes
+    sim = Simulation((regA, regB), rng=Rng(42))
+    sim.run_simulation(time=450)
     print(f"\n{sim}")
+    for reg, state in zip(sim.forces, sim.morale_states):
+        status = 'BROKEN' if state.broken else 'holding'
+        print(f"  {reg.size} men left ({state.lost / state.initial_size:.0%} lost, "
+              f"breaks at {state.break_fraction:.0%}), morale {state.morale:.1f} — {status}")
+    print(f"  ended at {sim.sim_output['time'].iloc[-1]:.0f} min")

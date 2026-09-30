@@ -5,6 +5,7 @@ import pandas as pd
 from imperial_generals.units.Regiment import Regiment
 from imperial_generals.battles.Simulation import Simulation
 from imperial_generals.utils import Rng
+from imperial_generals.battles.morale import MoraleParams, MoraleState, break_fraction
 
 
 def make_regiment(obj):
@@ -127,7 +128,7 @@ def test_compute_rate_melee_only_ranged_is_zero_coef():
 
 def _run_seeded(seed):
     sim = Simulation((Regiment(300, '4/4/0/0'), Regiment(250, '3/5/0/0')), rng=Rng(seed))
-    sim.run_simulation(time=1)
+    sim.run_simulation(time=60)
     return sim.sim_output
 
 def test_same_seed_reproduces_battle():
@@ -158,7 +159,7 @@ def _one_sided(seed=4):
     victim.set_combat_mode('ranged')
     shooter.set_combat_mode('ranged')
     sim = Simulation((victim, shooter), rng=Rng(seed))
-    sim.run_simulation(time=1)
+    sim.run_simulation(time=60)
     return sim
 
 def test_one_sided_fire_records_losses():
@@ -172,6 +173,73 @@ def test_one_sided_fire_records_losses():
 def test_one_sided_fire_lowers_victim_morale():
     sim = _one_sided()
     assert sim.casualties['morale'][0] < 60.0
+
+
+# =============================================================================
+# Morale model + game time in minutes (roadmap A2)
+# =============================================================================
+
+def _firefight(size=1000, stats=('4/5/0/0', '4/5/0/0'), minutes=60, seed=0, morale_params=None):
+    reg1, reg2 = Regiment(size, stats[0]), Regiment(size, stats[1])
+    reg1.set_combat_mode('ranged')
+    reg2.set_combat_mode('ranged')
+    sim = Simulation((reg1, reg2), rng=Rng(seed), morale_params=morale_params)
+    sim.run_simulation(time=minutes)
+    return sim
+
+def test_each_side_has_a_morale_state():
+    sim = Simulation((Regiment(500, '4/5/0/0'), Regiment(400, '7/3/1/0')), rng=Rng(1))
+    s1, s2 = sim.morale_states
+    assert isinstance(s1, MoraleState) and isinstance(s2, MoraleState)
+    assert (s1.initial_size, s2.initial_size) == (500, 400)
+    assert s1.break_fraction == break_fraction(4, 5, s1.params)
+    assert s2.break_fraction == break_fraction(7, 3, s2.params)
+
+def test_morale_params_are_passed_to_both_sides():
+    params = MoraleParams(drain_per_hour=0.2)
+    sim = Simulation((Regiment(100, '4/5/0/0'), Regiment(100, '4/5/0/0')), rng=Rng(1), morale_params=params)
+    assert all(s.params is params for s in sim.morale_states)
+
+def test_even_firefight_costs_5_to_10_percent_per_hour():
+    fractions = []
+    for seed in range(20):
+        sim = _firefight(seed=seed)
+        fractions.extend(loss / 1000 for loss in sim.casualties['losses'])
+    mean = sum(fractions) / len(fractions)
+    assert 0.05 <= mean <= 0.10
+
+def test_no_events_after_time_limit_and_clock_ends_at_limit():
+    sim = _firefight(minutes=45)
+    assert sim.sim_output['time'].max() == 45
+    assert sim.sim_output['time'].iloc[-1] == 45
+
+def test_output_morale_matches_morale_states_and_regiments():
+    sim = _firefight(minutes=90, seed=3)
+    last = sim.sim_output.iloc[-1]
+    for i, state in enumerate(sim.morale_states):
+        assert last[f'morale_{i + 1}'] == state.morale
+        assert sim.forces[i].raw_morale == state.morale
+        assert sim.casualties['morale'][i] == state.morale
+
+def test_morale_falls_during_a_firefight():
+    sim = _firefight(minutes=120, seed=5)
+    assert all(state.morale < state.initial_morale for state in sim.morale_states)
+
+def test_helpless_unit_breaks_before_annihilation():
+    victim = Regiment(300, '4/5/0/1')     # melee-only in ranged mode: cannot fire back
+    shooter = Regiment(300, '4/5/0/0')
+    victim.set_combat_mode('ranged')
+    shooter.set_combat_mode('ranged')
+    sim = Simulation((victim, shooter), rng=Rng(2))
+    sim.run_simulation(time=100_000)
+    assert sim.morale_states[0].broken
+    assert 0 < victim.size < 300
+    assert sim.sim_output['time'].iloc[-1] < 100_000     # ended early on the break
+
+def test_green_unit_breaks_before_veteran_in_even_fire():
+    sim = _firefight(stats=('1/2/0/0', '9/8/0/0'), minutes=100_000, seed=7)
+    assert sim.morale_states[0].broken
+    assert not sim.morale_states[1].broken
 
 
 def test_no_casualties_when_neither_side_can_fire():

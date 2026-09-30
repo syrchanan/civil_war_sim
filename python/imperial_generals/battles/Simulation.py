@@ -13,6 +13,7 @@ import pandas as pd
 from imperial_generals.units import Regiment
 from imperial_generals.config import get_config
 from imperial_generals.utils import Rng
+from imperial_generals.battles.morale import MoraleParams, MoraleState
 
 class Simulation:
     """
@@ -29,7 +30,8 @@ class Simulation:
         sim_output pd.DataFrame: Tracks simulation time, sizes, and morale history.
     """
 
-    def __init__(self, forces: Tuple[Regiment, Regiment], rng: Rng | None = None):
+    def __init__(self, forces: Tuple[Regiment, Regiment], rng: Rng | None = None,
+                 morale_params: MoraleParams | None = None):
         """
         Initialize the Simulation with two regiments.
 
@@ -37,10 +39,13 @@ class Simulation:
             forces (Tuple[Regiment, Regiment]): The two opposing Regiment instances.
             rng (Rng | None): Seeded generator for all randomness. Pass Rng(seed) for a
                 reproducible battle; defaults to a randomly seeded Rng.
+            morale_params (MoraleParams | None): Morale model constants for both sides;
+                defaults to config.
 
         Sets:
             self.forces: Tuple[Regiment, Regiment]
             self.rng: Rng
+            self.morale_states: Tuple[MoraleState, MoraleState]
             self.casualties: dict[str, list[int, int] | np.ndarray]
                 - 'initial_size': list[int, int]
                 - 'losses': np.ndarray
@@ -57,6 +62,10 @@ class Simulation:
         self.rng: Rng = rng if rng is not None else Rng(secrets.randbits(32))
 
         reg1, reg2 = forces
+        self.morale_states: Tuple[MoraleState, MoraleState] = tuple(
+            MoraleState(size=reg.size, xp=reg.stats[0], morale_stat=reg.stats[1], params=morale_params)
+            for reg in forces
+        )
         self.casualties: dict[str, list[int, int] | np.ndarray] = {
             'initial_size': [reg1.size, reg2.size],
             'losses': np.array([0, 0]),
@@ -111,148 +120,99 @@ class Simulation:
         else:
             return -coef[1 - idx] * sizes[1 - idx]
 
-    # Private method to update internal casualties value for dynamic morale tracking
-    def update_morale_losses(self, delta_t: float) -> None:
+    def _sync_morale(self, side: int) -> None:
+        """Push a side's live morale into the casualty log and the Regiment (which updates its coef)."""
+        morale = float(self.morale_states[side].morale)
+        self.casualties['morale'][side] = morale
+        self.forces[side].update_raw_morale(morale)
+
+    def _row(self, t: float) -> dict:
+        return {
+            'time': t,
+            'size_1': self.forces[0].size,
+            'size_2': self.forces[1].size,
+            'morale_1': self.casualties['morale'][0],
+            'morale_2': self.casualties['morale'][1],
+        }
+
+    def run_simulation(self, time: float) -> None:
         """
-        ▪ Rule A: Casualties Sustained (Morale Falls):
-            • Calculate loss_percentage = B_casualties_taken_this_step / previous_B_soldiers. (Handle division by zero if previous_B_soldiers is 0).
-            • morale_change_for_B = morale_change_for_B - (loss_percentage * Morale_Loss_Constant_1)
-            • (Rationale: A unit taking losses will experience a drop in morale. The previous_B_soldiers provides a stable baseline for this percentage calculation.)
-        ▪ Rule B: Casualties Inflicted (Morale Rises):
-            • Calculate infliction_percentage = R_casualties_taken_this_step / previous_R_soldiers. (Handle division by zero if previous_R_soldiers is 0).
-            • morale_change_for_B = morale_change_for_B + (infliction_percentage * Morale_Gain_Constant_1)
-            • (Rationale: Successfully inflicting casualties boosts morale, reflecting "High-spirited, eager" or "Patriotic exuberance!".)
-        ▪ Rule C: Faster Casualties Sustained (More Morale Falls):
-            • Calculate casualties_per_unit_time_taken = B_casualties_taken_this_step / delta_t. (Handle delta_t being zero or extremely small to avoid Inf or NaN; you might cap this value or add a small epsilon to delta_t).
-            • morale_change_for_B = morale_change_for_B - (casualties_per_unit_time_taken * Morale_Loss_Constant_2)
-            • (Rationale: Rapid, heavy losses are more demoralizing than slow attrition, even for the same total casualty count. This reflects the "shaken, shell-shocked" state.)
-        ▪ Rule D: Faster Casualties Inflicted (Faster Morale Rises):
-            • Calculate casualties_per_unit_time_inflicted = R_casualties_taken_this_step / delta_t. (Handle delta_t being zero or extremely small).
-            • morale_change_for_B = morale_change_for_B + (casualties_per_unit_time_inflicted * Morale_Gain_Constant_2)
-            • (Rationale: A rapid, successful advance or defense significantly boosts a unit's spirit.)
+        Run the battle until game time ``time`` (minutes), a side breaks or is wiped out, or nobody can fire.
+
+        Continuous-time Markov chain: each side's casualty rate comes from the Lanchester law for its combat
+        mode, scaled to casualties per minute by the kill rates in combat.yaml. The next casualty time is drawn
+        from an exponential per side; the earliest one happens. Morale advances through the elapsed time
+        (shock fades, engaged units drain), then the casualty is applied to both sides' morale.
         """
+        combat_cfg = get_config()['combat']
+        kill_rate = {'sq': combat_cfg['ranged_kill_rate'], 'ln': combat_cfg['melee_kill_rate']}
 
-        morale_cfg = get_config()['morale']
-        MORALE_LOSS_CONSTANT_A = morale_cfg['loss_constant_a']  # Rule A: Casualties Sustained
-        MORALE_GAIN_CONSTANT_B = morale_cfg['gain_constant_b']  # Rule B: Casualties Inflicted
-        MORALE_LOSS_CONSTANT_C = morale_cfg['loss_constant_c']  # Rule C: Faster Casualties Sustained
-        MORALE_GAIN_CONSTANT_D = morale_cfg['gain_constant_d']  # Rule D: Faster Casualties Inflicted
-
-        morale_changes = [0.0, 0.0]  # Initialize morale changes for both sides
-
-        # Loop through each side to calculate morale changes
-        for side in range(2):
-
-            # indentify casualties taken and inflicted
-            casualties_taken = self.casualties['losses'][side]
-            casualties_inflicted = self.casualties['losses'][1 - side]
-
-            # Rule A: Casualties Sustained (Morale Falls)
-            infliction_percentage = casualties_taken / max(self.casualties['initial_size'][side], 1)  # Avoid division by zero
-            morale_changes[side] -= infliction_percentage * MORALE_LOSS_CONSTANT_A
-
-            # Rule B: Casualties Inflicted (Morale Rises)
-            infliction_percentage = casualties_inflicted / max(self.casualties['initial_size'][1 - side], 1)  # Avoid division by zero
-            morale_changes[side] += infliction_percentage * MORALE_GAIN_CONSTANT_B
-
-            # Rule C: Faster Casualties Sustained (More Morale Falls)
-            casualties_per_unit_time_taken = casualties_taken / (1 + delta_t) # Avoid division by zero
-            morale_changes[side] -= casualties_per_unit_time_taken * MORALE_LOSS_CONSTANT_C
-
-            # Rule D: Faster Casualties Inflicted (Faster Morale Rises)
-            casualties_per_unit_time_inflicted = casualties_inflicted / (1 + delta_t)
-            morale_changes[side] += casualties_per_unit_time_inflicted * MORALE_GAIN_CONSTANT_D
-
-        # Update the morale in the casualties dictionary and Regiment instances
-        for side in range(2):
-            new_morale = self.casualties['morale'][side] + morale_changes[side]
-            
-            morale_cfg = get_config()['morale']
-            self.casualties['morale'][side] = max(morale_cfg['min_raw'], min(morale_cfg['max_raw'], new_morale))
-            self.forces[side].update_raw_morale(self.casualties['morale'][side])
-
-
-    def run_simulation(self, time: int) -> None:
-
-        # deconstruct forces
-        reg1, reg2 = self.forces
-
-        # Init local time
-        t = self.sim_output.loc[0, 'time']
+        t = float(self.sim_output['time'].iloc[-1])
+        rows = []
 
         while t < time:
+            sizes = [reg.size for reg in self.forces]
+            coef = [reg.coef for reg in self.forces]
+            front_sizes = [min(reg.size, reg.front_size) for reg in self.forces]
 
-            sizes = [reg1.size, reg2.size]
-            coef = [reg1.coef, reg2.coef]
-            front_sizes = [min(reg1.size, reg1.front_size), min(reg2.size, reg2.front_size)]
+            logging.debug(f"At time {t:.2f}, sizes: {sizes}, fronts: {front_sizes}, coefs: {coef}, morale: {self.casualties['morale'].tolist()}")
 
-            logging.debug(f"At time {t:.2f}, sizes: {sizes}, fronts: {front_sizes}, coefs: {coef}, morale: {self.casualties['morale'].tolist()}, stats: {reg1.stats}, {reg2.stats}")
+            # casualties per minute suffered by each side (non-negative)
+            casualty = [
+                abs(Simulation._compute_rate(self.forces[i], sizes, coef, front_sizes, i))
+                * kill_rate[self.forces[i].effective_law]
+                for i in (0, 1)
+            ]
 
-            # returns casualties on each side
-            full_casualties = [Simulation._compute_rate(self.forces[i], sizes, coef, front_sizes, i) for i in (0, 1)]
-            
-            # get amount of casualties
-            casualty = [abs(d) for d in full_casualties]
-
-            # get direction: strictly positive = reinforcement, otherwise a loss
-            # (a side that cannot be hurt has rate -0.0, which must not count as reinforcement)
-            dir = [1 if d > 0 else -1 for d in full_casualties]
-
-            # `exponential` here introduces the randomness and continuous-time aspect to the Markov chain by sampling the time to the next event from an exponential distribution, where the rate of that distribution is determined by the current casualty rates calculated from the Lanchester equations -- allowing for the simulation to model the inherently unpredictable nature of combat
-            # rate=0 means this side cannot inflict casualties (e.g. melee-only unit at range)
+            # rate 0 means the other side cannot inflict casualties (e.g. melee-only unit at range)
             clocks = [self.rng.exponential(r) if r > 0 else float('inf') for r in casualty]
+
+            # a side is engaged if it is firing (the enemy is taking casualties) or under fire
+            engaged = [casualty[i] > 0 or casualty[1 - i] > 0 for i in (0, 1)]
 
             # neither side can inflict casualties: nothing more will happen
             if min(clocks) == float('inf'):
                 break
 
-            # increment time by the minimum clock
-            t += min(clocks)
-
-            # few steps:
-                #  1) figure out which side had the fastest time to trigger an event
-                #  2) tabulate to get a vector of same length as init with 1 on side it occurred
-                #  3) multiply the dir by that side to get directionality
-                #  4) add to init vector, killing 1st man from fastest side
-            tab = np.array([0, 0])
-            event_side = int(np.argmin(clocks))
-            tab[event_side] = 1
-            sizes = (np.array(sizes) + dir * tab).tolist()
-            
-            # update reg sizes in Regiment instances
-            reg1.update_size(sizes[0])
-            reg2.update_size(sizes[1])
-
-            # record the event as a loss for the side it hit (reinforcements are not losses)
-            if dir[event_side] < 0:
-                self.casualties['losses'] += tab
-
-            # update coefficients for next loop iteration based on casualties taken and initial size
-            # passing time - t for delta_t to get time left in step, this way as delta_t approaches 0, the faster casualty rules have more impact (since formula is casualties / (1 + delta_t))
-            self.update_morale_losses(time-t)
-
-            # log current state to sim_output by adding a new row
-            new_row = {
-                'time': t,
-                'size_1': sizes[0],
-                'size_2': sizes[1],
-                'morale_1': self.casualties['morale'][0],
-                'morale_2': self.casualties['morale'][1]
-            }
-            self.sim_output = pd.concat([self.sim_output, pd.DataFrame([new_row])], ignore_index=True)
-
-            # short circuit if either side is wiped out
-            if np.any(np.array(sizes) == 0) or np.any(self.casualties['morale'] <= get_config()['morale']['min_raw']):
-                if np.any(np.array(sizes) == 0):
-                    logging.info(f"Simulation ended at time {t:.2f} due to a regiment being wiped out. Final sizes: {sizes}")
-                else:  # pragma: no cover
-                    logging.info(f"Simulation ended at time {t:.2f} due to a regiment's morale dropping to minimum. Final morale: {self.casualties['morale'].tolist()}")
+            # the next casualty falls after the time limit: let morale run to the limit and stop
+            if t + min(clocks) >= time:
+                for i in (0, 1):
+                    self.morale_states[i].advance(time - t, engaged=engaged[i])
+                    self._sync_morale(i)
+                t = time
+                rows.append(self._row(t))
                 break
+
+            dt = min(clocks)
+            t += dt
+            victim = int(np.argmin(clocks))
+
+            for i in (0, 1):
+                self.morale_states[i].advance(dt, engaged=engaged[i])
+
+            self.forces[victim].update_size(sizes[victim] - 1)
+            self.casualties['losses'][victim] += 1
+            self.morale_states[victim].take_loss(firing_back=casualty[1 - victim] > 0)
+            self.morale_states[1 - victim].inflict_loss(enemy_initial_size=self.casualties['initial_size'][victim])
+
+            for i in (0, 1):
+                self._sync_morale(i)
+            rows.append(self._row(t))
+
+            if self.forces[victim].size == 0:
+                logging.info(f"Simulation ended at {t:.1f} min: a regiment was wiped out. Final sizes: {[r.size for r in self.forces]}")
+                break
+            if any(state.broken for state in self.morale_states):
+                logging.info(f"Simulation ended at {t:.1f} min: a regiment broke. Final sizes: {[r.size for r in self.forces]}")
+                break
+
+        if rows:
+            self.sim_output = pd.concat([self.sim_output, pd.DataFrame(rows)], ignore_index=True)
 
 if __name__ == "__main__":  # pragma: no cover
     reg1 = Regiment(4000, '4/4/0/0')
     reg2 = Regiment(3500, '4/6/1/0')
 
     sim = Simulation((reg1, reg2), rng=Rng(42))
-    sim.run_simulation(time=1)
+    sim.run_simulation(time=90)
     print(sim)
