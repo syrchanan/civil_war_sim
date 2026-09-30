@@ -45,6 +45,40 @@ def test_update_stats_invalid_raises():
         reg.update_stats('a/b/c/d')        # non-integer parts
 
 
+# Weapon codes -2 (unarmed/pikes) and -1 (smoothbore matchlock) are valid; no other stat may be negative.
+
+@pytest.mark.parametrize("stats, expected", [
+    ('4/6/-2/0', (4, 6, -2, 0)),
+    ('4/6/-1/0', (4, 6, -1, 0)),
+])
+def test_negative_weapon_code_is_accepted(stats, expected):
+    assert Regiment(500, stats).stats == expected
+
+
+def test_negative_weapon_code_lowers_coef():
+    assert Regiment(500, '4/6/-2/0').coef < Regiment(500, '4/6/-1/0').coef < Regiment(500, '4/6/0/0').coef
+
+
+def test_update_stats_accepts_negative_weapon_code():
+    reg = Regiment(500, '4/6/0/0')
+    reg.update_stats('4/6/-1/0')
+    assert reg.stats == (4, 6, -1, 0)
+
+
+def test_update_raw_morale_keeps_negative_weapon_code():
+    reg = Regiment(500, '4/6/-2/0')
+    reg.update_raw_morale(30.0)
+    assert reg.stats[2] == -2
+
+
+@pytest.mark.parametrize("stats", ['-4/6/0/0', '4/-6/0/0', '4/6/0/-1', '4/6/--1/0', '4/6/-/0', '4/6/+1/0'])
+def test_negative_or_malformed_non_weapon_stats_raise(stats):
+    with pytest.raises(ValueError):
+        Regiment(500, stats)
+    with pytest.raises(ValueError):
+        Regiment(500, '4/6/0/0').update_stats(stats)
+
+
 def test_update_raw_morale_invalid_type_raises():
     reg = Regiment(1000, '4/4/0/0')
     with pytest.raises(TypeError):

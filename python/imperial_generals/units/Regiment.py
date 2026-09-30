@@ -1,5 +1,20 @@
+import re
+
 from imperial_generals.utils import get_closest_morale_stat, get_combat_efficiency, Position
 from imperial_generals.config import get_config
+
+# experience/morale/weapon/melee; only weapon may be negative (-2 unarmed/pikes, -1 matchlock)
+_STATS_PATTERN = re.compile(r'^(\d+)/(\d+)/(-?\d+)/(\d+)$')
+
+
+def _parse_stats(stats: str) -> tuple[int, int, int, int]:
+    match = _STATS_PATTERN.match(stats)
+    if match is None:
+        raise ValueError(
+            "Stats must be a slash-separated string of four integers (e.g., '4/4/0/0'); "
+            "only the weapon code may be negative."
+        )
+    return tuple(int(g) for g in match.groups())
 
 class Regiment:
 
@@ -39,16 +54,14 @@ class Regiment:
         Raises:
             ValueError: If stats is not four integers, or front_size is not a positive int.
         """
-        stats_split = stats.split('/')
-        if len(stats_split) != 4 or not all(s.isdigit() for s in stats_split):
-            raise ValueError("Stats must be a slash-separated string of four integers (e.g., '4/4/0/0').")
+        parsed_stats = _parse_stats(stats)
         _front_size = front_size if front_size is not None else size
         if not isinstance(_front_size, int):
             raise TypeError(f"front_size must be an int, got {type(_front_size).__name__}.")
         if _front_size < 0:
             raise ValueError(f"front_size must be non-negative, got {_front_size}.")
         self.size: int = size
-        self.stats: tuple[int, int, int, int] = tuple(int(d) for d in stats_split)
+        self.stats: tuple[int, int, int, int] = parsed_stats
         self._base_coef: float = get_combat_efficiency(self.stats[0], self.stats[1], self.stats[2], 0)
         scale = get_config()['morale']['raw_scale_factor']
         self.raw_morale: float = float(self.stats[1] * scale)
@@ -200,10 +213,7 @@ class Regiment:
         ValueError
             If new_stats is not four integers.
         """
-        stats_split = new_stats.split('/')
-        if len(stats_split) != 4 or not all(s.isdigit() for s in stats_split):
-            raise ValueError("New stats must be a slash-separated string of four integers (e.g., '5/6/1/0').")
-        self.stats = tuple(int(d) for d in stats_split)
+        self.stats = _parse_stats(new_stats)
         self._base_coef = get_combat_efficiency(self.stats[0], self.stats[1], self.stats[2], 0)
 
     def update_raw_morale(self, new_morale: float) -> None:

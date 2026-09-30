@@ -152,6 +152,40 @@ def test_invalid_rng_raises():
         Simulation((Regiment(100, '4/4/0/0'), Regiment(100, '4/4/0/0')), rng=42)
 
 
+def _one_sided(seed=4):
+    victim = Regiment(300, '4/6/0/1')    # melee-only in ranged mode: cannot fire back
+    shooter = Regiment(300, '4/6/0/0')
+    victim.set_combat_mode('ranged')
+    shooter.set_combat_mode('ranged')
+    sim = Simulation((victim, shooter), rng=Rng(seed))
+    sim.run_simulation(time=1)
+    return sim
+
+def test_one_sided_fire_records_losses():
+    # regression: the non-firing side's rate is -0.0, which was misread as "reinforcement"
+    # and stopped any losses being recorded
+    sim = _one_sided()
+    assert sim.casualties['losses'][0] == 300 - sim.forces[0].size
+    assert sim.casualties['losses'][0] > 0
+    assert sim.casualties['losses'][1] == 0
+
+def test_one_sided_fire_lowers_victim_morale():
+    sim = _one_sided()
+    assert sim.casualties['morale'][0] < 60.0
+
+
+def test_no_casualties_when_neither_side_can_fire():
+    # both melee-only in ranged mode: every clock is inf, nothing should happen
+    reg1, reg2 = Regiment(300, '4/6/0/1'), Regiment(300, '4/6/0/1')
+    reg1.set_combat_mode('ranged')
+    reg2.set_combat_mode('ranged')
+    sim = Simulation((reg1, reg2), rng=Rng(1))
+    sim.run_simulation(time=1)
+    assert (reg1.size, reg2.size) == (300, 300)
+    assert sim.casualties['losses'].tolist() == [0, 0]
+    assert len(sim.sim_output) == 1
+
+
 def test_simulation_melee_only_vs_ranged_no_zero_division():
     # melee-only unit in ranged mode has coef=0 — must not raise ZeroDivisionError
     reg1 = Regiment(500, '4/4/0/1')   # melee-only
