@@ -60,6 +60,8 @@ class CombatParams:
         max_raw = max(multipliers.values()) * (1 + 9 * self.xp_boost_per_level + 9 * self.morale_boost_per_level)
         object.__setattr__(self, '_max_raw', max_raw)
         object.__setattr__(self, '_raw_scale', get_config()['morale']['raw_scale_factor'])
+        # unit_coef is a pure function of (stats, mode) for these frozen constants: memoise it
+        object.__setattr__(self, '_coef_cache', {})
 
     def efficiency(self, xp: int, morale: float, weapon: int, melee: int = 0) -> float:
         """
@@ -88,13 +90,19 @@ class CombatParams:
         - Ranged unit in melee: efficiency × melee_penalty_factor.
         - Otherwise: base efficiency.
         """
+        key = (stats, combat_mode)
+        cached = self._coef_cache.get(key)
+        if cached is not None:
+            return cached
         melee_only = stats[3] == 1
         if melee_only and combat_mode == 'ranged':
-            return 0.0
-        base = self.efficiency(stats[0], stats[1], stats[2], 0)
-        if not melee_only and combat_mode == 'melee':
-            return base * self.melee_penalty_factor
-        return base
+            value = 0.0
+        else:
+            value = self.efficiency(stats[0], stats[1], stats[2], 0)
+            if not melee_only and combat_mode == 'melee':
+                value = value * self.melee_penalty_factor
+        self._coef_cache[key] = value
+        return value
 
 
 @lru_cache(maxsize=1)

@@ -41,9 +41,9 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A1 | Cross-language seeded RNG | ✓ |
 | A2 | Morale model + time calibration (minutes) | ✓ |
 | A3 | Per-battle parameter set + fast event log | ✓ |
-| A4 | Round engine: N regiments per side, `resolve_round` | ► |
-| A5 | Engagements / brigade targeting (pairwise Lanchester) | ○ |
-| A6 | Morale break / retreat | ○ |
+| A4 | Round engine: N regiments per side, `resolve_round` | ✓ |
+| A5 | Orders / targeting graph (merged into A4) | ✓ |
+| A6 | Morale break / retreat: rout captures, wounded | ► |
 | A7 | Unit-type matchup matrix | ○ |
 | A8 | Battle state serialization (JSON contract) | ○ |
 | A9 | Step API + CLI | ○ |
@@ -182,24 +182,63 @@ Open for tuning (A10):
 Next speed lever: run battles across CPU cores in the A10 batch runner. The remaining cost is spread thinly
 across Python overhead.
 
-### A4. Round engine ►
-- `Battle` holds N regiments per side (`Army`), round number, RNG state, params.
-- `resolve_round(duration, engagements)` runs the continuous-time Markov/Lanchester process for `duration` game
-  time, then returns a round report (casualties, morale, broken units per regiment).
+### A4 + A5. Round engine with orders (targeting graph) ✓
+A5 is merged in: the round engine can't run without per-regiment orders.
+
+`Battle` holds N regiments per side, the RNG, params, game time, round number and each unit's morale (which
+carries across rounds). The admin/player enters every unit (what it is, its stats) and, each round, one **order**
+per regiment:
+```python
+orders = {"reg_001": {"target": "reg_104", "mode": "ranged"},
+          "reg_002": {"target": "reg_104", "mode": "melee"},
+          "reg_104": {"target": "reg_001", "mode": "ranged"},
+          "reg_105": {"mode": "idle"}}           # units left out of orders are idle
+report = battle.resolve_round(duration=90, orders=orders)
+```
+- **The orders form a targeting graph.** Each unit points at most one target (one outgoing arrow) and can be
+  attacked by any number of units (incoming arrows): `target[a] = b`, with "who is attacking b" derived.
+- **Ranged fire is one-way along the arrow.** B only fires back if B's own order targets A. Several attackers on
+  one target stack their kill rates. A unit's losses come only from arrows pointing at it.
+- **Melee is mutual and forcing** (for now): a melee order creates a two-way contact, and the defender fights back
+  in melee. A unit in any contact fights only in melee; its ranged order waits. Once movement exists, contact only
+  forms if the charging unit actually reaches its target.
+- **Melee with several contacts: exposure is the whole front, fighting strength is divided.** Each attacker hits
+  the defender's full front, while a unit's own fighters are split across its contacts in proportion to their
+  fronts. A surrounded unit takes more damage and deals the same total, spread thinner. One-on-one it reduces to
+  the old front × front rule.
+  ```
+  melee  a→v:  melee_kill_rate · coef_a(melee) · front_a · share_a(v) · front_v,   share_a(v) = front_v / Σ fronts of a's contacts
+  ranged a→v:  ranged_kill_rate · coef_a(ranged) · size_a
+  ```
+- **A target breaks or is wiped out mid-round** → its attackers go idle for the rest of the round; the admin
+  re-orders next round. Later, a player option per unit: pursue / idle / engage closest.
+- **Broken units can be targeted** (pursued) but can't fight back or act. Range will matter once positions do.
+- One event loop over all arrows: `dt ~ Exp(Σ rates)`, then pick the arrow by a uniform draw weighted by rate.
+  Arrows are ordered by (target, attacker) in unit order, so a 1-v-1 battle draws exactly like `Simulation`.
+- A unit is **engaged** (morale drains) if it has an active arrow in or out; it's **helpless** (morale cost ×
+  (1 + ψ)) when hit with no active fire of its own.
+- `battle.engagements(orders)` previews the arrows and their current rates without rolling any dice (for UIs and
+  tests).
 - Round length is admin-chosen, in minutes (typically 60–120).
 
-### A5. Engagements / brigade targeting ○
-No movement. The admin/player enters every unit (where, what type, what stats) and the engagements for each round:
-```
-engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
-```
-- **One target per unit per round.** A unit fires on at most one target, but can receive fire from 0 or more units.
-- All pairs resolve simultaneously via per-pair Lanchester rates.
-- Several attackers on one target: their kill rates stack against it.
-- A unit's losses come only from units engaging it.
-- A unit with no engagement is idle for the round.
+**Built** (`battles/battle.py`):
+- `Battle(units={'id': (side, Regiment)}, rng, params)` with `Order`, `Engagement`, `RoundReport`, `UnitReport`.
+- `RoundReport` gives per-unit losses, inflicted, size, morale, broken and `broke_at`; `record_events=True` adds a
+  per-casualty event log.
+- Bit-identical to `Simulation` in a 1-v-1 ranged fight (tested over 5 seeds). `Simulation` stays as the legacy
+  1-v-1 used by Streamlit and `main.py`, and can be retired once nothing uses it.
+- A break from the in-combat drain alone is detected at the next casualty or at the round's end. The exact moment
+  between events isn't solved for.
 
-### A6. Morale break / retreat ○
+**Speed**, all exact: the arrow structure is rebuilt only when a unit breaks or is wiped out, and rates are
+recomputed per event from it; coefficients are memoised per (stats, mode); the shock-decay `exp` is computed once
+per event (every unit shares `dt` and half-life); the morale lookup reads its config once. 20 v 20 went from
+2.2k to ≥4.6k events/s (a 4-round 20 v 20 battle takes ~1.7 s); 1 v 1 about 28k/s. The remaining cost is O(units)
+Python work per event (advancing and syncing every engaged unit's morale). Next levers: parallel batches (A10),
+and lazy morale updates (bring a unit up to date only when it's touched). Lazy updates would change floating-point
+rounding slightly, so they'd need a parity decision first.
+
+### A6. Morale break / retreat ►
 - Morale reaches the break line (budget spent; see A2 `f_break`) → the regiment is broken and stops fighting.
 - Units rout before annihilation, which is the historical reality.
 - **No recovery within a battle.** A broken unit stays broken for all remaining rounds of that engagement.
@@ -214,6 +253,9 @@ engagements = [ {attacker: "reg_001", target: "reg_104", mode: "ranged"}, ... ]
 - **Wounded recovered after the battle**: once the engagement ends, a semi-random share of each unit's casualties
   returns as wounded who recover. Seeded like everything else (drawn from the battle's `Rng`), with the share
   tunable. Captured men do not return. Reports should split casualties into killed, wounded (returned) and captured.
+- **Wounded can be captured too**: some wounded are taken by whoever holds the field at the end of the battle.
+  Others are "walking wounded" who leave with their unit when it breaks.
+- **Pursuit**: broken units can be targeted in later rounds (A4). Range will matter here once positions do.
 
 ### A7. Unit-type matchup matrix ○
 Most remaining design work goes here. Stats (xp / morale / weapon / melee) are complete; types carry the variety.
