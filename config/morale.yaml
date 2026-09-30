@@ -29,3 +29,37 @@ morale:
   # Rule D: Morale rises faster when damage is inflicted quickly.
   # Applied as: (casualties_inflicted / (1 + delta_t)) × constant.
   gain_constant_d: 0.0000040
+
+  # --- Morale model (roadmap A2) ---
+  # Live morale = starting morale × resolve, where resolve is the share of the unit's morale budget left
+  # (1 = fresh, 0 = broken). Every term below can be switched off with 0 so tuning can weigh each one.
+  # Game time is in minutes.
+  model:
+    # Loss fraction at which pure attrition breaks a unit, scaled by veterancy + starting morale:
+    #   w = experience_weight·(xp−1)/9 + (1−experience_weight)·(morale−1)/9
+    #   f_break = min + (max − min)·w^break_curve       (1.5 → a 5/5 unit breaks at ~33%)
+    break_fraction_min: 0.15
+    break_fraction_max: 0.75
+    experience_weight: 0.5
+    break_curve: 1.5
+
+    # Unit size: cost × (size / size_reference)^size_exponent. <0 → big units absorb the same % better.
+    size_reference: 500
+    size_exponent: 0.0
+
+    # Each loss costs × (1 + acceleration · fraction_lost): morale falls faster as a unit bleeds.
+    acceleration: 1.0
+
+    # Shock: +1/size per loss, halves every shock_half_life minutes; each loss costs × (1 + shock_weight · shock).
+    shock_weight: 4.0
+    shock_half_life: 15.0
+
+    # Losses taken while not firing back cost × (1 + helpless_weight).
+    helpless_weight: 0.5
+
+    # Share of the morale budget lost per hour while engaged (firing or under fire). Idle units don't drain.
+    drain_per_hour: 0.05
+
+    # Share of the budget regained per whole enemy unit killed (10% of the enemy → +0.05 at 0.5).
+    # Capped at starting morale.
+    gain_weight: 0.5
