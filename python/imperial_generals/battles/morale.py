@@ -10,9 +10,8 @@ State changes depend only on game time (minutes) and per-unit events, so results
 split into rounds. Powers go through the fdlibm ``exp``/``log`` ports to stay bit-identical with the TS port.
 """
 
-from dataclasses import dataclass, field
-
 from imperial_generals.config import get_config
+from imperial_generals.params import MoraleParams  # re-exported: defined with the other battle params
 from imperial_generals.utils.fdlibm import exp, log
 
 _LN2 = 0.6931471805599453
@@ -20,43 +19,9 @@ _LN2 = 0.6931471805599453
 _BREAK_EPSILON = 1e-9
 
 
-def _model_default(key: str):
-    return field(default_factory=lambda: get_config()['morale']['model'][key])
-
-
 def _power(base: float, exponent: float) -> float:
     """base ** exponent for base > 0, via fdlibm so every platform agrees."""
     return exp(exponent * log(base))
-
-
-@dataclass(frozen=True)
-class MoraleParams:
-    """Tunable morale constants; defaults come from ``morale.model`` in config/morale.yaml."""
-
-    break_fraction_min: float = _model_default('break_fraction_min')
-    break_fraction_max: float = _model_default('break_fraction_max')
-    experience_weight: float = _model_default('experience_weight')
-    break_curve: float = _model_default('break_curve')
-    size_reference: float = _model_default('size_reference')
-    size_exponent: float = _model_default('size_exponent')
-    acceleration: float = _model_default('acceleration')
-    shock_weight: float = _model_default('shock_weight')
-    shock_half_life: float = _model_default('shock_half_life')
-    helpless_weight: float = _model_default('helpless_weight')
-    drain_per_hour: float = _model_default('drain_per_hour')
-    gain_weight: float = _model_default('gain_weight')
-
-    def __post_init__(self) -> None:
-        if not 0 < self.break_fraction_min <= self.break_fraction_max <= 1:
-            raise ValueError("Need 0 < break_fraction_min <= break_fraction_max <= 1.")
-        if not 0 <= self.experience_weight <= 1:
-            raise ValueError("experience_weight must be in [0, 1].")
-        for name in ('break_curve', 'size_reference', 'shock_half_life'):
-            if not getattr(self, name) > 0:
-                raise ValueError(f"{name} must be > 0.")
-        for name in ('acceleration', 'shock_weight', 'helpless_weight', 'drain_per_hour', 'gain_weight'):
-            if getattr(self, name) < 0:
-                raise ValueError(f"{name} must be >= 0.")
 
 
 def break_fraction(xp: int, morale_stat: int, params: MoraleParams) -> float:
