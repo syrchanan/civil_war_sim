@@ -148,6 +148,19 @@ class TestMoraleSection:
         assert morale['min_raw'] < morale['max_raw']
         assert morale['min_raw'] > 0
 
+    def test_model_keys_present(self):
+        loader = ConfigLoader(CONFIG_PATH)
+        model = loader['morale']['model']
+        for key in ['break_fraction_min', 'break_fraction_max', 'experience_weight', 'break_curve',
+                    'size_reference', 'size_exponent', 'acceleration', 'shock_weight', 'shock_half_life',
+                    'helpless_weight', 'drain_per_hour', 'gain_weight']:
+            assert key in model, f"Missing morale.model key: {key}"
+
+    def test_model_break_band_is_15_to_75_percent(self):
+        model = ConfigLoader(CONFIG_PATH)['morale']['model']
+        assert model['break_fraction_min'] == 0.15
+        assert model['break_fraction_max'] == 0.75
+
     def test_constants_are_small_positives(self):
         loader = ConfigLoader(CONFIG_PATH)
         morale = loader['morale']
