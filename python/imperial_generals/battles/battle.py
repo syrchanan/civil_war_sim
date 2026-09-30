@@ -15,6 +15,7 @@ arrow that caused it is chosen by a uniform draw weighted by rate. Arrows are or
 unit order, so a one-on-one battle draws exactly like ``Simulation``.
 """
 
+import json
 import secrets
 from dataclasses import dataclass, field
 
@@ -98,6 +99,7 @@ class RoundReport:
     events: tuple = ()          # CasualtyEvent per casualty, when record_events=True
     prisoners: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> prisoners taken this round
     guns_captured: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> enemy guns taken this round
+    orders: dict = field(default_factory=dict)   # uid -> {'target', 'mode', 'ammo'} for units that acted
 
 
 @dataclass(frozen=True)
@@ -133,6 +135,9 @@ class BattleUnit:
     index: int
     key: tuple = ('inf', None)       # (unit type, subtype | None) for matchups; plain Regiment = infantry
     melee_rating: float = 0.0
+    name: str = ''
+    meta: dict = field(default_factory=dict)     # free-form, round-tripped untouched (player, army ids, ...)
+    initial_stats: tuple = ()
     losses: int = 0
     inflicted: int = 0
     captured: int = 0
@@ -158,24 +163,40 @@ class Battle:
 
     Parameters
     ----------
-    units : dict[str, tuple[int, Regiment]]
-        Unit id -> (side 0 or 1, regiment). Dict order is the unit order used for tie-breaking and draws.
+    units : dict[str, tuple | dict]
+        Unit id -> ``(side, regiment)`` or ``{'side', 'regiment', 'name'?, 'meta'?}``. Side is 0 or 1; name
+        defaults to the id; meta is free-form and round-tripped untouched. Dict order is the unit order used for
+        tie-breaking and draws.
     rng : Rng, optional
         Seeded generator; defaults to a randomly seeded Rng.
     params : BattleParams, optional
         Per-battle constants; defaults to config.
+    meta : dict, optional
+        Free-form battle details (name, date, location, ...), round-tripped untouched.
     """
 
-    def __init__(self, units: dict, rng: Rng | None = None, params: BattleParams | None = None) -> None:
+    def __init__(self, units: dict, rng: Rng | None = None, params: BattleParams | None = None,
+                 meta: dict | None = None) -> None:
         if rng is not None and not isinstance(rng, Rng):
             raise TypeError(f"rng must be an Rng instance, got {type(rng).__name__}.")
         if params is not None and not isinstance(params, BattleParams):
             raise TypeError(f"params must be a BattleParams instance, got {type(params).__name__}.")
         self.rng: Rng = rng if rng is not None else Rng(secrets.randbits(32))
+        self.seed: int | None = self.rng.seed
         self.params: BattleParams = params if params is not None else BattleParams()
+        self.meta: dict = dict(meta or {})
 
         self.units: dict[str, BattleUnit] = {}
-        for index, (uid, (side, regiment)) in enumerate(units.items()):
+        for index, (uid, spec) in enumerate(units.items()):
+            if isinstance(spec, dict):
+                if 'side' not in spec or 'regiment' not in spec:
+                    raise ValueError(f"{uid!r} needs 'side' and 'regiment'.")
+                side, regiment = spec['side'], spec['regiment']
+                name, unit_meta = spec.get('name', uid), dict(spec.get('meta', {}))
+            else:
+                if len(spec) != 2:
+                    raise ValueError(f"{uid!r} must be (side, regiment) or a dict.")
+                (side, regiment), name, unit_meta = spec, uid, {}
             if side not in (0, 1):
                 raise ValueError(f"side must be 0 or 1, got {side!r} for {uid!r}.")
             if not isinstance(regiment, Regiment):
@@ -184,7 +205,8 @@ class Battle:
                                  params=self.params.morale)
             key = (getattr(regiment, 'unit_type', 'inf'), getattr(regiment, 'subtype', None))
             self.units[uid] = BattleUnit(uid, side, regiment, morale, regiment.size, index, key=key,
-                                         melee_rating=self.params.matchups.melee_rating(key))
+                                         melee_rating=self.params.matchups.melee_rating(key),
+                                         name=name, meta=unit_meta, initial_stats=regiment.stats)
 
         self.time: float = 0.0
         self.round: int = 0
@@ -492,9 +514,32 @@ class Battle:
             events=tuple(events),
             prisoners=prisoners,
             guns_captured=guns,
+            orders={uid: {'target': o.target, 'mode': o.mode, 'ammo': o.ammo} for uid, o in valid.items()},
         )
         self.history.append(report)
         return report
+
+    # -------------------------------------------------------------------------
+    # Saving and loading (battle state file, roadmap A8)
+    # -------------------------------------------------------------------------
+
+    def to_dict(self) -> dict:
+        """The full battle state as a JSON-safe dict; see ``battles.state``."""
+        from imperial_generals.battles.state import battle_to_dict
+        return battle_to_dict(self)
+
+    def to_json(self, indent: int | None = None) -> str:
+        return json.dumps(self.to_dict(), indent=indent)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Battle':
+        """Rebuild a battle saved with ``to_dict``; resolving on from it gives exactly the same results."""
+        from imperial_generals.battles.state import battle_from_dict
+        return battle_from_dict(data)
+
+    @classmethod
+    def from_json(cls, text: str) -> 'Battle':
+        return cls.from_dict(json.loads(text))
 
     # -------------------------------------------------------------------------
     # After the battle

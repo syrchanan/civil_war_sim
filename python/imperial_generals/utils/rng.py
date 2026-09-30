@@ -61,6 +61,7 @@ class Rng:
             raise ValueError(f"seed must be in [0, 2**32), got {seed}.")
         words = _splitmix32(seed)
         self._s: list[int] = [next(words) for _ in range(4)]
+        self.seed: int | None = seed      # informational; the state words are what matter
 
     @classmethod
     def from_state(cls, state: list[int]) -> 'Rng':
@@ -76,6 +77,7 @@ class Rng:
             raise ValueError(f"state must be four 32-bit unsigned ints, not all zero, got {state}.")
         rng = cls.__new__(cls)
         rng._s = list(state)
+        rng.seed = None
         return rng
 
     @property

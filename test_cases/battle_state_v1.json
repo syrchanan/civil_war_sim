@@ -1,0 +1,367 @@
+{
+  "format": "imperial-generals-battle",
+  "version": 1,
+  "meta": {
+    "name": "Example ridge",
+    "date": "1863-07-02",
+    "notes": "reference save file (A8)"
+  },
+  "seed": 1863,
+  "rng_state": [
+    166096029,
+    3195767465,
+    2722897046,
+    1424353363
+  ],
+  "params": {
+    "combat": {
+      "weapon_multipliers": {
+        "-2": 0.2,
+        "-1": 0.5,
+        "0": 1.0,
+        "1": 1.5,
+        "2": 2.5
+      },
+      "xp_boost_per_level": 0.04,
+      "morale_boost_per_level": 0.02,
+      "melee_penalty_factor": 0.7,
+      "ranged_kill_rate": 0.004,
+      "melee_kill_rate": 2.4e-05,
+      "artillery_ammo": {
+        "round_shot": 0.15,
+        "shell": 0.25,
+        "canister": 0.45
+      },
+      "artillery_default_ammo": "round_shot"
+    },
+    "morale": {
+      "break_fraction_min": 0.15,
+      "break_fraction_max": 0.75,
+      "experience_weight": 0.5,
+      "break_curve": 1.5,
+      "size_reference": 500,
+      "size_exponent": 0.0,
+      "acceleration": 1.0,
+      "shock_weight": 4.0,
+      "shock_half_life": 15.0,
+      "helpless_weight": 0.5,
+      "drain_per_hour": 0.05,
+      "gain_weight": 0.5
+    },
+    "aftermath": {
+      "rout_capture_share": 0.1,
+      "cavalry_capture_multiplier": 2.0,
+      "killed_share": 0.22,
+      "walking_wounded_share": 0.4,
+      "wounded_captured_share": 0.6,
+      "wounded_return_share": 0.4,
+      "share_spread": 0.25
+    },
+    "matchups": {
+      "ranged": {
+        "inf": {
+          "inf": 1.0,
+          "cav": 1.2,
+          "art": 0.1
+        },
+        "cav": {
+          "inf": 0.6,
+          "cav": 0.6,
+          "art": 0.1
+        },
+        "art": {
+          "inf": 1.0,
+          "cav": 1.2,
+          "art": 0.6
+        }
+      },
+      "melee": {
+        "inf": {
+          "inf": 1.0,
+          "cav": 1.0,
+          "art": 1.2
+        },
+        "cav": {
+          "inf": 0.5,
+          "cav": 1.0,
+          "art": 2.0
+        },
+        "art": {
+          "inf": 1.0,
+          "cav": 1.0,
+          "art": 1.0
+        }
+      },
+      "overrides": [
+        {
+          "attacker": "inf/pikes",
+          "target": "cav",
+          "mode": "melee",
+          "multiplier": 2.0
+        },
+        {
+          "attacker": "cav/dragoons",
+          "target": "*",
+          "mode": "ranged",
+          "multiplier": 0.9
+        },
+        {
+          "attacker": "cav/dragoons",
+          "target": "art",
+          "mode": "ranged",
+          "multiplier": 0.15
+        }
+      ],
+      "melee_ratings": {
+        "default": 0.7,
+        "inf/line": 0.7,
+        "inf/light": 0.6,
+        "inf/marine": 0.8,
+        "inf/pikes": 1.2,
+        "inf/irregulars": 0.5,
+        "cav/light": 1.0,
+        "cav/heavy": 1.4,
+        "cav/dragoons": 0.9,
+        "art/battery": 0.25,
+        "art/horse battery": 0.3,
+        "art/siege battery": 0.2
+      },
+      "cavalry_charge": {
+        "size_exponent": 1.0,
+        "unsteadiness_bonus": 1.5,
+        "veterancy_weight": 0.5,
+        "shock_weight": 2.0,
+        "min_factor": 0.25,
+        "max_factor": 3.0
+      }
+    }
+  },
+  "time": 90.0,
+  "round": 1,
+  "finished": false,
+  "prisoners": {
+    "0": 0,
+    "1": 9
+  },
+  "guns_captured": {
+    "0": 0,
+    "1": 2
+  },
+  "units": [
+    {
+      "id": "us_1mn",
+      "name": "1st Minnesota",
+      "side": 0,
+      "type": "inf",
+      "subtype": "line",
+      "size": 780,
+      "initial_size": 900,
+      "stats": "6/4/1/0",
+      "initial_stats": "6/6/1/0",
+      "front_size": 900,
+      "raw_morale": 40.42844491432518,
+      "combat_mode": "idle",
+      "position": null,
+      "morale": {
+        "resolve": 0.6738074152387531,
+        "shock": 0.030142837036535416,
+        "lost": 120,
+        "broken": false
+      },
+      "losses": 120,
+      "inflicted": 149,
+      "captured": 0,
+      "guns_lost": 0,
+      "meta": {
+        "player": "union_player"
+      }
+    },
+    {
+      "id": "us_bty_b",
+      "name": "Battery B, 4th US",
+      "side": 0,
+      "type": "art",
+      "subtype": "battery",
+      "size": 45,
+      "initial_size": 72,
+      "stats": "5/1/0/0",
+      "initial_stats": "5/5/0/0",
+      "front_size": 72,
+      "raw_morale": 0.0,
+      "combat_mode": "idle",
+      "position": null,
+      "morale": {
+        "resolve": 0.0,
+        "shock": 0.006702920570630001,
+        "lost": 18,
+        "broken": true
+      },
+      "losses": 18,
+      "inflicted": 0,
+      "captured": 9,
+      "guns_lost": 2,
+      "meta": {},
+      "guns": 6
+    },
+    {
+      "id": "cs_26nc",
+      "name": "26th North Carolina",
+      "side": 1,
+      "type": "inf",
+      "subtype": "line",
+      "size": 851,
+      "initial_size": 1000,
+      "stats": "5/3/0/0",
+      "initial_stats": "5/6/0/0",
+      "front_size": 1000,
+      "raw_morale": 34.50984246936082,
+      "combat_mode": "idle",
+      "position": null,
+      "morale": {
+        "resolve": 0.5751640411560137,
+        "shock": 0.03351609639825576,
+        "lost": 149,
+        "broken": false
+      },
+      "losses": 149,
+      "inflicted": 120,
+      "captured": 0,
+      "guns_lost": 0,
+      "meta": {
+        "player": "confederate_player"
+      }
+    },
+    {
+      "id": "cs_cav",
+      "name": "Jenkins' Brigade",
+      "side": 1,
+      "type": "cav",
+      "subtype": "light",
+      "size": 450,
+      "initial_size": 450,
+      "stats": "6/6/0/1",
+      "initial_stats": "6/6/0/1",
+      "front_size": 450,
+      "raw_morale": 60.0,
+      "combat_mode": "idle",
+      "position": null,
+      "morale": {
+        "resolve": 1.0,
+        "shock": 0.0,
+        "lost": 0,
+        "broken": false
+      },
+      "losses": 0,
+      "inflicted": 18,
+      "captured": 0,
+      "guns_lost": 0,
+      "meta": {}
+    }
+  ],
+  "history": [
+    {
+      "round": 1,
+      "start": 0.0,
+      "end": 90.0,
+      "orders": {
+        "us_1mn": {
+          "target": "cs_26nc",
+          "mode": "ranged",
+          "ammo": null
+        },
+        "us_bty_b": {
+          "target": "cs_26nc",
+          "mode": "ranged",
+          "ammo": "shell"
+        },
+        "cs_26nc": {
+          "target": "us_1mn",
+          "mode": "ranged",
+          "ammo": null
+        },
+        "cs_cav": {
+          "target": "us_bty_b",
+          "mode": "melee",
+          "ammo": null
+        }
+      },
+      "engagements": [
+        {
+          "attacker": "cs_26nc",
+          "target": "us_1mn",
+          "mode": "ranged",
+          "rate": 1.3090909090909093
+        },
+        {
+          "attacker": "cs_cav",
+          "target": "us_bty_b",
+          "mode": "melee",
+          "rate": 0.5251324675324677
+        },
+        {
+          "attacker": "us_1mn",
+          "target": "cs_26nc",
+          "mode": "ranged",
+          "rate": 1.8233766233766238
+        },
+        {
+          "attacker": "us_bty_b",
+          "target": "cs_cav",
+          "mode": "melee",
+          "rate": 0.06261194805194806
+        }
+      ],
+      "units": {
+        "us_1mn": {
+          "losses": 120,
+          "inflicted": 149,
+          "size": 780,
+          "morale": 40.42844491432518,
+          "broken": false,
+          "broke_at": null,
+          "captured": 0,
+          "guns_lost": 0
+        },
+        "us_bty_b": {
+          "losses": 18,
+          "inflicted": 0,
+          "size": 45,
+          "morale": 0.0,
+          "broken": true,
+          "broke_at": 23.35814225392263,
+          "captured": 9,
+          "guns_lost": 2
+        },
+        "cs_26nc": {
+          "losses": 149,
+          "inflicted": 120,
+          "size": 851,
+          "morale": 34.50984246936082,
+          "broken": false,
+          "broke_at": null,
+          "captured": 0,
+          "guns_lost": 0
+        },
+        "cs_cav": {
+          "losses": 0,
+          "inflicted": 18,
+          "size": 450,
+          "morale": 60.0,
+          "broken": false,
+          "broke_at": null,
+          "captured": 0,
+          "guns_lost": 0
+        }
+      },
+      "events": [],
+      "prisoners": {
+        "0": 0,
+        "1": 9
+      },
+      "guns_captured": {
+        "0": 0,
+        "1": 2
+      }
+    }
+  ]
+}
