@@ -21,7 +21,8 @@ with where it is ("Unit 3 (cs_cav): ...").
         meta: {player: p1}                         # optional, free-form
 
 A scenario is a setup plus a script of ``rounds`` (and optionally ``finish``); see ``imperial_generals.api``.
-The builder accepts those keys and leaves them to the runner.
+It can also say what should happen (``expect``, see ``imperial_generals.validation``) and carry players'
+``feedback``. The builder accepts those keys and leaves them to the runner and the checker.
 """
 
 import json
@@ -37,7 +38,7 @@ from imperial_generals.units.Regiment import _parse_stats
 from imperial_generals.utils import Rng
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
-TOP_KEYS = ('finish', 'meta', 'params', 'rounds', 'seed', 'sides', 'units')
+TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'sides', 'units')
 UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'side', 'size', 'stats', 'subtype', 'type')
 MAX_SEED = 2 ** 32 - 1
 

@@ -22,8 +22,8 @@ from imperial_generals.battles.battle import MODES
 from imperial_generals.battles.setup import UNIT_KEYS, SetupError, battle_from_setup
 
 # summary fields per side, as named in the run rows (prefixed s0_ / s1_)
-SIDE_FIELDS = ('units', 'units_out', 'started', 'final', 'loss_share', 'hits_taken', 'hits_inflicted',
-               'exchange_ratio', 'prisoners_lost', 'prisoners_taken', 'guns_lost', 'guns_taken')
+SIDE_FIELDS = ('units', 'units_out', 'started', 'final', 'loss_share', 'casualty_share', 'hits_taken',
+               'hits_inflicted', 'exchange_ratio', 'prisoners_lost', 'prisoners_taken', 'guns_lost', 'guns_taken')
 
 
 def quantile(values, q: float):
@@ -84,6 +84,9 @@ def _play(scenario: dict, seed: int, overrides: dict | None) -> tuple:
             row[f's{side}_{name}'] = summary[name]
         times = [u['broke_at'] for u in unit_rows if u['side'] == side and u['broke_at'] is not None]
         row[f's{side}_first_break'] = min(times) if times else None
+        # share of the side's starting men in units that broke or were wiped out
+        row[f's{side}_men_out'] = sum(u['started'] for u in unit_rows
+                                      if u['side'] == side and (u['broken'] or u['wiped_out'])) / summary['started']
     return row, unit_rows
 
 
