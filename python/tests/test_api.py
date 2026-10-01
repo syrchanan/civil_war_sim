@@ -249,3 +249,9 @@ def test_exchange_ratio_without_losses_is_none():
     union, confed = api.side_summary(state)
     assert union['hits_taken'] == 0 and union['exchange_ratio'] is None
     assert confed['exchange_ratio'] == 0
+
+
+def test_run_scenario_takes_parameter_overrides():
+    state, _, _ = api.run_scenario(SCENARIO, overrides={'combat': {'ranged_kill_rate': 1e-9}})
+    assert state['params']['combat']['ranged_kill_rate'] == 1e-9
+    assert all(u['losses'] == 0 for u in state['units'])

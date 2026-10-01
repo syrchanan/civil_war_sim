@@ -7,6 +7,8 @@ Command line for the battle engine (roadmap A9). Run ``python -m imperial_genera
     python -m imperial_generals finish battle.json --field Union      # settle killed / wounded / captured
     python -m imperial_generals show battle.json
     python -m imperial_generals run scenario.yaml                     # setup + scripted rounds, start to end
+    python -m imperial_generals batch scenario.yaml --seeds 500       # the spread of outcomes over many seeds
+    python -m imperial_generals matchups grid.yaml --plot grid.png    # every unit kind against every other
 
 ``resolve`` and ``finish`` update the state file in place unless ``-o`` names another. ``--json`` prints the
 machine-readable report instead of a table. Problems exit with code 2 and a message saying what to fix.
@@ -17,7 +19,7 @@ import json
 import sys
 from pathlib import Path
 
-from imperial_generals import api
+from imperial_generals import api, tuning
 from imperial_generals.battles.setup import SetupError, load_setup_file
 from imperial_generals.battles.state import FORMAT
 
@@ -264,6 +266,90 @@ def _cmd_run(args) -> None:
         _print_result(state, result)
 
 
+def _load_overrides(path: Path | None) -> dict | None:
+    if path is None:
+        return None
+    data = load_setup_file(path)
+    if not isinstance(data, dict):
+        raise CliError(f'{path.name} must map parameter sections to overrides.')
+    return data
+
+
+def _pct(v) -> str:
+    return '-' if v is None else f'{v:.0%}'
+
+
+def _num(v, digits: int = 2) -> str:
+    return '-' if v is None else f'{v:.{digits}f}'
+
+
+def _three(spread: dict, fmt) -> str:
+    return ' / '.join(fmt(spread[k]) for k in ('p10', 'p50', 'p90'))
+
+
+def _print_batch(summary: dict, batch) -> None:
+    print(f"{summary['name']}: {summary['seeds']} seeds ({batch.seeds[0]}-{batch.seeds[-1]})")
+    print('Field held: ' + ', '.join(f'{name} {share:.0%}' for name, share in summary['field'].items()))
+    print()
+    sides = summary['sides']
+    rows = [
+        ['Lost for good, p10 / p50 / p90'] + [_three(s['loss_share'], _pct) for s in sides],
+        ['Exchange ratio, p10 / p50 / p90'] + [_three(s['exchange_ratio'], _num) for s in sides],
+        ['Units broken or wiped out (mean)'] + [f"{s['units_out_mean']:.1f} of {s['units']}" for s in sides],
+        ['A unit broke'] + [_pct(s['first_break']['share']) for s in sides],
+        ['First break (median)'] + [_num(s['first_break']['p50'], 0) + ' min' for s in sides],
+        ['Prisoners taken (mean)'] + [f"{s['prisoners_taken_mean']:.0f}" for s in sides],
+        ['Guns taken (mean)'] + [f"{s['guns_taken_mean']:.1f}" for s in sides],
+    ]
+    print(_table([''] + [s['name'] for s in sides], rows, left=1, notes=False))
+    print()
+    names = [s['name'] for s in sides]
+    rows = [[u['name'], names[u['side']], _pct(u['break_share']), _num(u['broke_at_p50'], 0),
+             _three(u['hit_share'], _pct), f"{u['inflicted_mean']:.0f}"] for u in summary['units']]
+    print(_table(['Unit', 'Side', 'Breaks', 'Broke at (median min)', 'Hit share p10 / p50 / p90',
+                  'Inflicted (mean)'], rows, notes=False))
+
+
+def _cmd_batch(args) -> None:
+    batch = tuning.run_batch(load_setup_file(args.scenario), seeds=args.seeds, seed_start=args.seed_start,
+                             overrides=_load_overrides(args.params), workers=args.workers or tuning.default_workers())
+    summary = tuning.summarize(batch)
+    if args.csv:
+        tuning.write_csv(batch.runs, args.csv)
+    if args.units_csv:
+        tuning.write_csv(batch.unit_runs, args.units_csv)
+    if args.json:
+        _print_json(summary)
+    else:
+        _print_batch(summary, batch)
+
+
+def _print_matrix(title: str, grid, metric: str, fmt) -> None:
+    print(title)
+    rows = [[a] + [fmt(grid.cells[(a, d)][metric]) for d in grid.keys] for a in grid.keys]
+    print(_table(['attacker \\ defender'] + grid.keys, rows, left=1, notes=False))
+    print()
+
+
+def _cmd_matchups(args) -> None:
+    grid = tuning.matchup_grid(load_setup_file(args.grid), seeds=args.seeds, overrides=_load_overrides(args.params),
+                               workers=args.workers or tuning.default_workers())
+    if args.csv:
+        tuning.write_csv(grid.rows(), args.csv)
+    if args.plot:
+        tuning.plot_matchups(grid, args.plot, metric=args.metric)
+    if args.json:
+        _print_json(grid.rows())
+        return
+    rounds = ' + '.join(f'{r:g}' for r in grid.rounds)
+    print(f'{grid.name}: {grid.seeds} seeds per cell, rounds {rounds} min')
+    print()
+    _print_matrix('Attacker advantage (attacker wins - defender wins)', grid, 'advantage',
+                  lambda v: f'{v:+.0%}')
+    _print_matrix('Defender breaks', grid, 'defender_breaks', _pct)
+    _print_matrix('Exchange ratio (defender men hit per attacker man hit)', grid, 'exchange_ratio', _num)
+
+
 def _cmd_show(args) -> None:
     _print_state(_load_state(args.state))
 
@@ -310,6 +396,31 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument('--json', action='store_true')
     p.set_defaults(run=_cmd_run)
 
+    p = commands.add_parser('batch', help='run a scenario over many seeds and summarise the outcomes')
+    p.add_argument('scenario', type=Path)
+    p.add_argument('--seeds', type=int, default=200, help='number of seeds (default 200)')
+    p.add_argument('--seed-start', type=int, default=0)
+    p.add_argument('--workers', type=int, help='worker processes (default: one per CPU)')
+    p.add_argument('--params', type=Path, help='parameter overrides file, e.g. {combat: {ranged_kill_rate: 0.005}}')
+    p.add_argument('--csv', type=Path, help='write one row per seed')
+    p.add_argument('--units-csv', type=Path, help='write one row per seed per unit')
+    p.add_argument('--json', action='store_true', help='print the summary as JSON')
+    p.set_defaults(run=_cmd_batch)
+
+    p = commands.add_parser('matchups', help='every unit kind in a grid file attacks every other, one on one')
+    p.add_argument('grid', type=Path)
+    p.add_argument('--seeds', type=int, help="seeds per cell (default: the file's, else 100)")
+    p.add_argument('--workers', type=int, help='worker processes (default: one per CPU)')
+    p.add_argument('--params', type=Path, help='parameter overrides file')
+    p.add_argument('--csv', type=Path, help='write one row per cell')
+    p.add_argument('--plot', type=Path, help='save a heatmap image')
+    p.add_argument('--metric', default='advantage',
+                   choices=['advantage', 'attacker_wins', 'defender_wins', 'attacker_breaks', 'defender_breaks',
+                            'attacker_hit_share', 'defender_hit_share'],
+                   help='heatmap metric (default advantage)')
+    p.add_argument('--json', action='store_true', help='print the cells as JSON')
+    p.set_defaults(run=_cmd_matchups)
+
     p = commands.add_parser('show', help='summarise a state file')
     p.add_argument('state', type=Path)
     p.set_defaults(run=_cmd_show)
@@ -318,7 +429,7 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    source = getattr(args, 'setup', None) or getattr(args, 'scenario', None)
+    source = getattr(args, 'setup', None) or getattr(args, 'scenario', None) or getattr(args, 'grid', None)
     try:
         args.run(args)
     except SetupError as exc:

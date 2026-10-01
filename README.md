@@ -181,6 +181,12 @@ python -m imperial_generals finish battle.json --field Union
 ```
 From Python, `imperial_generals.api` offers the same steps on JSON-safe dicts.
 
+Tuning runs (all CPUs by default):
+```
+python -m imperial_generals batch scenarios/example_ridge.yaml --seeds 1000      # spread of outcomes
+python -m imperial_generals matchups scenarios/matchups_basic.yaml --plot m.png  # every unit kind v every other
+```
+
 ## TypeScript Implementation (`/typescript`)
 - Port of the Python logic for use in a frontend (React/JS web apps)
 - Organized as an npm package with `/src` for code and `/tests` for the suite
