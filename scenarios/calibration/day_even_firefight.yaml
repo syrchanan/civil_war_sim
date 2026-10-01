@@ -1,0 +1,37 @@
+# Calibration: a full day's even firefight between two average brigades.
+# Targets from A2 (Napoleonic / Civil War records): loser 25-35% casualties, winner 12-25%.
+#   python -m imperial_generals check scenarios/calibration/day_even_firefight.yaml
+meta:
+  name: Day of even firefight
+  notes: Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.
+sides: [North, South]
+units:
+  - {id: n1, side: North, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: n2, side: North, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: n3, side: North, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: nb, side: North, type: art, subtype: battery, stats: 5/5/0/0}
+  - {id: s1, side: South, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: s2, side: South, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: s3, side: South, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: sb, side: South, type: art, subtype: battery, stats: 5/5/0/0}
+rounds:
+  - &volleys
+    duration: 90
+    orders:
+      n1: {target: s1, mode: ranged}
+      n2: {target: s2, mode: ranged}
+      n3: {target: s3, mode: ranged}
+      nb: {target: s2, mode: ranged, ammo: shell}
+      s1: {target: n1, mode: ranged}
+      s2: {target: n2, mode: ranged}
+      s3: {target: n3, mode: ranged}
+      sb: {target: n2, mode: ranged, ammo: shell}
+  - *volleys
+  - *volleys
+  - *volleys
+  - *volleys
+finish: auto
+expect:
+  source: A2 calibration targets (day totals)
+  confidence: medium
+  casualties: {loser: 25-35%, winner: 12-25%}

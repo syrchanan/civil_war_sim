@@ -1,0 +1,61 @@
+# Calibration: a day's assault. An attacking division hits a defending brigade: bombardment, then charges,
+# then the attack is pressed. Targets from A2: loser 25-35% casualties, winner 12-25%.
+#   python -m imperial_generals check scenarios/calibration/day_assault.yaml
+meta:
+  name: Day of assault
+sides: [Attack, Defence]
+units:
+  - {id: a1, side: Attack, type: inf, subtype: line, size: 900, stats: 5/5/0/0}
+  - {id: a2, side: Attack, type: inf, subtype: line, size: 900, stats: 5/5/0/0}
+  - {id: a3, side: Attack, type: inf, subtype: line, size: 900, stats: 5/5/0/0}
+  - {id: a4, side: Attack, type: inf, subtype: line, size: 900, stats: 5/5/0/0}
+  - {id: ab1, side: Attack, type: art, subtype: battery, stats: 5/5/0/0}
+  - {id: ab2, side: Attack, type: art, subtype: battery, stats: 5/5/0/0}
+  - {id: d1, side: Defence, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: d2, side: Defence, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: d3, side: Defence, type: inf, subtype: line, size: 800, stats: 5/5/0/0}
+  - {id: db, side: Defence, type: art, subtype: battery, stats: 5/5/0/0}
+rounds:
+  # 1. bombardment and skirmishing
+  - duration: 90
+    orders:
+      ab1: {target: d1, mode: ranged, ammo: shell}
+      ab2: {target: d2, mode: ranged, ammo: shell}
+      db: {target: ab1, mode: ranged, ammo: shell}
+      a1: {target: d1, mode: ranged}
+      a2: {target: d2, mode: ranged}
+      d1: {target: a1, mode: ranged}
+      d2: {target: a2, mode: ranged}
+  # 2. the assault: three regiments charge, the fourth keeps up the fire
+  - duration: 60
+    orders:
+      ab1: {target: d1, mode: ranged, ammo: shell}
+      ab2: {target: d3, mode: ranged, ammo: shell}
+      a1: {target: d1, mode: melee}
+      a2: {target: d2, mode: melee}
+      a3: {target: d3, mode: melee}
+      a4: {target: d2, mode: ranged}
+      d1: {target: a1, mode: ranged}
+      d2: {target: a2, mode: ranged}
+      d3: {target: a3, mode: ranged}
+      db: {target: a2, mode: ranged, ammo: canister}
+  # 3-4. the attack is pressed home
+  - &press
+    duration: 90
+    orders:
+      ab1: {target: d1, mode: ranged, ammo: shell}
+      ab2: {target: d3, mode: ranged, ammo: shell}
+      a1: {target: d1, mode: melee}
+      a2: {target: d2, mode: melee}
+      a3: {target: d3, mode: melee}
+      a4: {target: db, mode: melee}
+      d1: {target: a1, mode: ranged}
+      d2: {target: a2, mode: ranged}
+      d3: {target: a3, mode: ranged}
+      db: {target: a4, mode: ranged, ammo: canister}
+  - *press
+finish: auto
+expect:
+  source: A2 calibration targets (day totals)
+  confidence: medium
+  casualties: {loser: 25-35%, winner: 12-25%}
