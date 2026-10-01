@@ -156,7 +156,7 @@ def _check_top(data: dict, errors: list[str]) -> None:
         errors.append('"params" must be a mapping.')
 
 
-def battle_from_setup(data, seed: int | None = None) -> Battle:
+def battle_from_setup(data, seed: int | None = None, overrides: dict | None = None) -> Battle:
     """
     Build a new battle from a setup dict (see the module docstring).
 
@@ -166,6 +166,8 @@ def battle_from_setup(data, seed: int | None = None) -> Battle:
         The setup, e.g. from ``load_setup_file``.
     seed : int, optional
         Overrides the setup's seed.
+    overrides : dict, optional
+        Parameter overrides applied on top of the setup's own ``params`` (for tuning runs).
 
     Raises
     ------
@@ -226,6 +228,11 @@ def battle_from_setup(data, seed: int | None = None) -> Battle:
             params = params.with_overrides(data.get('params', {}))
         except ValueError as exc:
             errors.append(f'params: {exc}')
+    if overrides:
+        try:
+            params = params.with_overrides(overrides)
+        except ValueError as exc:
+            errors.append(f'overrides: {exc}')
 
     if not errors:
         for side in (0, 1):

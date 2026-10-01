@@ -256,3 +256,89 @@ def test_run_lists_skipped_orders(tmp_path, capsys):
     _, out, _ = run(capsys, 'run', tmp_path / 'rout.yaml')
     assert 'Skipped orders: cs (cs is broken)' in out
     assert 'Skipped orders: us (target cs is wiped out)' in out
+
+
+# =============================================================================
+# Tuning runs (A10)
+# =============================================================================
+
+GRID_YAML = """\
+name: Basic
+seeds: 4
+rounds: [60]
+units:
+  line: {type: inf, subtype: line, size: 1000, stats: 5/5/0/0}
+  heavy_cav: {type: cav, subtype: heavy, size: 500, stats: 5/5/0/1, attack: melee, defend: melee}
+"""
+
+
+def test_batch_prints_the_spread_of_outcomes(files, capsys):
+    code, out, _ = run(capsys, 'batch', files / 'setup.yaml', '--seeds', 6, '--workers', 1)
+    assert code == 0
+    assert 'Test Ridge: 6 seeds (0-5)' in out
+    assert 'Field held: Union' in out and 'nobody' in out
+    assert 'Lost for good' in out and 'Exchange ratio' in out and 'First break' in out
+    assert '1st Minnesota' in out and 'Breaks' in out
+
+
+def test_batch_writes_csv_and_json_and_takes_overrides(files, capsys):
+    (files / 'over.yaml').write_text('combat: {ranged_kill_rate: 0.000000001}\n', encoding='utf-8')
+    code, out, _ = run(capsys, 'batch', files / 'setup.yaml', '--seeds', 3, '--seed-start', 5, '--workers', 1,
+                       '--params', files / 'over.yaml', '--csv', files / 'runs.csv',
+                       '--units-csv', files / 'units.csv', '--json')
+    assert code == 0
+    summary = json.loads(out)
+    assert summary['seeds'] == 3
+    runs = (files / 'runs.csv').read_text(encoding='utf-8').splitlines()
+    assert len(runs) == 4 and runs[1].startswith('5,')
+    assert len((files / 'units.csv').read_text(encoding='utf-8').splitlines()) == 1 + 3 * 3
+
+
+def test_batch_with_default_workers(files, capsys):
+    code, out, _ = run(capsys, 'batch', files / 'setup.yaml', '--seeds', 2)
+    assert code == 0 and '2 seeds' in out
+
+
+def test_batch_problems(files, capsys):
+    (files / 'over.yaml').write_text('combat: {nope: 1}\n', encoding='utf-8')
+    code, _, err = run(capsys, 'batch', files / 'setup.yaml', '--params', files / 'over.yaml')
+    assert code == 2 and "overrides: Unknown combat parameter(s): ['nope']." in err
+    (files / 'list.yaml').write_text('- 1\n', encoding='utf-8')
+    code, _, err = run(capsys, 'batch', files / 'setup.yaml', '--params', files / 'list.yaml')
+    assert code == 2 and 'error: list.yaml must map parameter sections to overrides.' in err
+    code, _, err = run(capsys, 'batch', files / 'setup.yaml', '--seeds', 0)
+    assert code == 2 and 'seeds must be a positive whole number' in err
+
+
+def test_matchups_prints_matrices(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
+    code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--workers', 1)
+    assert code == 0
+    assert 'Basic: 4 seeds per cell, rounds 60 min' in out
+    assert 'Attacker advantage' in out and 'Defender breaks' in out and 'Exchange ratio' in out
+    assert 'heavy_cav' in out
+
+
+def test_matchups_csv_plot_json(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
+    code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1,
+                       '--csv', tmp_path / 'cells.csv', '--plot', tmp_path / 'grid.png', '--json')
+    assert code == 0
+    cells = json.loads(out)
+    assert len(cells) == 4 and cells[0]['attacker'] == 'line'
+    assert len((tmp_path / 'cells.csv').read_text(encoding='utf-8').splitlines()) == 5
+    assert (tmp_path / 'grid.png').exists()
+
+
+def test_matchups_problems(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text('rounds: [60]\nunits: {}\n', encoding='utf-8')
+    code, _, err = run(capsys, 'matchups', tmp_path / 'grid.yaml')
+    assert code == 2 and 'Problems in grid.yaml:' in err
+
+
+def test_starter_matchup_grid_is_valid():
+    import os
+    from imperial_generals import tuning
+    path = os.path.join(os.path.dirname(__file__), '../../scenarios/matchups_basic.yaml')
+    grid = tuning.matchup_grid(load_setup_file(path), seeds=1)
+    assert len(grid.keys) >= 6

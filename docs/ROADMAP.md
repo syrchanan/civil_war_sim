@@ -47,8 +47,9 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A7 | Unit-type matchup matrix | ✓ |
 | A8 | Battle state serialization (JSON contract) | ✓ |
 | A9 | Setup file + step API + CLI | ✓ |
-| A10 | Tuning harness: batch runner + matchup stats | ► |
+| A10 | Tuning harness: batch runner + matchup stats | ✓ |
 | A11 | Player-made validation scenarios (expectations + feedback) | ○ (designed for in A9) |
+| A13 | Tuning pass on the A10 findings | ► |
 | A12 | Field holder from battle performance (`finish` 'auto') | ○ (prototyped) |
 
 ### Phase B — Playable web client
@@ -474,11 +475,48 @@ stay strict.
   finished). Files without the key still load.
 - Orders with unknown keys (`{'aim': ...}`) now raise a clear error naming the unit.
 
-### A10. Tuning harness ►
-- Batch runner: many seeded battles across stat / type / size combinations → outcome tables (win rate, casualty
-  ratio, rounds-to-break, variance).
-- Matchup heatmaps to spot dominant or useless combinations.
-- The user's own RL / parameter-search loop sits on top of A9 + A10.
+### A10. Tuning harness ✓
+**Built** (`imperial_generals/tuning.py`):
+- `run_batch(scenario, seeds, seed_start=, overrides=, workers=)` runs a scenario once per seed, spread over
+  worker processes. Results are identical for any number of workers, since each seed is independent. Every run
+  is finished: with the scenario's `finish` if it names one, else 'auto'. `batch.runs` has one row per seed
+  (field holder, end time, and per side every side-summary figure plus the first break); `batch.unit_runs` has
+  one row per seed per unit (hits, captured, inflicted, broken, broke at).
+- `summarize(batch)`: field-holder shares; per side the spread (mean, p10 / p50 / p90) of losses and exchange
+  ratio, units out, how often and when the first unit breaks, prisoners and guns taken; per unit the break rate,
+  median break time, hit share and inflicted.
+- `matchup_grid(spec, seeds=, workers=, overrides=)`: every unit in a grid file attacks every unit, one on one.
+  Each has an `attack` order and a `defend` reply (ranged / melee / idle, or `{mode, ammo}`). Cells give attacker
+  and defender win rates, **advantage** (attacker wins − defender wins), break rates, hit shares and exchange
+  ratio. `plot_matchups` saves a heatmap (diverging red–gray–blue for advantage). Starter grid:
+  `scenarios/matchups_basic.yaml`.
+- `run_scenario` / `battle_from_setup` take `overrides=` on top of the scenario's own params, so a parameter
+  search can score candidates: `summarize(run_batch(scenario, 500, overrides=candidate))`.
+- CLI: `batch SCENARIO --seeds 500 [--params over.yaml] [--csv runs.csv] [--units-csv units.csv] [--json]` and
+  `matchups GRID [--seeds] [--plot grid.png] [--metric ...] [--csv] [--json]`. Both use every CPU by default.
+
+**Speed** (32 cores): 1,000 seeds of the 7-unit example in 13 s; the 8 × 8 starter grid (12,800 battles) in 21 s.
+
+**First findings** (starter grid: 1000 infantry / 500 cavalry / standard battery, all 5/5, one 90-min round,
+200 seeds; example: 1,000 seeds). These are the A13 tuning targets:
+1. **Pikes win everything, even attacked by a firing line** (+100% against all infantry). A melee order is
+   instant contact (no approach under fire until movement exists), and the pikes' melee reply turns any ranged
+   attack into a melee they win (rating 1.2 v 0.7). Melee needs an approach cost or slower rates.
+2. **Melee decides in minutes; firefights don't decide in 90 min.** Infantry v infantry never breaks within a
+   round (consistent with A2's ~3–4 h firefights); every melee cell ends at ±100%.
+3. **Dragoons never break anything** (0% in their row) and lose to all infantry at range.
+4. **Cavalry charging infantry always loses at 500 v 1000** (by design: outnumbered cavalry loses). An
+   equal-numbers grid is needed before judging the charge factor.
+5. **Artillery**: a battery attacking infantry is roughly even (−2% to −24%) and hits ~3–5 men per man lost;
+   battery v battery is even.
+6. **Example scenario**: the Union never holds the field (A12 would change that); Battery B breaks in every
+   seed (median 50 min) under counter-battery shell. 1st Minnesota breaks only 14% of the time with 31% hit,
+   which may be the morale-gain pinning noted under A2.
+
+### A13. Tuning pass ►
+Work through the A10 findings with the harness: melee approach / rates (pikes), dragoons, cavalry at equal
+numbers, counter-battery strength, morale gain pinning. Then add equal-numbers and multi-round grids, and
+re-check the A2 calibration targets (day totals, break points, 5–10% per hour in a firefight) with `batch`.
 
 ### A11. Player-made validation scenarios ○
 Players will be asked to contribute test scenarios. We tune against our own first, but A9's formats are built so

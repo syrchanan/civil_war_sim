@@ -272,3 +272,14 @@ def test_yaml_dates_stay_text_so_the_state_is_json(tmp_path):
     assert data['meta']['date'] == '1863-07-02'
     assert data['meta']['when'] == '2001-12-14t21:59:43.10-05:00'
     json.dumps(battle_from_setup(data).to_dict())
+
+
+def test_overrides_apply_on_top_of_the_setup_params():
+    data = setup(params={'combat': {'ranged_kill_rate': 0.01, 'melee_kill_rate': 0.5}})
+    b = battle_from_setup(data, overrides={'combat': {'ranged_kill_rate': 0.02}, 'morale': {'gain_weight': 0.0}})
+    assert b.params.combat.ranged_kill_rate == 0.02
+    assert b.params.combat.melee_kill_rate == 0.5                 # the setup's own override survives
+    assert b.params.morale.gain_weight == 0.0
+    with pytest.raises(SetupError) as info:
+        battle_from_setup(setup(), overrides={'combat': {'nope': 1}})
+    assert info.value.errors == ["overrides: Unknown combat parameter(s): ['nope']."]

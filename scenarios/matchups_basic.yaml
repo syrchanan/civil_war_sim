@@ -1,0 +1,26 @@
+# Matchup grid: every unit attacks every unit (itself included), one on one, for the rounds below.
+#
+#   python -m imperial_generals matchups scenarios/matchups_basic.yaml --plot matchups.png
+#
+# attack: the attacker's order against the defender; defend: the defender's reply ("idle" to not reply).
+# Each is ranged, melee or idle, or {mode, ammo} for artillery. Both default to ranged.
+# A side wins a run when the other unit broke or was wiped out and it didn't.
+
+name: Basic matchups
+seeds: 200
+rounds: [90]
+
+units:
+  line:       {type: inf, subtype: line, size: 1000, stats: 5/5/0/0}
+  rifles:     {type: inf, subtype: line, size: 1000, stats: 5/5/1/0}
+  light_inf:  {type: inf, subtype: light, size: 1000, stats: 5/5/1/0}
+  pikes:      {type: inf, subtype: pikes, size: 1000, stats: 5/5/-2/1, attack: melee, defend: melee}
+  light_cav:  {type: cav, subtype: light, size: 500, stats: 5/5/0/1, attack: melee, defend: melee}
+  heavy_cav:  {type: cav, subtype: heavy, size: 500, stats: 5/5/0/1, attack: melee, defend: melee}
+  dragoons:   {type: cav, subtype: dragoons, size: 500, stats: 5/5/0/0}
+  battery:
+    type: art
+    subtype: battery
+    stats: 5/5/0/0
+    attack: {mode: ranged, ammo: shell}
+    defend: {mode: ranged, ammo: shell}      # canister would win every artillery duel

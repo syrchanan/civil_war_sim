@@ -120,13 +120,15 @@ def _playable(battle: Battle, orders: dict) -> tuple:
     return keep, skipped
 
 
-def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = False) -> tuple:
+def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = False,
+                 overrides: dict | None = None) -> tuple:
     """
     Build the battle and play the scenario's rounds in order, then finish it if ``finish`` says so.
 
     Orders that can no longer be carried out are skipped and listed in each report's ``skipped_orders``.
 
-    Returns ``(state, reports, result)``; ``result`` is None if the battle wasn't finished.
+    Returns ``(state, reports, result)``; ``result`` is None if the battle wasn't finished. ``overrides`` are
+    parameter overrides applied on top of the scenario's own (for tuning runs).
 
     Raises
     ------
@@ -134,7 +136,7 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
         For problems in the setup or the round script (all reported before anything runs), or an order that
         can't be carried out (naming the round).
     """
-    battle = battle_from_setup(scenario, seed=seed)
+    battle = battle_from_setup(scenario, seed=seed, overrides=overrides)
     errors = _check_script(scenario)
     if errors:
         raise SetupError(errors)
