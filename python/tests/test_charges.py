@@ -298,8 +298,8 @@ def test_battery_broken_by_a_charge_loses_every_gun():
 
 
 def test_contact_persists_into_the_next_round():
-    b, _ = charge_round(**ALWAYS_HOME)
-    report = b.resolve_round(30, {'x': {'target': 'a', 'mode': 'melee'}})    # either side keeping melee is enough
+    b, _ = charge_round(duration=20, **ALWAYS_HOME)
+    report = b.resolve_round(10, {'x': {'target': 'a', 'mode': 'melee'}})    # either side keeping melee is enough
     assert report.charges == ()
     assert ('a', 'x', 'melee') in rates(report.engagements)
     assert b.contacts == {frozenset(('a', 'x'))}

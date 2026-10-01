@@ -146,6 +146,8 @@ class MoraleParams:
     break_fraction_max: float = _config_default('morale', 'break_fraction_max', 'model')
     experience_weight: float = _config_default('morale', 'experience_weight', 'model')
     break_curve: float = _config_default('morale', 'break_curve', 'model')
+    break_point_spread: float = _config_default('morale', 'break_point_spread', 'model')
+    break_fraction_ceiling: float = _config_default('morale', 'break_fraction_ceiling', 'model')
     size_reference: float = _config_default('morale', 'size_reference', 'model')
     size_exponent: float = _config_default('morale', 'size_exponent', 'model')
     acceleration: float = _config_default('morale', 'acceleration', 'model')
@@ -160,6 +162,10 @@ class MoraleParams:
             raise ValueError("Need 0 < break_fraction_min <= break_fraction_max <= 1.")
         if not 0 <= self.experience_weight <= 1:
             raise ValueError("experience_weight must be in [0, 1].")
+        if not self.break_point_spread >= 0:
+            raise ValueError("break_point_spread must be >= 0.")
+        if not 0 < self.break_fraction_ceiling <= 1:
+            raise ValueError("break_fraction_ceiling must be in (0, 1].")
         for name in ('break_curve', 'size_reference', 'shock_half_life'):
             if not getattr(self, name) > 0:
                 raise ValueError(f"{name} must be > 0.")

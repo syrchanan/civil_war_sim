@@ -263,7 +263,8 @@ def test_matches_simulation_exactly_one_on_one():
         sim = Simulation((r1, r2), rng=Rng(seed))
         sim.run_simulation(time=600)
 
-        b = make_battle({'a': (0, 600, '4/5/0/0'), 'x': (1, 500, '3/4/1/0')}, seed=seed)
+        flat = BattleParams().with_overrides({'morale': {'break_point_spread': 0.0}})   # Simulation has none
+        b = make_battle({'a': (0, 600, '4/5/0/0'), 'x': (1, 500, '3/4/1/0')}, seed=seed, params=flat)
         report = b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}, 'x': {'target': 'a', 'mode': 'ranged'}})
 
         assert [report.units['a'].losses, report.units['x'].losses] == sim.casualties['losses'].tolist()
@@ -331,3 +332,13 @@ def test_rates_use_battle_params():
     b = make_battle({'a': (0, 500, '4/5/0/0'), 'x': (1, 500, '4/5/0/0')}, params=fast)
     r = rates(b.engagements({'a': {'target': 'x', 'mode': 'ranged'}}))
     assert r[('a', 'x')] == pytest.approx(3 * K_R * coef('4/5/0/0', 'ranged') * 500)
+
+
+def test_unit_worn_down_by_the_drain_breaks_at_the_round_end():
+    # x has almost no morale left; the fire on it is negligible, so the in-combat drain breaks it at the end
+    calm = BattleParams().with_overrides({'combat': {'ranged_kill_rate': 1e-12}})
+    b = make_battle({'a': (0, 500, '5/5/0/0'), 'c': (0, 500, '5/5/0/0'), 'x': (1, 500, '5/5/0/0')}, params=calm)
+    b.units['x'].morale.resolve = 0.001
+    report = b.resolve_round(60, {'a': {'target': 'x', 'mode': 'ranged'}, 'c': {'target': 'x', 'mode': 'ranged'}})
+    assert report.units['x'].losses == 0
+    assert report.units['x'].broken and report.units['x'].broke_at == 60
