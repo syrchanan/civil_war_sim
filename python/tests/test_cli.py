@@ -461,3 +461,13 @@ def test_check_reports_problems(tmp_path, capsys):
     (tmp_path / 'none.yaml').write_text(ROUT_YAML.split('expect:')[0], encoding='utf-8')
     code, _, err = run(capsys, 'check', tmp_path / 'none.yaml', '--seeds', 2, '--workers', 1)
     assert code == 2 and 'This scenario has no "expect" block' in err and 'Problems in none.yaml' in err
+
+
+def test_calibration_scenarios_are_valid():
+    import glob
+    import os
+    from imperial_generals import validation
+    paths = glob.glob(os.path.join(os.path.dirname(__file__), '../../scenarios/calibration/*.yaml'))
+    assert len(paths) >= 2
+    for path in paths:
+        assert validation.check(load_setup_file(path), seeds=1)['total'] >= 1
