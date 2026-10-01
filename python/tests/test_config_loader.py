@@ -83,7 +83,7 @@ class TestConfigLoaderAccess:
         loader = ConfigLoader(CONFIG_PATH)
         val = loader.get('combat', 'xp_boost_per_level')
         assert isinstance(val, float)
-        assert val == 0.04
+        assert val == 0.08
 
     def test_get_missing_key_raises_key_error(self):
         loader = ConfigLoader(CONFIG_PATH)

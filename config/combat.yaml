@@ -20,35 +20,40 @@ combat:
     '2':  2.5
 
   # Fractional boost to combat efficiency per XP level above 1 (scale 1–10).
-  # e.g. 0.04 means a level-5 unit gains +16% over a level-1 unit.
-  xp_boost_per_level: 0.04
+  # 0.08 means a level-5 unit gains +32% over a level-1 unit. Together with the morale boost, an elite 10/10 unit
+  # is ~2.1× as effective as a green 1/1 unit with the same weapon (fire and melee alike).
+  xp_boost_per_level: 0.08
 
   # Fractional boost to combat efficiency per morale level above 1 (scale 1–10).
-  morale_boost_per_level: 0.02
+  # Applies to live morale, so a shaken unit's fire weakens as its morale falls.
+  morale_boost_per_level: 0.04
 
   # Multiplier applied to efficiency when a unit is in melee combat.
   # < 1.0 means melee is less effective than ranged fire.
   melee_penalty_factor: 0.70
 
   # --- Kill rates: convert Lanchester rates into casualties per game MINUTE ---
+  # Same for every unit: they set the time scale, not who is better (that's the coefficient above).
+  # Scaled ×1.095 when the XP/morale boosts doubled, so an average 5/5 unit's casualty rates are unchanged and
+  # only the spread between green and elite units widened.
 
   # Ranged (square law): casualties/min = coef_enemy × ranged_kill_rate × enemy_size.
-  # Calibrated so an even smoothbore firefight (4/5/0/0 each side) costs ~7.5% per hour per side
+  # Calibrated so an even 5/5 smoothbore firefight costs ~7.5% per hour per side
   # (historical target: 5–10%/hour). Rifled muskets land near 11%/hour.
-  ranged_kill_rate: 0.004
+  ranged_kill_rate: 0.00438
 
   # Melee (linear law): casualties/min = coef_enemy × melee_kill_rate × front_self × front_enemy.
   # Placeholder: two 500-man fronts in melee lose ~3× the ranged per-man rate. Tune in A10.
-  melee_kill_rate: 0.000024
+  melee_kill_rate: 0.0000263
 
   # Artillery (round engine): casualties/min = coef × effective_guns × per-gun rate for the ordered ammo × matchup.
   # Ammo is part of the battery's order and fixed for the round (the player chooses; the engine doesn't adapt).
   # Until positions exist the admin judges whether the range suits the ammo (canister is a close-range load).
   # Rates in musket-equivalents per gun: round shot ≈ 40, shell ≈ 60, canister ≈ 110. Tune in A10.
   artillery_ammo:
-    round_shot: 0.15
-    shell: 0.25
-    canister: 0.45
+    round_shot: 0.164
+    shell: 0.274
+    canister: 0.493
 
   # Ammo used when an artillery order doesn't say.
   artillery_default_ammo: round_shot

@@ -9,7 +9,7 @@
     "description": "Minimum possible stats",
     "function": "get_combat_efficiency",
     "inputs": {"stat_xp": 1, "stat_morale": 1, "stat_weapon": -2, "stat_melee": 1},
-    "expected": 0.0364
+    "expected": 0.0269
   },
   {
     "description": "Maximum possible stats",
