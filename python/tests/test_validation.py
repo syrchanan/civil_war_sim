@@ -164,3 +164,80 @@ def test_winner_by_men_broken_when_nobody_holds_the_field():
     assert field['share'] == 0 and 'nobody 100%' in field['engine']
     assert winner['text'] == 'Winner casualties 1%-10%' and winner['share'] is not None   # Blue won every run
     assert red['text'].startswith('Red casualties over 10%')
+
+
+# =============================================================================
+# Detail for players: how the battle usually went, unit by unit, charges, a typical run
+# =============================================================================
+
+CHARGE = scenario(GOOD, rounds=[
+    {'duration': 60, 'orders': {'big': {'target': 'small', 'mode': 'ranged'}, 'small': {'target': 'big', 'mode': 'ranged'}}},
+    {'duration': 30, 'orders': {'big': {'target': 'small', 'mode': 'melee'}}},
+])
+
+
+def test_batches_record_every_charge():
+    batch = tuning.run_batch(CHARGE, seeds=6)
+    assert len(batch.charge_runs) == sum(1 for r in batch.runs if r['first_charge'] is not None)
+    for c in batch.charge_runs:
+        assert (c['charger'], c['target'], c['round']) == ('big', 'small', 2)
+        assert c['outcome'] in ('home', 'faltered', 'defender_broke', 'pursuit', 'target_broke', 'charger_broke')
+
+
+def test_report_describes_each_side():
+    report = validation.check(scenario(GOOD), seeds=12)
+    batch = tuning.run_batch(scenario(GOOD), seeds=12)
+    blue, red = report['sides']
+    assert (blue['name'], red['name']) == ('Blue', 'Red')
+    assert blue['men'] == 3000 and blue['units'] == 1
+    shares = [r['s1_casualty_share'] for r in batch.runs]
+    assert red['casualties'] == {'p10': tuning.quantile(shares, .1), 'p50': tuning.quantile(shares, .5),
+                                 'p90': tuning.quantile(shares, .9)}
+    assert red['units_out_mean'] == pytest.approx(sum(r['s1_units_out'] for r in batch.runs) / 12)
+    assert blue['prisoners_taken_p50'] == tuning.quantile([r['s0_prisoners_taken'] for r in batch.runs], .5)
+    assert blue['field_held'] == pytest.approx(sum(r['field_held_by'] == 0 for r in batch.runs) / 12)
+
+
+def test_report_describes_each_unit():
+    report = validation.check(scenario(GOOD), seeds=12)
+    batch = tuning.run_batch(scenario(GOOD), seeds=12)
+    big, small = report['units']
+    assert (small['id'], small['name'], small['side']) == ('small', 'small', 'Red')
+    rows = [u for u in batch.unit_runs if u['id'] == 'small']
+    shares = [(u['hits'] + u['captured']) / u['started'] for u in rows]
+    assert small['break_share'] == sum(u['broken'] or u['wiped_out'] for u in rows) / 12
+    assert small['broke_at_p50'] == tuning.quantile([u['broke_at'] for u in rows if u['broke_at'] is not None], .5)
+    assert small['casualties'] == {'p10': tuning.quantile(shares, .1), 'p50': tuning.quantile(shares, .5),
+                                   'p90': tuning.quantile(shares, .9)}
+    assert big['inflicted_p50'] == tuning.quantile([u['inflicted'] for u in batch.unit_runs if u['id'] == 'big'], .5)
+    assert big['broke_at_p50'] is None
+
+
+def test_report_describes_each_charge():
+    report = validation.check(CHARGE, seeds=10)
+    batch = tuning.run_batch(CHARGE, seeds=10)
+    if not batch.charge_runs:
+        assert report['charges'] == []
+        return
+    (charge,) = report['charges']
+    outcomes = [c['outcome'] for c in batch.charge_runs]
+    assert (charge['charger'], charge['target'], charge['round']) == ('big', 'small', 2)
+    assert charge['made'] == len(outcomes) / 10
+    assert charge['outcomes'] == {o: outcomes.count(o) / len(outcomes) for o in dict.fromkeys(outcomes)}
+    assert validation.check(scenario(GOOD), seeds=3)['charges'] == []
+
+
+def test_report_replays_a_typical_run():
+    from imperial_generals import api
+    report = validation.check(CHARGE, seeds=12)
+    typical = report['typical']
+    batch = tuning.run_batch(CHARGE, seeds=12)
+    seed = typical['seed']
+    assert seed in batch.seeds
+    # the run whose casualties are closest to the usual ones, among runs with the usual field holder
+    row = {r['seed']: r for r in batch.runs}[seed]
+    state, reports, result = api.run_scenario({**CHARGE, 'finish': True}, seed=seed)
+    assert typical['rounds'] == reports
+    assert typical['result'] == api.side_summary(state)
+    assert typical['units'] == {u['id']: u['name'] for u in state['units']}
+    assert typical['field_held_by'] == result['field_held_by'] == row['field_held_by']

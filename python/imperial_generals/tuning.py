@@ -57,7 +57,7 @@ def _mean(values) -> float:
 # =============================================================================
 
 def _play(scenario: dict, seed: int, overrides: dict | None) -> tuple:
-    """One finished run: ``(run_row, unit_rows)``."""
+    """One finished run: ``(run_row, unit_rows, charge_rows)``."""
     if scenario.get('finish', False) is False:
         scenario = {**scenario, 'finish': True}
     state, reports, result = api.run_scenario(scenario, seed=seed, overrides=overrides)
@@ -87,7 +87,9 @@ def _play(scenario: dict, seed: int, overrides: dict | None) -> tuple:
         # share of the side's starting men in units that broke or were wiped out
         row[f's{side}_men_out'] = sum(u['started'] for u in unit_rows
                                       if u['side'] == side and (u['broken'] or u['wiped_out'])) / summary['started']
-    return row, unit_rows
+    charge_rows = [{'seed': seed, 'charger': c['charger'], 'target': c['target'], 'round': report['round'],
+                    'outcome': c['outcome']} for report in reports for c in report['charges']]
+    return row, unit_rows, charge_rows
 
 
 def _play_chunk(task: tuple) -> list:
@@ -131,6 +133,7 @@ class Batch:
     seeds: list
     runs: list = field(default_factory=list)          # one row per seed (see _play)
     unit_runs: list = field(default_factory=list)     # one row per seed per unit
+    charge_runs: list = field(default_factory=list)   # one row per charge made (seed, charger, target, round, outcome)
 
 
 def run_batch(scenario: dict, seeds: int = 100, seed_start: int = 0, overrides: dict | None = None,
@@ -152,9 +155,10 @@ def run_batch(scenario: dict, seeds: int = 100, seed_start: int = 0, overrides: 
     batch = Batch(name=scenario.get('meta', {}).get('name', 'Scenario'), sides=api._side_names(
         {'meta': {'sides': scenario.get('sides')}}), seeds=seed_list)
     for chunk in _run_tasks(tasks, workers):
-        for row, unit_rows in chunk:
+        for row, unit_rows, charge_rows in chunk:
             batch.runs.append(row)
             batch.unit_runs.extend(unit_rows)
+            batch.charge_runs.extend(charge_rows)
     return batch
 
 
@@ -340,7 +344,7 @@ class MatchupGrid:
 def _cell(results: list) -> dict:
     """Outcome of one grid cell over its seeds."""
     n = len(results)
-    rows = [row for row, _ in results]
+    rows = [row for row, *_ in results]
     attacker_out = [r['s0_units_out'] == 1 for r in rows]
     defender_out = [r['s1_units_out'] == 1 for r in rows]
     taken = sum(r['s0_hits_taken'] for r in rows)
