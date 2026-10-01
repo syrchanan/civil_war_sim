@@ -10,7 +10,8 @@
 
 name: Basic matchups
 seeds: 200
-rounds: [90]
+# Round lengths in minutes: a list for every grid, or by grid with a default. A charge is a short action.
+rounds: {default: [90], charge: [30]}
 
 units:
   line:       {type: inf, subtype: line, size: 1000, stats: 5/5/0/0}

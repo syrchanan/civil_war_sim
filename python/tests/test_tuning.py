@@ -381,3 +381,44 @@ def test_charge_facet_charges_into_standing_fire():
                       'defender': {'target': 'attacker', 'mode': 'ranged'}}
     grid = tuning.matchup_grid(GRID, mode='charge', seeds=2)
     assert grid.mode == 'charge' and grid.attackers == grid.keys
+
+
+# =============================================================================
+# Round lengths per facet: a charge is a short action
+# =============================================================================
+
+def test_rounds_can_differ_per_facet():
+    spec = {**GRID, 'rounds': {'default': [60, 60], 'charge': [20]}}
+    assert tuning.matchup_scenario(spec, 'line', 'line', mode='charge')['rounds'][0]['duration'] == 20
+    assert len(tuning.matchup_scenario(spec, 'line', 'line', mode='charge')['rounds']) == 1
+    assert [r['duration'] for r in tuning.matchup_scenario(spec, 'line', 'line', mode='melee')['rounds']] == [60, 60]
+    assert tuning.matchup_grid(spec, mode='charge', seeds=2).rounds == [20]
+    assert tuning.matchup_grid(spec, mode='ranged', seeds=2).rounds == [60, 60]
+
+
+@pytest.mark.parametrize('rounds', [
+    {'charge': [20]},                       # no default
+    {'default': [60], 'stampede': [20]},    # unknown grid
+    {'default': [60], 'charge': [0]},
+    {'default': []},
+])
+def test_per_facet_rounds_are_checked(rounds):
+    with pytest.raises(SetupError) as info:
+        tuning.matchup_grid({**GRID, 'rounds': rounds})
+    assert any('"rounds"' in e for e in info.value.errors)
+
+
+def test_charge_outcomes_per_cell():
+    spec = {**GRID, 'rounds': [30]}
+    grid = tuning.matchup_grid(spec, mode='charge', seeds=20)
+    for cell in grid.cells.values():
+        shares = (cell['charge_home'], cell['charge_faltered'], cell['charge_broke_defender'])
+        assert all(0 <= s <= 1 for s in shares) and sum(shares) <= 1 + 1e-9
+    batch = tuning.run_batch(tuning.matchup_scenario(spec, 'line', 'line', mode='charge'), seeds=20)
+    firsts = [r['first_charge'] for r in batch.runs]
+    assert grid.cells[('line', 'line')]['charge_home'] == pytest.approx(firsts.count('home') / 20)
+    # no charges in a firefight
+    ranged = tuning.matchup_grid(spec, mode='ranged', seeds=2)
+    assert all(c['charge_home'] == 0 for c in ranged.cells.values())
+    assert all(r['first_charge'] is None for r in tuning.run_batch(
+        tuning.matchup_scenario(spec, 'line', 'line', mode='ranged'), seeds=2).runs)

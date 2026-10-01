@@ -381,6 +381,13 @@ def _cmd_matchups(args) -> None:
         _print_matrix('Defender breaks', grid, 'defender_breaks', _pct)
         _print_matrix('Defender men hit (share of its strength)', grid, 'defender_hit_share', _pct)
         _print_matrix('Exchange ratio (defender men hit per attacker man hit)', grid, 'exchange_ratio', _num)
+        if grid.mode == 'charge':
+            print('Charges: went home / faltered / broke the defender')
+            rows = [[a] + ['/'.join(f"{grid.cells[(a, d)][k]:.0%}".rstrip('%')
+                                    for k in ('charge_home', 'charge_faltered', 'charge_broke_defender'))
+                           for d in grid.keys] for a in grid.attackers]
+            print(_table(['attacker \\ defender'] + grid.keys, rows, left=1, notes=False))
+            print()
 
 
 def _cmd_show(args) -> None:

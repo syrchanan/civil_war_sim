@@ -391,3 +391,11 @@ def test_matchups_all_includes_the_charge_grid(tmp_path, capsys):
     (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
     _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1)
     assert out.index('(melee)') < out.index('(charge into standing fire)')
+
+
+def test_charge_grid_prints_charge_outcomes(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
+    _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'charge')
+    assert 'Charges: went home / faltered / broke the defender' in out
+    _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'ranged')
+    assert 'Charges:' not in out
