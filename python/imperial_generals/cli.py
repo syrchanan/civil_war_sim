@@ -331,23 +331,34 @@ def _print_matrix(title: str, grid, metric: str, fmt) -> None:
     print()
 
 
+FACET_TITLES = {'orders': 'orders from the file', 'ranged': 'ranged', 'melee': 'melee'}
+
+
 def _cmd_matchups(args) -> None:
-    grid = tuning.matchup_grid(load_setup_file(args.grid), seeds=args.seeds, overrides=_load_overrides(args.params),
-                               workers=args.workers or tuning.default_workers())
+    spec = load_setup_file(args.grid)
+    overrides = _load_overrides(args.params)
+    modes = ['ranged', 'melee'] if args.mode == 'both' else [args.mode]
+    grids = [tuning.matchup_grid(spec, seeds=args.seeds, overrides=overrides, mode=mode,
+                                 workers=args.workers or tuning.default_workers()) for mode in modes]
     if args.csv:
-        tuning.write_csv(grid.rows(), args.csv)
+        tuning.write_csv([row for grid in grids for row in grid.rows()], args.csv)
     if args.plot:
-        tuning.plot_matchups(grid, args.plot, metric=args.metric)
+        for grid in grids:
+            path = args.plot
+            if len(grids) > 1:
+                path = args.plot.with_name(f'{args.plot.stem}_{grid.mode}{args.plot.suffix}')
+            tuning.plot_matchups(grid, path, metric=args.metric)
     if args.json:
-        _print_json(grid.rows())
+        _print_json([row for grid in grids for row in grid.rows()])
         return
-    rounds = ' + '.join(f'{r:g}' for r in grid.rounds)
-    print(f'{grid.name}: {grid.seeds} seeds per cell, rounds {rounds} min')
-    print()
-    _print_matrix('Attacker advantage (attacker wins - defender wins)', grid, 'advantage',
-                  lambda v: f'{v:+.0%}')
-    _print_matrix('Defender breaks', grid, 'defender_breaks', _pct)
-    _print_matrix('Exchange ratio (defender men hit per attacker man hit)', grid, 'exchange_ratio', _num)
+    for grid in grids:
+        rounds = ' + '.join(f'{r:g}' for r in grid.rounds)
+        print(f'{grid.name} ({FACET_TITLES[grid.mode]}): {grid.seeds} seeds per cell, rounds {rounds} min')
+        print()
+        _print_matrix('Attacker advantage (attacker wins - defender wins)', grid, 'advantage',
+                      lambda v: f'{v:+.0%}')
+        _print_matrix('Defender breaks', grid, 'defender_breaks', _pct)
+        _print_matrix('Exchange ratio (defender men hit per attacker man hit)', grid, 'exchange_ratio', _num)
 
 
 def _cmd_show(args) -> None:
@@ -418,6 +429,9 @@ def _parser() -> argparse.ArgumentParser:
                    choices=['advantage', 'attacker_wins', 'defender_wins', 'attacker_breaks', 'defender_breaks',
                             'attacker_hit_share', 'defender_hit_share'],
                    help='heatmap metric (default advantage)')
+    p.add_argument('--mode', default='both', choices=['both', 'ranged', 'melee', 'orders'],
+                   help='both (default): a ranged grid and a melee grid; ranged or melee: just that one; '
+                        'orders: the attack / defend orders from the file')
     p.add_argument('--json', action='store_true', help='print the cells as JSON')
     p.set_defaults(run=_cmd_matchups)
 

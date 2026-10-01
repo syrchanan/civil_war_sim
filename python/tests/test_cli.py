@@ -314,14 +314,14 @@ def test_matchups_prints_matrices(tmp_path, capsys):
     (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
     code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--workers', 1)
     assert code == 0
-    assert 'Basic: 4 seeds per cell, rounds 60 min' in out
+    assert 'Basic (ranged): 4 seeds per cell, rounds 60 min' in out
     assert 'Attacker advantage' in out and 'Defender breaks' in out and 'Exchange ratio' in out
     assert 'heavy_cav' in out
 
 
 def test_matchups_csv_plot_json(tmp_path, capsys):
     (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
-    code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1,
+    code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'orders',
                        '--csv', tmp_path / 'cells.csv', '--plot', tmp_path / 'grid.png', '--json')
     assert code == 0
     cells = json.loads(out)
@@ -342,3 +342,23 @@ def test_starter_matchup_grid_is_valid():
     path = os.path.join(os.path.dirname(__file__), '../../scenarios/matchups_basic.yaml')
     grid = tuning.matchup_grid(load_setup_file(path), seeds=1)
     assert len(grid.keys) >= 6
+
+
+def test_matchups_default_to_ranged_and_melee_facets(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
+    code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1,
+                       '--csv', tmp_path / 'cells.csv', '--plot', tmp_path / 'grid.png')
+    assert code == 0
+    assert out.index('Basic (ranged)') < out.index('Basic (melee)')
+    assert (tmp_path / 'grid_ranged.png').exists() and (tmp_path / 'grid_melee.png').exists()
+    lines = (tmp_path / 'cells.csv').read_text(encoding='utf-8').splitlines()
+    assert len(lines) == 1 + 2 * 4 and lines[0].startswith('mode,')
+
+
+def test_matchups_single_facet_or_file_orders(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
+    _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'orders')
+    assert 'Basic (orders from the file)' in out and '(melee)' not in out
+    _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'melee',
+                    '--json')
+    assert {c['mode'] for c in json.loads(out)} == {'melee'}
