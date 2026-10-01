@@ -565,13 +565,45 @@ The tables add the defender's hit share.
 - **Example**: the Confederate assault fails. The 8th and 10th Alabama break in 94–96% of seeds; the Union trades
   1.6:1.
 
+**Since then** (2026-10-01):
+- **A charge that falters falls back** beyond musket range for the rest of the round: only artillery can still
+  reach it.
+- **Grid round lengths can differ per grid**: `rounds: {default: [90], charge: [30]}`. A charge is a short
+  action. The charge grid also reports how each charge ended (went home / faltered / broke the defender).
+  - Infantry charging line: 48 / 46 / 6.
+  - Charging rifles: 42 / 52 / 6.
+  - Cavalry charging pikes: falters 95%.
+  - Infantry charging stationary cavalry at 2:1 numbers: breaks it 36%.
+  - Every infantry kind charges identically: the test sees only numbers, steadiness and the type bonus.
+- **Artillery at long range** (6% of a unit hit in 90 min, unreturned) and **melee pace** (~19%/h): about
+  right for now, tune later.
+
+**Morale investigation** (2026-10-01; firefights of 1000-man line, 300 seeds):
+- **Firefight pace on target**: an even 5/5 firefight costs 7.1% in the first hour (target 5–10%).
+- **Break points on target** for a unit losing a firefight against twice its numbers:
+
+  | Stats | Lost at break | Target |
+  |---|---|---|
+  | 1/1 | 13% | 10–20% |
+  | 2/3 | 16% | 10–20% |
+  | 5/5 | 26% | 25–35% |
+  | 8/8 | 43% | 40–60% |
+  | 10/10 | 55% | 40–60% |
+
+  These sit below the designed `f_break` because shock and the in-combat drain spend morale too.
+- **The morale gain isn't pinning units.** Raising `gain_weight` from 0 to 0.5 moves the even-fight break point
+  from 25% to 28% (melee 26% → 29%) and delays the break by 15–30 min. The "units stuck just above breaking"
+  seen earlier was scripted battles ending shortly before those units broke.
+- **Break points have almost no variance**: p10 = p50 = p90. Every unit of given stats breaks at the same share
+  lost. Historically it varies widely, with tails like the 1st Minnesota's ~82%. Proposed: a per-unit random
+  spread on the break point, drawn from the seed at battle start.
+
 **Next in A13**:
-- Battery firepower at long range (6% in 90 min, unreturned: is that enough?).
-- Melee pace: 19%/h with no breaks in 90 min may now be too slow.
-- Whether a faltered charger should fall back out of fire rather than stand under it.
-- Dragoons.
-- Morale-gain pinning.
-- Then the A2 calibration targets with `batch`.
+- Break-point variance (above).
+- Dragoons. Open question: should they fight dismounted like infantry (minus horse-holders), or skirmish
+  from horseback? Today they are 0.9× infantry fire and 0.9 melee, and lose every grid cell at 500 v 1000.
+- Equal-numbers grids, so cavalry isn't judged at half the infantry's size.
+- Day totals with `batch`: loser 25–35%, winner 12–25%.
 
 ### A11. Player-made validation scenarios ○
 Players will be asked to contribute test scenarios. We tune against our own first, but A9's formats are built so
