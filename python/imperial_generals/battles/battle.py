@@ -25,7 +25,7 @@ import json
 import secrets
 from dataclasses import dataclass, field
 
-from imperial_generals.battles.morale import MoraleState
+from imperial_generals.battles.morale import MoraleState, break_scale
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
@@ -230,8 +230,11 @@ class Battle:
                 raise ValueError(f"side must be 0 or 1, got {side!r} for {uid!r}.")
             if not isinstance(regiment, Regiment):
                 raise TypeError(f"{uid!r} must be a Regiment, got {type(regiment).__name__}.")
+            # units differ: each draws a multiplier on its break point from the seed, in unit order
+            spread = self.params.morale.break_point_spread
+            scale = break_scale(self.rng.random(), spread) if spread > 0 else 1.0
             morale = MoraleState(size=regiment.size, xp=regiment.stats[0], morale_stat=regiment.stats[1],
-                                 params=self.params.morale)
+                                 params=self.params.morale, break_scale=scale)
             key = (getattr(regiment, 'unit_type', 'inf'), getattr(regiment, 'subtype', None))
             self.units[uid] = BattleUnit(uid, side, regiment, morale, regiment.size, index, key=key,
                                          melee_rating=self.params.matchups.melee_rating(key),

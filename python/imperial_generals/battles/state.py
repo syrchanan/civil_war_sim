@@ -18,6 +18,7 @@ from dataclasses import asdict
 from imperial_generals.battles.battle import (
     Battle, BattleResult, CasualtyEvent, Charge, Engagement, RoundReport, UnitOutcome, UnitReport,
 )
+from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
 from imperial_generals.utils import Position, Rng
@@ -70,6 +71,7 @@ def _unit_to_dict(unit) -> dict:
             'shock': unit.morale.shock,
             'lost': unit.morale.lost,
             'broken': unit.morale.broken,
+            'break_scale': unit.morale.break_scale,
         },
         'losses': unit.losses,
         'inflicted': unit.inflicted,
@@ -145,8 +147,12 @@ def _build_regiment(data: dict) -> Regiment:
     raise ValueError(f"Unknown unit type {kind!r} for {data['id']!r}.")
 
 
-def _restore_unit(unit, data: dict) -> None:
+def _restore_unit(unit, data: dict, params) -> None:
     reg = unit.regiment
+    # the break point was drawn when the battle began: rebuild the morale state with the saved draw
+    stats = unit.initial_stats
+    unit.morale = MoraleState(size=unit.initial_size, xp=stats[0], morale_stat=stats[1], params=params.morale,
+                              break_scale=data['morale']['break_scale'])
     reg.update_size(data['size'])
     reg.update_stats(data['stats'])
     reg.raw_morale = data['raw_morale']
@@ -200,7 +206,8 @@ def battle_from_dict(data: dict) -> Battle:
     battle = Battle(units, rng=Rng.from_state(data['rng_state']), params=BattleParams.from_dict(data['params']),
                     meta=data['meta'])
     for u in data['units']:
-        _restore_unit(battle.units[u['id']], u)
+        _restore_unit(battle.units[u['id']], u, battle.params)
+    battle.rng = Rng.from_state(data['rng_state'])     # building the units drew break points: rewind
 
     battle.seed = data['seed']
     battle.time = data['time']

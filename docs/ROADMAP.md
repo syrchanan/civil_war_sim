@@ -595,13 +595,27 @@ The tables add the defender's hit share.
   from 25% to 28% (melee 26% → 29%) and delays the break by 15–30 min. The "units stuck just above breaking"
   seen earlier was scripted battles ending shortly before those units broke.
 - **Break points have almost no variance**: p10 = p50 = p90. Every unit of given stats breaks at the same share
-  lost. Historically it varies widely, with tails like the 1st Minnesota's ~82%. Proposed: a per-unit random
-  spread on the break point, drawn from the seed at battle start.
+  lost. Historically it varies widely, with tails like the 1st Minnesota's ~82%.
+- **Built: break-point variance.** At battle start each unit's break point is multiplied by
+  `(u / (1 − u))^0.12`, with u drawn from the battle's seed in unit order. That is a logistic draw in log space:
+  heavier tails than a normal, and it needs only fdlibm `log` / `exp`. It is saved per unit in the state file
+  (`morale.break_scale`) and capped at 95%; `break_point_spread: 0` turns it off. Share of starting men hit
+  when the unit broke (losing a firefight against twice its numbers, 400 seeds):
+
+  | Stats | p10 | p50 | p90 | p99 |
+  |---|---|---|---|---|
+  | 1/1 | 10% | 13% | 17% | 23% |
+  | 5/5 | 20% | 27% | 35% | 47% |
+  | 8/8 | 33% | 44% | 58% | 71% |
+  | 10/10 | 44% | 57% | 71% | 72% |
+
+  "Lost at break" means men killed or wounded, as a share of starting strength, by the moment the unit breaks.
+  Rout prisoners come on top: 10% of the men left, ×2 with cavalry. Open (user, 2026-10-01): is 40–60% too
+  high for elites? `break_fraction_max` (0.75) sets it.
 
 **Next in A13**:
-- Break-point variance (above).
-- Dragoons. Open question: should they fight dismounted like infantry (minus horse-holders), or skirmish
-  from horseback? Today they are 0.9× infantry fire and 0.9 melee, and lose every grid cell at 500 v 1000.
+- Elite break target (above).
+- Dragoons skirmish from horseback (decided 2026-10-01): tune them with everything else.
 - Equal-numbers grids, so cavalry isn't judged at half the infantry's size.
 - Day totals with `batch`: loser 25–35%, winner 12–25%.
 

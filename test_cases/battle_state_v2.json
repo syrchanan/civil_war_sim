@@ -39,6 +39,8 @@
       "break_fraction_max": 0.75,
       "experience_weight": 0.5,
       "break_curve": 1.5,
+      "break_point_spread": 0.0,
+      "break_fraction_ceiling": 0.95,
       "size_reference": 500,
       "size_exponent": 0.0,
       "acceleration": 1.0,
@@ -212,7 +214,8 @@
         "resolve": 0.6738074152387531,
         "shock": 0.030142837036535416,
         "lost": 120,
-        "broken": false
+        "broken": false,
+        "break_scale": 1.0
       },
       "losses": 120,
       "inflicted": 149,
@@ -240,7 +243,8 @@
         "resolve": 0.0,
         "shock": 0.006702920570630001,
         "lost": 18,
-        "broken": true
+        "broken": true,
+        "break_scale": 1.0
       },
       "losses": 18,
       "inflicted": 0,
@@ -267,7 +271,8 @@
         "resolve": 0.5751640411560137,
         "shock": 0.03351609639825576,
         "lost": 149,
-        "broken": false
+        "broken": false,
+        "break_scale": 1.0
       },
       "losses": 149,
       "inflicted": 120,
@@ -295,7 +300,8 @@
         "resolve": 1.0,
         "shock": 0.0,
         "lost": 0,
-        "broken": false
+        "broken": false,
+        "break_scale": 1.0
       },
       "losses": 0,
       "inflicted": 18,

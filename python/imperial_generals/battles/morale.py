@@ -56,6 +56,17 @@ def break_fraction(xp: int, morale_stat: int, params: MoraleParams) -> float:
     return params.break_fraction_min + (params.break_fraction_max - params.break_fraction_min) * curved
 
 
+def break_scale(u: float, spread: float) -> float:
+    """
+    A unit's break-point multiplier from a uniform draw ``u``: (u / (1 − u))^spread, a logistic draw in log space
+    (median 1, heavier tails than a normal). Only fdlibm ``log``/``exp`` are needed, so every platform agrees.
+    """
+    if spread == 0:
+        return 1.0
+    u = min(max(u, 1e-12), 1 - 1e-12)
+    return _power(u / (1 - u), spread)
+
+
 class MoraleState:
     """
     Live morale of one unit for one engagement.
@@ -70,6 +81,8 @@ class MoraleState:
         Starting morale stat (1–10); starting raw morale is ``morale_stat × raw_scale_factor``.
     params : MoraleParams, optional
         Model constants; defaults to config.
+    break_scale : float, optional
+        Multiplier on this unit's break point (drawn per unit at battle start; see ``break_scale``).
 
     Raises
     ------
@@ -77,13 +90,16 @@ class MoraleState:
         If size is not positive.
     """
 
-    def __init__(self, size: int, xp: int, morale_stat: int, params: MoraleParams | None = None) -> None:
+    def __init__(self, size: int, xp: int, morale_stat: int, params: MoraleParams | None = None,
+                 break_scale: float = 1.0) -> None:
         if size <= 0:
             raise ValueError(f"size must be positive, got {size}.")
         self.params: MoraleParams = params if params is not None else MoraleParams()
         self.initial_size: int = size
         self.initial_morale: float = float(morale_stat * get_config()['morale']['raw_scale_factor'])
-        self.break_fraction: float = break_fraction(xp, morale_stat, self.params)
+        self.break_scale: float = break_scale
+        self.break_fraction: float = min(self.params.break_fraction_ceiling,
+                                         break_fraction(xp, morale_stat, self.params) * break_scale)
         self.resolve: float = 1.0
         self.shock: float = 0.0
         self.lost: int = 0

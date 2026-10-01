@@ -25,6 +25,12 @@ morale:
     experience_weight: 0.5
     break_curve: 1.5
 
+    # Units differ: at battle start each unit's break point is multiplied by (u / (1 − u))^break_point_spread,
+    # u uniform from the battle's seed (a logistic draw in log space). 0.12 → 8 in 10 units within ×0.77–×1.30,
+    # 1 in 100 beyond ×1.73 (the rare great stand). 0 turns it off. Capped at break_fraction_ceiling.
+    break_point_spread: 0.12
+    break_fraction_ceiling: 0.95
+
     # Unit size: cost × (size / size_reference)^size_exponent. <0 → big units absorb the same % better.
     size_reference: 500
     size_exponent: 0.0

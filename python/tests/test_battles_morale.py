@@ -295,3 +295,44 @@ def test_green_unit_breaks_well_before_veteran():
     lose(veteran, 200)
     assert green.broken
     assert not veteran.broken
+
+
+# =============================================================================
+# Break-point variance: each unit's break point is scaled by a seeded draw
+# =============================================================================
+
+from imperial_generals.battles.morale import break_scale   # noqa: E402
+
+
+def test_break_scale_draw_is_logistic_in_log_space():
+    s = 0.12
+    assert break_scale(0.5, s) == pytest.approx(1.0)
+    assert break_scale(0.9, s) == pytest.approx(9 ** s)
+    assert break_scale(0.1, s) == pytest.approx(9 ** -s)
+    assert break_scale(0.9, s) * break_scale(0.1, s) == pytest.approx(1.0)
+    assert break_scale(0.0, s) > 0 and math.isfinite(break_scale(1.0 - 1e-17, s))
+    assert break_scale(0.7, 0.0) == 1.0
+
+
+def test_break_scale_moves_the_break_point():
+    p = pure_attrition()
+    base = MoraleState(1000, 5, 5, params=p)
+    tough = MoraleState(1000, 5, 5, params=p, break_scale=1.5)
+    assert tough.break_scale == 1.5 and base.break_scale == 1.0
+    assert tough.break_fraction == pytest.approx(1.5 * base.break_fraction)
+    lose(tough, int(tough.break_fraction * 1000) - 2)
+    assert not tough.broken
+    lose(tough, 3)
+    assert tough.broken
+
+
+def test_break_point_is_capped():
+    state = MoraleState(1000, 10, 10, params=MoraleParams(), break_scale=5.0)
+    assert state.break_fraction == MoraleParams().break_fraction_ceiling
+
+
+@pytest.mark.parametrize('overrides', [{'break_point_spread': -0.1}, {'break_fraction_ceiling': 0.0},
+                                       {'break_fraction_ceiling': 1.2}])
+def test_invalid_variance_params_raise(overrides):
+    with pytest.raises(ValueError):
+        MoraleParams(**overrides)
