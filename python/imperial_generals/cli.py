@@ -363,6 +363,7 @@ def _cmd_matchups(args) -> None:
         _print_matrix('Attacker advantage (attacker wins - defender wins)', grid, 'advantage',
                       lambda v: f'{v:+.0%}')
         _print_matrix('Defender breaks', grid, 'defender_breaks', _pct)
+        _print_matrix('Defender men hit (share of its strength)', grid, 'defender_hit_share', _pct)
         _print_matrix('Exchange ratio (defender men hit per attacker man hit)', grid, 'exchange_ratio', _num)
 
 

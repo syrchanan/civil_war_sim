@@ -316,6 +316,7 @@ def test_matchups_prints_matrices(tmp_path, capsys):
     assert code == 0
     assert 'Basic (ranged): 4 seeds per cell, rounds 60 min' in out
     assert 'Attacker advantage' in out and 'Defender breaks' in out and 'Exchange ratio' in out
+    assert 'Defender men hit' in out
     assert 'heavy_cav' in out
 
 
