@@ -193,7 +193,8 @@ def side_summary(state: dict) -> list[dict]:
     Each side's performance over a finished battle.
 
     ``started - killed - wounded - prisoners_lost + returned = final``, where ``wounded`` excludes wounded taken
-    prisoner (they count once, as prisoners). Hits are men hit by fire or in melee; ``exchange_ratio`` is enemy
+    prisoner (they count once, as prisoners). ``casualties`` = killed + wounded + prisoners lost (the battle's
+    toll before any wounded return), ``casualty_share`` its share of starting strength. Hits are men hit by fire or in melee; ``exchange_ratio`` is enemy
     men hit per own man hit (None if the side was never hit). ``loss_share`` is the share of starting strength
     not in the ranks at the end.
 
@@ -214,14 +215,19 @@ def side_summary(state: dict) -> list[dict]:
         final = sum(u['size'] for u in units)
         taken = sum(o['hits'] for o in outcomes)
         inflicted = sum(u['inflicted'] for u in units)
+        killed = sum(o['killed'] for o in outcomes)
+        wounded = sum(o['wounded'] - o['wounded_captured'] for o in outcomes)
+        prisoners_lost = sum(o['captured_in_rout'] + o['wounded_captured'] for o in outcomes)
         sides.append({
             'name': names[side],
             'units': len(units),
             'units_out': sum(1 for u in units if u['morale']['broken'] or u['size'] == 0),
             'started': started,
-            'killed': sum(o['killed'] for o in outcomes),
-            'wounded': sum(o['wounded'] - o['wounded_captured'] for o in outcomes),
-            'prisoners_lost': sum(o['captured_in_rout'] + o['wounded_captured'] for o in outcomes),
+            'killed': killed,
+            'wounded': wounded,
+            'prisoners_lost': prisoners_lost,
+            'casualties': killed + wounded + prisoners_lost,
+            'casualty_share': (killed + wounded + prisoners_lost) / started,
             'returned': sum(o['wounded_returned'] for o in outcomes),
             'final': final,
             'loss_share': (started - final) / started,

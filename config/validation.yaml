@@ -1,0 +1,12 @@
+# =============================================================================
+# VALIDATION (roadmap A11)
+# Grading the engine against a scenario's expectations (python -m imperial_generals check).
+# =============================================================================
+validation:
+
+  # Share of runs that must match an expectation for each verdict.
+  agrees_at: 0.6        # at least this: "agrees"
+  sometimes_at: 0.3     # at least this: "sometimes"; below: "disagrees"
+
+  # Seeds per scenario when none are given.
+  default_seeds: 200

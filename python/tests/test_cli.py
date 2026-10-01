@@ -399,3 +399,65 @@ def test_charge_grid_prints_charge_outcomes(tmp_path, capsys):
     assert 'Charges: went home / faltered / broke the defender' in out
     _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'ranged')
     assert 'Charges:' not in out
+
+
+# =============================================================================
+# check: grade the engine against a scenario's expectations (A11)
+# =============================================================================
+
+ROUT_YAML = """\
+meta: {name: Rout}
+sides: [Blue, Red]
+units:
+  - {id: big, side: Blue, type: inf, subtype: line, size: 3000, stats: 7/7/1/0}
+  - {id: small, side: Red, type: inf, subtype: line, size: 300, stats: 2/2/0/0}
+rounds:
+  - duration: 240
+    orders:
+      big: {target: small, mode: ranged}
+      small: {target: big, mode: ranged}
+expect:
+  author: Jane
+  source: a made-up rout
+  confidence: high
+  notes: the big regiment should simply win
+  field_held_by: Blue
+  breaks: [small]
+  casualties: {Blue: '>40%'}
+"""
+
+
+def test_check_prints_a_graded_report(tmp_path, capsys):
+    (tmp_path / 'rout.yaml').write_text(ROUT_YAML, encoding='utf-8')
+    code, out, _ = run(capsys, 'check', tmp_path / 'rout.yaml', '--seeds', 10, '--workers', 1)
+    assert code == 0
+    assert 'Rout: expectations by Jane (confidence high; source: a made-up rout)' in out
+    assert '10 seeds, engine ' in out
+    assert '[agrees]' in out and 'Blue holds the field' in out and 'small breaks' in out
+    assert '[disagrees]' in out and 'Blue casualties over 40%' in out
+    assert '2 of 3 expectations agree.' in out
+
+
+def test_check_several_scenarios_writes_markdown_and_json(tmp_path, capsys):
+    (tmp_path / 'a.yaml').write_text(ROUT_YAML, encoding='utf-8')
+    (tmp_path / 'b.yaml').write_text(ROUT_YAML.replace('name: Rout', 'name: Rout again').replace(
+        '  author: Jane\n', ''), encoding='utf-8')
+    code, out, _ = run(capsys, 'check', tmp_path / 'a.yaml', tmp_path / 'b.yaml', '--seeds', 5, '--workers', 1,
+                       '--report', tmp_path / 'report.md')
+    assert code == 0
+    assert 'Summary' in out and 'Rout again' in out and '2 of 3' in out
+    assert 'Rout again: expectations (confidence high' in out          # no author given
+    md = (tmp_path / 'report.md').read_text(encoding='utf-8')
+    assert md.startswith('# Engine check')
+    assert '## Rout' in md and '| Expectation | Engine agrees | Verdict | What the engine did |' in md
+    assert '| Blue holds the field | 100% | agrees |' in md
+    assert 'Notes: the big regiment should simply win' in md
+    _, out, _ = run(capsys, 'check', tmp_path / 'a.yaml', '--seeds', 5, '--workers', 1, '--json')
+    (report,) = json.loads(out)
+    assert report['agree'] == 2 and report['total'] == 3
+
+
+def test_check_reports_problems(tmp_path, capsys):
+    (tmp_path / 'none.yaml').write_text(ROUT_YAML.split('expect:')[0], encoding='utf-8')
+    code, _, err = run(capsys, 'check', tmp_path / 'none.yaml', '--seeds', 2, '--workers', 1)
+    assert code == 2 and 'This scenario has no "expect" block' in err and 'Problems in none.yaml' in err

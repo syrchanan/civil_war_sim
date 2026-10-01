@@ -9,6 +9,7 @@ Command line for the battle engine (roadmap A9). Run ``python -m imperial_genera
     python -m imperial_generals run scenario.yaml                     # setup + scripted rounds, start to end
     python -m imperial_generals batch scenario.yaml --seeds 500       # the spread of outcomes over many seeds
     python -m imperial_generals matchups grid.yaml --plot grid.png    # every unit kind against every other
+    python -m imperial_generals check scenario.yaml --report r.md     # grade the engine against expectations
 
 ``resolve`` and ``finish`` update the state file in place unless ``-o`` names another. ``--json`` prints the
 machine-readable report instead of a table. Problems exit with code 2 and a message saying what to fix.
@@ -19,7 +20,7 @@ import json
 import sys
 from pathlib import Path
 
-from imperial_generals import api, tuning
+from imperial_generals import api, tuning, validation
 from imperial_generals.battles.setup import SetupError, load_setup_file
 from imperial_generals.battles.state import FORMAT
 
@@ -390,6 +391,59 @@ def _cmd_matchups(args) -> None:
             print()
 
 
+def _check_heading(report: dict) -> str:
+    by = f" by {report['author']}" if report['author'] else ''
+    details = [f"confidence {report['confidence']}" if report['confidence'] else None,
+               f"source: {report['source']}" if report['source'] else None]
+    details = '; '.join(d for d in details if d)
+    return f"{report['name']}: expectations{by}" + (f' ({details})' if details else '')
+
+
+def _print_check(report: dict) -> None:
+    print(_check_heading(report))
+    print(f"{report['seeds']} seeds, engine {report['engine']}")
+    print()
+    rows = [[f"[{e['verdict']}]", _pct(e['share']), e['text'], e['engine']] for e in report['expectations']]
+    print(_table(['Verdict', 'Agrees', 'Expectation', 'What the engine did'], rows, left=1))
+    print()
+    print(f"{report['agree']} of {report['total']} expectations agree.")
+    print()
+
+
+def _markdown(reports: list) -> str:
+    lines = ['# Engine check', '']
+    for r in reports:
+        lines += [f"## {r['name']}", '', _check_heading(r) + '.', '',
+                  f"{r['seeds']} runs with different dice; engine version `{r['engine']}`. "
+                  f"**{r['agree']} of {r['total']}** expectations agree.", '']
+        if r['notes']:
+            lines += [f"Notes: {r['notes']}", '']
+        lines += ['| Expectation | Engine agrees | Verdict | What the engine did |', '|---|---|---|---|']
+        lines += [f"| {e['text']} | {_pct(e['share'])} | {e['verdict']} | {e['engine']} |" for e in r['expectations']]
+        lines.append('')
+    return '\n'.join(lines)
+
+
+def _cmd_check(args) -> None:
+    overrides = _load_overrides(args.params)
+    reports = []
+    for path in args.scenarios:
+        args.current = path
+        reports.append(validation.check(load_setup_file(path), seeds=args.seeds, overrides=overrides,
+                                        workers=args.workers or tuning.default_workers()))
+    if args.report:
+        args.report.write_text(_markdown(reports), encoding='utf-8', newline='\n')
+    if args.json:
+        _print_json(reports)
+        return
+    for report in reports:
+        _print_check(report)
+    if len(reports) > 1:
+        print('Summary')
+        print(_table(['Scenario', 'Agree'], [[r['name'], f"{r['agree']} of {r['total']}"] for r in reports],
+                     left=1, notes=False))
+
+
 def _cmd_show(args) -> None:
     _print_state(_load_state(args.state))
 
@@ -465,6 +519,15 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument('--json', action='store_true', help='print the cells as JSON')
     p.set_defaults(run=_cmd_matchups)
 
+    p = commands.add_parser('check', help='grade the engine against scenarios\' expect blocks')
+    p.add_argument('scenarios', type=Path, nargs='+')
+    p.add_argument('--seeds', type=int, help='runs per scenario (default from config/validation.yaml)')
+    p.add_argument('--workers', type=int, help='worker processes (default: one per CPU)')
+    p.add_argument('--params', type=Path, help='parameter overrides file')
+    p.add_argument('--report', type=Path, help='write a Markdown report (to share with players)')
+    p.add_argument('--json', action='store_true')
+    p.set_defaults(run=_cmd_check)
+
     p = commands.add_parser('show', help='summarise a state file')
     p.add_argument('state', type=Path)
     p.set_defaults(run=_cmd_show)
@@ -473,10 +536,11 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    source = getattr(args, 'setup', None) or getattr(args, 'scenario', None) or getattr(args, 'grid', None)
     try:
         args.run(args)
     except SetupError as exc:
+        source = (getattr(args, 'setup', None) or getattr(args, 'scenario', None) or getattr(args, 'grid', None)
+                  or getattr(args, 'current', None))
         where = f' {source.name}' if source is not None else ''
         print(f'Problems in{where}:', file=sys.stderr)
         for error in exc.errors:

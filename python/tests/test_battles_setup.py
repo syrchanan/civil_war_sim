@@ -121,7 +121,8 @@ def test_setup_must_be_a_mapping_with_units():
 
 def test_unknown_top_level_key_is_reported():
     errors = errors_of(setup(unit=[]))
-    assert errors == ['Unknown key "unit". Allowed: finish, meta, params, rounds, seed, sides, units.']
+    assert errors == ['Unknown key "unit". Allowed: expect, feedback, finish, meta, params, rounds, seed, sides, '
+                      'units.']
 
 
 def test_top_level_value_types_are_checked():
