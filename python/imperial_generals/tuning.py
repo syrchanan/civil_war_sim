@@ -255,23 +255,28 @@ def _check_grid(spec) -> None:
         raise SetupError(errors)
 
 
-MATCHUP_MODES = ('orders', 'ranged', 'melee')
+MATCHUP_MODES = ('orders', 'ranged', 'melee', 'artillery')
 
 
 def _facet(order: dict, mode: str) -> dict:
     """An attack / defend order forced to ``mode``: ranged keeps any artillery ammo, melee drops it."""
     if mode == 'orders':
         return order
-    if mode == 'ranged':
+    if mode in ('ranged', 'artillery'):
         return {'mode': 'ranged', **({'ammo': order['ammo']} if 'ammo' in order else {})}
     return {'mode': 'melee'}
+
+
+def _is_artillery(spec: dict, key: str) -> bool:
+    return spec['units'][key].get('type') == 'art'
 
 
 def matchup_scenario(spec: dict, attacker: str, defender: str, mode: str = 'orders') -> dict:
     """
     The one-on-one scenario for one grid cell. With ``mode='orders'`` the attacker uses its attack order and the
     defender its defend reply; 'ranged' makes both fire (melee-only units can't, so they inflict nothing) and
-    'melee' makes both fight hand to hand.
+    'melee' makes both fight hand to hand. 'artillery' is a battery firing at long range: only another battery
+    can reply, so against anything else the fire is unreturned.
     """
     def unit(key: str, uid: str, side: int) -> dict:
         body = {k: v for k, v in spec['units'][key].items() if k not in ('attack', 'defend')}
@@ -280,7 +285,8 @@ def matchup_scenario(spec: dict, attacker: str, defender: str, mode: str = 'orde
     orders = {'attacker': {'target': 'defender',
                            **_facet(_order(spec['units'][attacker].get('attack', 'ranged')), mode)}}
     defend = _facet(_order(spec['units'][defender].get('defend', 'ranged')), mode)
-    if defend['mode'] != 'idle':
+    out_of_reach = mode == 'artillery' and not _is_artillery(spec, defender)
+    if defend['mode'] != 'idle' and not out_of_reach:
         orders['defender'] = {'target': 'attacker', **defend}
     scenario = {
         'meta': {'name': f'{attacker} attacks {defender}'},
@@ -299,11 +305,12 @@ class MatchupGrid:
     seeds: int
     rounds: list
     cells: dict          # (attacker, defender) -> outcome shares and rates
-    mode: str = 'orders'     # 'orders' (from the file), 'ranged' or 'melee'
+    mode: str = 'orders'     # 'orders' (from the file), 'ranged', 'melee' or 'artillery'
+    attackers: list = field(default_factory=list)   # row units: every unit, or only batteries (artillery)
 
     def rows(self) -> list:
         return [{'mode': self.mode, 'attacker': a, 'defender': d, **self.cells[(a, d)]}
-                for a in self.keys for d in self.keys]
+                for a in self.attackers for d in self.keys]
 
 
 def _cell(results: list) -> dict:
@@ -333,7 +340,8 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     """
     Every unit in ``spec['units']`` attacks every unit (itself included), one on one, for ``spec['rounds']``.
     ``mode`` facets the grid: 'orders' uses each unit's attack / defend from the file, 'ranged' makes every
-    unit fire and 'melee' makes every unit fight hand to hand (see ``matchup_scenario``).
+    unit fire and 'melee' makes every unit fight hand to hand; 'artillery' has only the batteries attack, at long
+    range, where only batteries can reply (see ``matchup_scenario``).
 
     A side wins a cell's run when the other unit broke or was wiped out and it didn't. ``advantage`` is the
     attacker's win share minus the defender's; ``exchange_ratio`` is defender men hit per attacker man hit.
@@ -349,8 +357,11 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     seeds = seeds if seeds is not None else spec.get('seeds', 100)
     _check_run_args(seeds, workers)
     keys = list(spec['units'])
-    pairs = [(a, d) for a in keys for d in keys]
-    _validate_scenario(matchup_scenario(spec, keys[0], keys[0], mode), overrides)
+    attackers = [k for k in keys if _is_artillery(spec, k)] if mode == 'artillery' else keys
+    if not attackers:
+        raise ValueError('The artillery grid needs at least one artillery unit (type: art).')
+    pairs = [(a, d) for a in attackers for d in keys]
+    _validate_scenario(matchup_scenario(spec, attackers[0], keys[0], mode), overrides)
     per_cell = max(1, workers * 4 // len(pairs))
     tasks, owners = [], []
     for pair in pairs:
@@ -362,7 +373,7 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     for pair, chunk in zip(owners, _run_tasks(tasks, workers)):
         results[pair].extend(chunk)
     return MatchupGrid(name=spec.get('name', 'Matchups'), keys=keys, seeds=seeds, rounds=list(spec['rounds']),
-                       cells={pair: _cell(results[pair]) for pair in pairs}, mode=mode)
+                       cells={pair: _cell(results[pair]) for pair in pairs}, mode=mode, attackers=attackers)
 
 
 # =============================================================================
@@ -385,8 +396,8 @@ def plot_matchups(grid: MatchupGrid, path, metric: str = 'advantage') -> None:
     from matplotlib.figure import Figure
     from matplotlib.ticker import PercentFormatter
 
-    keys = grid.keys
-    values = [[grid.cells[(a, d)][metric] for d in keys] for a in keys]
+    keys, rows = grid.keys, grid.attackers
+    values = [[grid.cells[(a, d)][metric] for d in keys] for a in rows]
     if metric == 'advantage':
         cmap = LinearSegmentedColormap.from_list('advantage', [_RED, _NEUTRAL, _BLUE])
         vmin, vmax = -1, 1
@@ -394,14 +405,14 @@ def plot_matchups(grid: MatchupGrid, path, metric: str = 'advantage') -> None:
         cmap = LinearSegmentedColormap.from_list('share', [_NEUTRAL, _BLUE, _DEEP_BLUE])
         vmin, vmax = 0, 1
 
-    size = 1.0 + 0.9 * len(keys)
-    fig = Figure(figsize=(size + 1.6, size), facecolor=_SURFACE)
+    width = 1.0 + 0.9 * len(keys)
+    fig = Figure(figsize=(width + 1.6, 2.2 + 0.9 * len(rows)), facecolor=_SURFACE)
     ax = fig.add_subplot()
     ax.set_facecolor(_SURFACE)
     mesh = ax.pcolormesh(values, cmap=cmap, vmin=vmin, vmax=vmax, edgecolors=_SURFACE, linewidth=2)
     ax.invert_yaxis()
     ax.set_xticks([i + 0.5 for i in range(len(keys))], keys, rotation=30, ha='right', color=_INK)
-    ax.set_yticks([i + 0.5 for i in range(len(keys))], keys, color=_INK)
+    ax.set_yticks([i + 0.5 for i in range(len(rows))], rows, color=_INK)
     ax.set_xlabel('Defender', color=_MUTED)
     ax.set_ylabel('Attacker', color=_MUTED)
     ax.tick_params(length=0)

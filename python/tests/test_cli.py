@@ -362,3 +362,15 @@ def test_matchups_single_facet_or_file_orders(tmp_path, capsys):
     _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'melee',
                     '--json')
     assert {c['mode'] for c in json.loads(out)} == {'melee'}
+
+
+def test_matchups_add_the_artillery_grid_when_there_is_artillery(tmp_path, capsys):
+    grid = GRID_YAML + '  battery: {type: art, subtype: battery, stats: 5/5/0/0}\n'
+    (tmp_path / 'grid.yaml').write_text(grid, encoding='utf-8')
+    code, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1,
+                       '--plot', tmp_path / 'g.png')
+    assert code == 0
+    assert out.index('(ranged)') < out.index('(melee)') < out.index('(artillery at long range)')
+    assert (tmp_path / 'g_artillery.png').exists()
+    _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'artillery')
+    assert '(artillery at long range)' in out and '(melee)' not in out
