@@ -487,7 +487,8 @@ def test_sheet_template_and_import(tmp_path, capsys):
     code, out, _ = run(capsys, 'sheet-import', tmp_path / 'ridge.xlsx')
     assert code == 0 and 'ridge.yaml' in out and '7 units, 3 rounds' in out
     scenario = load_setup_file(tmp_path / 'ridge.yaml')
-    assert scenario['units'] == load_setup_file(example)['units']
+    from test_sheets import same_units
+    assert same_units(scenario['units'], load_setup_file(example)['units'])
     code, _, _ = run(capsys, 'sheet-import', tmp_path / 'ridge.xlsx', '-o', tmp_path / 'other.yaml')
     assert code == 0 and (tmp_path / 'other.yaml').exists()
 
