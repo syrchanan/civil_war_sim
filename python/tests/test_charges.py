@@ -242,9 +242,9 @@ def test_mutual_charge_has_no_closing_fire():
 # Charges in a round
 # =============================================================================
 
-def charge_round(seed=1, duration=60, units=None, orders=None, **charge):
+def charge_round(seed=1, duration=60, units=None, orders=None, record=False, **charge):
     b = battle(units or {'a': (0, line()), 'x': (1, line())}, seed=seed, **charge)
-    report = b.resolve_round(duration, orders or {'a': {'target': 'x', 'mode': 'melee'}})
+    report = b.resolve_round(duration, orders or {'a': {'target': 'x', 'mode': 'melee'}}, record_events=record)
     return b, report
 
 
@@ -389,3 +389,30 @@ def test_plain_regiments_charge_like_infantry():
     b, report = charge_round(units={'a': (0, Regiment(500, '5/5/0/0')), 'x': (1, Regiment(500, '5/5/0/0'))},
                              **ALWAYS_HOME)
     assert report.charges[0].resolved_at == pytest.approx(CH.approach_minutes['inf'])
+
+
+# =============================================================================
+# A charge that falters falls back out of musket range for the rest of the round
+# =============================================================================
+
+def test_faltered_charger_falls_back_out_of_musket_fire():
+    units = {'a': (0, line()), 'x': (1, line()), 'y': (1, line())}
+    orders = {'a': {'target': 'x', 'mode': 'melee'}, 'x': {'target': 'a', 'mode': 'ranged'},
+              'y': {'target': 'a', 'mode': 'ranged'}}
+    b, report = charge_round(units=units, orders=orders, duration=60, record=True, **ALWAYS_FALTERS)
+    assert report.charges[0].outcome == 'faltered'
+    falter_at = report.charges[0].resolved_at
+    late = [e for e in report.events if e.target == 'a' and e.time > falter_at]
+    assert late == []                                   # nobody's musketry reaches it any more
+    assert any(e.target == 'a' for e in report.events)  # but it was under fire before (y's and the closing fire)
+    # next round it is back in reach
+    nxt = b.resolve_round(30, {'x': {'target': 'a', 'mode': 'ranged'}})
+    assert nxt.units['a'].losses > 0
+
+
+def test_artillery_still_reaches_a_faltered_charger():
+    units = {'a': (0, line()), 'x': (1, line()), 'g': (1, ArtilleryBattery.standard('5/5/0/0', subtype='battery'))}
+    orders = {'a': {'target': 'x', 'mode': 'melee'}, 'g': {'target': 'a', 'mode': 'ranged', 'ammo': 'shell'}}
+    b, report = charge_round(units=units, orders=orders, duration=120, record=True, **ALWAYS_FALTERS)
+    falter_at = report.charges[0].resolved_at
+    assert any(e.attacker == 'g' and e.target == 'a' and e.time > falter_at for e in report.events)
