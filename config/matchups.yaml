@@ -35,7 +35,7 @@ matchups:
     inf/line: 0.7
     inf/light: 0.6
     inf/marine: 0.8
-    inf/pikes: 1.2
+    inf/pikes: 1.0
     inf/irregulars: 0.5
     cav/light: 1.0
     cav/heavy: 1.4

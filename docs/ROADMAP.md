@@ -426,7 +426,8 @@ without saving** (tested mid-battle, including `finish()`).
 
 Units are built with names and meta via the dict form:
 `Battle({'reg_001': {'side': 0, 'regiment': ..., 'name': '1st Minnesota', 'meta': {...}}}, meta={...})`.
-Reference file: `test_cases/battle_state_v1.json`. A test checks it round-trips unchanged, so format changes are
+Reference file: `test_cases/battle_state_v2.json` (version 2 since A13: contacts, charges, charge params). A test
+checks it round-trips unchanged, so format changes are
 deliberate; it's also the starting fixture for the TypeScript parity tests (B2). Positions are stored but don't
 affect combat until range/terrain effects return.
 
@@ -514,9 +515,63 @@ stay strict.
    which may be the morale-gain pinning noted under A2.
 
 ### A13. Tuning pass ►
-Work through the A10 findings with the harness: melee approach / rates (pikes), dragoons, cavalry at equal
-numbers, counter-battery strength, morale gain pinning. Then add equal-numbers and multi-round grids, and
-re-check the A2 calibration targets (day totals, break points, 5–10% per hour in a firefight) with `batch`.
+**Harness facets** (2026-10-01): `matchups` runs several grids. Each answers a different question:
+- **ranged**: everyone fires. Melee-only units (stats flag `x/x/x/1`, not the subtype) inflict nothing.
+- **melee**: everyone fights hand to hand. Both sides hold melee orders, so they meet head on.
+- **charge**: the attacker charges while the defender stands and fires.
+- **artillery**: batteries at long range, where only another battery can reply. Fire on anything else goes
+  unreturned.
+- **orders**: each unit's own `attack` / `defend` from the file.
+
+The tables add the defender's hit share.
+
+**Melee and charges (decided 2026-10-01, built)**:
+- **Contact width**: melee casualties on v = `melee_kill_rate × coef × min(attacker's men facing v, v's front)
+  × matchup`. Losses per hour no longer grow with unit size: before, 250 v 250 lost 8%/h and 2000 v 2000 lost 63%/h.
+  A surrounded unit still takes more and deals the same total. `melee_kill_rate` 0.01564: line in contact hits
+  2.5× its firing rate (~19%/h each in full contact).
+- **A melee order on a unit not in contact is a charge** (`config/charge.yaml`, `BattleParams.charge`):
+  - **Approach**: 5 min (infantry, artillery) or 2 min (cavalry). The target fires at 3× its normal rate,
+    batteries with canister, split if several units charge it. The charger can't fire. A target that is itself
+    charging, locked in melee, or melee-only can't fire.
+  - **Contact test**: `x = ln(men ratio) + 3 × (steadiness difference) + shock bonus`, where steadiness blends
+    resolve, veterancy and shock. The defender breaks with `σ((x − 1)/0.5)` and the charge falters with
+    `σ((−x − 0.5)/0.5)`; otherwise it goes home. An even fresh charge gives ~12% / 27% / 61%. Losses on the
+    approach lower the charger's steadiness.
+  - **Outcomes**: a faltered charger stands down for the round and loses 15% of its morale budget. A defender
+    broken by the charge routs (prisoners ×2 if cavalry charged). A battery broken by a charge is overrun and
+    loses every gun.
+  - **Shock bonuses** add up from type and subtype entries: cavalry v infantry +0.5 (heavy +0.3 more),
+    cavalry v pikes −2, cavalry v artillery +1, infantry v artillery +0.5.
+  - Units charging each other **meet head on** (contact, no test). **Charging a broken unit is pursuit**:
+    contact at once.
+- **Contact persists** across rounds while either unit keeps a melee order on the other. It ends when a unit
+  breaks. Saved as `contacts` in the state file (version 2). `RoundReport.charges` records each charge with its
+  outcome and odds, and the CLI prints them.
+- The **cavalry charge factor is gone**; cavalry's edge over infantry is now shock in the contact test, matching
+  the user's view that cavalry v infantry is a short shock action, not hours of fighting. **Pikes'** melee
+  rating went 1.2 → 1.0.
+
+**Grids after** (8 kinds, one 90-min round, 200 seeds):
+- **Melee head on**: no longer all ±100%. Line v line loses ~22% each and nobody breaks. Pikes still win v
+  musket infantry (+93%), which is plausible once in contact.
+- **Charge into standing fire**:
+  - Line charging line +6%; charging rifles −46% (closing fire, then a faltered charger left standing under
+    fire).
+  - Pikes charging line +50%, charging rifles −5%.
+  - Cavalry charging formed infantry fails (−31% to −68%) and never breaks pikes; it takes an unsupported
+    battery every time.
+- **Artillery at long range**: 90 min of unreturned shell hits a 1000-man unit 6% and never breaks it.
+- **Example**: the Confederate assault fails. The 8th and 10th Alabama break in 94–96% of seeds; the Union trades
+  1.6:1.
+
+**Next in A13**:
+- Battery firepower at long range (6% in 90 min, unreturned: is that enough?).
+- Melee pace: 19%/h with no breaks in 90 min may now be too slow.
+- Whether a faltered charger should fall back out of fire rather than stand under it.
+- Dragoons.
+- Morale-gain pinning.
+- Then the A2 calibration targets with `batch`.
 
 ### A11. Player-made validation scenarios ○
 Players will be asked to contribute test scenarios. We tune against our own first, but A9's formats are built so

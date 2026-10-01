@@ -333,7 +333,7 @@ def test_faceted_grids():
     assert melee.mode == 'melee'
     assert tuning.matchup_grid(GRID, seeds=3).mode == 'orders'
     with pytest.raises(ValueError, match='mode'):
-        tuning.matchup_grid(GRID, mode='charge')
+        tuning.matchup_grid(GRID, mode='stampede')
 
 
 def test_heatmap_title_names_the_facet(tmp_path):
@@ -373,3 +373,11 @@ def test_artillery_facet_needs_artillery():
 def test_artillery_heatmap(tmp_path):
     tuning.plot_matchups(tuning.matchup_grid(GRID, mode='artillery', seeds=2), tmp_path / 'a.png')
     assert (tmp_path / 'a.png').exists()
+
+
+def test_charge_facet_charges_into_standing_fire():
+    orders = tuning.matchup_scenario(GRID, 'line', 'battery', mode='charge')['rounds'][0]['orders']
+    assert orders == {'attacker': {'target': 'defender', 'mode': 'melee'},
+                      'defender': {'target': 'attacker', 'mode': 'ranged'}}
+    grid = tuning.matchup_grid(GRID, mode='charge', seeds=2)
+    assert grid.mode == 'charge' and grid.attackers == grid.keys
