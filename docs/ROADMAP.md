@@ -155,6 +155,13 @@ Tests should check this, and that the same % lost has the same effect at any siz
 | 1000 v 2000, even stats | 27% | 6% | ~1.8 h |
 | Elite 10/10 v 10/10 | 65% | 58% | 26% of fights still undecided at nightfall |
 
+**Stat weights raised (2026-10-01)**: effectiveness is computed from each unit's stats (weapon × XP × live morale),
+but the old weights made an elite 10/10 unit only ~1.5× as effective as a green 1/1 unit with the same weapon.
+Veterancy paid off almost entirely through staying power. The XP boost per level went 4% → 8% and morale
+2% → 4%, so elite is now ~2.1× green (fire and melee). The kill rates were scaled ×1.095 so an average 5/5 unit's
+casualty rates didn't move (the even-fight probe is unchanged); only the spread widened. A veteran 8/8 beating a
+green 2/3 now costs the winner 10% instead of 12%. The exact weights are for A10 to fit.
+
 Open for tuning (A10):
 - In even fights the winner bleeds nearly as much as the loser. Historically the gap comes largely from rout losses
   (pursuit, prisoners), which aren't modelled yet (see A6).
