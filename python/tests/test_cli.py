@@ -114,6 +114,18 @@ def test_finish_settles_casualties(files, capsys):
     state = read(files / 'state.json')
     assert state['finished'] and state['result']['field_held_by'] == 0
     assert 'Field held by: Union' in out and 'Killed' in out and 'Returned' in out
+    # the final table adds up: Started - Killed - Wounded - Prisoners + Returned = Final
+    header = out.splitlines()[1].split()
+    assert header[2:] == ['Started', 'Killed', 'Wounded', 'Prisoners', 'Returned', 'Final', 'Inflicted', 'Guns', 'lost']
+    for line in out.splitlines()[2:5]:
+        started, killed, wounded, prisoners, returned, final, inflicted = (int(x) for x in line.split()[-7:])
+        assert started - killed - wounded - prisoners + returned == final
+    battery = [line for line in out.splitlines() if line.startswith('Battery A')][0]
+    assert int(battery.split()[-1]) > 0                                     # the battery's casualties show
+    assert 'Final = Started - Killed - Wounded - Prisoners + Returned' in out
+    assert 'Side summary' in out
+    _, out, _ = run(capsys, 'show', files / 'state.json')
+    assert 'finished' in out and 'Side summary' in out
 
 
 @pytest.mark.parametrize('field, holder', [('auto', None), ('none', None), ('0', 0), ('1', 1), ('Confederate', 1)])
@@ -136,7 +148,7 @@ def test_run_plays_a_scenario_file(files, capsys):
     scenario = SETUP_YAML + 'rounds:\n  - duration: 90\n    orders:\n' + orders + '  - duration: 60\nfinish: true\n'
     (files / 'scenario.yaml').write_text(scenario, encoding='utf-8')
     code, out, _ = run(capsys, 'run', files / 'scenario.yaml', '-o', files / 'state.json')
-    assert code == 0
+    assert code == 0 and 'Skipped' not in out
     assert 'Round 1' in out and 'Round 2' in out and 'Field held by' in out
     assert read(files / 'state.json')['finished']
     _, out, _ = run(capsys, 'run', files / 'scenario.yaml', '--json', '--seed', 3)
@@ -149,6 +161,7 @@ def test_show_summarises_a_state(files, capsys):
     code, out, _ = run(capsys, 'show', files / 'state.json')
     assert code == 0
     assert 'Test Ridge' in out and 'round 0' in out and 'Battery A' in out and 'guns' in out
+    assert 'Order of battle' in out and 'Side summary' not in out
 
 
 def test_unnamed_sides_and_battles_still_print(tmp_path, capsys):
@@ -230,3 +243,16 @@ def test_example_scenario_runs(capsys):
     code, out, err = run(capsys, 'run', path)
     assert code == 0, err
     assert '1st Minnesota' in out and 'Field held by' in out
+    assert 'broke at' in out and 'Skipped orders' in out          # the example shows breaks and skipped orders
+    # order of battle before the rounds, side summary after
+    assert out.index('Order of battle') < out.index('Round 1') < out.index('Side summary')
+    assert 'Infantry' in out and 'Artillery' in out and 'Exchange ratio' in out and 'Prisoners taken' in out
+
+
+def test_run_lists_skipped_orders(tmp_path, capsys):
+    import yaml
+    from test_api import ROUT
+    (tmp_path / 'rout.yaml').write_text(yaml.safe_dump(ROUT), encoding='utf-8')
+    _, out, _ = run(capsys, 'run', tmp_path / 'rout.yaml')
+    assert 'Skipped orders: cs (cs is broken)' in out
+    assert 'Skipped orders: us (target cs is wiped out)' in out

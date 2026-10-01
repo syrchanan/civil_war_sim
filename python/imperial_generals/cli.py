@@ -60,20 +60,22 @@ def _print_json(data) -> None:
 # Tables
 # =============================================================================
 
-def _table(header: list, rows: list, left: int = 2) -> str:
-    """Left-align the first ``left`` columns (text) and the last (status notes); right-align the numbers between."""
+def _table(header: list, rows: list, left: int = 2, notes: bool = True) -> str:
+    """
+    Left-align the first ``left`` columns (text) and, if ``notes``, the last (status notes); right-align the
+    numbers between.
+    """
     cells = [[str(c) for c in row] for row in [header] + rows]
     widths = [max(len(row[i]) for row in cells) for i in range(len(header))]
     lines = []
     for row in cells:
-        parts = [c.ljust(w) if i < left or i == len(row) - 1 else c.rjust(w) for i, (c, w) in enumerate(zip(row, widths))]
+        parts = [c.ljust(w) if i < left or (notes and i == len(row) - 1) else c.rjust(w) for i, (c, w) in enumerate(zip(row, widths))]
         lines.append('  '.join(parts).rstrip())
     return '\n'.join(lines)
 
 
 def _side_names(state: dict) -> list:
-    sides = state['meta'].get('sides')
-    return sides if isinstance(sides, list) and len(sides) == 2 else ['Side 0', 'Side 1']
+    return api._side_names(state)
 
 
 def _names(state: dict) -> dict:
@@ -103,21 +105,71 @@ def _print_report(state: dict, report: dict) -> None:
         for uid, u in report['units'].items()
     ]
     print(_table(['Unit', 'Side', 'Size', 'Lost', 'Captured', 'Inflicted', 'Morale', 'Status'], rows))
+    skipped = report.get('skipped_orders', {})
+    if skipped:
+        print('Skipped orders: ' + ', '.join(f'{uid} ({why})' for uid, why in skipped.items()))
     print()
 
 
 def _print_result(state: dict, result: dict) -> None:
     sides, names = _side_names(state), _names(state)
-    side_of = {u['id']: u['side'] for u in state['units']}
+    units = {u['id']: u for u in state['units']}
     holder = result['field_held_by']
     print(f"Field held by: {'nobody' if holder is None else sides[holder]}")
+    rows = []
+    for uid, o in result['units'].items():
+        u = units[uid]
+        # captured wounded are counted once, as prisoners
+        wounded = o['wounded'] - o['wounded_captured']
+        prisoners = o['captured_in_rout'] + o['wounded_captured']
+        rows.append([names[uid], sides[u['side']], u['initial_size'], o['killed'], wounded, prisoners,
+                     o['wounded_returned'], o['final_size'], u['inflicted'], o['guns_lost'] or ''])
+    print(_table(['Unit', 'Side', 'Started', 'Killed', 'Wounded', 'Prisoners', 'Returned', 'Final', 'Inflicted',
+                  'Guns lost'], rows))
+    print('Final = Started - Killed - Wounded - Prisoners + Returned (wounded who recover rejoin their unit).')
+    _print_side_summary(state)
+
+
+def _print_order_of_battle(state: dict) -> None:
+    def kind(side: dict, key: str) -> str:
+        k = side['by_type'].get(key)
+        if k is None:
+            return '-'
+        guns = f", {k['guns']} guns" if 'guns' in k else ''
+        return f"{k['men']:,} ({k['units']}{guns})"
+
+    print('Order of battle (men; units in brackets)')
+    rows = [[s['name'], s['units'], f"{s['men']:,}", kind(s, 'inf'), kind(s, 'cav'), kind(s, 'art'),
+             f"{s['avg_experience']:.1f}", f"{s['avg_morale']:.1f}"] for s in api.order_of_battle(state)]
+    print(_table(['Side', 'Units', 'Men', 'Infantry', 'Cavalry', 'Artillery', 'Avg exp', 'Avg morale'], rows,
+                 left=1, notes=False))
+    print()
+
+
+def _print_side_summary(state: dict) -> None:
+    sides = api.side_summary(state)
+
+    def row(label: str, key: str, fmt=lambda v: f'{v:,}') -> list:
+        return [label] + [fmt(s[key]) for s in sides]
+
     rows = [
-        [names[uid], sides[side_of[uid]], o['hits'], o['killed'], o['wounded'], o['wounded_returned'],
-         o['captured_in_rout'] + o['wounded_captured'], o['final_size'], o['guns_lost'] or '']
-        for uid, o in result['units'].items()
+        row('Started', 'started'),
+        row('Killed', 'killed'),
+        row('Wounded', 'wounded'),
+        row('Prisoners lost', 'prisoners_lost'),
+        row('Wounded returned', 'returned'),
+        row('Final', 'final'),
+        row('Lost for good', 'loss_share', lambda v: f'{v:.0%}'),
+        row('Hits taken', 'hits_taken'),
+        row('Hits inflicted', 'hits_inflicted'),
+        row('Exchange ratio (inflicted / taken)', 'exchange_ratio', lambda v: '-' if v is None else f'{v:.2f}'),
+        row('Prisoners taken', 'prisoners_taken'),
+        row('Guns lost', 'guns_lost'),
+        row('Guns taken', 'guns_taken'),
+        ['Units broken or wiped out'] + [f"{s['units_out']} of {s['units']}" for s in sides],
     ]
-    print(_table(['Unit', 'Side', 'Hits', 'Killed', 'Wounded', 'Returned', 'Captured', 'Final size', 'Guns lost'],
-                 rows))
+    print()
+    print(_table(['Side summary'] + [s['name'] for s in sides], rows, left=1, notes=False))
 
 
 def _print_state(state: dict) -> None:
@@ -125,6 +177,8 @@ def _print_state(state: dict) -> None:
     title = state['meta'].get('name', 'Battle')
     finished = ', finished' if state['finished'] else ''
     print(f"{title}: round {state['round']}, {state['time']:.0f} min{finished}")
+    print()
+    _print_order_of_battle(state)
     rows = []
     for u in state['units']:
         kind = '/'.join(p for p in (u['type'], u['subtype']) if p) or 'generic'
@@ -133,6 +187,8 @@ def _print_state(state: dict) -> None:
         rows.append([u['name'], sides[u['side']], kind, u['stats'], u['size'], u['initial_size'],
                      f"{u['raw_morale']:.1f}", _status(u['size'], u['morale']['broken'])])
     print(_table(['Unit', 'Side', 'Type', 'Stats', 'Size', 'Started', 'Morale', 'Status'], rows, left=4))
+    if state['result'] is not None:
+        _print_side_summary(state)
 
 
 # =============================================================================
@@ -201,6 +257,7 @@ def _cmd_run(args) -> None:
     if args.json:
         _print_json({'state': state, 'reports': reports, 'result': result})
         return
+    _print_order_of_battle(state)
     for report in reports:
         _print_report(state, report)
     if result is not None:

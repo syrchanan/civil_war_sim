@@ -167,6 +167,10 @@ Open for tuning (A10):
 - In even fights the winner bleeds nearly as much as the loser. Historically the gap comes largely from rout losses
   (pursuit, prisoners), which aren't modelled yet (see A6).
 - `melee_kill_rate` is a placeholder.
+- **Morale gains pin nearly broken units just above the break line** (found 2026-10-01 in the A9 example). In a long
+  mutual firefight or melee, each casualty a unit inflicts tops its morale back up (`gain_weight` 0.5), so two
+  worn units prop each other up. In the old example, 200 seeds: 76 of 400 unit-runs broke; with `gain_weight` 0,
+  200 did. The median unbroken unit ended with 8% of its morale left. Tune in A10.
 
 ### A3. Per-battle parameter set + fast event log ✓
 **Built** (`imperial_generals/params.py`):
@@ -450,6 +454,18 @@ and skip the (de)serialisation.
 **CLI** (`python -m imperial_generals`): `new`, `preview`, `resolve`, `finish`, `show`, `run`. `resolve` and
 `finish` update the state file in place unless `-o` is given. `--json` prints machine-readable output instead of
 tables. Problems exit with code 2 and a readable message. Batch runs across seeds are A10.
+
+**Reports**: `run` prints an **order of battle** (per side: units, men by type, guns, men-weighted average
+experience and morale), each round's table, the final per-unit table (columns reconcile:
+`Final = Started - Killed - Wounded - Prisoners + Returned`, wounded taken prisoner counted once, as prisoners),
+and a **side summary**: casualties, wounded returned, share lost for good, hits taken and inflicted, exchange ratio
+(enemy men hit per own man hit), prisoners and guns lost and taken, and units broken. `api.order_of_battle(state)`
+and `api.side_summary(state)` return the same as dicts for the site.
+
+**Scripted orders meet random breaks**: in a scenario run, an order for a unit that has broken or been wiped out,
+or aimed at a wiped-out target, is skipped and listed in the round's `skipped_orders`, instead of failing the run
+on some seeds. `finish` takes `true` / `auto`, `none`, `0` / `1` or a side name. The interactive `step` / `resolve`
+stay strict.
 
 **Also changed**:
 - `Battle.finish()` stores its result as `battle.result`, and the state file gains a `result` key (null until
