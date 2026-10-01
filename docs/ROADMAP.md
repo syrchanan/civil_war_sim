@@ -48,9 +48,9 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A8 | Battle state serialization (JSON contract) | ✓ |
 | A9 | Setup file + step API + CLI | ✓ |
 | A10 | Tuning harness: batch runner + matchup stats | ✓ |
-| A11 | Player-made validation scenarios (expectations + feedback) | ○ (designed for in A9) |
+| A11 | Player-made validation scenarios (expectations + feedback) | ✓ |
 | A13 | Tuning pass on the A10 findings | ► |
-| A12 | Field holder from battle performance (`finish` 'auto') | ○ (prototyped) |
+| A12 | Field holder from battle performance (`finish` 'auto') | ○ (prototyped; needed for A11) |
 
 ### Phase B — Playable web client
 | # | Item | Status |
@@ -619,39 +619,49 @@ The tables add the defender's hit share.
 - Equal-numbers grids, so cavalry isn't judged at half the infantry's size.
 - Day totals with `batch`: loser 25–35%, winner 12–25%.
 
-### A11. Player-made validation scenarios ○
-Players will be asked to contribute test scenarios. We tune against our own first, but A9's formats are built so
-player scenarios drop in.
+### A11. Player-made validation scenarios ✓
+Players describe battles and expectations in a **spreadsheet** (decided 2026-10-01: no accounts or installs, and
+familiar to them). The admin grades the engine against their expectations with one command. Admin guide and a
+message for players: `players/README.md`. Blank template: `players/battle_template.xlsx`.
 
-**What to ask for** (one scenario = one engagement):
-- **Units**: as in the game (type, subtype, size, stats). This is the setup file's `units`.
-- **What each unit does, round by round**: who it targets and how (fire / charge / hold), plus round lengths.
-  This is required, because the outcome depends on it. Players who aren't sure can describe it in words ("the
-  Alabama regiments charge after an hour of fire"), and we write the orders.
-- **What they expect**: who holds the field, which units break, rough losses per side in bands (under 10%,
-  10–25%, 25–40%, over 40%), how confident they are (low / medium / high), and a source if it's historical.
+**Built**:
+- **`expect` block** in scenarios (`imperial_generals/validation.py`): `field_held_by`, `breaks` / `holds` (unit
+  ids), `casualties` bands (`25-35%`, `<10%`, `>40%`) by side or for `winner` / `loser`, plus `author`, `source`,
+  `confidence` and `notes`. Casualties here are killed + wounded + prisoners, as a share of starting strength.
+  Scenarios can also carry players' `feedback`.
+- **`check`** runs each scenario over many seeds (200 by default) and grades every expectation by the share of
+  runs that agree: agrees ≥ 60%, sometimes ≥ 30%, otherwise disagrees (`config/validation.yaml`). It also says
+  what the engine typically did, e.g. "typically 23% (8 in 10 runs: 17%-31%)".
+  - A run's winner is the field holder; failing that, the side with the smaller share of its men in broken units.
+  - Each report carries an **engine version**: a fingerprint of the tuning, so feedback can say which version it
+    was about.
+  - `check *.xlsx --report results.md` writes a Markdown report to share.
+- **Spreadsheet** (`imperial_generals/sheets.py`, words in `config/sheets.yaml`).
+  - Tabs: Start here, Battle, Units, Orders, Feedback. Dropdowns for side, type, subtype, weapon (by name),
+    action (fire / charge / hold) and ammo.
+  - Experience and morale are separate 1-10 columns.
+  - "Should it break?" (yes / no / blank) gives `breaks` / `holds`.
+  - The Feedback tab rates casualties (far too light … far too heavy), break timing (far too early … far too
+    late) and whether the right side was favoured, with comments.
+  - `sheet-template` writes a blank workbook, or one filled from a scenario. `sheet-import` writes a scenario
+    file. Problems point to the tab and row. `check` reads workbooks directly and tallies feedback.
+  - Not carried: front widths, unit meta, tuning parameters.
 
-**Reserved format** (an `expect` block in the scenario; it gets added to the allowed keys when A10 reads it):
-```yaml
-expect:
-  field_held_by: Union          # or Confederate / none
-  breaks: [cs_8al]
-  losses: {Union: 10-25%, Confederate: 25-40%}
-  confidence: medium
-  source: "Gettysburg, 2 July 1863 (Fox 1889)"
-```
-The A10 harness runs each scenario over many seeds and reports how often the engine lands inside each
-expectation. Scenarios the engine keeps missing are the tuning targets.
+**Day totals** (calibration scenarios in `scenarios/calibration/`, 300 seeds; target loser 25–35%, winner 12–25%):
 
-**"Feel" feedback**: run the scenario, show the player the spread (typical result and range, not one roll), and
-ask fixed questions on a 5-point scale: losses "far too light … far too heavy", break timing "far too early …
-far too late", and "was the right side favoured?", plus free text. Store each answer with the scenario id and the
-engine version / parameter hash, so we can see whether a tuning change addressed it.
+| Scenario | Loser | Winner |
+|---|---|---|
+| Even firefight, 7.5 h | 47% | 34% |
+| Assault | 51% | 16% ✓ |
+| Example Ridge | 23% | 19% ✓ |
 
-**Format for non-technical players**: YAML from a commented template (the CLI's error messages already say what
-to fix and where). If that's still too much, a spreadsheet template (units sheet, orders-by-round sheet,
-expectations sheet) or a form, converted to YAML by a small script. The web client (B3) can export scenarios
-directly later.
+- **Why the first two run high**: their scripted orders keep firing on units that have already broken. That
+  adds 14% (firefight) and 20% (assault) of the loser's strength. In the assault, 19% are prisoners, mostly
+  wounded captured on the held field.
+- **Proposed** (not decided): a broken unit falls back out of musket range after it breaks, as a faltered charge
+  does. Only artillery and cavalry or melee pursuit could still reach it.
+- **Field holder**: expectations about who holds the field will disagree until A12, since 'auto' only awards the
+  field when every enemy unit is out (96% "nobody" in the example).
 
 ### A12. Field holder from battle performance ○
 Today `finish(field_held_by='auto')` gives the field to a side only if every enemy unit has broken or been wiped

@@ -181,6 +181,12 @@ python -m imperial_generals finish battle.json --field Union
 ```
 From Python, `imperial_generals.api` offers the same steps on JSON-safe dicts.
 
+Player balance scenarios (spreadsheets players fill in, graded against the engine): see `players/README.md`.
+```
+python -m imperial_generals sheet-template players.xlsx                # a workbook for players
+python -m imperial_generals check filled.xlsx --report results.md      # how often the engine agrees with them
+```
+
 Tuning runs (all CPUs by default):
 ```
 python -m imperial_generals batch scenarios/example_ridge.yaml --seeds 1000      # spread of outcomes

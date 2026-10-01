@@ -10,6 +10,8 @@ Command line for the battle engine (roadmap A9). Run ``python -m imperial_genera
     python -m imperial_generals batch scenario.yaml --seeds 500       # the spread of outcomes over many seeds
     python -m imperial_generals matchups grid.yaml --plot grid.png    # every unit kind against every other
     python -m imperial_generals check scenario.yaml --report r.md     # grade the engine against expectations
+    python -m imperial_generals sheet-template players.xlsx           # a workbook players fill in
+    python -m imperial_generals sheet-import filled.xlsx              # ... back into a scenario file
 
 ``resolve`` and ``finish`` update the state file in place unless ``-o`` names another. ``--json`` prints the
 machine-readable report instead of a table. Problems exit with code 2 and a message saying what to fix.
@@ -20,7 +22,9 @@ import json
 import sys
 from pathlib import Path
 
-from imperial_generals import api, tuning, validation
+import yaml
+
+from imperial_generals import api, sheets, tuning, validation
 from imperial_generals.battles.setup import SetupError, load_setup_file
 from imperial_generals.battles.state import FORMAT
 
@@ -399,6 +403,25 @@ def _check_heading(report: dict) -> str:
     return f"{report['name']}: expectations{by}" + (f' ({details})' if details else '')
 
 
+def _feedback_lines(report: dict) -> list:
+    """Players' feedback, tallied: a heading line, then one line per question."""
+    entries = report['feedback']
+    if not entries:
+        return []
+    older = sum(e.get('engine') != report['engine'] for e in entries)
+    note = f'; {older} about an older engine version' if older else ''
+    lines = [f'Player feedback ({len(entries)} responses{note}):']
+    for key, label in (('casualties', 'casualties'), ('breaks', 'breaks'),
+                       ('right_side_favoured', 'right side favoured')):
+        counts: dict = {}
+        for e in entries:
+            if e.get(key):
+                counts[e[key]] = counts.get(e[key], 0) + 1
+        if counts:
+            lines.append(f'  {label}: ' + ', '.join(f'{k} {v}' for k, v in counts.items()))
+    return lines
+
+
 def _print_check(report: dict) -> None:
     print(_check_heading(report))
     print(f"{report['seeds']} seeds, engine {report['engine']}")
@@ -407,6 +430,8 @@ def _print_check(report: dict) -> None:
     print(_table(['Verdict', 'Agrees', 'Expectation', 'What the engine did'], rows, left=1))
     print()
     print(f"{report['agree']} of {report['total']} expectations agree.")
+    for line in _feedback_lines(report):
+        print(line)
     print()
 
 
@@ -421,6 +446,11 @@ def _markdown(reports: list) -> str:
         lines += ['| Expectation | Engine agrees | Verdict | What the engine did |', '|---|---|---|---|']
         lines += [f"| {e['text']} | {_pct(e['share'])} | {e['verdict']} | {e['engine']} |" for e in r['expectations']]
         lines.append('')
+        feedback = _feedback_lines(r)
+        if feedback:
+            lines += [feedback[0], ''] + [f'- {line.strip()}' for line in feedback[1:]]
+            lines += [f"- {e['author'] or 'Someone'}: {e['comments']}" for e in r['feedback'] if e.get('comments')]
+            lines.append('')
     return '\n'.join(lines)
 
 
@@ -429,7 +459,8 @@ def _cmd_check(args) -> None:
     reports = []
     for path in args.scenarios:
         args.current = path
-        reports.append(validation.check(load_setup_file(path), seeds=args.seeds, overrides=overrides,
+        scenario = sheets.read_workbook(path) if path.suffix.lower() == '.xlsx' else load_setup_file(path)
+        reports.append(validation.check(scenario, seeds=args.seeds, overrides=overrides,
                                         workers=args.workers or tuning.default_workers()))
     if args.report:
         args.report.write_text(_markdown(reports), encoding='utf-8', newline='\n')
@@ -442,6 +473,23 @@ def _cmd_check(args) -> None:
         print('Summary')
         print(_table(['Scenario', 'Agree'], [[r['name'], f"{r['agree']} of {r['total']}"] for r in reports],
                      left=1, notes=False))
+
+
+def _cmd_sheet_template(args) -> None:
+    scenario = load_setup_file(args.source) if args.source else None
+    sheets.write_template(args.output, scenario=scenario)
+    filled = f', filled from {args.source.name}' if args.source else ''
+    print(f'Wrote {args.output}{filled}. Players fill it in (Google Sheets or Excel) and send back the .xlsx.')
+
+
+def _cmd_sheet_import(args) -> None:
+    args.current = args.workbook
+    scenario = sheets.read_workbook(args.workbook)
+    output = args.output or args.workbook.with_suffix('.yaml')
+    header = f'# Imported from {args.workbook.name}. Check it with: python -m imperial_generals check {output.name}\n'
+    output.write_text(header + yaml.safe_dump(scenario, sort_keys=False, allow_unicode=True, width=120),
+                      encoding='utf-8', newline='\n')
+    print(f"Wrote {output} ({len(scenario['units'])} units, {len(scenario['rounds'])} rounds).")
 
 
 def _cmd_show(args) -> None:
@@ -527,6 +575,16 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument('--report', type=Path, help='write a Markdown report (to share with players)')
     p.add_argument('--json', action='store_true')
     p.set_defaults(run=_cmd_check)
+
+    p = commands.add_parser('sheet-template', help='write a workbook for players to describe a battle')
+    p.add_argument('output', type=Path)
+    p.add_argument('--from', dest='source', type=Path, help='fill it from this scenario file')
+    p.set_defaults(run=_cmd_sheet_template)
+
+    p = commands.add_parser('sheet-import', help='turn a filled-in workbook into a scenario file')
+    p.add_argument('workbook', type=Path)
+    p.add_argument('-o', '--output', type=Path, help='scenario file to write (default: next to the workbook)')
+    p.set_defaults(run=_cmd_sheet_import)
 
     p = commands.add_parser('show', help='summarise a state file')
     p.add_argument('state', type=Path)

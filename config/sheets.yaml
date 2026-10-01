@@ -1,0 +1,29 @@
+# =============================================================================
+# PLAYER SPREADSHEETS (roadmap A11)
+# Words players use in the scenario workbook, and what they mean to the engine.
+# python -m imperial_generals sheet-template / sheet-import
+# =============================================================================
+sheets:
+
+  unit_types: {infantry: inf, cavalry: cav, artillery: art}
+
+  # weapon stat codes (see combat.yaml weapon_multipliers)
+  weapons:
+    unarmed / pikes: -2
+    matchlock: -1
+    smoothbore musket: 0
+    rifled musket: 1
+    needle rifle: 2
+
+  actions: {fire: ranged, charge: melee, hold: idle}
+
+  ammo: {round shot: round_shot, shell: shell, canister: canister}
+
+  # feedback scales, gentlest first
+  feedback:
+    casualties: [far too light, too light, about right, too heavy, far too heavy]
+    breaks: [far too early, too early, about right, too late, far too late]
+    right_side_favoured: ['yes', 'no', 'unsure']
+
+  # rows offered dropdowns in the template
+  rows: 500
