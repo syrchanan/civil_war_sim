@@ -170,6 +170,17 @@ This project uses a language-agnostic, test-driven workflow to ensure equivalent
 - Includes map generation and supporting tools
 - Test suite under `/python/tests` that will consume golden test cases from `/test_cases`
 
+Resolve a battle from the command line (setup and orders files are YAML or JSON; see
+`scenarios/example_ridge.yaml`):
+```
+python -m imperial_generals run scenarios/example_ridge.yaml          # setup + scripted rounds, start to end
+python -m imperial_generals new setup.yaml -o battle.json             # or step by step
+python -m imperial_generals preview battle.json --orders orders.yaml  # who fights whom, no dice rolled
+python -m imperial_generals resolve battle.json --duration 90 --orders orders.yaml
+python -m imperial_generals finish battle.json --field Union
+```
+From Python, `imperial_generals.api` offers the same steps on JSON-safe dicts.
+
 ## TypeScript Implementation (`/typescript`)
 - Port of the Python logic for use in a frontend (React/JS web apps)
 - Organized as an npm package with `/src` for code and `/tests` for the suite

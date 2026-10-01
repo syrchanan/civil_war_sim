@@ -46,8 +46,9 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A6 | Morale break / retreat: rout captures, wounded | ✓ |
 | A7 | Unit-type matchup matrix | ✓ |
 | A8 | Battle state serialization (JSON contract) | ✓ |
-| A9 | Step API + CLI | ► |
-| A10 | Tuning harness: batch runner + matchup stats | ○ |
+| A9 | Setup file + step API + CLI | ✓ |
+| A10 | Tuning harness: batch runner + matchup stats | ► |
+| A11 | Player-made validation scenarios (expectations + feedback) | ○ (designed for in A9) |
 
 ### Phase B — Playable web client
 | # | Item | Status |
@@ -422,17 +423,78 @@ Reference file: `test_cases/battle_state_v1.json`. A test checks it round-trips 
 deliberate; it's also the starting fixture for the TypeScript parity tests (B2). Positions are stored but don't
 affect combat until range/terrain effects return.
 
-### A9. Step API + CLI ►
-- Plain Python API; no Gymnasium/PettingZoo dependency:
-  `Battle.from_state(json)`, `battle.resolve_round(duration, engagements)`, `battle.to_state()`.
-- CLI: `python -m imperial_generals resolve state.json --duration 30 --engagements e.json` → new state + report;
-  plus a batch mode for tuning runs.
+### A9. Setup file + step API + CLI ✓
+**Setup file** (`battles/setup.py`, `Battle.from_setup`): how a new battle is described by hand. The A8 state file
+is for saving and resuming; it holds RNG words and live morale that nobody should write by hand.
+- **YAML or JSON** (`load_setup_file`; JSON if the name ends in `.json`). YAML is easier to write by hand, and its
+  dates stay as text so the state stays plain JSON.
+- Keys: `meta` (free-form), `seed` (optional; picked at random and recorded if left out), `sides` (optional names,
+  e.g. `[Union, Confederate]`; units can then use them as their side), `params` (overrides on the defaults), and
+  `units`. Each unit has `id` and/or `name` (each defaults to the other), `side`, `type` (`inf` / `cav` / `art`, or
+  left out for a generic unit), `subtype`, `size`, `stats` (as in the game), and optional `guns`, `front_size` and
+  `meta`. Artillery without size and guns is a standard battery.
+- **Validation reports every problem at once, each with where it is**, e.g.
+  `Unit 3 (cs_cav): subtype 'cuirassiers' is not valid for cavalry. Must be one of: [...]`. Unknown keys are errors,
+  so typos don't pass silently.
+- **Scenario** = setup + `rounds` (each a `duration` and `orders`) + optional `finish: true`. It replays a whole
+  battle from one file. Example: `scenarios/example_ridge.yaml`.
 
-### A10. Tuning harness ○
+**Step API** (`imperial_generals/api.py`): plain functions on JSON-safe dicts, for callers that keep the battle as
+data (CLI, game site, notebooks). The input state is never modified, and chained steps give exactly the results of
+one `Battle`.
+`new_battle(setup, seed=)`, `step(state, duration, orders, record_events=) → (state, report)`,
+`preview(state, orders) → engagements`, `finish(state, field_held_by=) → (state, result)`,
+`run_scenario(scenario, seed=) → (state, reports, result)`. For fast rollouts (tuning, RL), use `Battle` directly
+and skip the (de)serialisation.
+
+**CLI** (`python -m imperial_generals`): `new`, `preview`, `resolve`, `finish`, `show`, `run`. `resolve` and
+`finish` update the state file in place unless `-o` is given. `--json` prints machine-readable output instead of
+tables. Problems exit with code 2 and a readable message. Batch runs across seeds are A10.
+
+**Also changed**:
+- `Battle.finish()` stores its result as `battle.result`, and the state file gains a `result` key (null until
+  finished). Files without the key still load.
+- Orders with unknown keys (`{'aim': ...}`) now raise a clear error naming the unit.
+
+### A10. Tuning harness ►
 - Batch runner: many seeded battles across stat / type / size combinations → outcome tables (win rate, casualty
   ratio, rounds-to-break, variance).
 - Matchup heatmaps to spot dominant or useless combinations.
 - The user's own RL / parameter-search loop sits on top of A9 + A10.
+
+### A11. Player-made validation scenarios ○
+Players will be asked to contribute test scenarios. We tune against our own first, but A9's formats are built so
+player scenarios drop in.
+
+**What to ask for** (one scenario = one engagement):
+- **Units**: as in the game (type, subtype, size, stats). This is the setup file's `units`.
+- **What each unit does, round by round**: who it targets and how (fire / charge / hold), plus round lengths.
+  This is required, because the outcome depends on it. Players who aren't sure can describe it in words ("the
+  Alabama regiments charge after an hour of fire"), and we write the orders.
+- **What they expect**: who holds the field, which units break, rough losses per side in bands (under 10%,
+  10–25%, 25–40%, over 40%), how confident they are (low / medium / high), and a source if it's historical.
+
+**Reserved format** (an `expect` block in the scenario; it gets added to the allowed keys when A10 reads it):
+```yaml
+expect:
+  field_held_by: Union          # or Confederate / none
+  breaks: [cs_8al]
+  losses: {Union: 10-25%, Confederate: 25-40%}
+  confidence: medium
+  source: "Gettysburg, 2 July 1863 (Fox 1889)"
+```
+The A10 harness runs each scenario over many seeds and reports how often the engine lands inside each
+expectation. Scenarios the engine keeps missing are the tuning targets.
+
+**"Feel" feedback**: run the scenario, show the player the spread (typical result and range, not one roll), and
+ask fixed questions on a 5-point scale: losses "far too light … far too heavy", break timing "far too early …
+far too late", and "was the right side favoured?", plus free text. Store each answer with the scenario id and the
+engine version / parameter hash, so we can see whether a tuning change addressed it.
+
+**Format for non-technical players**: YAML from a commented template (the CLI's error messages already say what
+to fix and where). If that's still too much, a spreadsheet template (units sheet, orders-by-round sheet,
+expectations sheet) or a form, converted to YAML by a small script. The web client (B3) can export scenarios
+directly later.
 
 ---
 

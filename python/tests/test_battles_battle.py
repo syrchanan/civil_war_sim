@@ -107,6 +107,12 @@ def test_none_order_is_idle_and_orders_must_be_a_dict():
         b.engagements([('a', 'x')])
 
 
+def test_unknown_order_keys_name_the_unit():
+    b = make_battle({'a': (0, 100, '4/5/0/0'), 'x': (1, 100, '4/5/0/0')})
+    with pytest.raises(ValueError, match=r"Unknown order key\(s\) \['aim'\] for 'a'; use target, mode, ammo."):
+        b.engagements({'a': {'aim': 'x', 'mode': 'ranged'}})
+
+
 def test_zero_width_front_produces_no_melee():
     b = make_battle({'a': (0, 100, '4/5/0/0', 0), 'x': (1, 100, '4/5/0/0')})
     assert b.engagements({'a': {'target': 'x', 'mode': 'melee'}}) == ()

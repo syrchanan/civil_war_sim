@@ -1,0 +1,71 @@
+# Example scenario: a setup (who is on the field) plus a script of rounds (what each unit does).
+#
+#   python -m imperial_generals run scenarios/example_ridge.yaml
+#
+# Stats are experience/morale/weapon/melee-only, as in the game. Types: inf, cav, art.
+# Subtypes: inf line/light/marine/pikes/irregulars; cav light/heavy/dragoons;
+# art battery/horse battery/siege battery. Artillery without size and guns is a standard battery.
+
+meta:
+  name: Example Ridge
+  date: 1863-07-02
+  notes: A Union brigade holds a ridge; a Confederate brigade attacks with a battery in support.
+
+seed: 1863
+sides: [Union, Confederate]
+
+units:
+  - id: us_1mn
+    name: 1st Minnesota
+    side: Union
+    type: inf
+    subtype: line
+    size: 900
+    stats: 6/6/1/0
+  - id: us_15ma
+    name: 15th Massachusetts
+    side: Union
+    type: inf
+    subtype: line
+    size: 700
+    stats: 5/5/1/0
+  - id: cs_8al
+    name: 8th Alabama
+    side: Confederate
+    type: inf
+    subtype: line
+    size: 1000
+    stats: 5/6/0/0
+  - id: cs_10al
+    name: 10th Alabama
+    side: Confederate
+    type: inf
+    subtype: line
+    size: 800
+    stats: 4/5/0/0
+  - id: cs_bat
+    name: Ross's Battery
+    side: Confederate
+    type: art
+    subtype: battery
+    stats: 5/5/0/0
+
+rounds:
+  # 90 minutes of fire: the battery softens up the 1st Minnesota with shell
+  - duration: 90
+    orders:
+      us_1mn: {target: cs_8al, mode: ranged}
+      us_15ma: {target: cs_10al, mode: ranged}
+      cs_8al: {target: us_1mn, mode: ranged}
+      cs_10al: {target: us_15ma, mode: ranged}
+      cs_bat: {target: us_1mn, mode: ranged, ammo: shell}
+  # the 8th Alabama charges; the rest keep firing
+  - duration: 60
+    orders:
+      us_1mn: {target: cs_8al, mode: ranged}
+      us_15ma: {target: cs_10al, mode: ranged}
+      cs_8al: {target: us_1mn, mode: melee}
+      cs_10al: {target: us_15ma, mode: ranged}
+      cs_bat: {target: us_15ma, mode: ranged}
+
+finish: true   # settle killed / wounded / captured after the last round
