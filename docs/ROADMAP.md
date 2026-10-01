@@ -49,6 +49,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A9 | Setup file + step API + CLI | ✓ |
 | A10 | Tuning harness: batch runner + matchup stats | ► |
 | A11 | Player-made validation scenarios (expectations + feedback) | ○ (designed for in A9) |
+| A12 | Field holder from battle performance (`finish` 'auto') | ○ (prototyped) |
 
 ### Phase B — Playable web client
 | # | Item | Status |
@@ -64,6 +65,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | Between-battle morale reconciliation / cooling-off | ○ (needs design) |
 | Rally override for broken units | ○ |
 | Admin effect modifier | ○ |
+| Commander rating: historical general by performance | ○ (needs design) |
 | Weapon range stat + range/distance accuracy | ○ |
 | Map in the web client (port of map pipeline) | ○ |
 | Terrain effects: elevation, cover, fences, LoS, flanking | ⏸ |
@@ -512,6 +514,26 @@ to fix and where). If that's still too much, a spreadsheet template (units sheet
 expectations sheet) or a form, converted to YAML by a small script. The web client (B3) can export scenarios
 directly later.
 
+### A12. Field holder from battle performance ○
+Today `finish(field_held_by='auto')` gives the field to a side only if every enemy unit has broken or been wiped
+out, which in the A9 example is 7% of seeds; otherwise nobody holds it and no wounded are captured. Battles are
+usually decided before one side is entirely gone. Idea (user, 2026-10-01): decide it from performance bands.
+
+Proposed rule, still applied only when no side is entirely out. Three criteria, each voting for a side if it's
+decisive:
+- **Casualty exchange**: a side inflicted ≥ 1.5× the hits it took.
+- **Routs**: the share of a side's starting men in broken or wiped-out units is ≥ 25 points higher than the other
+  side's.
+- **Strength still standing**: a side has ≥ 1.5× the other's men in unbroken units.
+
+A side holds the field with **at least 2 votes and none against**; otherwise nobody does, and the admin can still
+name a holder. The thresholds go in `config/aftermath.yaml` / `BattleParams.aftermath` so A10 can tune them, and
+the report should say which criteria decided it.
+
+Prototype on the example (200 seeds): Union 33%, Confederate 15%, nobody 52% (now: nobody 93%). To settle: whether
+holding the field should feed back into the side summary and ratings, and whether "nobody" should stay this
+common.
+
 ---
 
 ## Phase B — Playable web client
@@ -549,6 +571,19 @@ The user can force a broken unit back into combat. It fights at reduced effectiv
 ### Admin effect modifier ○
 Per-side scalar on combat efficiency at battle setup (commander quality, supply, events). Default 1.0; range TBD
 (e.g. 0.7–1.3). Applied last. Cheap, and it fits the admin-run game, so it may move up.
+
+### Commander rating ○ (needs design)
+For fun: after a battle, rate each side's commander as a historical general, the way Civilization turns a score
+into a historical leader. Better performance means a better general. **Ancient world up to the American Civil
+War; nobody later.**
+- **Score** from the side summary: exchange ratio, share lost for good, holding the field, prisoners and guns
+  taken, enemy units broken. It should be **adjusted for the odds**: holding even against a bigger or more
+  veteran army (order-of-battle men, average experience and morale) scores higher than winning with the bigger
+  battalions. Rating against the expected result (a Monte Carlo baseline from A10) does that.
+- **Ladder** from disasters to masterpieces, e.g. Varro (Cannae), Crassus (Carrhae), Mack (Ulm), Burnside
+  (Fredericksburg) at the bottom; solid commanders (Meade, Wellington, Marlborough, Scipio) in the middle;
+  Hannibal, Alexander, Napoleon, Subutai, Khalid ibn al-Walid at the top. A config list, so it can be extended.
+- Per battle first; a career rating (average over a player's battles) once the game site stores results.
 
 ### Weapon range + range/distance accuracy ○
 Only relevant once position matters. Possible extra weapon stat.
