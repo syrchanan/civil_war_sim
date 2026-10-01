@@ -27,6 +27,7 @@ import yaml
 from imperial_generals import api, sheets, tuning, validation
 from imperial_generals.battles.setup import SetupError, load_setup_file
 from imperial_generals.battles.state import FORMAT
+from imperial_generals.config import get_config
 
 
 class CliError(Exception):
@@ -98,7 +99,7 @@ def _status(size: int, broken: bool, broke_at=None, guns_lost: int = 0) -> str:
     elif broken:
         notes.append('broken')
     if guns_lost:
-        notes.append(f'{guns_lost} guns lost')
+        notes.append(f"{guns_lost} gun{'s' if guns_lost != 1 else ''} lost")
     return ', '.join(notes)
 
 
@@ -422,6 +423,40 @@ def _feedback_lines(report: dict) -> list:
     return lines
 
 
+def _range(q: dict) -> str:
+    """'19% (8 in 10 runs: 14%-26%)' from p10/p50/p90 shares."""
+    return f"{q['p50']:.0%} (8 in 10: {q['p10']:.0%}-{q['p90']:.0%})"
+
+
+def _side_rows(report: dict) -> tuple:
+    sides = report['sides']
+    rows = [
+        ['Men at the start'] + [f"{s['men']:,}" for s in sides],
+        ['Casualties (killed, wounded, captured)'] + [_range(s['casualties']) for s in sides],
+        ['Units broken (average)'] + [f"{s['units_out_mean']:.1f} of {s['units']}" for s in sides],
+        ['Prisoners taken (typical)'] + [f"{s['prisoners_taken_p50']:,.0f}" for s in sides],
+        ['Guns captured (average)'] + [f"{s['guns_taken_mean']:.1f}" for s in sides],
+        ['Held the field'] + [_pct(s['field_held']) for s in sides],
+    ]
+    return [''] + [s['name'] for s in sides], rows
+
+
+def _unit_rows(report: dict) -> tuple:
+    rows = [[u['name'], u['side'], f"{u['started']:,}", _pct(u['break_share']),
+             '-' if u['broke_at_p50'] is None else f"{u['broke_at_p50']:.0f} min", _range(u['casualties']),
+             f"{u['inflicted_p50']:,.0f}"] for u in report['units']]
+    return ['Unit', 'Side', 'Men', 'Broke', 'Typically broke at', 'Casualties', 'Inflicted'], rows
+
+
+def _charge_rows(report: dict) -> tuple:
+    names = {u['id']: u['name'] for u in report['units']}
+    rows = [[f"{names[c['charger']]} -> {names[c['target']]}", f"round {c['round']}", _pct(c['made']),
+             ', '.join(f"{CHARGE_OUTCOMES[o]} {'<1%' if c['outcomes'][o] < 0.005 else format(c['outcomes'][o], '.0%')}"
+                       for o in CHARGE_OUTCOMES if o in c['outcomes'])]
+            for c in report['charges']]
+    return ['Charge', 'When', 'Made in', 'How it ended'], rows
+
+
 def _print_check(report: dict) -> None:
     print(_check_heading(report))
     print(f"{report['seeds']} seeds, engine {report['engine']}")
@@ -433,24 +468,77 @@ def _print_check(report: dict) -> None:
     for line in _feedback_lines(report):
         print(line)
     print()
+    print('How the battle usually went')
+    print(_table(*_side_rows(report), left=1, notes=False))
+    print()
+    print('Unit by unit')
+    print(_table(*_unit_rows(report), left=2, notes=False))
+    print()
+    if report['charges']:
+        print('Charges')
+        print(_table(*_charge_rows(report), left=2))
+        print()
+
+
+def _md_table(header: list, rows: list) -> list:
+    return (['| ' + ' | '.join(header) + ' |', '|' + '---|' * len(header)]
+            + ['| ' + ' | '.join(str(c) for c in row) + ' |' for row in rows])
+
+
+def _md_typical(report: dict) -> list:
+    typical = report['typical']
+    names = typical['units']
+    sides = [s['name'] for s in report['sides']]
+    lines = [f"One run close to the usual outcome (dice seed {typical['seed']}), round by round.", '']
+    for rnd in typical['rounds']:
+        lines += [f"**Round {rnd['round']}** ({rnd['start']:.0f}-{rnd['end']:.0f} min)", '']
+        rows = [[names[uid], sides[_side_index(report, uid)], f"{u['size']:,}", u['losses'], u['captured'],
+                 _status(u['size'], u['broken'], u['broke_at'], u['guns_lost']) or '-']
+                for uid, u in rnd['units'].items()]
+        lines += _md_table(['Unit', 'Side', 'Men left', 'Hit this round', 'Captured', 'Status'], rows)
+        if rnd['charges']:
+            lines += ['', 'Charges: ' + '; '.join(_charge_text(c, names) for c in rnd['charges'])]
+        lines.append('')
+    holder = typical['field_held_by']
+    lines += [f"Field held by: {'nobody' if holder is None else sides[holder]}. Casualties: "
+              + ', '.join(f"{s['name']} {s['casualty_share']:.0%}" for s in typical['result']) + '.', '']
+    return lines
+
+
+def _side_index(report: dict, uid: str) -> int:
+    side = next(u['side'] for u in report['units'] if u['id'] == uid)
+    return [s['name'] for s in report['sides']].index(side)
 
 
 def _markdown(reports: list) -> str:
-    lines = ['# Engine check', '']
+    cfg = get_config()['validation']
+    lines = ['# Engine check', '', '## Reading this report', '',
+             'Each battle was fought many times with different dice. For each expectation, "Engine agrees" is the '
+             f"share of those runs that matched it: **agrees** means at least {cfg['agrees_at']:.0%}, "
+             f"**sometimes** at least {cfg['sometimes_at']:.0%}, **disagrees** less. "
+             'Casualties are killed + wounded + captured, as a share of the men a unit or side started with. '
+             '"8 in 10" is the range the middle 80% of runs fell in. The winner of a run is the side holding the '
+             'field, or failing that the side that lost fewer of its men to broken units.', '']
     for r in reports:
         lines += [f"## {r['name']}", '', _check_heading(r) + '.', '',
                   f"{r['seeds']} runs with different dice; engine version `{r['engine']}`. "
                   f"**{r['agree']} of {r['total']}** expectations agree.", '']
         if r['notes']:
             lines += [f"Notes: {r['notes']}", '']
-        lines += ['| Expectation | Engine agrees | Verdict | What the engine did |', '|---|---|---|---|']
-        lines += [f"| {e['text']} | {_pct(e['share'])} | {e['verdict']} | {e['engine']} |" for e in r['expectations']]
+        lines += ['### How it was graded', '']
+        lines += _md_table(['Expectation', 'Engine agrees', 'Verdict', 'What the engine did'],
+                           [[e['text'], _pct(e['share']), e['verdict'], e['engine']] for e in r['expectations']])
         lines.append('')
         feedback = _feedback_lines(r)
         if feedback:
             lines += [feedback[0], ''] + [f'- {line.strip()}' for line in feedback[1:]]
             lines += [f"- {e['author'] or 'Someone'}: {e['comments']}" for e in r['feedback'] if e.get('comments')]
             lines.append('')
+        lines += ['### How the battle usually went', ''] + _md_table(*_side_rows(r)) + ['']
+        lines += ['### Unit by unit', ''] + _md_table(*_unit_rows(r)) + ['']
+        if r['charges']:
+            lines += ['### Charges', ''] + _md_table(*_charge_rows(r)) + ['']
+        lines += ['### A typical run', ''] + _md_typical(r)
     return '\n'.join(lines)
 
 

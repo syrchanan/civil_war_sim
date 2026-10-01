@@ -514,3 +514,35 @@ def test_check_reads_workbooks_and_summarises_feedback(tmp_path, capsys):
     md = (tmp_path / 'r.md').read_text(encoding='utf-8')
     assert 'Player feedback (2 responses' in md and 'Jane: bloody' in md
     assert sheets
+
+
+def test_check_report_tells_players_how_the_battle_went(tmp_path, capsys):
+    import os
+    from test_sheets import BATTLE, ORDERS, UNITS, fill
+    path = fill(tmp_path / 'player.xlsx', BATTLE, UNITS, ORDERS)
+    code, out, _ = run(capsys, 'check', path, '--seeds', 6, '--workers', 1, '--report', tmp_path / 'r.md')
+    assert code == 0
+    for heading in ('How the battle usually went', 'Unit by unit', 'Charges'):
+        assert heading in out
+    assert '1st Minnesota' in out and 'Union' in out
+    md = (tmp_path / 'r.md').read_text(encoding='utf-8')
+    assert '## Reading this report' in md and 'at least 60%' in md
+    for heading in ('### How it was graded', '### How the battle usually went', '### Unit by unit', '### Charges',
+                    '### A typical run'):
+        assert heading in md
+    assert '| Casualties (killed, wounded, captured) |' in md
+    assert '| Unit | Side | Men | Broke | Typically broke at | Casualties | Inflicted |' in md
+    assert '8th Alabama -> 1st Minnesota' in md and 'round 2' in md
+    assert '**Round 1** (0-60 min)' in md and '**Round 2** (60-90 min)' in md and 'Field held by:' in md
+    assert os.path.getsize(tmp_path / 'r.md') > 2000
+
+
+def test_charge_outcomes_read_in_a_fixed_order():
+    from imperial_generals.cli import _charge_rows, _status
+    report = {'units': [{'id': 'a', 'name': 'A'}, {'id': 'b', 'name': 'B'}],
+              'charges': [{'charger': 'a', 'target': 'b', 'round': 1, 'made': 1.0,
+                           'outcomes': {'faltered': 0.6, 'charger_broke': 0.004, 'home': 0.396}}]}
+    (row,) = _charge_rows(report)[1]
+    assert row[3] == 'went home 40%, faltered 60%, charger broke on the approach <1%'
+    assert _status(40, True, 30.0, 1) == 'broke at 30 min, 1 gun lost'
+    assert _status(40, True, 30.0, 3) == 'broke at 30 min, 3 guns lost'

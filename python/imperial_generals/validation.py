@@ -25,7 +25,7 @@ import hashlib
 import json
 import re
 
-from imperial_generals import tuning
+from imperial_generals import api, tuning
 from imperial_generals.battles.setup import SetupError
 from imperial_generals.config import get_config
 from imperial_generals.params import BattleParams
@@ -162,6 +162,58 @@ def _spread_text(values: list) -> str:
     return f'typically {q(values, .5):.0%} (8 in 10 runs: {q(values, .1):.0%}-{q(values, .9):.0%})'
 
 
+def _quantiles(values: list) -> dict:
+    return {'p10': tuning.quantile(values, .1), 'p50': tuning.quantile(values, .5), 'p90': tuning.quantile(values, .9)}
+
+
+def _detail(batch, scenario: dict, overrides: dict | None) -> dict:
+    """How the battle usually went: by side, by unit, by charge, and one typical run replayed round by round."""
+    runs, n = batch.runs, len(batch.runs)
+    names = batch.sides
+    sides = []
+    for side, name in enumerate(names):
+        p = f's{side}_'
+        sides.append({
+            'name': name, 'units': runs[0][p + 'units'], 'men': runs[0][p + 'started'],
+            'casualties': _quantiles([r[p + 'casualty_share'] for r in runs]),
+            'units_out_mean': sum(r[p + 'units_out'] for r in runs) / n,
+            'prisoners_taken_p50': tuning.quantile([r[p + 'prisoners_taken'] for r in runs], .5),
+            'guns_taken_mean': sum(r[p + 'guns_taken'] for r in runs) / n,
+            'field_held': sum(r['field_held_by'] == side for r in runs) / n,
+        })
+
+    units = []
+    for first in (u for u in batch.unit_runs if u['seed'] == batch.seeds[0]):
+        rows = [u for u in batch.unit_runs if u['id'] == first['id']]
+        units.append({
+            'id': first['id'], 'name': first['name'], 'side': names[first['side']], 'started': first['started'],
+            'break_share': sum(u['broken'] or u['wiped_out'] for u in rows) / n,
+            'broke_at_p50': tuning.quantile([u['broke_at'] for u in rows if u['broke_at'] is not None], .5),
+            'casualties': _quantiles([(u['hits'] + u['captured']) / u['started'] for u in rows]),
+            'inflicted_p50': tuning.quantile([u['inflicted'] for u in rows], .5),
+        })
+
+    charges: dict = {}
+    for c in batch.charge_runs:
+        charges.setdefault((c['charger'], c['target'], c['round']), []).append(c['outcome'])
+    charge_list = [{'charger': a, 'target': t, 'round': rnd, 'made': len(outs) / n,
+                    'outcomes': {o: outs.count(o) / len(outs) for o in dict.fromkeys(outs)}}
+                   for (a, t, rnd), outs in charges.items()]
+
+    # a typical run: the usual field holder, with casualties closest to the usual ones
+    holders = [r['field_held_by'] for r in runs]
+    usual = max(dict.fromkeys(holders), key=holders.count)
+    medians = [tuning.quantile([r[f's{s}_casualty_share'] for r in runs], .5) for s in (0, 1)]
+    best = min((r for r in runs if r['field_held_by'] == usual),
+               key=lambda r: (sum(abs(r[f's{s}_casualty_share'] - medians[s]) for s in (0, 1)), r['seed']))
+    finish = scenario.get('finish', False)
+    state, reports, result = api.run_scenario({**scenario, 'finish': True if finish is False else finish},
+                                              seed=best['seed'], overrides=overrides)
+    typical = {'seed': best['seed'], 'rounds': reports, 'result': api.side_summary(state),
+               'units': {u['id']: u['name'] for u in state['units']}, 'field_held_by': result['field_held_by']}
+    return {'sides': sides, 'units': units, 'charges': charge_list, 'typical': typical}
+
+
 def check(scenario: dict, seeds: int | None = None, seed_start: int = 0, workers: int = 1,
           overrides: dict | None = None) -> dict:
     """
@@ -171,6 +223,10 @@ def check(scenario: dict, seeds: int | None = None, seed_start: int = 0, workers
     ``source`` and ``confidence``, and ``expectations``: one entry per expectation with its ``text``, the
     ``share`` of runs that agree (None if no run could be graded), a ``verdict`` and what the ``engine`` typically
     did. ``agree`` / ``total`` count the graded expectations.
+
+    For players it also describes how the battle usually went: ``sides`` (casualty spread, units broken,
+    prisoners, guns, field held), ``units`` (break rate and time, casualties, inflicted), ``charges`` (how each
+    scripted charge ended) and ``typical``, one run close to the usual outcome replayed round by round.
 
     Raises
     ------
@@ -233,4 +289,5 @@ def check(scenario: dict, seeds: int | None = None, seed_start: int = 0, workers
         'source': exp['source'], 'confidence': exp['confidence'], 'notes': exp['notes'],
         'expectations': results, 'agree': sum(r['verdict'] == 'agrees' for r in graded), 'total': len(graded),
         'feedback': list(scenario.get('feedback') or []),
+        **_detail(batch, scenario, overrides),
     }

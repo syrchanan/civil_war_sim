@@ -635,7 +635,15 @@ message for players: `players/README.md`. Blank template: `players/battle_templa
   - A run's winner is the field holder; failing that, the side with the smaller share of its men in broken units.
   - Each report carries an **engine version**: a fingerprint of the tuning, so feedback can say which version it
     was about.
-  - `check *.xlsx --report results.md` writes a Markdown report to share.
+  - `check *.xlsx --report results.md` writes a Markdown report to share. For players it also explains how the
+    battle usually went (2026-10-01, at the user's request):
+    - **by side**: casualties (typical and 8-in-10 range), units broken, prisoners, guns, field held;
+    - **unit by unit**: how often each broke and when, casualties, inflicted;
+    - **each scripted charge**: how often it was made and how it ended;
+    - **a typical run** (the usual field holder, casualties closest to the usual) replayed round by round;
+    - a "Reading this report" note.
+
+    Batches record every charge (`batch.charge_runs`).
 - **Spreadsheet** (`imperial_generals/sheets.py`, words in `config/sheets.yaml`).
   - Tabs: Start here, Battle, Units, Orders, Feedback. Dropdowns for side, type, subtype, weapon (by name),
     action (fire / charge / hold) and ammo.
