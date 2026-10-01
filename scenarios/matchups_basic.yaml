@@ -2,8 +2,10 @@
 #
 #   python -m imperial_generals matchups scenarios/matchups_basic.yaml --plot matchups.png
 #
-# attack: the attacker's order against the defender; defend: the defender's reply ("idle" to not reply).
-# Each is ranged, melee or idle, or {mode, ammo} for artillery. Both default to ranged.
+# By default the grid runs twice: a ranged grid (everyone fires; melee-only units, stats x/x/x/1, can't, so they
+# inflict nothing) and a melee grid (everyone fights hand to hand). Artillery keeps its ammo in the ranged grid.
+# With --mode orders, each unit uses its own attack order and defend reply instead: ranged, melee or idle, or
+# {mode, ammo} for artillery; both default to ranged.
 # A side wins a run when the other unit broke or was wiped out and it didn't.
 
 name: Basic matchups

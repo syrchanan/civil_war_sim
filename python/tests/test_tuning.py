@@ -289,3 +289,54 @@ def test_share_heatmap(tmp_path):
 
 def test_default_workers_is_the_cpu_count():
     assert tuning.default_workers() == (os.cpu_count() or 1)
+
+
+# =============================================================================
+# Faceted grids: everyone fires, or everyone fights hand to hand
+# =============================================================================
+
+def test_ranged_facet_overrides_orders_but_keeps_ammo():
+    cav_v_battery = tuning.matchup_scenario(GRID, 'heavy_cav', 'battery', mode='ranged')
+    assert cav_v_battery['rounds'][0]['orders'] == {
+        'attacker': {'target': 'defender', 'mode': 'ranged'},
+        'defender': {'target': 'attacker', 'mode': 'ranged'}}            # battery's defend has no ammo: default
+    battery_v_line = tuning.matchup_scenario(GRID, 'battery', 'line', mode='ranged')
+    assert battery_v_line['rounds'][0]['orders']['attacker'] == {'target': 'defender', 'mode': 'ranged',
+                                                                 'ammo': 'canister'}
+    spec = {**GRID, 'units': {**GRID['units'], 'line': {**GRID['units']['line'], 'defend': 'idle'}}}
+    assert tuning.matchup_scenario(spec, 'battery', 'line', mode='ranged')['rounds'][0]['orders']['defender'] == {
+        'target': 'attacker', 'mode': 'ranged'}
+
+
+def test_melee_facet_is_melee_both_ways():
+    orders = tuning.matchup_scenario(GRID, 'battery', 'line', mode='melee')['rounds'][0]['orders']
+    assert orders == {'attacker': {'target': 'defender', 'mode': 'melee'},
+                      'defender': {'target': 'attacker', 'mode': 'melee'}}
+
+
+def test_faceted_grids():
+    # melee-only is the stats flag (x/x/x/1), not the subtype: any such unit inflicts nothing at range
+    spec = {**GRID, 'units': {**GRID['units'],
+                              'pikes': {'type': 'inf', 'subtype': 'pikes', 'size': 1000, 'stats': '5/5/-2/1'},
+                              'warband': {'type': 'inf', 'subtype': 'irregulars', 'size': 1000, 'stats': '5/5/0/1'}}}
+    ranged = tuning.matchup_grid(spec, mode='ranged', seeds=3)
+    assert ranged.mode == 'ranged' and ranged.rows()[0]['mode'] == 'ranged'
+    melee_only = [k for k, u in spec['units'].items() if u['stats'].endswith('/1')]
+    assert set(melee_only) == {'heavy_cav', 'pikes', 'warband'}
+    for a in melee_only:
+        for d in ranged.keys:
+            cell = ranged.cells[(a, d)]
+            assert cell['defender_hit_share'] == 0 and cell['attacker_wins'] == 0
+            assert cell['exchange_ratio'] in (0, None)          # None: neither side could fire
+    assert ranged.cells[('line', 'warband')]['defender_hit_share'] > 0
+    melee = tuning.matchup_grid(spec, mode='melee', seeds=3)
+    assert melee.mode == 'melee'
+    assert tuning.matchup_grid(GRID, seeds=3).mode == 'orders'
+    with pytest.raises(ValueError, match='mode'):
+        tuning.matchup_grid(GRID, mode='charge')
+
+
+def test_heatmap_title_names_the_facet(tmp_path):
+    grid = tuning.matchup_grid(GRID, mode='melee', seeds=2)
+    tuning.plot_matchups(grid, tmp_path / 'm.png')
+    assert (tmp_path / 'm.png').exists()

@@ -255,14 +255,31 @@ def _check_grid(spec) -> None:
         raise SetupError(errors)
 
 
-def matchup_scenario(spec: dict, attacker: str, defender: str) -> dict:
-    """The one-on-one scenario for one grid cell: ``attacker`` uses its attack order, ``defender`` its defend."""
+MATCHUP_MODES = ('orders', 'ranged', 'melee')
+
+
+def _facet(order: dict, mode: str) -> dict:
+    """An attack / defend order forced to ``mode``: ranged keeps any artillery ammo, melee drops it."""
+    if mode == 'orders':
+        return order
+    if mode == 'ranged':
+        return {'mode': 'ranged', **({'ammo': order['ammo']} if 'ammo' in order else {})}
+    return {'mode': 'melee'}
+
+
+def matchup_scenario(spec: dict, attacker: str, defender: str, mode: str = 'orders') -> dict:
+    """
+    The one-on-one scenario for one grid cell. With ``mode='orders'`` the attacker uses its attack order and the
+    defender its defend reply; 'ranged' makes both fire (melee-only units can't, so they inflict nothing) and
+    'melee' makes both fight hand to hand.
+    """
     def unit(key: str, uid: str, side: int) -> dict:
         body = {k: v for k, v in spec['units'][key].items() if k not in ('attack', 'defend')}
         return {'id': uid, 'name': key, 'side': side, **body}
 
-    orders = {'attacker': {'target': 'defender', **_order(spec['units'][attacker].get('attack', 'ranged'))}}
-    defend = _order(spec['units'][defender].get('defend', 'ranged'))
+    orders = {'attacker': {'target': 'defender',
+                           **_facet(_order(spec['units'][attacker].get('attack', 'ranged')), mode)}}
+    defend = _facet(_order(spec['units'][defender].get('defend', 'ranged')), mode)
     if defend['mode'] != 'idle':
         orders['defender'] = {'target': 'attacker', **defend}
     scenario = {
@@ -282,9 +299,11 @@ class MatchupGrid:
     seeds: int
     rounds: list
     cells: dict          # (attacker, defender) -> outcome shares and rates
+    mode: str = 'orders'     # 'orders' (from the file), 'ranged' or 'melee'
 
     def rows(self) -> list:
-        return [{'attacker': a, 'defender': d, **self.cells[(a, d)]} for a in self.keys for d in self.keys]
+        return [{'mode': self.mode, 'attacker': a, 'defender': d, **self.cells[(a, d)]}
+                for a in self.keys for d in self.keys]
 
 
 def _cell(results: list) -> dict:
@@ -309,9 +328,12 @@ def _cell(results: list) -> dict:
     }
 
 
-def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrides: dict | None = None) -> MatchupGrid:
+def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrides: dict | None = None,
+                 mode: str = 'orders') -> MatchupGrid:
     """
     Every unit in ``spec['units']`` attacks every unit (itself included), one on one, for ``spec['rounds']``.
+    ``mode`` facets the grid: 'orders' uses each unit's attack / defend from the file, 'ranged' makes every
+    unit fire and 'melee' makes every unit fight hand to hand (see ``matchup_scenario``).
 
     A side wins a cell's run when the other unit broke or was wiped out and it didn't. ``advantage`` is the
     attacker's win share minus the defender's; ``exchange_ratio`` is defender men hit per attacker man hit.
@@ -321,16 +343,18 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     SetupError
         For problems in the spec or the overrides, before anything runs.
     """
+    if mode not in MATCHUP_MODES:
+        raise ValueError(f"mode must be one of {', '.join(MATCHUP_MODES)}, got {mode!r}.")
     _check_grid(spec)
     seeds = seeds if seeds is not None else spec.get('seeds', 100)
     _check_run_args(seeds, workers)
     keys = list(spec['units'])
     pairs = [(a, d) for a in keys for d in keys]
-    _validate_scenario(matchup_scenario(spec, keys[0], keys[0]), overrides)
+    _validate_scenario(matchup_scenario(spec, keys[0], keys[0], mode), overrides)
     per_cell = max(1, workers * 4 // len(pairs))
     tasks, owners = [], []
     for pair in pairs:
-        scenario = matchup_scenario(spec, *pair)
+        scenario = matchup_scenario(spec, *pair, mode)
         for chunk in _chunks(list(range(seeds)), per_cell):
             tasks.append((scenario, chunk, overrides))
             owners.append(pair)
@@ -338,7 +362,7 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     for pair, chunk in zip(owners, _run_tasks(tasks, workers)):
         results[pair].extend(chunk)
     return MatchupGrid(name=spec.get('name', 'Matchups'), keys=keys, seeds=seeds, rounds=list(spec['rounds']),
-                       cells={pair: _cell(results[pair]) for pair in pairs})
+                       cells={pair: _cell(results[pair]) for pair in pairs}, mode=mode)
 
 
 # =============================================================================
@@ -396,7 +420,7 @@ def plot_matchups(grid: MatchupGrid, path, metric: str = 'advantage') -> None:
     label = 'attacker wins - defender wins' if metric == 'advantage' else metric.replace('_', ' ')
     bar.set_label(label, color=_MUTED)
     rounds = ' + '.join(f'{r:g}' for r in grid.rounds)
-    ax.set_title(f'{grid.name}: {label}\n{grid.seeds} seeds per cell, rounds {rounds} min', color=_INK,
+    ax.set_title(f'{grid.name} ({grid.mode}): {label}\n{grid.seeds} seeds per cell, rounds {rounds} min', color=_INK,
                  fontsize=10, loc='left')
     fig.tight_layout()
     fig.savefig(path, dpi=150)
