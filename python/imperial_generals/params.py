@@ -2,7 +2,8 @@
 Per-battle tunable parameters (roadmap A3).
 
 ``BattleParams`` bundles every constant the engine uses in a battle: ``CombatParams`` (effectiveness and kill
-rates) and ``MoraleParams`` (the morale model). Defaults come from config/*.yaml; overrides are applied per
+rates), ``MoraleParams`` (the morale model), ``AftermathParams`` (prisoners and casualty accounting),
+``MatchupParams`` (unit-type advantages, melee ratings) and ``ChargeParams`` (approach and contact test). Defaults come from config/*.yaml; overrides are applied per
 battle and never touch the global config, so a tuning or RL loop can run many parameter sets in one process.
 
 ``to_dict`` / ``from_dict`` are JSON-safe, for the battle state file (A8).
@@ -229,23 +230,8 @@ class MatchupParams:
     melee: dict = _matchups_default('melee')
     overrides: tuple = _matchups_default('overrides')
     melee_ratings: dict = _matchups_default('melee_ratings')
-    cavalry_charge: dict = _matchups_default('cavalry_charge')
-
-    _CHARGE_KEYS = frozenset({'size_exponent', 'unsteadiness_bonus', 'veterancy_weight', 'shock_weight',
-                              'min_factor', 'max_factor'})
 
     def __post_init__(self) -> None:
-        ch = self.cavalry_charge
-        if not isinstance(ch, dict) or set(ch) != self._CHARGE_KEYS:
-            raise ValueError(f"cavalry_charge needs exactly {sorted(self._CHARGE_KEYS)}.")
-        for name in ('size_exponent', 'unsteadiness_bonus', 'shock_weight', 'min_factor'):
-            if not ch[name] >= 0:
-                raise ValueError(f"cavalry_charge.{name} must be >= 0.")
-        if not 0 <= ch['veterancy_weight'] <= 1:
-            raise ValueError("cavalry_charge.veterancy_weight must be in [0, 1].")
-        if not ch['min_factor'] <= ch['max_factor']:
-            raise ValueError("cavalry_charge.min_factor must be <= max_factor.")
-
         for mode in _MATCHUP_MODES:
             table = getattr(self, mode)
             for a in UNIT_TYPES:
@@ -306,32 +292,92 @@ class MatchupParams:
         self._cache[key] = value
         return value
 
-    def charge_factor(self, cav_size: int, inf_size: int, resolve: float, xp: int, shock: float) -> float:
-        """
-        Multiplier on cavalry charging infantry. Cohesive infantry (high resolve, veteran, unshaken) that
-        outnumbers the cavalry repels it (< 1); shaken or green infantry is ridden down. See matchups.yaml.
-        Powers go through fdlibm for cross-platform agreement.
-        """
-        ch = self.cavalry_charge
-        if cav_size <= 0 or inf_size <= 0:
-            return ch['min_factor']
-        xp_norm = (max(1, min(10, xp)) - 1) / 9
-        w = ch['veterancy_weight']
-        steadiness = resolve * (1 - w + w * xp_norm) / (1 + ch['shock_weight'] * shock)
-        exponent = ch['size_exponent']
-        ratio = cav_size / inf_size
-        if exponent == 1.0:
-            numbers = ratio
-        else:
-            from imperial_generals.utils.fdlibm import exp, log   # lazy: utils imports this module
-            numbers = exp(exponent * log(ratio))
-        factor = numbers * (1 + ch['unsteadiness_bonus'] * (1 - steadiness))
-        return min(ch['max_factor'], max(ch['min_factor'], factor))
-
     def melee_rating(self, unit: tuple) -> float:
         """Melee rating for (type, subtype | None); units without a listed subtype use 'default'."""
         unit_type, subtype = unit
         return self.melee_ratings.get(f"{unit_type}/{subtype}", self.melee_ratings['default'])
+
+
+# =============================================================================
+# Charges
+# =============================================================================
+
+def _charge_default(key: str):
+    return field(default_factory=lambda: copy.deepcopy(get_config()['charge'][key]))
+
+
+def _sigmoid(z: float) -> float:
+    from imperial_generals.utils.fdlibm import exp   # lazy: utils imports this module
+    return 1.0 / (1.0 + exp(-z))
+
+
+@dataclass(frozen=True)
+class ChargeParams:
+    """
+    Charges: the approach under close-range fire and the contact test; defaults from config/charge.yaml.
+
+    ``odds(pressure(...))`` gives (defender breaks, charge falters, goes home); see the config for the formulas.
+    """
+
+    approach_minutes: dict = _charge_default('approach_minutes')
+    closing_fire_multiplier: float = _charge_default('closing_fire_multiplier')
+    battery_closing_ammo: str = _charge_default('battery_closing_ammo')
+    numbers_weight: float = _charge_default('numbers_weight')
+    steadiness_weight: float = _charge_default('steadiness_weight')
+    veterancy_weight: float = _charge_default('veterancy_weight')
+    shock_weight: float = _charge_default('shock_weight')
+    break_threshold: float = _charge_default('break_threshold')
+    falter_threshold: float = _charge_default('falter_threshold')
+    spread: float = _charge_default('spread')
+    falter_cost: float = _charge_default('falter_cost')
+    shock_bonus: tuple = _charge_default('shock_bonus')
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.approach_minutes, dict) or set(self.approach_minutes) != set(UNIT_TYPES):
+            raise ValueError(f"approach_minutes needs exactly {list(UNIT_TYPES)}.")
+        if any(not v > 0 for v in self.approach_minutes.values()):
+            raise ValueError("approach_minutes must be > 0.")
+        for name in ('closing_fire_multiplier', 'numbers_weight', 'steadiness_weight', 'shock_weight',
+                     'break_threshold', 'falter_threshold'):
+            if not getattr(self, name) >= 0:
+                raise ValueError(f"{name} must be >= 0.")
+        if not self.spread > 0:
+            raise ValueError("spread must be > 0.")
+        for name in ('veterancy_weight', 'falter_cost'):
+            if not 0 <= getattr(self, name) <= 1:
+                raise ValueError(f"{name} must be in [0, 1].")
+        for b in self.shock_bonus:
+            if not isinstance(b, dict) or set(b) != {'charger', 'target', 'bonus'}:
+                raise ValueError(f"A shock bonus needs exactly charger, target, bonus: {b!r}.")
+            if not _valid_unit_key(b['charger']) or not _valid_unit_key(b['target']):
+                raise ValueError(f"Unknown unit type/subtype in shock bonus: {b!r}.")
+        object.__setattr__(self, 'shock_bonus', tuple(dict(b) for b in self.shock_bonus))
+
+    def steadiness(self, resolve: float, xp: int, shock: float) -> float:
+        """How well a unit holds together: resolve, steadied by veterancy, shaken by recent losses."""
+        xp_norm = (max(1, min(10, xp)) - 1) / 9
+        w = self.veterancy_weight
+        return resolve * (1 - w + w * xp_norm) / (1 + self.shock_weight * shock)
+
+    def bonus(self, charger: tuple, target: tuple) -> float:
+        """Sum of the shock bonuses matching (type, subtype | None) of the charger and the target."""
+        def keys(unit):
+            kind, sub = unit
+            return {kind, f"{kind}/{sub}"} if sub else {kind}
+        c_keys, t_keys = keys(charger), keys(target)
+        return sum(b['bonus'] for b in self.shock_bonus if b['charger'] in c_keys and b['target'] in t_keys)
+
+    def pressure(self, charger_men: int, target_men: int, charger_steadiness: float, target_steadiness: float,
+                 bonus: float) -> float:
+        from imperial_generals.utils.fdlibm import log   # lazy: utils imports this module
+        return (self.numbers_weight * log(charger_men / target_men)
+                + self.steadiness_weight * (charger_steadiness - target_steadiness) + bonus)
+
+    def odds(self, x: float) -> tuple:
+        """(defender breaks, charge falters, goes home) for pressure ``x``."""
+        p_break = _sigmoid((x - self.break_threshold) / self.spread)
+        p_falter = _sigmoid((-x - self.falter_threshold) / self.spread)
+        return p_break, p_falter, max(0.0, 1.0 - p_break - p_falter)
 
 
 # =============================================================================
@@ -371,6 +417,11 @@ class BattleParams:
     morale: MoraleParams = field(default_factory=MoraleParams)
     aftermath: AftermathParams = field(default_factory=AftermathParams)
     matchups: MatchupParams = field(default_factory=MatchupParams)
+    charge: ChargeParams = field(default_factory=ChargeParams)
+
+    def __post_init__(self) -> None:
+        if self.charge.battery_closing_ammo not in self.combat.artillery_ammo:
+            raise ValueError(f"charge.battery_closing_ammo must be one of {sorted(self.combat.artillery_ammo)}.")
 
     def with_overrides(self, overrides: dict) -> 'BattleParams':
         """
@@ -397,6 +448,7 @@ class BattleParams:
             str(k): v for k, v in sorted(data['combat']['weapon_multipliers'].items())
         }
         data['matchups']['overrides'] = list(data['matchups']['overrides'])
+        data['charge']['shock_bonus'] = list(data['charge']['shock_bonus'])
         return data
 
     @classmethod

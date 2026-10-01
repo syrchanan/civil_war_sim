@@ -68,7 +68,7 @@ def test_dict_form_unit_needs_side_and_regiment():
 def test_to_dict_is_json_and_versioned():
     data = json.loads(build().to_json())
     assert data['format'] == 'imperial-generals-battle'
-    assert data['version'] == 1
+    assert data['version'] == 2
     assert [u['id'] for u in data['units']] == ['inf', 'gun', 'cav', 'foe', 'green']   # unit order kept
     inf = data['units'][0]
     assert (inf['name'], inf['type'], inf['subtype'], inf['side']) == ('1st Minnesota', 'inf', 'line', 0)
@@ -84,7 +84,8 @@ def test_round_trip_before_any_round():
 
 @pytest.mark.parametrize("change", [
     {'format': 'something-else'},
-    {'version': 2},
+    {'version': 1},
+    {'version': 3},
 ])
 def test_wrong_format_or_version_raises(change):
     data = build().to_dict()
@@ -170,7 +171,7 @@ def test_finished_battle_stays_finished():
         r.resolve_round(60, {})
 
 
-EXAMPLE = os.path.join(os.path.dirname(__file__), '../../test_cases/battle_state_v1.json')
+EXAMPLE = os.path.join(os.path.dirname(__file__), '../../test_cases/battle_state_v2.json')
 
 
 def test_reference_file_loads_and_round_trips_unchanged():
@@ -195,9 +196,3 @@ def test_seed_is_informational_when_battle_built_from_state():
     b = Battle({'a': (0, Regiment(100, '4/5/0/0'))}, rng=Rng.from_state([1, 2, 3, 4]))
     assert b.seed is None
     assert reload(b).seed is None
-
-
-def test_v1_file_written_before_result_existed_still_loads():
-    data = json.loads(build().to_json())
-    del data['result']
-    assert Battle.from_dict(data).result is None

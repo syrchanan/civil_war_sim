@@ -42,9 +42,11 @@ combat:
   # (historical target: 5–10%/hour). Rifled muskets land near 11%/hour.
   ranged_kill_rate: 0.00438
 
-  # Melee (linear law): casualties/min = coef_enemy × melee_kill_rate × front_self × front_enemy.
-  # Placeholder: two 500-man fronts in melee lose ~3× the ranged per-man rate. Tune in A10.
-  melee_kill_rate: 0.0000263
+  # Melee, per man in contact: casualties/min on the target =
+  #   melee_kill_rate × melee coef × min(attacker's men facing the target, target's front) × matchup.
+  # Losses per hour don't depend on unit size. Set so line infantry in contact hits 2.5× as fast as the same
+  # men firing (two 5/5 lines in full contact: ~19% per hour each). Tune in A13.
+  melee_kill_rate: 0.01564
 
   # Artillery (round engine): casualties/min = coef × effective_guns × per-gun rate for the ordered ammo × matchup.
   # Ammo is part of the battery's order and fixed for the round (the player chooses; the engine doesn't adapt).

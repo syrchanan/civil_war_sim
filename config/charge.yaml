@@ -1,0 +1,52 @@
+# =============================================================================
+# CHARGES (roadmap A13)
+# A melee order on a unit not already in contact is a charge. The charger crosses the last stretch under
+# close-range fire (the approach), then a contact test decides: the charge goes home (melee contact, which
+# persists into later rounds while either side keeps a melee order on the other), it falters (the charger
+# stands down for the round, shaken), or the defender breaks before contact (rout and prisoners).
+# Charging a broken unit is pursuit (contact at once); two units charging each other meet head on (no test).
+# First-draft numbers; tune with the A10 harness.
+# =============================================================================
+charge:
+
+  # Minutes of approach before the contact test, by charger type.
+  approach_minutes: {inf: 5.0, cav: 2.0, art: 5.0}
+
+  # The target's fire on a charger during the approach, as a multiple of its normal rate (close range).
+  # Split evenly when several units charge the same target. A target that is itself charging, or locked in
+  # melee, can't fire on the charge; neither can a melee-only unit.
+  closing_fire_multiplier: 3.0
+
+  # Batteries meet a charge with this ammo, whatever their order says.
+  battery_closing_ammo: canister
+
+  # Contact test. Each side's steadiness:
+  #   steadiness = resolve × (1 − veterancy_weight + veterancy_weight·(xp−1)/9) / (1 + shock_weight·shock)
+  # Pressure of the charge:
+  #   x = numbers_weight·ln(charger men / target men) + steadiness_weight·(charger − target steadiness) + bonus
+  # Odds, with σ the logistic function:
+  #   defender breaks = σ((x − break_threshold) / spread)
+  #   charge falters  = σ((−x − falter_threshold) / spread)
+  #   goes home       = the rest
+  # An even charge on a fresh line (x = 0): ~12% breaks, ~27% falters, ~61% goes home. Losses on the approach
+  # lower the charger's steadiness, so closing fire matters.
+  numbers_weight: 1.0
+  steadiness_weight: 3.0
+  veterancy_weight: 0.5
+  shock_weight: 2.0
+  break_threshold: 1.0
+  falter_threshold: 0.5
+  spread: 0.5
+
+  # Share of its morale budget a charger loses when its charge falters.
+  falter_cost: 0.15
+
+  # Added to x for these charger -> target pairings ('type' or 'type/subtype'); every matching entry adds up.
+  shock_bonus:
+    - {charger: cav, target: inf, bonus: 0.5}          # infantry fears horsemen
+    - {charger: cav/heavy, target: inf, bonus: 0.3}    # and heavy horsemen more
+    - {charger: cav, target: inf/pikes, bonus: -2.0}   # a pike hedge stops horses
+    - {charger: cav, target: art, bonus: 1.0}          # gunners caught by cavalry
+    - {charger: inf, target: art, bonus: 0.5}          # infantry rushing the guns
+    - {charger: art, target: inf, bonus: -1.0}         # gun crews make poor assault troops
+    - {charger: art, target: cav, bonus: -1.0}

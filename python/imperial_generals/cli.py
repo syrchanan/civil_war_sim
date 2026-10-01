@@ -97,6 +97,20 @@ def _status(size: int, broken: bool, broke_at=None, guns_lost: int = 0) -> str:
     return ', '.join(notes)
 
 
+CHARGE_OUTCOMES = {
+    'home': 'went home', 'faltered': 'faltered', 'defender_broke': 'broke the defender before contact',
+    'meeting': 'met head on', 'pursuit': 'pursuit', 'charger_broke': 'charger broke on the approach',
+    'target_broke': 'target broke before contact',
+}
+
+
+def _charge_text(c: dict, names: dict) -> str:
+    text = f"{names[c['charger']]} -> {names[c['target']]}: {CHARGE_OUTCOMES[c['outcome']]} at {c['resolved_at']:.0f} min"
+    if c['p_home'] is not None:
+        text += f" ({c['p_home']:.0%} to go home, {c['p_falter']:.0%} falter, {c['p_defender_breaks']:.0%} break)"
+    return text
+
+
 def _print_report(state: dict, report: dict) -> None:
     sides, names = _side_names(state), _names(state)
     side_of = {u['id']: u['side'] for u in state['units']}
@@ -107,6 +121,8 @@ def _print_report(state: dict, report: dict) -> None:
         for uid, u in report['units'].items()
     ]
     print(_table(['Unit', 'Side', 'Size', 'Lost', 'Captured', 'Inflicted', 'Morale', 'Status'], rows))
+    if report['charges']:
+        print('Charges: ' + '; '.join(_charge_text(c, names) for c in report['charges']))
     skipped = report.get('skipped_orders', {})
     if skipped:
         print('Skipped orders: ' + ', '.join(f'{uid} ({why})' for uid, why in skipped.items()))

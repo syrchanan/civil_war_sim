@@ -17,8 +17,11 @@ def rates(engagements):
     return {(e.attacker, e.target): e.rate for e in engagements}
 
 
-def battle(units, params=None):
-    return Battle(units, rng=Rng(1), params=params)
+def battle(units, params=None, contacts=()):
+    """A battle with these pairs already locked in melee (so melee rates can be read without a charge)."""
+    b = Battle(units, rng=Rng(1), params=params)
+    b.contacts = {frozenset(pair) for pair in contacts}
+    return b
 
 
 # =============================================================================
@@ -95,69 +98,6 @@ def test_matchups_round_trip_through_json():
         {'attacker': 'inf/pikes', 'target': 'cav', 'mode': 'melee', 'multiplier': 2.5}]}})
     data = json.loads(json.dumps(tuned.to_dict()))
     assert BattleParams.from_dict(data) == tuned
-
-
-# =============================================================================
-# Cavalry charge factor
-# =============================================================================
-
-CH = M.cavalry_charge
-
-
-def expected_charge(cav, inf, resolve, xp, shock):
-    steadiness = resolve * (1 - CH['veterancy_weight'] + CH['veterancy_weight'] * (xp - 1) / 9) \
-        / (1 + CH['shock_weight'] * shock)
-    factor = (cav / inf) ** CH['size_exponent'] * (1 + CH['unsteadiness_bonus'] * (1 - steadiness))
-    return min(CH['max_factor'], max(CH['min_factor'], factor))
-
-
-def test_charge_defaults_from_config():
-    assert M.cavalry_charge == get_config()['matchups']['cavalry_charge']
-
-
-@pytest.mark.parametrize("cav, inf, resolve, xp, shock", [
-    (1000, 1000, 1.0, 10, 0.0),     # even numbers, fresh veterans: no bonus
-    (500, 1000, 1.0, 10, 0.0),      # outnumbered 2:1 by steady veterans
-    (500, 1000, 1.0, 5, 0.0),       # outnumbered by fresh average infantry
-    (1000, 1000, 0.3, 2, 0.1),      # shaken green infantry
-    (5000, 100, 0.1, 1, 0.5),       # clamps at max
-    (10, 1000, 1.0, 10, 0.0),       # clamps at min
-])
-def test_charge_factor_formula(cav, inf, resolve, xp, shock):
-    assert M.charge_factor(cav, inf, resolve, xp, shock) == pytest.approx(expected_charge(cav, inf, resolve, xp, shock))
-
-
-def test_charge_is_below_one_when_outnumbered_by_cohesive_infantry():
-    assert M.charge_factor(500, 1000, 1.0, 5, 0.0) < 1.0
-    assert M.charge_factor(500, 1000, 1.0, 10, 0.0) == pytest.approx(0.5)
-    assert M.charge_factor(1000, 1000, 1.0, 10, 0.0) == pytest.approx(1.0)
-
-
-def test_shaken_or_green_infantry_is_ridden_down():
-    steady = M.charge_factor(1000, 1000, 1.0, 5, 0.0)
-    assert M.charge_factor(1000, 1000, 0.4, 5, 0.0) > steady       # low resolve
-    assert M.charge_factor(1000, 1000, 1.0, 1, 0.0) > steady       # green
-    assert M.charge_factor(1000, 1000, 1.0, 5, 0.2) > steady       # recent shock
-
-
-@pytest.mark.parametrize("charge", [
-    {'size_exponent': -1.0}, {'unsteadiness_bonus': -0.5}, {'veterancy_weight': 1.5},
-    {'shock_weight': -1.0}, {'min_factor': 2.0, 'max_factor': 1.0}, {'min_factor': -0.1},
-])
-def test_invalid_charge_params_raise(charge):
-    with pytest.raises(ValueError):
-        MatchupParams(cavalry_charge={**get_config()['matchups']['cavalry_charge'], **charge})
-
-
-def test_charge_size_exponent_other_than_one():
-    m = MatchupParams(cavalry_charge={**get_config()['matchups']['cavalry_charge'], 'size_exponent': 0.5})
-    assert m.charge_factor(250, 1000, 1.0, 10, 0.0) == pytest.approx(0.5)      # (1/4) ** 0.5
-    assert m.charge_factor(0, 1000, 1.0, 10, 0.0) == m.cavalry_charge['min_factor']
-
-
-def test_charge_params_need_every_key():
-    with pytest.raises(ValueError):
-        MatchupParams(cavalry_charge={'size_exponent': 1.0})
 
 
 def test_artillery_ammo_rates_from_config():
@@ -256,20 +196,22 @@ def test_melee_uses_subtype_rating_not_firearm():
     b = battle({'r': (0, InfantryRegiment(500, '4/5/1/0', subtype='line')),
                 's': (0, InfantryRegiment(500, '4/5/0/0', subtype='line')),
                 'x': (1, InfantryRegiment(500, '4/5/0/0', subtype='line')),
-                'y': (1, InfantryRegiment(500, '4/5/0/0', subtype='line'))})
+                'y': (1, InfantryRegiment(500, '4/5/0/0', subtype='line'))}, contacts=[('r', 'x'), ('s', 'y')])
     r = rates(b.engagements({'r': {'target': 'x', 'mode': 'melee'}, 's': {'target': 'y', 'mode': 'melee'}}))
     assert r[('r', 'x')] == r[('s', 'y')]
     assert r[('r', 'x')] == pytest.approx(
-        C.melee_kill_rate * melee_coef('4/5/1/0', M.melee_ratings['inf/line']) * 500 * 500 * M.melee['inf']['inf'])
+        C.melee_kill_rate * melee_coef('4/5/1/0', M.melee_ratings['inf/line']) * 500 * M.melee['inf']['inf'])
 
 
 def test_pikes_are_strong_in_melee_and_stronger_against_cavalry():
     b = battle({'p': (0, InfantryRegiment(500, '4/5/-2/1', subtype='pikes')),
                 'c': (1, CavalryRegiment(500, '4/5/0/1', subtype='heavy')),
                 'i': (1, InfantryRegiment(500, '4/5/0/0', subtype='line'))})
+    b.contacts = {frozenset(('p', 'c'))}
     vs_cav = rates(b.engagements({'p': {'target': 'c', 'mode': 'melee'}}))[('p', 'c')]
+    b.contacts = {frozenset(('p', 'i'))}
     vs_inf = rates(b.engagements({'p': {'target': 'i', 'mode': 'melee'}}))[('p', 'i')]
-    base = C.melee_kill_rate * melee_coef('4/5/-2/1', M.melee_ratings['inf/pikes']) * 500 * 500
+    base = C.melee_kill_rate * melee_coef('4/5/-2/1', M.melee_ratings['inf/pikes']) * 500
     assert vs_cav == pytest.approx(base * M.multiplier(('inf', 'pikes'), ('cav', 'heavy'), 'melee'))
     assert vs_inf == pytest.approx(base * M.melee['inf']['inf'])
     assert vs_cav > vs_inf
@@ -309,64 +251,19 @@ def test_losing_crew_silences_guns():
 
 def test_artillery_crews_fight_poorly_in_melee():
     b = battle({'c': (0, CavalryRegiment(120, '4/5/0/1', subtype='light')),
-                'g': (1, ArtilleryBattery(120, '4/5/0/0', guns=6, subtype='battery'))})
+                'g': (1, ArtilleryBattery(120, '4/5/0/0', guns=6, subtype='battery'))}, contacts=[('c', 'g')])
     r = rates(b.engagements({'c': {'target': 'g', 'mode': 'melee'}}))
     assert r[('g', 'c')] == pytest.approx(
-        C.melee_kill_rate * melee_coef('4/5/0/0', M.melee_ratings['art/battery']) * 120 * 120 * M.melee['art']['cav'])
+        C.melee_kill_rate * melee_coef('4/5/0/0', M.melee_ratings['art/battery']) * 120 * M.melee['art']['cav'])
     assert r[('c', 'g')] > 5 * r[('g', 'c')]
 
 
 def test_plain_regiment_counts_as_default_infantry():
-    b = battle({'a': (0, Regiment(500, '4/5/0/0')), 'c': (1, CavalryRegiment(500, '4/5/0/1', subtype='light'))})
+    b = battle({'a': (0, Regiment(500, '4/5/0/0')), 'c': (1, CavalryRegiment(500, '4/5/0/1', subtype='light'))},
+               contacts=[('a', 'c')])
     r = rates(b.engagements({'a': {'target': 'c', 'mode': 'melee'}}))
     assert r[('a', 'c')] == pytest.approx(
-        C.melee_kill_rate * melee_coef('4/5/0/0', M.melee_ratings['default']) * 500 * 500 * M.melee['inf']['cav'])
-
-
-def cav_charge_battle(cav_size=500, inf_size=1000, inf_stats='5/5/0/0'):
-    return battle({'c': (0, CavalryRegiment(cav_size, '5/5/0/1', subtype='heavy')),
-                   'i': (1, InfantryRegiment(inf_size, inf_stats, subtype='line'))})
-
-
-def test_cavalry_charge_rate_includes_charge_factor():
-    b = cav_charge_battle()
-    r = rates(b.engagements({'c': {'target': 'i', 'mode': 'melee'}}))
-    base = C.melee_kill_rate * melee_coef('5/5/0/1', M.melee_ratings['cav/heavy']) * 500 * (1000 / 1000) * 1000
-    factor = M.charge_factor(500, 1000, 1.0, 5, 0.0)
-    assert r[('c', 'i')] == pytest.approx(base * M.melee['cav']['inf'] * factor)
-    assert factor < 1.0
-
-
-def test_infantry_fighting_back_gets_no_charge_factor():
-    b = cav_charge_battle()
-    r = rates(b.engagements({'c': {'target': 'i', 'mode': 'melee'}}))
-    assert r[('i', 'c')] == pytest.approx(
-        C.melee_kill_rate * melee_coef('5/5/0/0', M.melee_ratings['inf/line']) * 1000 * 500 * M.melee['inf']['cav'])
-
-
-def test_no_charge_factor_when_infantry_initiates_the_melee():
-    b = cav_charge_battle()
-    charged = rates(b.engagements({'c': {'target': 'i', 'mode': 'melee'}}))[('c', 'i')]
-    defending = rates(b.engagements({'i': {'target': 'c', 'mode': 'melee'}}))[('c', 'i')]
-    assert defending == pytest.approx(charged / M.charge_factor(500, 1000, 1.0, 5, 0.0))
-
-
-def test_charge_grows_as_the_infantry_is_shaken():
-    b = cav_charge_battle(cav_size=1000)
-    fresh = rates(b.engagements({'c': {'target': 'i', 'mode': 'melee'}}))[('c', 'i')]
-    inf_morale = b.units['i'].morale
-    for _ in range(100):
-        inf_morale.take_loss(firing_back=True)          # spend resolve and pile up shock
-    shaken = rates(b.engagements({'c': {'target': 'i', 'mode': 'melee'}}))[('c', 'i')]
-    assert shaken > fresh
-
-
-def test_charge_factor_only_applies_to_infantry_targets():
-    b = battle({'c': (0, CavalryRegiment(500, '5/5/0/1', subtype='heavy')),
-                'g': (1, ArtilleryBattery.standard('5/5/0/0', subtype='battery'))})
-    r = rates(b.engagements({'c': {'target': 'g', 'mode': 'melee'}}))
-    assert r[('c', 'g')] == pytest.approx(
-        C.melee_kill_rate * melee_coef('5/5/0/1', M.melee_ratings['cav/heavy']) * 500 * 72 * M.melee['cav']['art'])
+        C.melee_kill_rate * melee_coef('4/5/0/0', M.melee_ratings['default']) * 500 * M.melee['inf']['cav'])
 
 
 def test_standard_battery_is_8_guns_of_9_crew():

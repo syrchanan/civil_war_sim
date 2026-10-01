@@ -138,6 +138,16 @@ class MoraleState:
         if not self.broken:
             self.resolve = min(1.0, self.resolve + self.params.gain_weight / enemy_initial_size)
 
+    def shake(self, cost: float) -> None:
+        """Spend ``cost`` of the morale budget at once (e.g. a charge that falters)."""
+        if not self.broken:
+            self._spend(cost)
+
+    def force_break(self) -> None:
+        """Break at once (e.g. routed by a charge before contact)."""
+        self.resolve = 0.0
+        self.broken = True
+
     def _spend(self, amount: float) -> None:
         self.resolve -= amount
         if self.resolve <= _BREAK_EPSILON:

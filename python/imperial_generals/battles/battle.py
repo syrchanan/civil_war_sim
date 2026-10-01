@@ -5,14 +5,20 @@ Each round every regiment gets one order: a target and a mode (ranged / melee / 
 graph: at most one outgoing arrow per unit (its target), any number of incoming arrows (its attackers).
 
 - Ranged fire is one-way along the arrow.
-- Melee is mutual and forcing: a melee order creates a two-way contact, and a unit in any contact fights only in
-  melee (its ranged order waits).
+- Melee is mutual and forcing: a contact is two-way, and a unit in any contact fights only in melee (its ranged
+  order waits).
 - In melee, exposure is the whole front and fighting strength is divided: each attacker hits the defender's full
   front, while a unit's own fighters are split across its contacts in proportion to their fronts.
 
+- A melee order on a unit not already in contact is a charge: the charger crosses the last stretch under the
+  target's close-range fire, then a contact test decides whether it goes home, falters, or the defender breaks
+  before contact. Contact persists across rounds while either unit keeps a melee order on the other.
+- Melee casualties scale with the width in contact: min(attacker's men facing the target, target's front).
+
 All arrows run in one continuous-time Markov chain: the next casualty arrives after Exp(sum of rates), and the
-arrow that caused it is chosen by a uniform draw weighted by rate. Arrows are ordered by (target, attacker) in
-unit order, so a one-on-one battle draws exactly like ``Simulation``.
+arrow that caused it is chosen by a uniform draw weighted by rate. Approaches end at fixed times; the chain
+simply restarts there (it is memoryless). Arrows are ordered by (target, attacker) in unit order, so a
+one-on-one ranged battle draws exactly like ``Simulation``.
 """
 
 import json
@@ -72,6 +78,27 @@ class Engagement:
 
 
 @dataclass(frozen=True)
+class Charge:
+    """
+    A melee order on a unit not already in contact, and how it ended.
+
+    ``outcome``: 'home' (contact), 'faltered' (the charger stood down, shaken), 'defender_broke' (before contact),
+    'meeting' (two units charging each other: contact, no test), 'pursuit' (the target was already broken:
+    contact at once), 'charger_broke' / 'target_broke' (on the approach, from fire). The odds are those of the
+    contact test, when one was rolled.
+    """
+
+    charger: str
+    target: str
+    start: float
+    resolved_at: float
+    outcome: str
+    p_defender_breaks: float | None = None
+    p_falter: float | None = None
+    p_home: float | None = None
+
+
+@dataclass(frozen=True)
 class CasualtyEvent:
     time: float
     attacker: str
@@ -101,6 +128,7 @@ class RoundReport:
     prisoners: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> prisoners taken this round
     guns_captured: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> enemy guns taken this round
     orders: dict = field(default_factory=dict)   # uid -> {'target', 'mode', 'ammo'} for units that acted
+    charges: tuple = ()         # Charge per charge made this round
 
 
 @dataclass(frozen=True)
@@ -215,6 +243,7 @@ class Battle:
         self.prisoners: dict[int, int] = {0: 0, 1: 0}
         self.guns_captured: dict[int, int] = {0: 0, 1: 0}
         self.finished: bool = False
+        self.contacts: set[frozenset] = set()       # pairs of unit ids locked in melee, carried across rounds
         self.result: BattleResult | None = None      # set by finish()
         self._broken_before_round: set[str] = set()
 
@@ -254,65 +283,117 @@ class Battle:
             valid[uid] = order
         return valid
 
-    def _plan(self, orders: dict[str, Order], cancelled: set) -> tuple:
-        """
-        The arrow structure for validated orders, minus attackers stood down this round.
+    def _can_fire(self, unit: BattleUnit) -> bool:
+        """Has firearms (the stats melee-only flag decides, not the subtype)."""
+        return self.params.combat.unit_coef(unit.regiment.stats, 'ranged') > 0
 
-        Returns ``(slots, contacts)``: ``slots`` are ``(attacker, target, mode)`` sorted by (target, attacker) in
-        unit order; ``contacts`` maps each unit in melee to its contact partners. The structure only changes when a
-        unit breaks or is wiped out, so the round loop rebuilds it then and otherwise just recomputes rates.
+    def _round_contacts(self, orders: dict[str, Order]) -> set:
+        """Contacts carried into this round: pairs still joined by a melee order, either way round."""
+        melee = {frozenset((uid, o.target)) for uid, o in orders.items() if o.mode == 'melee'}
+        return {pair for pair in self.contacts if pair in melee}
+
+    def _new_charges(self, orders: dict[str, Order], contacts: set, start: float, duration: float) -> tuple:
+        """
+        Charges made by melee orders on units not already in contact: ``(pending, immediate)``.
+
+        ``pending`` approaches end with a contact test (or, for two units charging each other, a meeting).
+        Charging a broken unit is pursuit: contact at once, recorded in ``immediate`` and added to ``contacts``.
+        """
+        units = self.units
+        approach = self.params.charge.approach_minutes
+        pending, immediate, seen = [], [], set()
+        for uid in sorted(orders, key=lambda u: units[u].index):
+            order = orders[uid]
+            pair = frozenset((uid, order.target))
+            if order.mode != 'melee' or pair in contacts or pair in seen:
+                continue
+            seen.add(pair)
+            target = units[order.target]
+            if not target.active:
+                contacts.add(pair)
+                immediate.append(Charge(uid, order.target, start, start, 'pursuit'))
+                continue
+            reply = orders.get(order.target)
+            meeting = reply is not None and reply.mode == 'melee' and reply.target == uid
+            minutes = approach[units[uid].key[0]]
+            if meeting:
+                minutes = min(minutes, approach[target.key[0]])
+            pending.append({'charger': uid, 'target': order.target, 'end': start + min(minutes, duration),
+                            'meeting': meeting})
+        return pending, immediate
+
+    def _plan(self, orders: dict[str, Order], cancelled: set, contacts: set, pending: list) -> tuple:
+        """
+        The arrow structure for this moment of the round.
+
+        Returns ``(slots, partners)``: ``slots`` are ``(attacker, target, mode, matchup, share, gun_rate)`` sorted
+        by (target, attacker) in unit order; ``partners`` maps each unit in melee contact to its contacts.
+        - Melee: both ways along every contact (a broken unit doesn't fight back).
+        - Closing fire: a target fires on the units charging it (split between them) unless it is itself charging,
+          locked in melee, or can't fire. Batteries switch to the closing ammo.
+        - Ranged: units not in contact, not charging and not meeting a charge fire their orders.
+        The structure only changes when a unit breaks or is wiped out, or a charge is decided, so the round loop
+        rebuilds it then and otherwise just recomputes rates.
         """
         units = self.units
         combat = self.params.combat
-        live = {
-            uid: order for uid, order in orders.items()
-            if uid not in cancelled and units[uid].active and units[order.target].size > 0
-        }
-
-        # melee contacts are mutual: a charge puts both units in contact with each other
-        contacts: dict[str, list[str]] = {}
-        for uid, order in live.items():
-            if order.mode == 'melee':
-                for a, b in ((uid, order.target), (order.target, uid)):
-                    partners = contacts.setdefault(a, [])
-                    if b not in partners:
-                        partners.append(b)
-
         matchups = self.params.matchups
+        order_key = lambda u: units[u].index     # noqa: E731
+
+        partners: dict[str, list[str]] = {}
+        for pair in contacts:
+            a, b = sorted(pair, key=order_key)
+            partners.setdefault(a, []).append(b)
+            partners.setdefault(b, []).append(a)
+        for p in partners.values():
+            p.sort(key=order_key)
+
         slots = []
-        for uid, partners in contacts.items():
+        for uid, ps in partners.items():
             unit = units[uid]
-            # a broken unit in contact doesn't fight back
             if unit.active and unit.melee_rating > 0:
-                order = live.get(uid)
-                for p in partners:
-                    # a cavalry charge: cavalry whose own melee order targets this infantry unit
-                    charge = (unit.key[0] == 'cav' and units[p].key[0] == 'inf'
-                              and order is not None and order.mode == 'melee' and order.target == p)
-                    slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'),
-                                  charge, None))
-        for uid, order in live.items():
-            # a unit in melee doesn't fire its ranged order; a melee-only unit (stats flag) can't fire at all
-            if order.mode == 'ranged' and uid not in contacts \
-                    and combat.unit_coef(units[uid].regiment.stats, 'ranged') > 0:
+                for p in ps:
+                    slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'), 1.0, None))
+
+        charging = {c['charger'] for c in pending}
+        closing_on: dict[str, list[str]] = {}
+        for c in pending:
+            if not c['meeting']:
+                closing_on.setdefault(c['target'], []).append(c['charger'])
+        for target_id, chargers in closing_on.items():
+            target = units[target_id]
+            if target.active and target_id not in partners and target_id not in charging and self._can_fire(target):
+                gun_rate = None
+                if isinstance(target.regiment, ArtilleryBattery):
+                    gun_rate = combat.artillery_ammo[self.params.charge.battery_closing_ammo]
+                for charger in chargers:
+                    slots.append((target_id, charger, 'closing',
+                                  matchups.multiplier(target.key, units[charger].key, 'ranged'),
+                                  1.0 / len(chargers), gun_rate))
+
+        for uid, order in orders.items():
+            unit = units[uid]
+            if (order.mode == 'ranged' and uid not in cancelled and unit.active and units[order.target].size > 0
+                    and uid not in partners and uid not in charging and uid not in closing_on
+                    and self._can_fire(unit)):
                 # artillery: per-gun rate of the ordered ammo, fixed for the round
                 gun_rate = None
-                if isinstance(units[uid].regiment, ArtilleryBattery):
+                if isinstance(unit.regiment, ArtilleryBattery):
                     gun_rate = combat.artillery_ammo[order.ammo or combat.artillery_default_ammo]
                 slots.append((uid, order.target, 'ranged',
-                              matchups.multiplier(units[uid].key, units[order.target].key, 'ranged'),
-                              False, gun_rate))
+                              matchups.multiplier(unit.key, units[order.target].key, 'ranged'), 1.0, gun_rate))
 
         slots.sort(key=lambda s: (units[s[1]].index, units[s[0]].index))
-        return slots, contacts
+        return slots, partners
 
-    def _rates(self, slots: list, contacts: dict) -> list:
+    def _rates(self, slots: list, partners: dict) -> list:
         """Current ``(attacker, target, mode, rate)`` for each slot with a positive rate."""
         units = self.units
         combat = self.params.combat
-        total_fronts = {uid: sum(units[p].front for p in partners) for uid, partners in contacts.items()}
+        closing = self.params.charge.closing_fire_multiplier
+        total_fronts = {uid: sum(units[p].front for p in ps) for uid, ps in partners.items()}
         arrows = []
-        for attacker, target, mode, matchup, charge, gun_rate in slots:
+        for attacker, target, mode, matchup, share, gun_rate in slots:
             unit = units[attacker]
             stats = unit.regiment.stats
             if mode == 'melee':
@@ -321,16 +402,12 @@ class Battle:
                     continue
                 # melee strength from the subtype's rating, not the firearm
                 c = combat.melee_efficiency(stats[0], stats[1], unit.melee_rating)
-                if charge:
-                    # depends on the infantry's current resolve, shock and numbers, so evaluated per event
-                    inf = units[target]
-                    matchup = matchup * self.params.matchups.charge_factor(
-                        unit.size, inf.size, inf.morale.resolve, inf.regiment.stats[0], inf.morale.shock)
                 front_t = units[target].front
-                # fighters split in proportion to contact fronts; the target is exposed along its whole front
-                rate = combat.melee_kill_rate * c * unit.front * (front_t / total_front) * front_t * matchup
+                # fighters split in proportion to contact fronts; casualties scale with the width in contact
+                fighters = unit.front * (front_t / total_front)
+                rate = combat.melee_kill_rate * c * min(fighters, front_t) * matchup
             elif gun_rate is not None:
-                # artillery fires per manned gun, at the rate of the ammo it was ordered to use
+                # artillery fires per manned gun, at the rate of its ammo
                 c = combat.unit_coef(stats, 'ranged')
                 rate = c * unit.regiment.effective_guns * gun_rate * matchup
             else:
@@ -338,13 +415,21 @@ class Battle:
                 # (coef * size) * kill_rate first: same operation order as Simulation, for bit-identical
                 # 1-v-1 draws (the infantry-v-infantry matchup is 1.0, an exact multiply)
                 rate = c * unit.size * combat.ranged_kill_rate * matchup
+            if mode == 'closing':
+                rate = rate * closing * share
             if rate > 0:
                 arrows.append((attacker, target, mode, rate))
         return arrows
 
     def engagements(self, orders: dict) -> tuple:
-        """Preview the arrows and their current casualty rates for these orders (no dice rolled)."""
-        return tuple(Engagement(*a) for a in self._rates(*self._plan(self._validate_orders(orders), set())))
+        """
+        Preview the arrows and their current casualty rates for these orders at the start of a round (no dice
+        rolled): melee along existing contacts, closing fire on new charges, ranged fire.
+        """
+        valid = self._validate_orders(orders)
+        contacts = self._round_contacts(valid)
+        pending, _ = self._new_charges(valid, contacts, self.time, float('inf'))
+        return tuple(Engagement(*a) for a in self._rates(*self._plan(valid, set(), contacts, pending)))
 
     # -------------------------------------------------------------------------
     # Rounds
@@ -388,17 +473,18 @@ class Battle:
             guns[1 - unit.side] += lost
             self.guns_captured[1 - unit.side] += lost
 
-    def _rout(self, gone: set, arrows: list, prisoners: dict, guns: dict) -> None:
+    def _rout(self, gone: set, arrows: list, prisoners: dict, guns: dict, cavalry_charged: set = frozenset()) -> None:
         """
-        Take prisoners from units that just broke (more if enemy cavalry is attacking them). A breaking battery
-        escapes with only the guns its remaining crew can man; the rest are captured.
+        Take prisoners from units that just broke (more if enemy cavalry is attacking them, or broke them with a
+        charge). A breaking battery escapes with only the guns its remaining crew can man; the rest are captured.
         """
         after = self.params.aftermath
         for uid in sorted(gone, key=lambda u: self.units[u].index):
             unit = self.units[uid]
             if not unit.morale.broken or unit.size == 0:
                 continue
-            cavalry = any(a[1] == uid and isinstance(self.units[a[0]].regiment, CavalryRegiment) for a in arrows)
+            cavalry = uid in cavalry_charged or any(
+                a[1] == uid and isinstance(self.units[a[0]].regiment, CavalryRegiment) for a in arrows)
             mean = min(1.0, after.rout_capture_share * (after.cavalry_capture_multiplier if cavalry else 1.0))
             taken = self._draw_count(mean, unit.size)
             unit.regiment.update_size(unit.size - taken)
@@ -408,13 +494,30 @@ class Battle:
             if isinstance(unit.regiment, ArtilleryBattery):
                 self._lose_guns(unit, unit.regiment.effective_guns, guns)
 
+    def _contact_test(self, charge: dict) -> tuple:
+        """Roll the contact test for a charge at the end of its approach: ``(outcome, odds)``."""
+        ch = self.params.charge
+        a, x = self.units[charge['charger']], self.units[charge['target']]
+        s_a = ch.steadiness(a.morale.resolve, a.regiment.stats[0], a.morale.shock)
+        s_x = ch.steadiness(x.morale.resolve, x.regiment.stats[0], x.morale.shock)
+        odds = ch.odds(ch.pressure(a.size, x.size, s_a, s_x, ch.bonus(a.key, x.key)))
+        u = self.rng.random()
+        if u < odds[0]:
+            return 'defender_broke', odds
+        if u < odds[0] + odds[1]:
+            return 'faltered', odds
+        return 'home', odds
+
     def resolve_round(self, duration: float, orders: dict, record_events: bool = False) -> RoundReport:
         """
         Fight one round of ``duration`` game minutes under ``orders`` and return its report.
 
-        Units left out of ``orders`` are idle. When a unit breaks or is wiped out, the units targeting it stand down
-        for the rest of the round. A unit that breaks loses a share of its remaining men as prisoners (more if
-        enemy cavalry is attacking it). Broken units can be targeted (pursued) but don't fight back.
+        Units left out of ``orders`` are idle. A melee order on a unit not already in contact is a charge: an
+        approach under the target's close-range fire, then a contact test (goes home, falters, or the defender
+        breaks); see ``config/charge.yaml``. Contact persists into later rounds while either unit keeps a melee
+        order on the other. When a unit breaks or is wiped out, the units targeting it stand down for the rest
+        of the round. A unit that breaks loses a share of its remaining men as prisoners (more if enemy cavalry
+        is attacking it). Broken units can be attacked (pursued) but don't fight back.
         """
         if self.finished:
             raise RuntimeError("This battle is finished.")
@@ -432,33 +535,76 @@ class Battle:
         broke_at: dict[str, float] = {}
         cancelled: set[str] = set()
         events = []
-        slots, contacts = self._plan(valid, cancelled)
-        opening = tuple(Engagement(*a) for a in self._rates(slots, contacts))
+        contacts = self._round_contacts(valid)
+        pending, immediate = self._new_charges(valid, contacts, start, duration)
+        charges = list(immediate)
+        slots, partners = self._plan(valid, cancelled, contacts, pending)
+        opening = tuple(Engagement(*a) for a in self._rates(slots, partners))
+
+        def stand_down(gone: set, t: float) -> None:
+            """Units that broke or were wiped out: their attackers stand down, contacts and approaches end."""
+            cancelled.update(uid for uid, order in valid.items() if order.target in gone)
+            contacts.difference_update([pair for pair in contacts if pair & gone])
+            for c in [c for c in pending if c['charger'] in gone or c['target'] in gone]:
+                pending.remove(c)
+                outcome = 'charger_broke' if c['charger'] in gone else 'target_broke'
+                charges.append(Charge(c['charger'], c['target'], start, t, outcome))
 
         t = start
         while t < end:
-            arrows = self._rates(slots, contacts)
+            arrows = self._rates(slots, partners)
             total_rate = 0.0
             engaged = set()
             attackers = set()
-            for attacker_id, target_id, _, rate in arrows:
+            for attacker_id, target_id, mode, rate in arrows:
                 total_rate += rate
                 attackers.add(attacker_id)
                 engaged.add(attacker_id)
                 engaged.add(target_id)
 
-            if total_rate == 0:
-                self._advance(end - t, engaged)
-                t = end
-                break
-
-            dt = self.rng.exponential(total_rate)
-            if t + dt >= end:
-                self._advance(end - t, engaged)
-                self._sync(engaged)
-                t = end
-                self._rout(self._newly_broken(engaged, broke_at, t), arrows, prisoners, guns)
-                break
+            # the next scheduled moment: the round's end, or the end of an approach
+            horizon = min([end] + [c['end'] for c in pending])
+            dt = self.rng.exponential(total_rate) if total_rate > 0 else None
+            if dt is None or t + dt >= horizon:
+                self._advance(horizon - t, engaged)
+                if dt is not None:
+                    self._sync(engaged)
+                t = horizon
+                gone = self._newly_broken(engaged, broke_at, t)
+                self._rout(gone, arrows, prisoners, guns)
+                if gone:
+                    stand_down(gone, t)
+                due = [c for c in pending if c['end'] <= t]
+                for c in due:
+                    pending.remove(c)
+                    pair = frozenset((c['charger'], c['target']))
+                    if c['meeting']:
+                        contacts.add(pair)
+                        charges.append(Charge(c['charger'], c['target'], start, t, 'meeting'))
+                        continue
+                    outcome, odds = self._contact_test(c)
+                    charges.append(Charge(c['charger'], c['target'], start, t, outcome, *odds))
+                    charger, target = self.units[c['charger']], self.units[c['target']]
+                    cavalry_charged = set()
+                    if outcome == 'home':
+                        contacts.add(pair)
+                    elif outcome == 'faltered':
+                        cancelled.add(charger.uid)
+                        charger.morale.shake(self.params.charge.falter_cost)
+                    else:
+                        target.morale.force_break()
+                        if isinstance(charger.regiment, CavalryRegiment):
+                            cavalry_charged.add(target.uid)
+                    self._sync((charger.uid, target.uid))
+                    gone = self._newly_broken((charger.uid, target.uid), broke_at, t)
+                    self._rout(gone, arrows, prisoners, guns, cavalry_charged)
+                    if outcome == 'defender_broke' and isinstance(target.regiment, ArtilleryBattery):
+                        self._lose_guns(target, 0, guns)        # overrun where it stands: no time to limber up
+                    if gone:
+                        stand_down(gone, t)
+                if gone or due:
+                    slots, partners = self._plan(valid, cancelled, contacts, pending)
+                continue
 
             # weighted pick of the arrow that caused this casualty
             pick = self.rng.random() * total_rate
@@ -494,9 +640,11 @@ class Battle:
                 if isinstance(victim.regiment, ArtilleryBattery):
                     self._lose_guns(victim, 0, guns)            # overrun: no crew left, every gun is taken
             if gone:
-                cancelled.update(uid for uid, order in valid.items() if order.target in gone)
-                slots, contacts = self._plan(valid, cancelled)
+                stand_down(gone, t)
+                slots, partners = self._plan(valid, cancelled, contacts, pending)
 
+        # contacts carry over only between units that are both still standing
+        self.contacts = {pair for pair in contacts if all(self.units[u].active for u in pair)}
         self.time = end
         report = RoundReport(
             round=self.round,
@@ -520,6 +668,7 @@ class Battle:
             prisoners=prisoners,
             guns_captured=guns,
             orders={uid: {'target': o.target, 'mode': o.mode, 'ammo': o.ammo} for uid, o in valid.items()},
+            charges=tuple(charges),
         )
         self.history.append(report)
         return report
