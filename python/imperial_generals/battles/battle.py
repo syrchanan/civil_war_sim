@@ -322,7 +322,8 @@ class Battle:
                             'meeting': meeting})
         return pending, immediate
 
-    def _plan(self, orders: dict[str, Order], cancelled: set, contacts: set, pending: list) -> tuple:
+    def _plan(self, orders: dict[str, Order], cancelled: set, contacts: set, pending: list,
+              withdrawn: frozenset = frozenset()) -> tuple:
         """
         The arrow structure for this moment of the round.
 
@@ -331,7 +332,8 @@ class Battle:
         - Melee: both ways along every contact (a broken unit doesn't fight back).
         - Closing fire: a target fires on the units charging it (split between them) unless it is itself charging,
           locked in melee, or can't fire. Batteries switch to the closing ammo.
-        - Ranged: units not in contact, not charging and not meeting a charge fire their orders.
+        - Ranged: units not in contact, not charging and not meeting a charge fire their orders. Units in
+          ``withdrawn`` (a charge that faltered fell back beyond musket range) can only be reached by artillery.
         The structure only changes when a unit breaks or is wiped out, or a charge is decided, so the round loop
         rebuilds it then and otherwise just recomputes rates.
         """
@@ -373,9 +375,10 @@ class Battle:
 
         for uid, order in orders.items():
             unit = units[uid]
+            out_of_reach = order.target in withdrawn and not isinstance(unit.regiment, ArtilleryBattery)
             if (order.mode == 'ranged' and uid not in cancelled and unit.active and units[order.target].size > 0
                     and uid not in partners and uid not in charging and uid not in closing_on
-                    and self._can_fire(unit)):
+                    and not out_of_reach and self._can_fire(unit)):
                 # artillery: per-gun rate of the ordered ammo, fixed for the round
                 gun_rate = None
                 if isinstance(unit.regiment, ArtilleryBattery):
@@ -514,9 +517,10 @@ class Battle:
 
         Units left out of ``orders`` are idle. A melee order on a unit not already in contact is a charge: an
         approach under the target's close-range fire, then a contact test (goes home, falters, or the defender
-        breaks); see ``config/charge.yaml``. Contact persists into later rounds while either unit keeps a melee
-        order on the other. When a unit breaks or is wiped out, the units targeting it stand down for the rest
-        of the round. A unit that breaks loses a share of its remaining men as prisoners (more if enemy cavalry
+        breaks); see ``config/charge.yaml``. A charge that falters falls back beyond musket range for the rest of
+        the round: only artillery can still reach it. Contact persists into later rounds while either unit keeps
+        a melee order on the other. When a unit breaks or is wiped out, the units targeting it stand down for the
+        rest of the round. A unit that breaks loses a share of its remaining men as prisoners (more if enemy cavalry
         is attacking it). Broken units can be attacked (pursued) but don't fight back.
         """
         if self.finished:
@@ -534,11 +538,12 @@ class Battle:
         self._broken_before_round = {uid for uid, u in self.units.items() if u.morale.broken}
         broke_at: dict[str, float] = {}
         cancelled: set[str] = set()
+        withdrawn: set[str] = set()      # faltered chargers, fallen back beyond musket range for the round
         events = []
         contacts = self._round_contacts(valid)
         pending, immediate = self._new_charges(valid, contacts, start, duration)
         charges = list(immediate)
-        slots, partners = self._plan(valid, cancelled, contacts, pending)
+        slots, partners = self._plan(valid, cancelled, contacts, pending, frozenset(withdrawn))
         opening = tuple(Engagement(*a) for a in self._rates(slots, partners))
 
         def stand_down(gone: set, t: float) -> None:
@@ -590,6 +595,7 @@ class Battle:
                         contacts.add(pair)
                     elif outcome == 'faltered':
                         cancelled.add(charger.uid)
+                        withdrawn.add(charger.uid)
                         charger.morale.shake(self.params.charge.falter_cost)
                     else:
                         target.morale.force_break()
@@ -603,7 +609,7 @@ class Battle:
                     if gone:
                         stand_down(gone, t)
                 if gone or due:
-                    slots, partners = self._plan(valid, cancelled, contacts, pending)
+                    slots, partners = self._plan(valid, cancelled, contacts, pending, frozenset(withdrawn))
                 continue
 
             # weighted pick of the arrow that caused this casualty
@@ -641,7 +647,7 @@ class Battle:
                     self._lose_guns(victim, 0, guns)            # overrun: no crew left, every gun is taken
             if gone:
                 stand_down(gone, t)
-                slots, partners = self._plan(valid, cancelled, contacts, pending)
+                slots, partners = self._plan(valid, cancelled, contacts, pending, frozenset(withdrawn))
 
         # contacts carry over only between units that are both still standing
         self.contacts = {pair for pair in contacts if all(self.units[u].active for u in pair)}

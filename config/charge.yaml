@@ -38,7 +38,8 @@ charge:
   falter_threshold: 0.5
   spread: 0.5
 
-  # Share of its morale budget a charger loses when its charge falters.
+  # Share of its morale budget a charger loses when its charge falters. It then falls back beyond musket
+  # range for the rest of the round: only artillery can still reach it.
   falter_cost: 0.15
 
   # Added to x for these charger -> target pairings ('type' or 'type/subtype'); every matching entry adds up.
