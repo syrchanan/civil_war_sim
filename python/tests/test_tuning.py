@@ -340,3 +340,36 @@ def test_heatmap_title_names_the_facet(tmp_path):
     grid = tuning.matchup_grid(GRID, mode='melee', seeds=2)
     tuning.plot_matchups(grid, tmp_path / 'm.png')
     assert (tmp_path / 'm.png').exists()
+
+
+# =============================================================================
+# Artillery at long range: only other batteries can reply
+# =============================================================================
+
+def test_artillery_facet_scenarios():
+    battery_v_line = tuning.matchup_scenario(GRID, 'battery', 'line', mode='artillery')
+    assert battery_v_line['rounds'][0]['orders'] == {
+        'attacker': {'target': 'defender', 'mode': 'ranged', 'ammo': 'canister'}}     # unreturned fire
+    battery_v_battery = tuning.matchup_scenario(GRID, 'battery', 'battery', mode='artillery')
+    assert battery_v_battery['rounds'][0]['orders']['defender'] == {'target': 'attacker', 'mode': 'ranged'}
+
+
+def test_artillery_facet_grid_has_artillery_rows_only():
+    grid = tuning.matchup_grid(GRID, mode='artillery', seeds=3)
+    assert grid.attackers == ['battery'] and grid.keys == ['line', 'heavy_cav', 'battery']
+    assert set(grid.cells) == {('battery', d) for d in grid.keys}
+    assert [r['attacker'] for r in grid.rows()] == ['battery'] * 3
+    for d in ('line', 'heavy_cav'):
+        assert grid.cells[('battery', d)]['attacker_hit_share'] == 0
+    assert tuning.matchup_grid(GRID, mode='ranged', seeds=2).attackers == grid.keys
+
+
+def test_artillery_facet_needs_artillery():
+    spec = {**GRID, 'units': {'line': GRID['units']['line']}}
+    with pytest.raises(ValueError, match='artillery'):
+        tuning.matchup_grid(spec, mode='artillery')
+
+
+def test_artillery_heatmap(tmp_path):
+    tuning.plot_matchups(tuning.matchup_grid(GRID, mode='artillery', seeds=2), tmp_path / 'a.png')
+    assert (tmp_path / 'a.png').exists()

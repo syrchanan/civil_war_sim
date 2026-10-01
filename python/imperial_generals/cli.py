@@ -326,18 +326,23 @@ def _cmd_batch(args) -> None:
 
 def _print_matrix(title: str, grid, metric: str, fmt) -> None:
     print(title)
-    rows = [[a] + [fmt(grid.cells[(a, d)][metric]) for d in grid.keys] for a in grid.keys]
+    rows = [[a] + [fmt(grid.cells[(a, d)][metric]) for d in grid.keys] for a in grid.attackers]
     print(_table(['attacker \\ defender'] + grid.keys, rows, left=1, notes=False))
     print()
 
 
-FACET_TITLES = {'orders': 'orders from the file', 'ranged': 'ranged', 'melee': 'melee'}
+FACET_TITLES = {'orders': 'orders from the file', 'ranged': 'ranged', 'melee': 'melee',
+                'artillery': 'artillery at long range'}
 
 
 def _cmd_matchups(args) -> None:
     spec = load_setup_file(args.grid)
     overrides = _load_overrides(args.params)
-    modes = ['ranged', 'melee'] if args.mode == 'both' else [args.mode]
+    modes = [args.mode]
+    if args.mode == 'all':
+        modes = ['ranged', 'melee']
+        if any(isinstance(u, dict) and u.get('type') == 'art' for u in (spec or {}).get('units', {}).values()):
+            modes.append('artillery')
     grids = [tuning.matchup_grid(spec, seeds=args.seeds, overrides=overrides, mode=mode,
                                  workers=args.workers or tuning.default_workers()) for mode in modes]
     if args.csv:
@@ -429,9 +434,9 @@ def _parser() -> argparse.ArgumentParser:
                    choices=['advantage', 'attacker_wins', 'defender_wins', 'attacker_breaks', 'defender_breaks',
                             'attacker_hit_share', 'defender_hit_share'],
                    help='heatmap metric (default advantage)')
-    p.add_argument('--mode', default='both', choices=['both', 'ranged', 'melee', 'orders'],
-                   help='both (default): a ranged grid and a melee grid; ranged or melee: just that one; '
-                        'orders: the attack / defend orders from the file')
+    p.add_argument('--mode', default='all', choices=['all', 'ranged', 'melee', 'artillery', 'orders'],
+                   help='all (default): ranged, melee and (with artillery in the file) artillery at long range; '
+                        'or one of them; orders: the attack / defend orders from the file')
     p.add_argument('--json', action='store_true', help='print the cells as JSON')
     p.set_defaults(run=_cmd_matchups)
 
