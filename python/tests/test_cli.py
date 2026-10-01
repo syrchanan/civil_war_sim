@@ -471,3 +471,45 @@ def test_calibration_scenarios_are_valid():
     assert len(paths) >= 2
     for path in paths:
         assert validation.check(load_setup_file(path), seeds=1)['total'] >= 1
+
+
+# =============================================================================
+# Player spreadsheets
+# =============================================================================
+
+def test_sheet_template_and_import(tmp_path, capsys):
+    import os
+    example = os.path.join(os.path.dirname(__file__), '../../scenarios/example_ridge.yaml')
+    code, out, _ = run(capsys, 'sheet-template', tmp_path / 'blank.xlsx')
+    assert code == 0 and (tmp_path / 'blank.xlsx').exists() and 'blank.xlsx' in out
+    code, out, _ = run(capsys, 'sheet-template', tmp_path / 'ridge.xlsx', '--from', example)
+    assert code == 0 and 'filled from example_ridge.yaml' in out
+    code, out, _ = run(capsys, 'sheet-import', tmp_path / 'ridge.xlsx')
+    assert code == 0 and 'ridge.yaml' in out and '7 units, 3 rounds' in out
+    scenario = load_setup_file(tmp_path / 'ridge.yaml')
+    assert scenario['units'] == load_setup_file(example)['units']
+    code, _, _ = run(capsys, 'sheet-import', tmp_path / 'ridge.xlsx', '-o', tmp_path / 'other.yaml')
+    assert code == 0 and (tmp_path / 'other.yaml').exists()
+
+
+def test_sheet_import_lists_problems(tmp_path, capsys):
+    (tmp_path / 'junk.xlsx').write_text('not a workbook', encoding='utf-8')
+    code, _, err = run(capsys, 'sheet-import', tmp_path / 'junk.xlsx')
+    assert code == 2 and "Problems in junk.xlsx:" in err and "isn't an Excel workbook" in err
+
+
+def test_check_reads_workbooks_and_summarises_feedback(tmp_path, capsys):
+    from imperial_generals import sheets, validation
+    from test_sheets import BATTLE, FEEDBACK, ORDERS, UNITS, fill
+    stamp = validation.engine_stamp()
+    feedback = [(FEEDBACK[0][0], stamp) + FEEDBACK[0][2:], FEEDBACK[1]]
+    path = fill(tmp_path / 'player.xlsx', BATTLE, UNITS, ORDERS, feedback)
+    code, out, _ = run(capsys, 'check', path, '--seeds', 4, '--workers', 1, '--report', tmp_path / 'r.md')
+    assert code == 0
+    assert 'Cemetery Ridge: expectations by Jane' in out
+    assert 'Player feedback (2 responses; 1 about an older engine version):' in out
+    assert 'casualties: too heavy 1, about right 1' in out
+    assert 'right side favoured: yes 1, unsure 1' in out
+    md = (tmp_path / 'r.md').read_text(encoding='utf-8')
+    assert 'Player feedback (2 responses' in md and 'Jane: bloody' in md
+    assert sheets

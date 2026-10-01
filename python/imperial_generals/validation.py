@@ -232,4 +232,5 @@ def check(scenario: dict, seeds: int | None = None, seed_start: int = 0, workers
         'name': batch.name, 'seeds': n, 'engine': engine_stamp(), 'author': exp['author'],
         'source': exp['source'], 'confidence': exp['confidence'], 'notes': exp['notes'],
         'expectations': results, 'agree': sum(r['verdict'] == 'agrees' for r in graded), 'total': len(graded),
+        'feedback': list(scenario.get('feedback') or []),
     }
