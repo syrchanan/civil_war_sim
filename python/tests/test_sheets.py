@@ -35,10 +35,10 @@ BATTLE = {
 UNITS = [
     # id, name, side, type, subtype, men, guns, experience, morale, weapon, melee only, should it break
     ('us_1mn', '1st Minnesota', 'A', 'infantry', 'line', 900, None, 6, 6, 'rifled musket', 'no', 'no'),
-    ('us_bat', 'Battery B', 'A', 'artillery', 'battery', None, None, 5, 5, 'smoothbore musket', 'no', None),
+    ('us_bat', 'Battery B', 'A', 'artillery', 'battery', None, None, 5, 5, 'smoothbore guns', 'no', None),
     ('cs_8al', '8th Alabama', 'B', 'infantry', 'line', 1000, None, 5, 6, 'smoothbore musket', 'no', 'yes'),
     ('cs_cav', 'Stuart', 'B', 'cavalry', 'heavy', 400, None, 6, 6, 'smoothbore musket', 'yes', None),
-    ('cs_bat', 'Ross', 'B', 'artillery', 'horse battery', 50, 4, 4, 4, 'smoothbore musket', 'no', None),
+    ('cs_bat', 'Ross', 'B', 'artillery', 'horse battery', 50, 4, 4, 4, 'smoothbore guns', 'no', None),
 ]
 ORDERS = [
     # round, minutes, unit, action, target, ammo
@@ -54,6 +54,16 @@ FEEDBACK = [
     ('Jane', 'abc12345', 'too heavy', 'about right', 'yes', 'bloody'),
     ('Sam', 'abc12345', 'about right', 'too early', 'unsure', None),
 ]
+
+
+def same_units(a, b):
+    """Equal, counting a standard battery and one written out as 72 men / 8 guns as the same."""
+    def norm(u):
+        u = dict(u)
+        if u.get('type') == 'art' and 'size' not in u:
+            u.update(size=72, guns=8)
+        return u
+    return [norm(u) for u in a] == [norm(u) for u in b]
 
 
 def test_template_has_tabs_headers_and_dropdowns(tmp_path):
@@ -198,7 +208,7 @@ def test_export_then_import_gives_the_same_battle(tmp_path):
     original = load_setup_file(EXAMPLE)
     sheets.write_template(tmp_path / 'ridge.xlsx', scenario=original)
     back = sheets.read_workbook(tmp_path / 'ridge.xlsx')
-    assert back['sides'] == original['sides'] and back['units'] == original['units']
+    assert back['sides'] == original['sides'] and same_units(back['units'], original['units'])
     assert back['rounds'] == original['rounds']
     a = api.run_scenario({**original, 'finish': True}, seed=3)[2]
     b = api.run_scenario({**back, 'finish': True}, seed=3)[2]
@@ -210,7 +220,7 @@ def test_export_carries_expectations_and_feedback(tmp_path):
     sheets.write_template(tmp_path / 'again.xlsx', scenario=sc)
     again = sheets.read_workbook(tmp_path / 'again.xlsx')
     assert again['expect'] == sc['expect'] and again['feedback'] == sc['feedback']
-    assert again['units'] == sc['units'] and again['rounds'] == sc['rounds']
+    assert same_units(again['units'], sc['units']) and again['rounds'] == sc['rounds']
 
 
 def test_export_needs_named_units(tmp_path):
@@ -227,7 +237,7 @@ def test_numbers_typed_as_text_and_more_problems(tmp_path):
     units = [
         ('a', None, 'A', 'infantry', 'line', '900', None, 5.0, '5', 'smoothbore musket', 'no', None),   # fine
         ('b', None, 'B', 'infantry', 'line', None, None, True, 5, 'smoothbore musket', 'no', None),
-        ('g', None, 'B', 'artillery', 'battery', 40, 'six', 5, 5, 'smoothbore musket', 'no', None),
+        ('g', None, 'B', 'artillery', 'battery', 40, 'six', 5, 5, 'smoothbore guns', 'no', None),
     ]
     orders = [
         (1, '60', 'a', 'fire', 'b', None),                  # fine: minutes typed as text
@@ -253,3 +263,43 @@ def test_numbers_typed_as_text_and_more_problems(tmp_path):
 def test_whole_numbers_stored_as_floats():
     # some spreadsheet apps store whole numbers as 900.0
     assert sheets._whole(900.0) == 900 and sheets._whole(2.5) is None
+
+
+# =============================================================================
+# Artillery rows: real numbers and gun names
+# =============================================================================
+
+def test_export_writes_a_standard_battery_out_in_full(tmp_path):
+    sheets.write_template(tmp_path / 'ridge.xlsx', scenario=load_setup_file(EXAMPLE))
+    rows = {r[0]: r for r in openpyxl.load_workbook(tmp_path / 'ridge.xlsx')['Units'].iter_rows(min_row=2, values_only=True)
+            if r[0]}
+    assert rows['us_bat'][5:7] == (72, 8)                       # Men, Guns: the standard battery
+    assert rows['us_bat'][9] == 'smoothbore guns'               # gun names for artillery
+    assert rows['us_1mn'][9] == 'rifled musket'
+    back = {u['id']: u for u in sheets.read_workbook(tmp_path / 'ridge.xlsx')['units']}
+    assert (back['us_bat']['size'], back['us_bat']['guns'], back['us_bat']['stats']) == (72, 8, '5/5/0/0')
+
+
+def test_artillery_takes_gun_names(tmp_path):
+    units = [('b', None, 'A', 'infantry', 'line', 100, None, 5, 5, 'smoothbore musket', 'no', None),
+             ('g1', None, 'B', 'artillery', 'battery', None, None, 5, 5, 'rifled guns', 'no', None),
+             ('g2', None, 'B', 'artillery', 'battery', None, None, 5, 5, 'smoothbore guns', 'no', None)]
+    sc = sheets.read_workbook(fill(tmp_path / 'g.xlsx', {}, units))
+    assert [u['stats'] for u in sc['units']] == ['5/5/0/0', '5/5/1/0', '5/5/0/0']
+    bad = [('b', None, 'A', 'infantry', 'line', 100, None, 5, 5, 'rifled guns', 'no', None),
+           ('g', None, 'B', 'artillery', 'battery', None, None, 5, 5, 'smoothbore musket', 'no', None)]
+    with pytest.raises(SetupError) as info:
+        sheets.read_workbook(fill(tmp_path / 'bad.xlsx', {}, bad))
+    assert info.value.errors == [
+        "Units row 2: Weapon must be one of unarmed / pikes, matchlock, smoothbore musket, rifled musket, "
+        "needle rifle; got 'rifled guns'.",
+        "Units row 3: Weapon must be one of old smoothbore guns, smoothbore guns, rifled guns, breech-loading "
+        "guns; got 'smoothbore musket'.",
+    ]
+
+
+def test_weapon_dropdown_offers_gun_names_too(tmp_path):
+    sheets.write_template(tmp_path / 't.xlsx')
+    lists = {str(dv.sqref)[:1]: dv.formula1 for dv in openpyxl.load_workbook(tmp_path / 't.xlsx')['Units']
+             .data_validations.dataValidation}
+    assert 'rifled guns' in lists['J'] and 'rifled musket' in lists['J']

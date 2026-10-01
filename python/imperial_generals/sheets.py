@@ -54,6 +54,7 @@ START_HERE = [
     'Battle tab: name the battle and the two sides, and (optionally) who should win and roughly what each side loses.',
     'Units tab: one row per regiment or battery. Men is the number of soldiers (for artillery: crew; leave Men and',
     '  Guns blank for a standard battery of 8 guns). Experience and Morale are 1-10, as on the unit\'s stat block.',
+    '  Weapon: muskets for infantry and cavalry; for artillery, the guns (smoothbore guns, rifled guns, ...).',
     '  "Should it break?": yes, no, or blank if you have no view.',
     'Orders tab: what each unit does, round by round. A round is a stretch of time (e.g. 60 or 90 minutes).',
     '  fire = shoot at the Target; charge = close and fight hand to hand; hold = stay put. Units without a row hold.',
@@ -143,7 +144,7 @@ def _side_of(value, sides: list) -> int | None:
 
 def _read_units(ws, sides: list, errors: list) -> tuple:
     vocab = _vocab()
-    types, weapons = vocab['unit_types'], vocab['weapons']
+    types, weapons, guns_named = vocab['unit_types'], vocab['weapons'], vocab['artillery_weapons']
     units, should_break, first_row = [], {}, {}
     for r, (uid, name, side, kind, subtype, men, guns, xp, morale, weapon, melee, breaks) in _rows(ws, 12):
         where = f'Units row {r}'
@@ -173,8 +174,9 @@ def _read_units(ws, sides: list, errors: list) -> tuple:
             v = _whole(value)
             if v is None or not 1 <= v <= 10:
                 problems.append(f'{label} must be a whole number from 1 to 10; got {value!r}.')
-        if _word(weapon) not in weapons:
-            problems.append(f"Weapon must be one of {', '.join(weapons)}; got {weapon!r}.")
+        named = guns_named if is_art else weapons      # artillery rows name their guns
+        if _word(weapon) not in named:
+            problems.append(f"Weapon must be one of {', '.join(named)}; got {weapon!r}.")
         if _word(melee) not in (None, 'yes', 'no'):
             problems.append(f'Melee only? must be yes or no; got {melee!r}.')
         if _word(breaks) not in (None, 'yes', 'no'):
@@ -188,7 +190,7 @@ def _read_units(ws, sides: list, errors: list) -> tuple:
             unit['size'] = size
         if gun_count is not None:
             unit['guns'] = gun_count
-        unit['stats'] = f"{_whole(xp)}/{_whole(morale)}/{weapons[_word(weapon)]}/{1 if _word(melee) == 'yes' else 0}"
+        unit['stats'] = f"{_whole(xp)}/{_whole(morale)}/{named[_word(weapon)]}/{1 if _word(melee) == 'yes' else 0}"
         units.append(unit)
         if _word(breaks) is not None:
             should_break[uid] = _word(breaks) == 'yes'
@@ -374,6 +376,8 @@ def _fill_from(wb, scenario: dict) -> None:
     vocab = _vocab()
     types = {code: word for word, code in vocab['unit_types'].items()}
     weapons = {code: word for word, code in vocab['weapons'].items()}
+    gun_names = {code: word for word, code in vocab['artillery_weapons'].items()}
+    standard = get_config()['artillery']
     actions = {mode: word for word, mode in vocab['actions'].items()}
     ammo_words = {code: word for word, code in vocab['ammo'].items()}
     sides = scenario.get('sides') or ['Side A', 'Side B']
@@ -406,8 +410,13 @@ def _fill_from(wb, scenario: dict) -> None:
         uid = u.get('id', u.get('name'))
         xp, morale, weapon, melee = (int(x) for x in u['stats'].split('/'))
         kind = u.get('type')
+        size, guns = u.get('size'), u.get('guns')
+        if kind == 'art' and size is None:
+            # a standard battery, written out in full so the sheet shows real numbers
+            size, guns = standard['guns'] * standard['crew_per_gun'], standard['guns']
+        weapon_name = gun_names[weapon] if kind == 'art' else weapons[weapon]
         row = [uid, u.get('name', uid), _side_letter(u['side'], sides), types[kind or 'inf'],
-               u.get('subtype') or 'line', u.get('size'), u.get('guns'), xp, morale, weapons[weapon],
+               u.get('subtype') or 'line', size, guns, xp, morale, weapon_name,
                'yes' if melee else 'no', 'yes' if uid in breaks else 'no' if uid in holds else None]
         for c, value in enumerate(row, start=1):
             ws.cell(r, c).value = value
@@ -462,7 +471,7 @@ def write_template(path, scenario: dict | None = None) -> None:
     _dropdown(ws, 'C', ['A', 'B'], rows)
     _dropdown(ws, 'D', vocab['unit_types'], rows)
     _dropdown(ws, 'E', subtypes, rows)
-    _dropdown(ws, 'J', vocab['weapons'], rows)
+    _dropdown(ws, 'J', list(vocab['weapons']) + list(vocab['artillery_weapons']), rows)
     _dropdown(ws, 'K', ['yes', 'no'], rows)
     _dropdown(ws, 'L', ['yes', 'no'], rows)
 

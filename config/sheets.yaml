@@ -15,6 +15,13 @@ sheets:
     rifled musket: 1
     needle rifle: 2
 
+  # the same codes, named for guns: artillery rows use these
+  artillery_weapons:
+    old smoothbore guns: -1
+    smoothbore guns: 0
+    rifled guns: 1
+    breech-loading guns: 2
+
   actions: {fire: ranged, charge: melee, hold: idle}
 
   ammo: {round shot: round_shot, shell: shell, canister: canister}
