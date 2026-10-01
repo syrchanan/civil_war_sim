@@ -76,7 +76,9 @@ def _play(scenario: dict, seed: int, overrides: dict | None) -> tuple:
             'broke_at': broke_at.get(u['id']), 'wiped_out': result['units'][u['id']]['final_size'] == 0,
         })
 
-    row = {'seed': seed, 'field_held_by': result['field_held_by'], 'end_time': state['time']}
+    charges = [c for report in reports for c in report['charges']]
+    row = {'seed': seed, 'field_held_by': result['field_held_by'], 'end_time': state['time'],
+           'first_charge': charges[0]['outcome'] if charges else None}
     for side, summary in enumerate(api.side_summary(state)):
         for name in SIDE_FIELDS:
             row[f's{side}_{name}'] = summary[name]
@@ -213,13 +215,30 @@ def _order(value) -> dict | None:
     return None
 
 
+def _round_list(value) -> bool:
+    return isinstance(value, list) and bool(value) and all(
+        isinstance(r, (int, float)) and not isinstance(r, bool) and r > 0 for r in value)
+
+
+def _facet_rounds(spec: dict, mode: str) -> list:
+    """Round lengths for one grid: ``rounds`` is a list for every grid, or a mapping with a 'default'."""
+    rounds = spec['rounds']
+    return list(rounds.get(mode, rounds['default']) if isinstance(rounds, dict) else rounds)
+
+
 def _check_grid(spec) -> None:
     if not isinstance(spec, dict):
         raise SetupError(['The matchup file must be a mapping with "units" and "rounds".'])
     errors = [f'Unknown key "{k}". Allowed: {", ".join(GRID_KEYS)}.' for k in spec if k not in GRID_KEYS]
     rounds = spec.get('rounds')
-    if not (isinstance(rounds, list) and rounds and all(
-            isinstance(r, (int, float)) and not isinstance(r, bool) and r > 0 for r in rounds)):
+    if isinstance(rounds, dict):
+        if 'default' not in rounds:
+            errors.append('"rounds" by grid needs a "default" list, e.g. {default: [90], charge: [30]}.')
+        errors.extend(f'"rounds": unknown grid "{k}"; use default or {", ".join(MATCHUP_MODES)}.'
+                      for k in rounds if k != 'default' and k not in MATCHUP_MODES)
+        errors.extend(f'"rounds" for {k} must be a list of round lengths in minutes, e.g. [90, 90].'
+                      for k, v in rounds.items() if not _round_list(v))
+    elif not _round_list(rounds):
         errors.append('"rounds" must be a list of round lengths in minutes, e.g. [90, 90].')
     seeds = spec.get('seeds', 100)
     if not (isinstance(seeds, int) and not isinstance(seeds, bool) and seeds > 0):
@@ -293,7 +312,7 @@ def matchup_scenario(spec: dict, attacker: str, defender: str, mode: str = 'orde
     scenario = {
         'meta': {'name': f'{attacker} attacks {defender}'},
         'units': [unit(attacker, 'attacker', 0), unit(defender, 'defender', 1)],
-        'rounds': [{'duration': d, 'orders': orders} for d in spec['rounds']],
+        'rounds': [{'duration': d, 'orders': orders} for d in _facet_rounds(spec, mode)],
     }
     if spec.get('params'):
         scenario['params'] = spec['params']
@@ -334,13 +353,18 @@ def _cell(results: list) -> dict:
         'attacker_hit_share': _mean(r['s0_hits_taken'] / r['s0_started'] for r in rows),
         'defender_hit_share': _mean(r['s1_hits_taken'] / r['s1_started'] for r in rows),
         'exchange_ratio': inflicted / taken if taken else None,
+        # how the cell's charge ended (0 when nobody charged)
+        'charge_home': sum(r['first_charge'] == 'home' for r in rows) / n,
+        'charge_faltered': sum(r['first_charge'] == 'faltered' for r in rows) / n,
+        'charge_broke_defender': sum(r['first_charge'] == 'defender_broke' for r in rows) / n,
     }
 
 
 def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrides: dict | None = None,
                  mode: str = 'orders') -> MatchupGrid:
     """
-    Every unit in ``spec['units']`` attacks every unit (itself included), one on one, for ``spec['rounds']``.
+    Every unit in ``spec['units']`` attacks every unit (itself included), one on one, for ``spec['rounds']``
+    (a list, or a mapping by grid with a 'default', e.g. ``{default: [90], charge: [30]}``).
     ``mode`` facets the grid: 'orders' uses each unit's attack / defend from the file, 'ranged' makes every
     unit fire, 'melee' makes every unit fight hand to hand, 'charge' has every unit charge into the defender's
     fire; 'artillery' has only the batteries attack, at long
@@ -375,7 +399,7 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     results: dict = {pair: [] for pair in pairs}
     for pair, chunk in zip(owners, _run_tasks(tasks, workers)):
         results[pair].extend(chunk)
-    return MatchupGrid(name=spec.get('name', 'Matchups'), keys=keys, seeds=seeds, rounds=list(spec['rounds']),
+    return MatchupGrid(name=spec.get('name', 'Matchups'), keys=keys, seeds=seeds, rounds=_facet_rounds(spec, mode),
                        cells={pair: _cell(results[pair]) for pair in pairs}, mode=mode, attackers=attackers)
 
 
