@@ -202,8 +202,11 @@ def test_finish_is_seeded():
 def charged_battery(crew=72, guns=8, seed=3, params=None):
     from imperial_generals.units import ArtilleryBattery
     battery = ArtilleryBattery(crew, '4/4/0/0', guns, subtype='battery')
+    # the charge always goes home, so the battery is worn down in melee (a battery broken by the charge
+    # itself loses every gun: see test_charges)
+    home = {'charge': {'break_threshold': 100.0, 'falter_threshold': 100.0}}
     b = Battle({'c': (0, CavalryRegiment(1000, '6/6/0/1', subtype='heavy')), 'g': (1, battery)},
-               rng=Rng(seed), params=params or exact())
+               rng=Rng(seed), params=(params or exact()).with_overrides(home))
     report = b.resolve_round(600, {'c': {'target': 'g', 'mode': 'melee'}})
     return b, battery, report
 

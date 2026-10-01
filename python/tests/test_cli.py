@@ -375,3 +375,13 @@ def test_matchups_add_the_artillery_grid_when_there_is_artillery(tmp_path, capsy
     assert (tmp_path / 'g_artillery.png').exists()
     _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1, '--mode', 'artillery')
     assert '(artillery at long range)' in out and '(melee)' not in out
+
+
+def test_rounds_list_charges(files, capsys):
+    new(capsys, files)
+    (files / 'charge.yaml').write_text('us_1mn: {target: cs_26nc, mode: melee}\n', encoding='utf-8')
+    _, out, _ = run(capsys, 'resolve', files / 'state.json', '--duration', 60, '--orders', files / 'charge.yaml')
+    line = [l for l in out.splitlines() if l.startswith('Charges:')][0]
+    assert '1st Minnesota -> 26th North Carolina:' in line
+    assert any(word in line for word in ('went home', 'faltered', 'broke the defender', 'charger broke'))
+    assert '% to go home' in line

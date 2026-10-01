@@ -113,11 +113,6 @@ def test_unknown_order_keys_name_the_unit():
         b.engagements({'a': {'aim': 'x', 'mode': 'ranged'}})
 
 
-def test_zero_width_front_produces_no_melee():
-    b = make_battle({'a': (0, 100, '4/5/0/0', 0), 'x': (1, 100, '4/5/0/0')})
-    assert b.engagements({'a': {'target': 'x', 'mode': 'melee'}}) == ()
-
-
 def test_broken_unit_cannot_act():
     b = make_battle({'a': (0, 100, '4/5/0/0'), 'x': (1, 100, '4/5/0/0')})
     break_unit(b, 'a')
@@ -171,47 +166,6 @@ def melee_coef(stats):
     return P.combat.melee_efficiency(xp, morale, P.matchups.melee_ratings['default']) * P.matchups.melee['inf']['inf']
 
 
-def test_melee_one_on_one_matches_front_times_front():
-    b = make_battle({'a': (0, 500, '4/5/1/0', 200), 'x': (1, 400, '4/5/0/0', 150)})
-    r = rates(b.engagements({'a': {'target': 'x', 'mode': 'melee'}}))
-    assert r[('a', 'x')] == pytest.approx(K_M * melee_coef('4/5/1/0') * 200 * 150)
-    assert r[('x', 'a')] == pytest.approx(K_M * melee_coef('4/5/0/0') * 150 * 200)
-
-
-def test_melee_is_mutual_and_forcing():
-    # x was ordered to fire at b, but a charges x: x fights a in melee and its fire on b waits
-    b = make_battle({'a': (0, 500, '4/5/0/0'), 'b': (0, 500, '4/5/0/0'), 'x': (1, 500, '4/5/0/0')})
-    r = rates(b.engagements({'a': {'target': 'x', 'mode': 'melee'}, 'x': {'target': 'b', 'mode': 'ranged'}}))
-    assert set(r) == {('a', 'x'), ('x', 'a')}
-
-
-def test_unit_in_melee_does_not_fire_its_ranged_order():
-    b = make_battle({'a': (0, 500, '4/5/0/0'), 'x': (1, 500, '4/5/0/0'), 'y': (1, 500, '4/5/0/0')})
-    r = rates(b.engagements({'a': {'target': 'y', 'mode': 'ranged'}, 'x': {'target': 'a', 'mode': 'melee'}}))
-    assert set(r) == {('a', 'x'), ('x', 'a')}
-
-
-def test_melee_exposure_is_whole_front_and_fighting_strength_is_split():
-    # d (front 400) is charged by a1 (front 300) and a2 (front 100)
-    b = make_battle({'a1': (0, 300, '4/5/0/0', 300), 'a2': (0, 100, '4/5/0/0', 100), 'd': (1, 400, '4/5/0/0', 400)})
-    r = rates(b.engagements({'a1': {'target': 'd', 'mode': 'melee'}, 'a2': {'target': 'd', 'mode': 'melee'}}))
-    c = coef('4/5/0/0', 'melee')
-    assert r[('a1', 'd')] == pytest.approx(K_M * c * 300 * 1.0 * 400)            # a1 has one contact
-    assert r[('a2', 'd')] == pytest.approx(K_M * c * 100 * 1.0 * 400)
-    assert r[('d', 'a1')] == pytest.approx(K_M * c * 400 * (300 / 400) * 300)    # d's fighters split 3:1
-    assert r[('d', 'a2')] == pytest.approx(K_M * c * 400 * (100 / 400) * 100)
-
-
-def test_surrounded_unit_takes_more_and_deals_the_same_total():
-    solo = make_battle({'a1': (0, 300, '4/5/0/0'), 'a2': (0, 300, '4/5/0/0'), 'd': (1, 300, '4/5/0/0')})
-    one = rates(solo.engagements({'a1': {'target': 'd', 'mode': 'melee'}}))
-    two = rates(solo.engagements({'a1': {'target': 'd', 'mode': 'melee'}, 'a2': {'target': 'd', 'mode': 'melee'}}))
-    taken_one = one[('a1', 'd')]
-    taken_two = two[('a1', 'd')] + two[('a2', 'd')]
-    assert taken_two == pytest.approx(2 * taken_one)
-    assert two[('d', 'a1')] + two[('d', 'a2')] == pytest.approx(one[('d', 'a1')])
-
-
 def test_melee_only_unit_cannot_fire():
     b = make_battle({'p': (0, 500, '4/5/0/1'), 'x': (1, 500, '4/5/0/0')})
     assert b.engagements({'p': {'target': 'x', 'mode': 'ranged'}}) == ()
@@ -219,8 +173,9 @@ def test_melee_only_unit_cannot_fire():
 
 def test_melee_only_unit_fights_in_melee_with_its_rating():
     b = make_battle({'p': (0, 500, '4/5/0/1'), 'x': (1, 500, '4/5/0/0')})
+    b.contacts = {frozenset(('p', 'x'))}
     r = rates(b.engagements({'p': {'target': 'x', 'mode': 'melee'}}))
-    assert r[('p', 'x')] == pytest.approx(K_M * melee_coef('4/5/0/1') * 500 * 500)
+    assert r[('p', 'x')] == pytest.approx(K_M * melee_coef('4/5/0/1') * 500)       # width in contact: 500
 
 
 def test_broken_unit_can_be_pursued_but_does_not_fight_back():
