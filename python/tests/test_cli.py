@@ -353,7 +353,7 @@ def test_matchups_default_to_ranged_and_melee_facets(tmp_path, capsys):
     assert out.index('Basic (ranged)') < out.index('Basic (melee)')
     assert (tmp_path / 'grid_ranged.png').exists() and (tmp_path / 'grid_melee.png').exists()
     lines = (tmp_path / 'cells.csv').read_text(encoding='utf-8').splitlines()
-    assert len(lines) == 1 + 2 * 4 and lines[0].startswith('mode,')
+    assert len(lines) == 1 + 3 * 4 and lines[0].startswith('mode,')
 
 
 def test_matchups_single_facet_or_file_orders(tmp_path, capsys):
@@ -385,3 +385,9 @@ def test_rounds_list_charges(files, capsys):
     assert '1st Minnesota -> 26th North Carolina:' in line
     assert any(word in line for word in ('went home', 'faltered', 'broke the defender', 'charger broke'))
     assert '% to go home' in line
+
+
+def test_matchups_all_includes_the_charge_grid(tmp_path, capsys):
+    (tmp_path / 'grid.yaml').write_text(GRID_YAML, encoding='utf-8')
+    _, out, _ = run(capsys, 'matchups', tmp_path / 'grid.yaml', '--seeds', 2, '--workers', 1)
+    assert out.index('(melee)') < out.index('(charge into standing fire)')

@@ -348,7 +348,7 @@ def _print_matrix(title: str, grid, metric: str, fmt) -> None:
 
 
 FACET_TITLES = {'orders': 'orders from the file', 'ranged': 'ranged', 'melee': 'melee',
-                'artillery': 'artillery at long range'}
+                'charge': 'charge into standing fire', 'artillery': 'artillery at long range'}
 
 
 def _cmd_matchups(args) -> None:
@@ -356,7 +356,7 @@ def _cmd_matchups(args) -> None:
     overrides = _load_overrides(args.params)
     modes = [args.mode]
     if args.mode == 'all':
-        modes = ['ranged', 'melee']
+        modes = ['ranged', 'melee', 'charge']
         if any(isinstance(u, dict) and u.get('type') == 'art' for u in (spec or {}).get('units', {}).values()):
             modes.append('artillery')
     grids = [tuning.matchup_grid(spec, seeds=args.seeds, overrides=overrides, mode=mode,
@@ -451,8 +451,9 @@ def _parser() -> argparse.ArgumentParser:
                    choices=['advantage', 'attacker_wins', 'defender_wins', 'attacker_breaks', 'defender_breaks',
                             'attacker_hit_share', 'defender_hit_share'],
                    help='heatmap metric (default advantage)')
-    p.add_argument('--mode', default='all', choices=['all', 'ranged', 'melee', 'artillery', 'orders'],
-                   help='all (default): ranged, melee and (with artillery in the file) artillery at long range; '
+    p.add_argument('--mode', default='all', choices=['all', 'ranged', 'melee', 'charge', 'artillery', 'orders'],
+                   help='all (default): ranged, melee, charge and (with artillery in the file) artillery at long '
+                        'range; '
                         'or one of them; orders: the attack / defend orders from the file')
     p.add_argument('--json', action='store_true', help='print the cells as JSON')
     p.set_defaults(run=_cmd_matchups)

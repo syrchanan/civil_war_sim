@@ -255,7 +255,7 @@ def _check_grid(spec) -> None:
         raise SetupError(errors)
 
 
-MATCHUP_MODES = ('orders', 'ranged', 'melee', 'artillery')
+MATCHUP_MODES = ('orders', 'ranged', 'melee', 'charge', 'artillery')
 
 
 def _facet(order: dict, mode: str) -> dict:
@@ -275,16 +275,18 @@ def matchup_scenario(spec: dict, attacker: str, defender: str, mode: str = 'orde
     """
     The one-on-one scenario for one grid cell. With ``mode='orders'`` the attacker uses its attack order and the
     defender its defend reply; 'ranged' makes both fire (melee-only units can't, so they inflict nothing) and
-    'melee' makes both fight hand to hand. 'artillery' is a battery firing at long range: only another battery
+    'melee' makes both fight hand to hand (they meet head on). 'charge' has the attacker charge while the
+    defender stands and fires (if it can): the approach and contact test decide. 'artillery' is a battery firing at long range: only another battery
     can reply, so against anything else the fire is unreturned.
     """
     def unit(key: str, uid: str, side: int) -> dict:
         body = {k: v for k, v in spec['units'][key].items() if k not in ('attack', 'defend')}
         return {'id': uid, 'name': key, 'side': side, **body}
 
+    attack_mode, defend_mode = ('melee', 'ranged') if mode == 'charge' else (mode, mode)
     orders = {'attacker': {'target': 'defender',
-                           **_facet(_order(spec['units'][attacker].get('attack', 'ranged')), mode)}}
-    defend = _facet(_order(spec['units'][defender].get('defend', 'ranged')), mode)
+                           **_facet(_order(spec['units'][attacker].get('attack', 'ranged')), attack_mode)}}
+    defend = _facet(_order(spec['units'][defender].get('defend', 'ranged')), defend_mode)
     out_of_reach = mode == 'artillery' and not _is_artillery(spec, defender)
     if defend['mode'] != 'idle' and not out_of_reach:
         orders['defender'] = {'target': 'attacker', **defend}
@@ -340,7 +342,8 @@ def matchup_grid(spec: dict, seeds: int | None = None, workers: int = 1, overrid
     """
     Every unit in ``spec['units']`` attacks every unit (itself included), one on one, for ``spec['rounds']``.
     ``mode`` facets the grid: 'orders' uses each unit's attack / defend from the file, 'ranged' makes every
-    unit fire and 'melee' makes every unit fight hand to hand; 'artillery' has only the batteries attack, at long
+    unit fire, 'melee' makes every unit fight hand to hand, 'charge' has every unit charge into the defender's
+    fire; 'artillery' has only the batteries attack, at long
     range, where only batteries can reply (see ``matchup_scenario``).
 
     A side wins a cell's run when the other unit broke or was wiped out and it didn't. ``advantage`` is the
