@@ -74,6 +74,7 @@ def test_to_dict_is_json_and_versioned():
     assert (inf['name'], inf['type'], inf['subtype'], inf['side']) == ('1st Minnesota', 'inf', 'line', 0)
     assert data['units'][4]['type'] is None                                            # plain Regiment
     assert data['units'][1]['guns'] == 8
+    assert data['result'] is None                                                       # not finished yet
 
 
 def test_round_trip_before_any_round():
@@ -160,9 +161,11 @@ def test_params_are_saved_in_full():
 def test_finished_battle_stays_finished():
     b = build()
     b.resolve_round(60, ORDERS_1)
-    b.finish()
+    result = b.finish()
+    assert b.result == result
     r = reload(b)
     assert r.finished
+    assert r.result == result                    # the casualty settlement is kept in the state file
     with pytest.raises(RuntimeError):
         r.resolve_round(60, {})
 
@@ -192,3 +195,9 @@ def test_seed_is_informational_when_battle_built_from_state():
     b = Battle({'a': (0, Regiment(100, '4/5/0/0'))}, rng=Rng.from_state([1, 2, 3, 4]))
     assert b.seed is None
     assert reload(b).seed is None
+
+
+def test_v1_file_written_before_result_existed_still_loads():
+    data = json.loads(build().to_json())
+    del data['result']
+    assert Battle.from_dict(data).result is None

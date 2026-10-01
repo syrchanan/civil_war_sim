@@ -4,7 +4,8 @@ Battle state file (roadmap A8): the JSON contract between the Python engine, the
 Everything needed to resume exactly is saved: the RNG state words, the full parameter set (not just overrides, so
 a later config change can't alter a saved battle), unit order, each unit's regiment and live morale, and the
 running totals. Resolving the next round of a reloaded battle gives the same result as if it had never been saved.
-Round history (orders, engagements, per-unit reports, events) is kept for replays and UIs.
+Round history (orders, engagements, per-unit reports, events) is kept for replays and UIs, and once the battle is
+finished, its ``result`` (the casualty settlement from ``Battle.finish``).
 
 ``meta`` (battle and per unit) is free-form and round-tripped untouched.
 """
@@ -12,7 +13,7 @@ Round history (orders, engagements, per-unit reports, events) is kept for replay
 from dataclasses import asdict
 
 from imperial_generals.battles.battle import (
-    Battle, CasualtyEvent, Engagement, RoundReport, UnitReport,
+    Battle, BattleResult, CasualtyEvent, Engagement, RoundReport, UnitOutcome, UnitReport,
 )
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
@@ -78,7 +79,7 @@ def _unit_to_dict(unit) -> dict:
     return data
 
 
-def _report_to_dict(report: RoundReport) -> dict:
+def report_to_dict(report: RoundReport) -> dict:
     return {
         'round': report.round,
         'start': report.start,
@@ -89,6 +90,15 @@ def _report_to_dict(report: RoundReport) -> dict:
         'events': [asdict(e) for e in report.events],
         'prisoners': _by_side(report.prisoners),
         'guns_captured': _by_side(report.guns_captured),
+    }
+
+
+def result_to_dict(result: BattleResult) -> dict:
+    return {
+        'field_held_by': result.field_held_by,
+        'units': {uid: asdict(u) for uid, u in result.units.items()},
+        'prisoners': _by_side(result.prisoners),
+        'guns_captured': _by_side(result.guns_captured),
     }
 
 
@@ -106,7 +116,8 @@ def battle_to_dict(battle: Battle) -> dict:
         'prisoners': _by_side(battle.prisoners),
         'guns_captured': _by_side(battle.guns_captured),
         'units': [_unit_to_dict(u) for u in battle.units.values()],
-        'history': [_report_to_dict(r) for r in battle.history],
+        'history': [report_to_dict(r) for r in battle.history],
+        'result': None if battle.result is None else result_to_dict(battle.result),
     }
 
 
@@ -160,6 +171,15 @@ def _report_from_dict(data: dict) -> RoundReport:
     )
 
 
+def _result_from_dict(data: dict) -> BattleResult:
+    return BattleResult(
+        field_held_by=data['field_held_by'],
+        units={uid: UnitOutcome(**u) for uid, u in data['units'].items()},
+        prisoners=_from_sides(data['prisoners']),
+        guns_captured=_from_sides(data['guns_captured']),
+    )
+
+
 def battle_from_dict(data: dict) -> Battle:
     if data.get('format') != FORMAT:
         raise ValueError(f"Not a battle state file (format {data.get('format')!r}).")
@@ -182,4 +202,7 @@ def battle_from_dict(data: dict) -> Battle:
     battle.prisoners = _from_sides(data['prisoners'])
     battle.guns_captured = _from_sides(data['guns_captured'])
     battle.history = [_report_from_dict(r) for r in data['history']]
+    # 'result' was added after the first v1 files were written; it is None until the battle is finished
+    result = data.get('result')
+    battle.result = None if result is None else _result_from_dict(result)
     return battle

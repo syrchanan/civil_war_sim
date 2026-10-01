@@ -25,6 +25,7 @@ from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
 
 MODES = frozenset({'idle', 'ranged', 'melee'})
+ORDER_KEYS = frozenset({'target', 'mode', 'ammo'})
 
 
 @dataclass(frozen=True)
@@ -214,6 +215,7 @@ class Battle:
         self.prisoners: dict[int, int] = {0: 0, 1: 0}
         self.guns_captured: dict[int, int] = {0: 0, 1: 0}
         self.finished: bool = False
+        self.result: BattleResult | None = None      # set by finish()
         self._broken_before_round: set[str] = set()
 
     # -------------------------------------------------------------------------
@@ -227,6 +229,9 @@ class Battle:
         for uid, value in orders.items():
             if uid not in self.units:
                 raise ValueError(f"Unknown unit {uid!r} in orders.")
+            if isinstance(value, dict) and not set(value) <= ORDER_KEYS:
+                raise ValueError(f"Unknown order key(s) {sorted(set(value) - ORDER_KEYS)} for {uid!r}; "
+                                 f"use target, mode, ammo.")
             order = Order.coerce(value)
             if order.mode == 'idle':
                 continue
@@ -541,6 +546,12 @@ class Battle:
     def from_json(cls, text: str) -> 'Battle':
         return cls.from_dict(json.loads(text))
 
+    @classmethod
+    def from_setup(cls, data: dict, seed: int | None = None) -> 'Battle':
+        """A new battle from a hand-written setup (units, seed, side names, overrides); see ``battles.setup``."""
+        from imperial_generals.battles.setup import battle_from_setup
+        return battle_from_setup(data, seed=seed)
+
     # -------------------------------------------------------------------------
     # After the battle
     # -------------------------------------------------------------------------
@@ -605,5 +616,6 @@ class Battle:
             )
 
         self.finished = True
-        return BattleResult(field_held_by=holder, units=outcomes, prisoners=dict(self.prisoners),
-                            guns_captured=dict(self.guns_captured))
+        self.result = BattleResult(field_held_by=holder, units=outcomes, prisoners=dict(self.prisoners),
+                                   guns_captured=dict(self.guns_captured))
+        return self.result
