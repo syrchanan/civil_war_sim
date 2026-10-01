@@ -19,7 +19,11 @@ A **scenario** is a setup plus a script of rounds, so a whole battle can be repl
         orders:
           us_1mn: {target: cs_26nc, mode: ranged}
           cs_26nc: {target: us_1mn, mode: ranged}
-    finish: true        # settle casualties (killed / wounded / captured) after the last round
+    finish: true        # settle casualties after the last round: true / auto, none, or the side holding the field
+
+Scripted orders can't foresee random breaks, so orders that can no longer be carried out (the unit has broken or
+been wiped out, or its target has been wiped out) are skipped and listed in the round's ``skipped_orders``.
+Broken targets can still be attacked (pursuit).
 """
 
 from dataclasses import asdict
@@ -55,10 +59,33 @@ def finish(state: dict, field_held_by='auto') -> tuple:
     return battle.to_dict(), result_to_dict(result)
 
 
+def _sides(scenario: dict) -> list | None:
+    sides = scenario.get('sides')
+    return sides if isinstance(sides, list) and len(sides) == 2 else None
+
+
+def _field_holder(value, sides: list | None):
+    """The ``field_held_by`` for a scenario's ``finish`` value; raises ValueError if it isn't one."""
+    if value is True or value == 'auto':
+        return 'auto'
+    if value == 'none':
+        return None
+    if type(value) is int and value in (0, 1):
+        return value
+    if sides is not None and isinstance(value, str) and value in sides:
+        return sides.index(value)
+    names = f' or a side name ({", ".join(sides)})' if sides else ''
+    raise ValueError(f'"finish" must be true, false, auto, none, 0, 1{names}.')
+
+
 def _check_script(scenario: dict) -> list[str]:
     errors = []
-    if not isinstance(scenario.get('finish', False), bool):
-        errors.append('"finish" must be true or false.')
+    finish = scenario.get('finish', False)
+    if finish is not False:
+        try:
+            _field_holder(finish, _sides(scenario))
+        except ValueError as exc:
+            errors.append(str(exc))
     rounds = scenario.get('rounds', [])
     if not isinstance(rounds, list):
         return errors + ['"rounds" must be a list of rounds, each with a "duration".']
@@ -78,9 +105,26 @@ def _check_script(scenario: dict) -> list[str]:
     return errors
 
 
+def _playable(battle: Battle, orders: dict) -> tuple:
+    """Split scripted orders into those that can still be carried out and those skipped (uid -> why)."""
+    keep, skipped = {}, {}
+    for uid, order in orders.items():
+        unit = battle.units.get(uid)
+        target = battle.units.get(order.get('target')) if isinstance(order, dict) else None
+        if unit is not None and not unit.active:
+            skipped[uid] = f'{uid} is {"wiped out" if unit.size == 0 else "broken"}'
+        elif target is not None and target.size == 0:
+            skipped[uid] = f"target {order['target']} is wiped out"
+        else:
+            keep[uid] = order
+    return keep, skipped
+
+
 def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = False) -> tuple:
     """
-    Build the battle and play the scenario's rounds in order, then finish it if ``finish: true``.
+    Build the battle and play the scenario's rounds in order, then finish it if ``finish`` says so.
+
+    Orders that can no longer be carried out are skipped and listed in each report's ``skipped_orders``.
 
     Returns ``(state, reports, result)``; ``result`` is None if the battle wasn't finished.
 
@@ -96,10 +140,94 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
         raise SetupError(errors)
     reports = []
     for n, rnd in enumerate(scenario.get('rounds', []), start=1):
+        orders, skipped = _playable(battle, rnd.get('orders', {}))
         try:
-            report = battle.resolve_round(rnd['duration'], rnd.get('orders', {}), record_events=record_events)
+            report = battle.resolve_round(rnd['duration'], orders, record_events=record_events)
         except (ValueError, TypeError) as exc:
             raise SetupError([f'Round {n}: {exc}']) from None
-        reports.append(report_to_dict(report))
-    result = result_to_dict(battle.finish()) if scenario.get('finish', False) else None
+        reports.append({**report_to_dict(report), 'skipped_orders': skipped})
+    finish = scenario.get('finish', False)
+    result = None if finish is False else result_to_dict(battle.finish(_field_holder(finish, _sides(scenario))))
     return battle.to_dict(), reports, result
+
+
+# =============================================================================
+# Side summaries
+# =============================================================================
+
+def _side_names(state: dict) -> list:
+    sides = state['meta'].get('sides')
+    return sides if isinstance(sides, list) and len(sides) == 2 else ['Side 0', 'Side 1']
+
+
+def order_of_battle(state: dict) -> list[dict]:
+    """
+    Each side as the battle began: units, men, men by unit type (artillery also counts guns), and experience and
+    morale averaged over the men. Generic units count as infantry, as they do in combat.
+    """
+    names = _side_names(state)
+    sides = []
+    for side in (0, 1):
+        units = [u for u in state['units'] if u['side'] == side]
+        men = sum(u['initial_size'] for u in units)
+        by_type: dict = {}
+        xp = morale = 0
+        for u in units:
+            kind = by_type.setdefault(u['type'] or 'inf', {'units': 0, 'men': 0})
+            kind['units'] += 1
+            kind['men'] += u['initial_size']
+            if 'guns' in u:
+                kind['guns'] = kind.get('guns', 0) + u['guns'] + u['guns_lost']
+            stats = [int(x) for x in u['initial_stats'].split('/')]
+            xp += stats[0] * u['initial_size']
+            morale += stats[1] * u['initial_size']
+        sides.append({'name': names[side], 'units': len(units), 'men': men, 'by_type': by_type,
+                      'avg_experience': xp / men, 'avg_morale': morale / men})
+    return sides
+
+
+def side_summary(state: dict) -> list[dict]:
+    """
+    Each side's performance over a finished battle.
+
+    ``started - killed - wounded - prisoners_lost + returned = final``, where ``wounded`` excludes wounded taken
+    prisoner (they count once, as prisoners). Hits are men hit by fire or in melee; ``exchange_ratio`` is enemy
+    men hit per own man hit (None if the side was never hit). ``loss_share`` is the share of starting strength
+    not in the ranks at the end.
+
+    Raises
+    ------
+    ValueError
+        If the battle hasn't been finished (casualties aren't settled yet).
+    """
+    result = state.get('result')
+    if result is None:
+        raise ValueError('The battle has to be finished first (finish settles killed / wounded / prisoners).')
+    names = _side_names(state)
+    sides = []
+    for side in (0, 1):
+        units = [u for u in state['units'] if u['side'] == side]
+        outcomes = [result['units'][u['id']] for u in units]
+        started = sum(u['initial_size'] for u in units)
+        final = sum(u['size'] for u in units)
+        taken = sum(o['hits'] for o in outcomes)
+        inflicted = sum(u['inflicted'] for u in units)
+        sides.append({
+            'name': names[side],
+            'units': len(units),
+            'units_out': sum(1 for u in units if u['morale']['broken'] or u['size'] == 0),
+            'started': started,
+            'killed': sum(o['killed'] for o in outcomes),
+            'wounded': sum(o['wounded'] - o['wounded_captured'] for o in outcomes),
+            'prisoners_lost': sum(o['captured_in_rout'] + o['wounded_captured'] for o in outcomes),
+            'returned': sum(o['wounded_returned'] for o in outcomes),
+            'final': final,
+            'loss_share': (started - final) / started,
+            'hits_taken': taken,
+            'hits_inflicted': inflicted,
+            'exchange_ratio': inflicted / taken if taken else None,
+            'prisoners_taken': result['prisoners'][str(side)],
+            'guns_lost': sum(o['guns_lost'] for o in outcomes),
+            'guns_taken': result['guns_captured'][str(side)],
+        })
+    return sides

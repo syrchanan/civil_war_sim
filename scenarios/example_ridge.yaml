@@ -1,71 +1,65 @@
 # Example scenario: a setup (who is on the field) plus a script of rounds (what each unit does).
 #
 #   python -m imperial_generals run scenarios/example_ridge.yaml
+#   python -m imperial_generals run scenarios/example_ridge.yaml --seed 5     # same battle, other dice
 #
 # Stats are experience/morale/weapon/melee-only, as in the game. Types: inf, cav, art.
 # Subtypes: inf line/light/marine/pikes/irregulars; cav light/heavy/dragoons;
-# art battery/horse battery/siege battery. Artillery without size and guns is a standard battery.
+# art battery/horse battery/siege battery. Artillery without size and guns is a standard battery (8 guns, 72 crew).
+#
+# Orders are written in advance, but breaks are random: an order for a unit that has broken (or whose target has
+# been wiped out) is skipped and listed under the round. Broken units can still be attacked (pursuit).
 
 meta:
   name: Example Ridge
   date: 1863-07-02
-  notes: A Union brigade holds a ridge; a Confederate brigade attacks with a battery in support.
+  notes: >-
+    A Union brigade with a battery holds a ridge. An Alabama brigade attacks: an artillery duel, then the
+    8th Alabama charges the 1st Minnesota while the 11th Alabama goes for the guns.
 
 seed: 1863
 sides: [Union, Confederate]
 
 units:
-  - id: us_1mn
-    name: 1st Minnesota
-    side: Union
-    type: inf
-    subtype: line
-    size: 900
-    stats: 6/6/1/0
-  - id: us_15ma
-    name: 15th Massachusetts
-    side: Union
-    type: inf
-    subtype: line
-    size: 700
-    stats: 5/5/1/0
-  - id: cs_8al
-    name: 8th Alabama
-    side: Confederate
-    type: inf
-    subtype: line
-    size: 1000
-    stats: 5/6/0/0
-  - id: cs_10al
-    name: 10th Alabama
-    side: Confederate
-    type: inf
-    subtype: line
-    size: 800
-    stats: 4/5/0/0
-  - id: cs_bat
-    name: Ross's Battery
-    side: Confederate
-    type: art
-    subtype: battery
-    stats: 5/5/0/0
+  - {id: us_1mn, name: 1st Minnesota, side: Union, type: inf, subtype: line, size: 900, stats: 6/6/1/0}
+  - {id: us_15ma, name: 15th Massachusetts, side: Union, type: inf, subtype: line, size: 700, stats: 5/5/1/0}
+  - {id: us_bat, name: Battery B, side: Union, type: art, subtype: battery, stats: 5/5/0/0}
+  - {id: cs_8al, name: 8th Alabama, side: Confederate, type: inf, subtype: line, size: 1000, stats: 5/6/0/0}
+  - {id: cs_10al, name: 10th Alabama, side: Confederate, type: inf, subtype: line, size: 800, stats: 4/5/0/0}
+  - {id: cs_11al, name: 11th Alabama, side: Confederate, type: inf, subtype: line, size: 600, stats: 3/4/0/0}
+  - {id: cs_bat, name: Ross's Battery, side: Confederate, type: art, subtype: battery, stats: 5/5/0/0}
 
 rounds:
-  # 90 minutes of fire: the battery softens up the 1st Minnesota with shell
-  - duration: 90
-    orders:
-      us_1mn: {target: cs_8al, mode: ranged}
-      us_15ma: {target: cs_10al, mode: ranged}
-      cs_8al: {target: us_1mn, mode: ranged}
-      cs_10al: {target: us_15ma, mode: ranged}
-      cs_bat: {target: us_1mn, mode: ranged, ammo: shell}
-  # the 8th Alabama charges; the rest keep firing
+  # 1. Artillery duel; the infantry trade fire. The 11th Alabama waits in reserve.
   - duration: 60
     orders:
+      cs_bat: {target: us_bat, mode: ranged, ammo: shell}
+      us_bat: {target: cs_8al, mode: ranged, ammo: shell}
+      cs_8al: {target: us_1mn, mode: ranged}
+      cs_10al: {target: us_15ma, mode: ranged}
       us_1mn: {target: cs_8al, mode: ranged}
       us_15ma: {target: cs_10al, mode: ranged}
+  # 2. The 8th Alabama charges; the 11th Alabama advances on the guns under canister.
+  - duration: 60
+    orders:
+      cs_bat: {target: us_1mn, mode: ranged, ammo: shell}
+      us_bat: {target: cs_11al, mode: ranged, ammo: canister}
       cs_8al: {target: us_1mn, mode: melee}
       cs_10al: {target: us_15ma, mode: ranged}
-      cs_bat: {target: us_15ma, mode: ranged}
+      cs_11al: {target: us_bat, mode: ranged}
+      us_1mn: {target: cs_8al, mode: ranged}
+      us_15ma: {target: cs_10al, mode: ranged}
+  # 3. Everything goes in: the 10th Alabama charges too, and the 11th Alabama rushes the battery.
+  - duration: 60
+    orders:
+      cs_bat: {target: us_15ma, mode: ranged, ammo: shell}
+      us_bat: {target: cs_11al, mode: ranged, ammo: canister}
+      cs_8al: {target: us_1mn, mode: melee}
+      cs_10al: {target: us_15ma, mode: melee}
+      cs_11al: {target: us_bat, mode: melee}
+      us_1mn: {target: cs_8al, mode: ranged}
+      us_15ma: {target: cs_10al, mode: ranged}
 
-finish: true   # settle killed / wounded / captured after the last round
+# Settle casualties (killed / wounded / prisoners / returned) after the last round. "auto" gives the field to a
+# side only if every enemy unit has broken or been wiped out; otherwise name the side holding it, e.g. Confederate.
+finish: auto
