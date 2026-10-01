@@ -541,7 +541,7 @@ def test_charge_outcomes_read_in_a_fixed_order():
     from imperial_generals.cli import _charge_rows, _status
     report = {'units': [{'id': 'a', 'name': 'A'}, {'id': 'b', 'name': 'B'}],
               'charges': [{'charger': 'a', 'target': 'b', 'round': 1, 'made': 1.0,
-                           'outcomes': {'faltered': 0.6, 'charger_broke': 0.004, 'home': 0.396}}]}
+                           'outcomes': {'faltered': 0.6, 'charger_broke': 0.005, 'home': 0.395}}]}   # 1 run in 200
     (row,) = _charge_rows(report)[1]
     assert row[3] == 'went home 40%, faltered 60%, charger broke on the approach <1%'
     assert _status(40, True, 30.0, 1) == 'broke at 30 min, 1 gun lost'

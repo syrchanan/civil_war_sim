@@ -451,7 +451,7 @@ def _unit_rows(report: dict) -> tuple:
 def _charge_rows(report: dict) -> tuple:
     names = {u['id']: u['name'] for u in report['units']}
     rows = [[f"{names[c['charger']]} -> {names[c['target']]}", f"round {c['round']}", _pct(c['made']),
-             ', '.join(f"{CHARGE_OUTCOMES[o]} {'<1%' if c['outcomes'][o] < 0.005 else format(c['outcomes'][o], '.0%')}"
+             ', '.join(f"{CHARGE_OUTCOMES[o]} {'<1%' if c['outcomes'][o] < 0.01 else format(c['outcomes'][o], '.0%')}"
                        for o in CHARGE_OUTCOMES if o in c['outcomes'])]
             for c in report['charges']]
     return ['Charge', 'When', 'Made in', 'How it ended'], rows
