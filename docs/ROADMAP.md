@@ -726,16 +726,28 @@ client in `web/src/ui/` (B3). Vitest for tests, `tsc --noEmit` for types. Pinned
 (vite 8.3.4, vitest 5.0.3, typescript 7.0.2). `web/.npmrc` sets `legacy-peer-deps`, because npm 10 crashes on
 vite 8's optional devtools peers.
 
-**Ported**: fdlibm `log` / `exp` (shared V8 goldens, plus 200k random inputs against V8's own `Math.log` /
-`Math.exp`), `Rng`.
-**Next**: engine defaults as generated JSON (decided: Python writes `BattleParams().to_dict()` and the unit tables;
-YAML stays the one source), then params, morale, units, the round engine, state file.
+**Ported** (each matches its parity fixture exactly):
+- fdlibm `log` / `exp` (shared V8 goldens, plus 200k random inputs against V8's own `Math.log` / `Math.exp`), `Rng`.
+- Engine defaults: `web/src/engine/defaults.json`, generated from `config/*.yaml` with the fixtures.
+- Params: every section, validation, `withOverrides` / `toDict` / `fromDict`. Python's `round()` is half-to-even:
+  ported as `roundHalfEven` (half-up fails 251 fixture rows).
+- Morale model, units (without Python's legacy 1-v-1 helpers and distances; positions round-trip as data).
+- The round engine and the state file: all 22 fixture battles replay exactly, and saving mid-battle resumes
+  identically.
+
+Conventions: field names stay snake_case (they are the state file's format), methods are camelCase; errors mirror
+Python's (`ValueError`, `RuntimeError`, built-in `TypeError`).
+
+**Not ported yet**: setup files, the step API's summaries (order of battle, side summary), the tuning batch
+(needed for B4's Monte Carlo player mode).
 
 ### B2. Parity fixtures ►
 Shared JSON in `test_cases/parity/`, asserted in both test suites. `imperial_generals.parity` builds them from the
 Python engine (`python -m imperial_generals.parity` rewrites them), and a Python test fails if a committed fixture
 is stale, so CI catches drift. `fdlibm.json` is the exception: V8 reference values, not generated.
-Done: `rng`, `fdlibm`. Coming: state + seed + round inputs → expected report.
+Done: `rng`, `fdlibm`, `params`, `morale`, `units`, `battles` (whole battles: the example and calibration
+scenarios over three seeds, plus synthetic battles for every charge outcome, `on_break`, wipe-outs, battery overrun,
+drain-only breaks and each kind of finish).
 
 **CI** (`.github/workflows/ci.yml`): pytest with 100% coverage required, and web typecheck + Vitest, on every push
 and PR. CD for `main` comes later.
