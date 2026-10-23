@@ -78,6 +78,29 @@ def test_order_validation():
     assert Order() == Order(target=None, mode='idle')
 
 
+def test_on_break_defaults_by_mode():
+    # what a unit does when its target breaks: fire keeps firing, melee falls back
+    assert Order('x', 'ranged').on_break == 'keep'
+    assert Order('x', 'melee').on_break == 'fall_back'
+    assert Order().on_break is None
+    assert Order('x', 'ranged') == Order('x', 'ranged', on_break='keep')
+    assert Order.coerce({'target': 'x', 'mode': 'ranged', 'on_break': 'weakest'}).on_break == 'weakest'
+
+
+@pytest.mark.parametrize("mode, on_break", [
+    ('ranged', 'pursue'), ('ranged', 'fall_back'), ('ranged', 'flee'),
+    ('melee', 'keep'), ('melee', 'strongest'), ('melee', 'weakest'),
+])
+def test_on_break_must_suit_the_mode(mode, on_break):
+    with pytest.raises(ValueError, match='on_break'):
+        Order('x', mode, on_break=on_break)
+
+
+def test_idle_order_has_no_on_break():
+    with pytest.raises(ValueError, match='on_break'):
+        Order(mode='idle', on_break='keep')
+
+
 @pytest.mark.parametrize("orders", [
     {'nobody': {'target': 'x', 'mode': 'ranged'}},     # unknown unit
     {'a': {'target': 'nobody', 'mode': 'ranged'}},     # unknown target
@@ -109,7 +132,7 @@ def test_none_order_is_idle_and_orders_must_be_a_dict():
 
 def test_unknown_order_keys_name_the_unit():
     b = make_battle({'a': (0, 100, '4/5/0/0'), 'x': (1, 100, '4/5/0/0')})
-    with pytest.raises(ValueError, match=r"Unknown order key\(s\) \['aim'\] for 'a'; use target, mode, ammo."):
+    with pytest.raises(ValueError, match=r"Unknown order key\(s\) \['aim'\] for 'a'; use target, mode, ammo, on_break."):
         b.engagements({'a': {'aim': 'x', 'mode': 'ranged'}})
 
 
