@@ -57,7 +57,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 |---|---|---|
 | B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ► |
 | B2 | Parity fixtures: Python ↔ TS identical results | ► |
-| B3 | GitHub Pages client: place units, set round length, resolve | ○ |
+| B3 | GitHub Pages client: place units, set round length, resolve | ► (built; runs locally, deploy with CD on main) |
 | B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ○ |
 
 ### Phase C — Later
@@ -755,7 +755,7 @@ drain-only breaks and each kind of finish).
 **CI** (`.github/workflows/ci.yml`): pytest with 100% coverage required, and web typecheck + Vitest, on every push
 and PR. CD for `main` comes later.
 
-### B3. GitHub Pages client ○
+### B3. GitHub Pages client ►
 A static client-side page. No backend. Build armies, drop units on a plain field, pick round length, set engagements,
 resolve, and see casualties and morale per round. Import/export state JSON.
 
@@ -767,6 +767,24 @@ Decided (2026-10-23):
   scenario that replays it exactly (`run`), and that `batch` / `check` can rerun over other seeds or parameters.
   State files written by JavaScript (whole-number floats without `.0`) load and resume exactly; tested on every
   fixture battle.
+- Stack: Preact + `@preact/signals` (signals work like ObservableJS cells), hand-drawn SVG charts, no other runtime
+  dependency. UI code is under the same 100% coverage (jsdom tests).
+- Later (user, 2026-10-23): **fog of war**, hiding the exact numbers and stats of the opposing side. For now the
+  client shows everything.
+
+**Built (2026-10-23)**, `cd web && npm run dev`:
+- **Armies**: two side tables (type, subtype, men, experience, morale, weapon by name, melee-only, guns), side
+  names, seed; starts with the Example Ridge armies. Start battle reports problems per unit. Then the order of battle.
+- **Orders**: one row per unit that can act (fire / charge / hold, target, ammo, what to do if the target breaks),
+  round length, the record-every-casualty toggle (off by default), and a preview of the engagements with casualties
+  per hour. Orders carry into the next round unless they can no longer be carried out.
+- **Rounds**: per unit lost, taken prisoner, inflicted, men left, morale and status, charges with their odds, target
+  switches; strength charts (men in the ranks and morale, one chart per side, crosshair readout).
+- **Result**: finish with the field decided by the engine or named; who held it and why, the side summary,
+  casualties by unit.
+- **Files**: download the battle (state file), open a saved one (from the client or Python). Checked end to end: a
+  battle fought in the browser replays in Python to the identical state.
+- Not yet: deploying to GitHub Pages (CD on main), fog of war, player mode (B4).
 
 ### B4. Player vs admin mode ○
 - **Admin mode**: exact seeded result.
