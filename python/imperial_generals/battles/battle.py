@@ -423,6 +423,9 @@ class Battle:
                 rate = c * unit.size * combat.ranged_kill_rate * matchup
             if mode == 'closing':
                 rate = rate * closing * share
+            if units[target].morale.broken:
+                # a broken unit scatters: harder to hit by fire, and by pursuit
+                rate = rate * (combat.broken_melee_multiplier if mode == 'melee' else combat.broken_fire_multiplier)
             if rate > 0:
                 arrows.append((attacker, target, mode, rate))
         return arrows
@@ -524,7 +527,8 @@ class Battle:
         the round: only artillery can still reach it. Contact persists into later rounds while either unit keeps
         a melee order on the other. When a unit breaks or is wiped out, the units targeting it stand down for the
         rest of the round. A unit that breaks loses a share of its remaining men as prisoners (more if enemy cavalry
-        is attacking it). Broken units can be attacked (pursued) but don't fight back.
+        is attacking it). Broken units can be attacked (pursued) but don't fight back; they are scattering, so
+        fire and pursuit on them use ``broken_fire_multiplier`` / ``broken_melee_multiplier``.
         """
         if self.finished:
             raise RuntimeError("This battle is finished.")
