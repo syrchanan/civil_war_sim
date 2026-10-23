@@ -738,8 +738,11 @@ vite 8's optional devtools peers.
 Conventions: field names stay snake_case (they are the state file's format), methods are camelCase; errors mirror
 Python's (`ValueError`, `RuntimeError`, built-in `TypeError`).
 
-**Not ported yet**: setup files, the step API's summaries (order of battle, side summary), the tuning batch
-(needed for B4's Monte Carlo player mode).
+- Order of battle and side summary (`summary.ts`).
+- Coverage: 100% statements, branches, functions and lines, enforced in CI (`npm run coverage`), as in Python.
+
+**Not ported** (decided 2026-10-23): setup files. The client builds units directly in its UI. Still to come: the
+tuning batch, needed for B4's Monte Carlo player mode.
 
 ### B2. Parity fixtures ►
 Shared JSON in `test_cases/parity/`, asserted in both test suites. `imperial_generals.parity` builds them from the
@@ -755,6 +758,15 @@ and PR. CD for `main` comes later.
 ### B3. GitHub Pages client ○
 A static client-side page. No backend. Build armies, drop units on a plain field, pick round length, set engagements,
 resolve, and see casualties and morale per round. Import/export state JSON.
+
+Decided (2026-10-23):
+- Units are built in the UI, not from setup files.
+- Testers **download the battle state file** for analysis and tuning. Every casualty event is recorded only when
+  the user turns it on (a toggle, default off), since events make files much bigger.
+- In Python, `python -m imperial_generals scenario-from-state battle.json` turns a downloaded battle into a
+  scenario that replays it exactly (`run`), and that `batch` / `check` can rerun over other seeds or parameters.
+  State files written by JavaScript (whole-number floats without `.0`) load and resume exactly; tested on every
+  fixture battle.
 
 ### B4. Player vs admin mode ○
 - **Admin mode**: exact seeded result.

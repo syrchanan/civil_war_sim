@@ -25,10 +25,16 @@ python -m venv .venv
 `python -m imperial_generals --help` lists the other commands (step-by-step battles, batches, matchup grids,
 player spreadsheets). From code, `imperial_generals.api` offers the same steps on JSON-safe dicts.
 
+A battle saved from the site replays in Python with
+`python -m imperial_generals scenario-from-state battle.json`, then `run`, `batch` or `check` on the scenario.
+
 ## Web
 
 ```
 cd web
 npm install
-npm test
+npm test            # or: npm run coverage (100% required, as in CI)
 ```
+
+After changing the Python engine or `config/`, regenerate the shared fixtures and defaults with
+`python -m imperial_generals.parity`; tests on both sides fail while they are stale.
