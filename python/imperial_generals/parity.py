@@ -173,10 +173,31 @@ def morale_fixture() -> dict:
             'break_fraction': fractions, 'break_scale': scales, 'cases': cases}
 
 
+STATS_VALID = ['4/4/0/0', '10/10/2/1', '1/1/-2/0', '3/7/-1/1', '0/0/0/0', '12/15/3/2', '04/5/0/0']
+STATS_INVALID = ['4/4/0', '4/4/0/0/0', '4/-4/0/0', '-4/4/0/0', '4/4/0/-1', 'a/4/0/0', '4.5/4/0/0', ' 4/4/0/0',
+                 '4/4/0/0 ', '', '4//0/0', '4/4/+1/0']
+
+
+def units_fixture() -> dict:
+    from imperial_generals.units import ArtilleryBattery, Regiment
+    from imperial_generals.utils import get_closest_morale_stat
+    raws = sorted({i / 4 for i in range(0, 401)} | {14.999999999999998, 15.000000000000002, 55.0, 95.0})
+    closest = [[m, get_closest_morale_stat(m)] for m in raws]
+    stats = [[s, list(Regiment(10, s).stats)] for s in STATS_VALID]
+    min_crew = ArtilleryBattery.MIN_CREW_PER_GUN
+    guns = [[g, crew, ArtilleryBattery(crew, '4/4/0/0', g, subtype='battery').effective_guns]
+            for g in (0, 1, 6, 8, 12) for crew in (0, 6, 7, 13, 14, 55, 56, 72, 100)]
+    return {'description': 'Units: closest morale stat [raw, stat]; stats strings that parse [text, stats] or '
+                           'are rejected; manned guns [guns, crew, effective_guns].',
+            'closest_morale_stat': closest, 'stats_valid': stats, 'stats_invalid': STATS_INVALID,
+            'min_crew_per_gun': min_crew, 'effective_guns': guns}
+
+
 FIXTURES = {
     'rng': rng_fixture,
     'params': params_fixture,
     'morale': morale_fixture,
+    'units': units_fixture,
 }
 
 

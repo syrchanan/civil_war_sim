@@ -67,3 +67,10 @@ def test_invalid_overrides_in_the_params_fixture_are_rejected(overrides):
     from imperial_generals.params import BattleParams
     with pytest.raises(ValueError):
         BattleParams().with_overrides(overrides)
+
+
+@pytest.mark.parametrize("stats", parity.STATS_INVALID)
+def test_invalid_stats_in_the_units_fixture_are_rejected(stats):
+    from imperial_generals.units import Regiment
+    with pytest.raises(ValueError):
+        Regiment(10, stats)
