@@ -598,7 +598,7 @@ def _parser() -> argparse.ArgumentParser:
     p = commands.add_parser('resolve', help='fight one round')
     p.add_argument('state', type=Path)
     p.add_argument('--duration', type=float, required=True, help='round length in game minutes')
-    p.add_argument('--orders', type=Path, help='orders file: unit id -> {target, mode, ammo}; others idle')
+    p.add_argument('--orders', type=Path, help='orders file: unit id -> {target, mode, ammo, on_break}; others idle')
     p.add_argument('-o', '--output', type=Path, help='write the new state here instead of updating STATE')
     p.add_argument('--events', action='store_true', help='record every casualty in the report')
     p.add_argument('--json', action='store_true', help='print the report as JSON')

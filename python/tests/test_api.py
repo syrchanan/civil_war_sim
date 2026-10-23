@@ -135,7 +135,7 @@ def test_bad_orders_say_which_round():
     assert info.value.errors[0].startswith('Round 1: mode must be one of')
     with pytest.raises(SetupError) as info:
         api.run_scenario({**SETUP, 'rounds': [{'duration': 60, 'orders': {'us': {'aim': 'cs'}}}]})
-    assert info.value.errors == ["Round 1: Unknown order key(s) ['aim'] for 'us'; use target, mode, ammo."]
+    assert info.value.errors == ["Round 1: Unknown order key(s) ['aim'] for 'us'; use target, mode, ammo, on_break."]
 
 
 def test_setup_problems_come_before_running():

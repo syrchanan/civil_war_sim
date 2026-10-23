@@ -31,7 +31,9 @@ from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
 
 MODES = frozenset({'idle', 'ranged', 'melee'})
-ORDER_KEYS = frozenset({'target', 'mode', 'ammo'})
+ORDER_KEYS = frozenset({'target', 'mode', 'ammo', 'on_break'})
+# What a unit does when its target breaks, by mode; the first is the default.
+ON_BREAK = {'ranged': ('keep', 'strongest', 'weakest'), 'melee': ('fall_back', 'pursue')}
 
 
 @dataclass(frozen=True)
@@ -39,11 +41,17 @@ class Order:
     """
     One regiment's order for a round: whom it targets and how. Artillery may name its ``ammo`` (e.g. 'round_shot',
     'shell', 'canister'); it is fixed for the round, and defaults to ``artillery_default_ammo``.
+
+    ``on_break`` says what the unit does when its target breaks (or is wiped out) during the round:
+    - fire: 'keep' (default) firing on the broken unit; or switch to the 'strongest' / 'weakest' active enemy unit
+      (men × share of morale budget left).
+    - melee: 'fall_back' (default), leaving the broken unit; or 'pursue' it, staying in contact.
     """
 
     target: str | None = None
     mode: str = 'idle'
     ammo: str | None = None
+    on_break: str | None = None
 
     def __post_init__(self) -> None:
         if self.mode not in MODES:
@@ -54,6 +62,14 @@ class Order:
             raise ValueError(f"A {self.mode} order needs a target.")
         if self.ammo is not None and self.mode != 'ranged':
             raise ValueError("Only a ranged order can choose ammo.")
+        if self.mode == 'idle':
+            if self.on_break is not None:
+                raise ValueError("An idle order has no on_break.")
+        elif self.on_break is None:
+            object.__setattr__(self, 'on_break', ON_BREAK[self.mode][0])
+        elif self.on_break not in ON_BREAK[self.mode]:
+            raise ValueError(f"on_break for a {self.mode} order must be one of {list(ON_BREAK[self.mode])}, "
+                             f"got {self.on_break!r}.")
 
     @classmethod
     def coerce(cls, value) -> 'Order':
@@ -263,7 +279,7 @@ class Battle:
                 raise ValueError(f"Unknown unit {uid!r} in orders.")
             if isinstance(value, dict) and not set(value) <= ORDER_KEYS:
                 raise ValueError(f"Unknown order key(s) {sorted(set(value) - ORDER_KEYS)} for {uid!r}; "
-                                 f"use target, mode, ammo.")
+                                 f"use target, mode, ammo, on_break.")
             order = Order.coerce(value)
             if order.mode == 'idle':
                 continue
