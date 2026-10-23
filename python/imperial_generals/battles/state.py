@@ -106,6 +106,8 @@ def result_to_dict(result: BattleResult) -> dict:
         'units': {uid: asdict(u) for uid, u in result.units.items()},
         'prisoners': _by_side(result.prisoners),
         'guns_captured': _by_side(result.guns_captured),
+        'field_decided_by': result.field_decided_by,
+        'field_votes': result.field_votes,
     }
 
 
@@ -192,6 +194,9 @@ def _result_from_dict(data: dict) -> BattleResult:
         units={uid: UnitOutcome(**u) for uid, u in data['units'].items()},
         prisoners=_from_sides(data['prisoners']),
         guns_captured=_from_sides(data['guns_captured']),
+        # absent in files finished before the field votes (A12)
+        field_decided_by=data.get('field_decided_by', 'admin'),
+        field_votes=data.get('field_votes', {}),
     )
 
 
