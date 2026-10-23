@@ -8,14 +8,22 @@ under ``test_cases/parity/`` and a test fails if one is out of date, so regenera
 
 ``fdlibm.json`` in the same folder is not generated: it holds V8's ``Math.log`` / ``Math.exp`` results, the
 reference both languages are checked against.
+
+The same command writes ``web/src/engine/defaults.json``, the engine defaults the port runs on: ``config/*.yaml``
+stays the one source.
 """
 
 import json
 from pathlib import Path
 
+from imperial_generals.config import get_config
+from imperial_generals.params import BattleParams
 from imperial_generals.utils import Rng
+from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
-PARITY_DIR = Path(__file__).resolve().parents[2] / 'test_cases' / 'parity'
+ROOT = Path(__file__).resolve().parents[2]
+PARITY_DIR = ROOT / 'test_cases' / 'parity'
+DEFAULTS_PATH = ROOT / 'web' / 'src' / 'engine' / 'defaults.json'
 
 DRAWS = 8
 
@@ -43,17 +51,33 @@ FIXTURES = {
 }
 
 
+def defaults() -> dict:
+    """Everything the engine reads from config: battle params, the morale scale, unit subtypes, the battery template."""
+    cfg = get_config()
+    return {
+        'description': 'Engine defaults from config/*.yaml. Generated: python -m imperial_generals.parity',
+        'params': BattleParams().to_dict(),
+        'morale_scale': {k: cfg['morale'][k] for k in ('min_raw', 'max_raw', 'raw_scale_factor')},
+        'unit_subtypes': {unit_type: sorted(subtypes) for unit_type, subtypes in UNIT_SUBTYPES.items()},
+        'artillery': dict(cfg['artillery']),
+    }
+
+
 def build(name: str) -> dict:
     """The fixture ``name`` as the Python engine computes it now."""
     return FIXTURES[name]()
 
 
-def write_all(directory: Path = PARITY_DIR) -> None:
+def _write_json(path: Path, data: dict) -> None:
+    path.write_text(json.dumps(data, indent=2) + '\n', encoding='utf-8', newline='\n')
+
+
+def write_all(directory: Path = PARITY_DIR, defaults_path: Path = DEFAULTS_PATH) -> None:
     directory = Path(directory)
     directory.mkdir(parents=True, exist_ok=True)
     for name in FIXTURES:
-        text = json.dumps(build(name), indent=2) + '\n'
-        (directory / f'{name}.json').write_text(text, encoding='utf-8', newline='\n')
+        _write_json(directory / f'{name}.json', build(name))
+    _write_json(Path(defaults_path), defaults())
 
 
 if __name__ == '__main__':  # pragma: no cover
