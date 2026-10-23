@@ -51,6 +51,8 @@ def test_defaults_carry_params_and_the_tables_units_read():
     cfg = get_config()
     assert data['morale_scale'] == {k: cfg['morale'][k] for k in ('min_raw', 'max_raw', 'raw_scale_factor')}
     assert data['artillery'] == dict(cfg['artillery'])
+    sheets = cfg['sheets']
+    assert data['names'] == {k: dict(sheets[k]) for k in ('weapons', 'artillery_weapons', 'actions', 'ammo')}
     assert data['unit_subtypes'] == {'inf': ['irregulars', 'light', 'line', 'marine', 'pikes'],
                                      'cav': ['dragoons', 'heavy', 'light'],
                                      'art': ['battery', 'horse battery', 'siege battery']}

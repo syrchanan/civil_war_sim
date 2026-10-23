@@ -205,5 +205,30 @@
     "guns": 8,
     "crew_per_gun": 9,
     "min_crew_per_gun": 7
+  },
+  "names": {
+    "weapons": {
+      "unarmed / pikes": -2,
+      "matchlock": -1,
+      "smoothbore musket": 0,
+      "rifled musket": 1,
+      "needle rifle": 2
+    },
+    "artillery_weapons": {
+      "old smoothbore guns": -1,
+      "smoothbore guns": 0,
+      "rifled guns": 1,
+      "breech-loading guns": 2
+    },
+    "actions": {
+      "fire": "ranged",
+      "charge": "melee",
+      "hold": "idle"
+    },
+    "ammo": {
+      "round shot": "round_shot",
+      "shell": "shell",
+      "canister": "canister"
+    }
   }
 }
