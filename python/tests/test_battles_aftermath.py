@@ -288,3 +288,117 @@ def test_auto_holder_is_none_when_both_sides_still_stand():
     b = Battle({'a': (0, Regiment(500, '5/5/0/0')), 'x': (1, Regiment(500, '5/5/0/0'))}, rng=Rng(1), params=exact())
     b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged'}, 'x': {'target': 'a', 'mode': 'ranged'}})
     assert b.finish().field_held_by is None
+
+
+# =============================================================================
+# Who holds the field when both sides still stand (A12): three tests vote
+# =============================================================================
+
+def field_battle(hits=(0, 0), standing=(1000, 1000), broken=(), params=None):
+    """
+    Two units a side, 500 men each. ``hits`` = men hit on each side (credited to the other side as inflicted),
+    ``standing`` = men left on each side (split evenly), ``broken`` = unit ids to break.
+    """
+    units = {uid: (side, Regiment(500, '5/5/0/0')) for uid, side in (('a1', 0), ('a2', 0), ('x1', 1), ('x2', 1))}
+    b = Battle(units, rng=Rng(1), params=params or exact())
+    sides = {0: ('a1', 'a2'), 1: ('x1', 'x2')}
+    for side, uids in sides.items():
+        for uid in uids:
+            unit = b.units[uid]
+            unit.losses = hits[side] // 2
+            unit.inflicted = hits[1 - side] // 2
+            unit.regiment.update_size(standing[side] // 2)
+    for uid in broken:
+        b.units[uid].morale.force_break()
+    return b
+
+
+def test_three_votes_hold_the_field():
+    # side 0 inflicted 3× what it took, side 1 has half its army in broken units, side 0 has 4× the men standing
+    b = field_battle(hits=(100, 300), standing=(900, 450), broken=('x1',))
+    result = b.finish()
+    assert result.field_held_by == 0
+    assert result.field_decided_by == 'votes'
+    assert result.field_votes == {'exchange': 0, 'routs': 0, 'standing': 0}
+
+
+def test_two_votes_and_none_against_hold_the_field():
+    b = field_battle(hits=(300, 100), standing=(450, 900))         # side 1: exchange and standing; no routs
+    result = b.finish()
+    assert result.field_votes == {'exchange': 1, 'routs': None, 'standing': 1}
+    assert result.field_held_by == 1
+
+
+def test_one_vote_is_a_draw():
+    b = field_battle(hits=(100, 300), standing=(900, 900))
+    result = b.finish()
+    assert result.field_votes == {'exchange': 0, 'routs': None, 'standing': None}
+    assert result.field_held_by is None and result.field_decided_by == 'votes'
+
+
+def test_a_vote_against_is_a_draw():
+    # side 0 wins the exchange and has more men standing, but more of its army is broken
+    b = field_battle(hits=(100, 300), standing=(1000, 300), broken=('a1',))     # standing 500 v 300
+    result = b.finish()
+    assert result.field_votes == {'exchange': 0, 'routs': 1, 'standing': 0}
+    assert result.field_held_by is None
+
+
+def test_votes_at_the_thresholds():
+    # exactly 1.5× exchange and exactly 1.5× standing count
+    b = field_battle(hits=(200, 300), standing=(900, 600))
+    assert b.finish().field_votes == {'exchange': 0, 'routs': None, 'standing': 0}
+
+
+def test_rout_gap_at_the_threshold():
+    # 50% of side 1's army broken v none of side 0's: exactly a 50-point gap
+    params = exact().with_overrides({'aftermath': {'field_rout_gap': 0.5}})
+    assert field_battle(broken=('x1',), params=params).finish().field_votes['routs'] == 0
+    params = exact().with_overrides({'aftermath': {'field_rout_gap': 0.51}})
+    assert field_battle(broken=('x1',), params=params).finish().field_votes['routs'] is None
+
+
+def test_votes_just_short_of_the_thresholds():
+    b = field_battle(hits=(202, 300), standing=(898, 600))
+    assert b.finish().field_votes == {'exchange': None, 'routs': None, 'standing': None}
+
+
+def test_no_hits_no_exchange_vote():
+    assert field_battle().finish().field_votes['exchange'] is None
+
+
+def test_unhit_side_that_inflicted_wins_the_exchange():
+    assert field_battle(hits=(0, 50)).finish().field_votes['exchange'] == 0
+
+
+def test_routs_count_starting_strength_of_broken_units():
+    # x1 broke after losing most of its men: it still counts its 500 starting men, half side 1's army
+    b = field_battle(standing=(1000, 1000), broken=('x1',))
+    b.units['x1'].regiment.update_size(20)
+    assert b.finish().field_votes['routs'] == 0
+
+
+def test_standing_counts_only_unbroken_units():
+    b = field_battle(standing=(1000, 1000), broken=('x1',))       # side 1 has 500 standing to side 0's 1000
+    assert b.finish().field_votes['standing'] == 0
+
+
+def test_field_vote_thresholds_come_from_params():
+    params = exact().with_overrides({'aftermath': {'field_votes_needed': 1}})
+    b = field_battle(hits=(100, 300), standing=(900, 900), params=params)
+    assert b.finish().field_held_by == 0
+
+
+def test_whole_army_out_decides_the_field_before_the_votes():
+    b = field_battle(hits=(100, 300), standing=(1000, 600), broken=('x1', 'x2'))
+    result = b.finish()
+    assert result.field_held_by == 0 and result.field_decided_by == 'army_out'
+    assert result.field_votes == {'exchange': 0, 'routs': 0, 'standing': 0}
+
+
+def test_admin_named_holder_is_recorded_with_the_votes():
+    b = field_battle(hits=(100, 300), standing=(900, 450), broken=('x1',))
+    result = b.finish(field_held_by=1)
+    assert result.field_held_by == 1 and result.field_decided_by == 'admin'
+    assert result.field_votes == {'exchange': 0, 'routs': 0, 'standing': 0}
+    assert field_battle().finish(field_held_by=None).field_decided_by == 'admin'
