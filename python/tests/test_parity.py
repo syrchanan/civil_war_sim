@@ -107,3 +107,39 @@ def test_a_finished_javascript_state_file_loads():
     case = parity.build('battles')['cases'][0]
     data = _as_javascript_writes_it(case['final'])
     assert json.loads(json.dumps(Battle.from_dict(data).to_dict())) == case['final']
+
+
+# =============================================================================
+# A downloaded state file becomes a scenario that replays it exactly
+# =============================================================================
+
+@pytest.mark.parametrize("case", parity.build('battles')['cases'], ids=lambda c: f"{c['name']}-{c['seed']}")
+def test_scenario_from_state_replays_the_battle(case):
+    from imperial_generals import api
+    scenario = api.scenario_from_state(case['final'])
+    events = any(r['events'] for r in case['final']['history'])
+    state, _, _ = api.run_scenario(scenario, record_events=events)
+    assert json.loads(json.dumps(state)) == case['final']
+
+
+def test_scenario_from_state_of_an_unfinished_battle_does_not_finish():
+    from imperial_generals import api
+    case = parity.build('battles')['cases'][0]
+    battle = api.new_battle(api.scenario_from_state(case['start']))
+    scenario = api.scenario_from_state(battle)
+    assert scenario['finish'] is False and scenario['rounds'] == []
+
+
+def test_scenario_from_state_needs_a_seed():
+    from imperial_generals import api
+    state = dict(parity.build('battles')['cases'][0]['final'], seed=None)
+    with pytest.raises(ValueError, match='no seed'):
+        api.scenario_from_state(state)
+
+
+def test_scenario_from_state_keeps_unit_meta():
+    from imperial_generals import api
+    setup = {'seed': 3, 'units': [{'id': 'a', 'side': 0, 'size': 100, 'stats': '4/4/0/0', 'meta': {'player': 'p1'}},
+                                  {'id': 'x', 'side': 1, 'size': 100, 'stats': '4/4/0/0'}]}
+    scenario = api.scenario_from_state(api.new_battle(setup))
+    assert scenario['units'][0]['meta'] == {'player': 'p1'} and 'meta' not in scenario['units'][1]

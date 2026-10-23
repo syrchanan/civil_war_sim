@@ -153,6 +153,56 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
     return battle.to_dict(), reports, result
 
 
+def scenario_from_state(state: dict) -> dict:
+    """
+    The scenario (setup + scripted rounds + finish) that replays a saved battle exactly, e.g. one downloaded from
+    the web client: ``run_scenario`` on it gives the same state again, and ``batch`` / ``check`` can rerun it over
+    other seeds or parameter overrides for tuning.
+
+    Each round's length is recovered as ``end - start``, exact for whole minutes. A field holder named in
+    ``finish`` replays as named; one decided by the engine replays as 'auto'.
+
+    Raises
+    ------
+    ValueError
+        If the state has no seed (it was built from a bare generator state, so its start can't be replayed).
+    """
+    if state['seed'] is None:
+        raise ValueError("This battle has no seed, so its start can't be replayed.")
+    meta = dict(state['meta'])
+    sides = meta.pop('sides', None)
+    units = []
+    for u in state['units']:
+        unit = {'id': u['id'], 'name': u['name'], 'side': u['side']}
+        if u['type'] is not None:
+            unit['type'], unit['subtype'] = u['type'], u['subtype']
+        unit['size'] = u['initial_size']
+        if 'guns' in u:
+            unit['guns'] = u['guns'] + u['guns_lost']
+        unit['stats'] = u['initial_stats']
+        unit['front_size'] = u['front_size']
+        if u['meta']:
+            unit['meta'] = u['meta']
+        units.append(unit)
+    rounds = []
+    for r in state['history']:
+        orders = {uid: {k: v for k, v in o.items() if v is not None} for uid, o in r['orders'].items()}
+        rounds.append({'duration': r['end'] - r['start'], 'orders': orders})
+    result = state['result']
+    if result is None:
+        finish = False
+    elif result.get('field_decided_by', 'admin') != 'admin':
+        finish = True
+    else:
+        finish = 'none' if result['field_held_by'] is None else result['field_held_by']
+    scenario = {'meta': meta}
+    if sides is not None:
+        scenario['sides'] = sides
+    scenario.update({'seed': state['seed'], 'params': state['params'], 'units': units, 'rounds': rounds,
+                     'finish': finish})
+    return scenario
+
+
 # =============================================================================
 # Side summaries
 # =============================================================================

@@ -572,3 +572,20 @@ def test_side_summary_shows_who_won(files, capsys):
     _, out, _ = run(capsys, 'finish', files / 'state.json', '--field', 'Union')
     result = [line for line in out.splitlines() if line.startswith('Result')][0]
     assert result.split()[1:] == ['won', 'lost']
+
+
+def test_scenario_from_state_writes_a_scenario_that_replays_it(files, capsys):
+    new(capsys, files)
+    run(capsys, 'resolve', files / 'state.json', '--duration', 90, '--orders', files / 'orders.yaml')
+    run(capsys, 'finish', files / 'state.json', '--field', 'Union')
+    code, out, _ = run(capsys, 'scenario-from-state', files / 'state.json', '-o', files / 'replay.yaml')
+    assert code == 0 and 'replay.yaml' in out and '1 round' in out
+    code, _, _ = run(capsys, 'run', files / 'replay.yaml', '-o', files / 'replayed.json')
+    assert code == 0
+    assert read(files / 'replayed.json') == read(files / 'state.json')
+
+
+def test_scenario_from_state_defaults_to_a_yaml_next_to_the_state(files, capsys):
+    new(capsys, files)
+    code, _, _ = run(capsys, 'scenario-from-state', files / 'state.json')
+    assert code == 0 and (files / 'state.yaml').exists()

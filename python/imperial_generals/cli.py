@@ -12,6 +12,7 @@ Command line for the battle engine (roadmap A9). Run ``python -m imperial_genera
     python -m imperial_generals check scenario.yaml --report r.md     # grade the engine against expectations
     python -m imperial_generals sheet-template players.xlsx           # a workbook players fill in
     python -m imperial_generals sheet-import filled.xlsx              # ... back into a scenario file
+    python -m imperial_generals scenario-from-state battle.json       # a saved battle as a scenario to replay
 
 ``resolve`` and ``finish`` update the state file in place unless ``-o`` names another. ``--json`` prints the
 machine-readable report instead of a table. Problems exit with code 2 and a message saying what to fix.
@@ -599,6 +600,17 @@ def _cmd_sheet_import(args) -> None:
     print(f"Wrote {output} ({len(scenario['units'])} units, {len(scenario['rounds'])} rounds).")
 
 
+def _cmd_scenario_from_state(args) -> None:
+    scenario = api.scenario_from_state(_load_state(args.state))
+    output = args.output or args.state.with_suffix('.yaml')
+    header = (f'# Replays {args.state.name} exactly: python -m imperial_generals run {output.name}\n'
+              f'# Rerun it over other seeds or parameters with batch / check.\n')
+    output.write_text(header + yaml.safe_dump(scenario, sort_keys=False, allow_unicode=True, width=120),
+                      encoding='utf-8', newline='\n')
+    n = len(scenario['rounds'])
+    print(f"Wrote {output} ({len(scenario['units'])} units, {n} round{'' if n == 1 else 's'}).")
+
+
 def _cmd_show(args) -> None:
     _print_state(_load_state(args.state))
 
@@ -692,6 +704,12 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument('workbook', type=Path)
     p.add_argument('-o', '--output', type=Path, help='scenario file to write (default: next to the workbook)')
     p.set_defaults(run=_cmd_sheet_import)
+
+    p = commands.add_parser('scenario-from-state',
+                            help='turn a saved battle (e.g. downloaded from the site) into a scenario that replays it')
+    p.add_argument('state', type=Path)
+    p.add_argument('-o', '--output', type=Path, help='scenario file to write (default: next to the state file)')
+    p.set_defaults(run=_cmd_scenario_from_state)
 
     p = commands.add_parser('show', help='summarise a state file')
     p.add_argument('state', type=Path)
