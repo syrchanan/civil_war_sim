@@ -1,0 +1,31 @@
+# Changelog
+
+All notable changes to this project are recorded here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
+Nothing has been released yet: everything up to the first public site is 0.1.0a.
+
+## [Unreleased]
+
+Working towards 0.1.0a, the first site. Design decisions and status live in `docs/ROADMAP.md`.
+
+### Added
+- Phase A, the Python engine:
+  - Seeded RNG (xoshiro128\*\*) and fdlibm `log` / `exp`, bit-identical to JavaScript.
+  - Morale budget model with break points from experience and morale; game time in minutes.
+  - Round engine for any number of units per side: per-unit orders (ranged / melee / idle), melee contact,
+    charges with closing fire and a contact test, rout prisoners, captured guns, and casualty settlement
+    (killed, wounded, walking wounded, captured, returned).
+  - Unit-type matchups (infantry, cavalry, artillery and subtypes), per-gun artillery with ammo choice.
+  - Battle state file (JSON) with exact resume; setup and scenario files; step API (`imperial_generals.api`)
+    and CLI (`python -m imperial_generals`).
+  - Tuning harness: seed batches, matchup grids and plots, calibration scenarios.
+  - Player validation scenarios: an `expect` block, `check` grading and reports, player spreadsheets.
+- Broken units are harder to hit: fire ×0.5 and melee pursuit ×0.75 (placeholders).
+- `on_break` in orders: fire keeps on a broken target or switches to the strongest / weakest enemy; melee
+  falls back or pursues. Switches are reported as `retargets`.
+- The field holder is decided by three votes (casualty exchange, routs, strength standing) when both armies
+  still stand; the side summary reads it as won / lost / drawn, and the result records how it was decided.
+- `CHANGELOG.md`, `python/requirements.txt`, CI.
+
+### Removed
+- The stale v0.2 TypeScript port (`typescript/`) and `run_tests.py`; the new port lives in `web/`.
