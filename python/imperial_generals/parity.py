@@ -306,12 +306,25 @@ def battles_fixture() -> dict:
             'cases': cases}
 
 
+def summaries_fixture() -> dict:
+    from imperial_generals import api
+    cases = []
+    for case in battles_fixture()['cases']:
+        final = case['final']
+        cases.append({'name': case['name'], 'seed': case['seed'], 'order_of_battle': api.order_of_battle(final),
+                      'side_summary': api.side_summary(final) if final['result'] is not None else None})
+    return {'description': "api.order_of_battle and api.side_summary (finished battles only) of each battle in "
+                           "battles.json, from its 'final' state.",
+            'cases': cases}
+
+
 FIXTURES = {
     'rng': rng_fixture,
     'params': params_fixture,
     'morale': morale_fixture,
     'units': units_fixture,
     'battles': battles_fixture,
+    'summaries': summaries_fixture,
 }
 
 
