@@ -570,8 +570,12 @@ class Battle:
         opening = tuple(Engagement(*a) for a in self._rates(slots, partners))
 
         def stand_down(gone: set, t: float) -> None:
-            """Units that broke or were wiped out: their attackers stand down, contacts and approaches end."""
-            cancelled.update(uid for uid, order in valid.items() if order.target in gone)
+            """
+            Units that broke or were wiped out: contacts and approaches end; melee attackers stand down, and so does
+            fire on a wiped-out unit. Fire on a broken unit keeps going (on_break 'keep').
+            """
+            cancelled.update(uid for uid, order in valid.items()
+                             if order.target in gone and (order.mode == 'melee' or self.units[order.target].size == 0))
             contacts.difference_update([pair for pair in contacts if pair & gone])
             for c in [c for c in pending if c['charger'] in gone or c['target'] in gone]:
                 pending.remove(c)
@@ -696,7 +700,8 @@ class Battle:
             events=tuple(events),
             prisoners=prisoners,
             guns_captured=guns,
-            orders={uid: {'target': o.target, 'mode': o.mode, 'ammo': o.ammo} for uid, o in valid.items()},
+            orders={uid: {'target': o.target, 'mode': o.mode, 'ammo': o.ammo, 'on_break': o.on_break}
+                    for uid, o in valid.items()},
             charges=tuple(charges),
         )
         self.history.append(report)

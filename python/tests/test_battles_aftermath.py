@@ -24,8 +24,14 @@ def rout_battle(attacker_cls=Regiment, params=None, seed=3):
     else:
         attacker = Regiment(1000, '8/8/1/0')
     b = Battle({'a': (0, attacker), 'x': (1, Regiment(400, '2/2/0/0'))}, rng=Rng(seed), params=params or exact())
-    report = b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}})
+    report = b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}}, record_events=True)
     return b, report
+
+
+def remaining_at_break(report, uid='x', size=400):
+    """Men left at the moment of the break: fire keeps hitting a broken unit afterwards."""
+    broke_at = report.units[uid].broke_at
+    return size - sum(ev.target == uid and ev.time <= broke_at for ev in report.events)
 
 
 # =============================================================================
@@ -66,8 +72,7 @@ def test_breaking_unit_loses_a_share_of_its_remaining_men_as_prisoners():
     b, report = rout_battle()
     x = report.units['x']
     assert x.broken
-    remaining_at_break = 400 - x.losses
-    assert x.captured == rounded(0.10 * remaining_at_break)
+    assert x.captured == rounded(0.10 * remaining_at_break(report))
     assert x.captured > 0
     assert x.size == 400 - x.losses - x.captured == b.units['x'].regiment.size
 
@@ -81,15 +86,16 @@ def test_prisoners_are_credited_to_the_other_side():
 def test_enemy_cavalry_engaged_increases_rout_captures():
     _, plain = rout_battle(Regiment, seed=3)
     _, cav = rout_battle(CavalryRegiment, seed=3)
-    remaining = 400 - cav.units['x'].losses
-    assert cav.units['x'].captured == rounded(min(1.0, 0.10 * 2.0) * remaining)
-    assert cav.units['x'].captured / (400 - cav.units['x'].losses) > \
-        plain.units['x'].captured / (400 - plain.units['x'].losses)
+    assert cav.units['x'].captured == rounded(min(1.0, 0.10 * 2.0) * remaining_at_break(cav))
+    assert cav.units['x'].captured / remaining_at_break(cav) > plain.units['x'].captured / remaining_at_break(plain)
 
 
 def test_rout_capture_happens_once():
-    b, first = rout_battle()
-    second = b.resolve_round(60, {'a': {'target': 'x', 'mode': 'ranged'}})     # pursuit
+    b = Battle({'a': (0, Regiment(1000, '8/8/1/0')), 'x': (1, Regiment(400, '2/2/0/0'))}, rng=Rng(3), params=exact())
+    fire = {'a': {'target': 'x', 'mode': 'ranged'}}
+    while not b.units['x'].morale.broken:
+        b.resolve_round(2, fire)
+    second = b.resolve_round(5, fire)     # pursuit
     assert second.units['x'].captured == 0
     assert second.units['x'].losses > 0
 

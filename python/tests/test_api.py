@@ -155,7 +155,7 @@ ROUT = {
         {'id': 'cs2', 'side': 1, 'size': 500, 'stats': '5/5/0/0'},
     ],
     'rounds': [
-        {'duration': 120, 'orders': {'us': {'target': 'cs', 'mode': 'ranged'}, 'cs': {'target': 'us', 'mode': 'ranged'}}},
+        {'duration': 10, 'orders': {'us': {'target': 'cs', 'mode': 'ranged'}, 'cs': {'target': 'us', 'mode': 'ranged'}}},
         {'duration': 600, 'orders': {'us': {'target': 'cs', 'mode': 'ranged'}, 'cs': {'target': 'us', 'mode': 'ranged'}}},
         {'duration': 30, 'orders': {'us': {'target': 'cs', 'mode': 'ranged'}, 'cs2': {'target': 'us', 'mode': 'ranged'}}},
     ],
@@ -171,7 +171,7 @@ def test_scenario_skips_orders_that_can_no_longer_be_carried_out():
     assert reports[1]['units']['cs']['size'] == 0
     # round 3: nothing left to shoot at
     assert reports[2]['skipped_orders'] == {'us': 'target cs is wiped out'}
-    assert reports[2]['orders'] == {'cs2': {'target': 'us', 'mode': 'ranged', 'ammo': None}}
+    assert reports[2]['orders'] == {'cs2': {'target': 'us', 'mode': 'ranged', 'ammo': None, 'on_break': 'keep'}}
 
 
 def test_scenario_finish_can_name_the_field_holder():

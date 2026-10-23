@@ -310,22 +310,47 @@ def test_matches_simulation_exactly_one_on_one():
 
         flat = BattleParams().with_overrides({'morale': {'break_point_spread': 0.0}})   # Simulation has none
         b = make_battle({'a': (0, 600, '4/5/0/0'), 'x': (1, 500, '3/4/1/0')}, seed=seed, params=flat)
-        report = b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}, 'x': {'target': 'a', 'mode': 'ranged'}})
+        report = b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}, 'x': {'target': 'a', 'mode': 'ranged'}},
+                                 record_events=True)
 
-        assert [report.units['a'].losses, report.units['x'].losses] == sim.casualties['losses'].tolist()
-        assert [report.units['a'].morale, report.units['x'].morale] == [s.morale for s in sim.morale_states]
-        assert [report.units['a'].broken, report.units['x'].broken] == [s.broken for s in sim.morale_states]
+        # Simulation stops at the first break; the battle fires on at the broken unit, so compare up to there
+        broke_at = [report.units[u].broke_at for u in ('a', 'x') if report.units[u].broke_at is not None]
+        assert min(broke_at) == sim.time              # every seed here ends in a break inside the 600 minutes
+        first = [report.units[u].broke_at == sim.time for u in ('a', 'x')]
+        assert first == [s.broken for s in sim.morale_states]
+        hits = [sum(ev.target == u and ev.time <= sim.time for ev in report.events) for u in ('a', 'x')]
+        assert hits == sim.casualties['losses'].tolist()
 
 
-def test_attackers_go_idle_when_their_target_breaks():
+def test_fire_keeps_on_a_target_that_breaks_by_default():
     b = make_battle({'a': (0, 1000, '8/8/1/0'), 'c': (0, 1000, '8/8/1/0'), 'x': (1, 400, '2/2/0/0')}, seed=3)
     report = b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}, 'c': {'target': 'x', 'mode': 'ranged'}},
                              record_events=True)
     x = report.units['x']
     assert x.broken and x.broke_at is not None
     assert x.broke_at < report.end
-    assert all(ev.time <= x.broke_at for ev in report.events)     # no fire after the break
-    assert report.events[-1].target == 'x' and report.events[-1].time == x.broke_at
+    after = [ev for ev in report.events if ev.time > x.broke_at]
+    assert after and {ev.attacker for ev in after} == {'a', 'c'} and {ev.target for ev in after} == {'x'}
+
+
+def test_fire_on_a_target_that_broke_mid_round_is_reduced():
+    # after the break, the same two attackers hit x at the broken-target rate
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'c': (0, 1000, '8/8/1/0'), 'x': (1, 4000, '2/2/0/0')}, seed=3)
+    orders = {'a': {'target': 'x', 'mode': 'ranged'}, 'c': {'target': 'x', 'mode': 'ranged'}}
+    report = b.resolve_round(600, orders, record_events=True)
+    x = report.units['x']
+    assert x.broken
+    hits_per_min_before = sum(ev.time <= x.broke_at for ev in report.events) / x.broke_at
+    hits_per_min_after = sum(ev.time > x.broke_at for ev in report.events) / (report.end - x.broke_at)
+    full_rate = 2 * coef('8/8/1/0', 'ranged') * K_R * 1000
+    assert hits_per_min_before == pytest.approx(full_rate, rel=0.15)
+    assert hits_per_min_after == pytest.approx(full_rate * P.combat.broken_fire_multiplier, rel=0.15)
+
+
+def test_report_orders_include_on_break():
+    b = make_battle({'a': (0, 100, '4/5/0/0'), 'x': (1, 100, '4/5/0/0')})
+    report = b.resolve_round(10, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'weakest'}})
+    assert report.orders == {'a': {'target': 'x', 'mode': 'ranged', 'ammo': None, 'on_break': 'weakest'}}
 
 
 def test_unit_broken_by_drain_alone_stands_its_attackers_down():
@@ -351,10 +376,10 @@ def test_break_by_drain_at_the_round_limit_is_recorded():
 
 def test_broken_unit_can_be_pursued_next_round():
     b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, 400, '2/2/0/0')}, seed=3)
-    b.resolve_round(600, {'a': {'target': 'x', 'mode': 'ranged'}})
-    assert b.units['x'].morale.broken
+    while not b.units['x'].morale.broken:
+        b.resolve_round(2, {'a': {'target': 'x', 'mode': 'ranged'}})
     size_before = b.units['x'].regiment.size
-    report = b.resolve_round(60, {'a': {'target': 'x', 'mode': 'ranged'}})
+    report = b.resolve_round(5, {'a': {'target': 'x', 'mode': 'ranged'}})
     assert report.units['x'].losses > 0
     assert report.units['x'].inflicted == 0
     assert report.units['x'].size == size_before - report.units['x'].losses
