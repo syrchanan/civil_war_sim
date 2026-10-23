@@ -74,3 +74,36 @@ def test_invalid_stats_in_the_units_fixture_are_rejected(stats):
     from imperial_generals.units import Regiment
     with pytest.raises(ValueError):
         Regiment(10, stats)
+
+
+# =============================================================================
+# State files saved by the browser load and resume exactly in Python
+# =============================================================================
+
+def _as_javascript_writes_it(value):
+    """JSON.stringify drops '.0': whole-number floats come back to Python as ints."""
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, dict):
+        return {k: _as_javascript_writes_it(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_as_javascript_writes_it(v) for v in value]
+    return value
+
+
+@pytest.mark.parametrize("case", parity.build('battles')['cases'], ids=lambda c: f"{c['name']}-{c['seed']}")
+def test_a_state_file_written_by_javascript_resumes_exactly(case):
+    from imperial_generals.battles.battle import Battle
+    battle = Battle.from_dict(_as_javascript_writes_it(case['start']))
+    for rnd in case['rounds']:
+        battle.resolve_round(rnd['duration'], rnd['orders'], record_events=rnd['record_events'])
+    if case['finished']:
+        battle.finish(case['field_held_by'])
+    assert json.loads(json.dumps(battle.to_dict())) == case['final']
+
+
+def test_a_finished_javascript_state_file_loads():
+    from imperial_generals.battles.battle import Battle
+    case = parity.build('battles')['cases'][0]
+    data = _as_javascript_writes_it(case['final'])
+    assert json.loads(json.dumps(Battle.from_dict(data).to_dict())) == case['final']
