@@ -7,6 +7,7 @@
 
 import defaults from './defaults.json';
 import { ValueError } from './errors';
+import { exp, log } from './fdlibm';
 
 export const WEAPON_CODES = ['-2', '-1', '0', '1', '2'] as const;
 
@@ -240,5 +241,255 @@ export class AftermathParams {
 
   toDict(): AftermathData {
     return { ...this };
+  }
+}
+
+// =============================================================================
+// Matchups
+// =============================================================================
+
+export const UNIT_TYPES = ['inf', 'cav', 'art'] as const;
+const MATCHUP_MODES = ['ranged', 'melee'] as const;
+const UNIT_SUBTYPES: Record<string, readonly string[]> = defaults.unit_subtypes;
+
+/** (unit type, subtype | null), e.g. ['cav', 'heavy']; a plain regiment is ['inf', null]. */
+export type Unit = readonly [string, string | null];
+
+type Table = Record<string, Record<string, number>>;
+
+export interface MatchupOverride {
+  attacker: string;
+  target: string;
+  mode: string;
+  multiplier: number;
+}
+
+export interface MatchupData {
+  ranged: Table;
+  melee: Table;
+  overrides: MatchupOverride[];
+  melee_ratings: Record<string, number>;
+}
+
+/** 'type' or 'type/subtype' (or '*' when allowed), with the subtype known for that type. */
+function validUnitKey(key: string, allowAny = false): boolean {
+  if (allowAny && key === '*') return true;
+  const slash = key.indexOf('/');
+  const type = slash < 0 ? key : key.slice(0, slash);
+  const sub = slash < 0 ? '' : key.slice(slash + 1);
+  if (!(UNIT_TYPES as readonly string[]).includes(type)) return false;
+  return !sub || UNIT_SUBTYPES[type].includes(sub);
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Unit-type advantage and melee strength. `ranged` / `melee`: attacker type -> target type -> multiplier on the
+ * attacker's casualty rate. `overrides`: subtype-specific replacements (most specific wins, see `multiplier`).
+ * `melee_ratings`: melee strength per 'type/subtype' (plus 'default'), on the weapon-multiplier scale.
+ */
+export class MatchupParams implements MatchupData {
+  readonly ranged: Table;
+  readonly melee: Table;
+  readonly overrides: MatchupOverride[];
+  readonly melee_ratings: Record<string, number>;
+  private readonly lookup: Map<string, number>;
+
+  constructor(data: MatchupData) {
+    for (const mode of MATCHUP_MODES) {
+      const table = data[mode];
+      for (const a of UNIT_TYPES) {
+        const row = isObject(table) ? table[a] : undefined;
+        if (!isObject(row) || !sameKeys(row, UNIT_TYPES)) {
+          throw new ValueError(`${mode} table needs a full ${UNIT_TYPES.join('/')} grid (row ${a}).`);
+        }
+        if (Object.values(row).some((v) => !((v as number) >= 0))) {
+          throw new ValueError(`${mode} multipliers must be >= 0 (row ${a}).`);
+        }
+      }
+    }
+
+    const lookup = new Map<string, number>();
+    for (const o of data.overrides) {
+      if (!isObject(o) || !sameKeys(o, ['attacker', 'target', 'mode', 'multiplier'])) {
+        throw new ValueError(`An override needs exactly attacker, target, mode, multiplier: ${JSON.stringify(o)}.`);
+      }
+      if (!(MATCHUP_MODES as readonly string[]).includes(o.mode)) {
+        throw new ValueError(`Override mode must be ranged or melee: ${JSON.stringify(o)}.`);
+      }
+      if (!validUnitKey(o.attacker) || !validUnitKey(o.target, true)) {
+        throw new ValueError(`Unknown unit type/subtype in override: ${JSON.stringify(o)}.`);
+      }
+      if (o.target === '*' && !o.attacker.includes('/')) {
+        throw new ValueError(`target '*' needs an attacker subtype (use the type table otherwise): ${JSON.stringify(o)}.`);
+      }
+      if (!(o.multiplier >= 0)) throw new ValueError(`Override multiplier must be >= 0: ${JSON.stringify(o)}.`);
+      lookup.set(`${o.attacker}|${o.target}|${o.mode}`, o.multiplier);
+    }
+
+    if (!('default' in data.melee_ratings)) throw new ValueError("melee_ratings needs a 'default' entry.");
+    for (const [key, value] of Object.entries(data.melee_ratings)) {
+      if (key !== 'default' && (!key.includes('/') || !validUnitKey(key))) {
+        throw new ValueError(`Unknown melee rating key ${key} (use 'type/subtype').`);
+      }
+      if (!(value >= 0)) throw new ValueError(`Melee rating must be >= 0: ${key}.`);
+    }
+
+    this.ranged = structuredClone(data.ranged);
+    this.melee = structuredClone(data.melee);
+    this.overrides = structuredClone(data.overrides);
+    this.melee_ratings = { ...data.melee_ratings };
+    this.lookup = lookup;
+    Object.freeze(this);
+  }
+
+  /**
+   * Multiplier for `attacker` against `target` in `mode`. Most specific first: attacker subtype + target subtype,
+   * attacker subtype + target type, attacker subtype + any target, attacker type + target subtype, then the type
+   * table.
+   */
+  multiplier(attacker: Unit, target: Unit, mode: string): number {
+    const [aType, aSub] = attacker;
+    const [tType, tSub] = target;
+    const aFull = aSub ? `${aType}/${aSub}` : null;
+    const tFull = tSub ? `${tType}/${tSub}` : null;
+    const candidates: [string, string | null][] = [];
+    if (aFull) candidates.push([aFull, tFull], [aFull, tType], [aFull, '*']);
+    candidates.push([aType, tFull]);
+    for (const [a, t] of candidates) {
+      const value = t === null ? undefined : this.lookup.get(`${a}|${t}|${mode}`);
+      if (value !== undefined) return value;
+    }
+    return (mode === 'melee' ? this.melee : this.ranged)[aType][tType];
+  }
+
+  /** Melee rating for a unit; units without a listed subtype use 'default'. */
+  meleeRating(unit: Unit): number {
+    return this.melee_ratings[`${unit[0]}/${unit[1]}`] ?? this.melee_ratings.default;
+  }
+
+  toDict(): MatchupData {
+    return {
+      ranged: structuredClone(this.ranged),
+      melee: structuredClone(this.melee),
+      overrides: structuredClone(this.overrides),
+      melee_ratings: { ...this.melee_ratings },
+    };
+  }
+}
+
+// =============================================================================
+// Charges
+// =============================================================================
+
+export interface ShockBonus {
+  charger: string;
+  target: string;
+  bonus: number;
+}
+
+export interface ChargeData {
+  approach_minutes: Record<string, number>;
+  closing_fire_multiplier: number;
+  battery_closing_ammo: string;
+  numbers_weight: number;
+  steadiness_weight: number;
+  veterancy_weight: number;
+  shock_weight: number;
+  break_threshold: number;
+  falter_threshold: number;
+  spread: number;
+  falter_cost: number;
+  shock_bonus: ShockBonus[];
+}
+
+const sigmoid = (z: number): number => 1.0 / (1.0 + exp(-z));
+
+/** Charges: the approach under close-range fire and the contact test (formulas in config/charge.yaml). */
+export class ChargeParams implements ChargeData {
+  readonly approach_minutes: Record<string, number>;
+  readonly closing_fire_multiplier: number;
+  readonly battery_closing_ammo: string;
+  readonly numbers_weight: number;
+  readonly steadiness_weight: number;
+  readonly veterancy_weight: number;
+  readonly shock_weight: number;
+  readonly break_threshold: number;
+  readonly falter_threshold: number;
+  readonly spread: number;
+  readonly falter_cost: number;
+  readonly shock_bonus: ShockBonus[];
+
+  constructor(data: ChargeData) {
+    if (!isObject(data.approach_minutes) || !sameKeys(data.approach_minutes, UNIT_TYPES)) {
+      throw new ValueError(`approach_minutes needs exactly ${UNIT_TYPES.join(', ')}.`);
+    }
+    if (Object.values(data.approach_minutes).some((v) => !(v > 0))) {
+      throw new ValueError('approach_minutes must be > 0.');
+    }
+    for (const name of ['closing_fire_multiplier', 'numbers_weight', 'steadiness_weight', 'shock_weight',
+      'break_threshold', 'falter_threshold'] as const) {
+      if (!(data[name] >= 0)) throw new ValueError(`${name} must be >= 0.`);
+    }
+    if (!(data.spread > 0)) throw new ValueError('spread must be > 0.');
+    for (const name of ['veterancy_weight', 'falter_cost'] as const) {
+      if (!(0 <= data[name] && data[name] <= 1)) throw new ValueError(`${name} must be in [0, 1].`);
+    }
+    for (const b of data.shock_bonus) {
+      if (!isObject(b) || !sameKeys(b, ['charger', 'target', 'bonus'])) {
+        throw new ValueError(`A shock bonus needs exactly charger, target, bonus: ${JSON.stringify(b)}.`);
+      }
+      if (!validUnitKey(b.charger) || !validUnitKey(b.target)) {
+        throw new ValueError(`Unknown unit type/subtype in shock bonus: ${JSON.stringify(b)}.`);
+      }
+    }
+    this.approach_minutes = { ...data.approach_minutes };
+    this.closing_fire_multiplier = data.closing_fire_multiplier;
+    this.battery_closing_ammo = data.battery_closing_ammo;
+    this.numbers_weight = data.numbers_weight;
+    this.steadiness_weight = data.steadiness_weight;
+    this.veterancy_weight = data.veterancy_weight;
+    this.shock_weight = data.shock_weight;
+    this.break_threshold = data.break_threshold;
+    this.falter_threshold = data.falter_threshold;
+    this.spread = data.spread;
+    this.falter_cost = data.falter_cost;
+    this.shock_bonus = structuredClone(data.shock_bonus);
+    Object.freeze(this);
+  }
+
+  /** How well a unit holds together: resolve, steadied by veterancy, shaken by recent losses. */
+  steadiness(resolve: number, xp: number, shock: number): number {
+    const xpNorm = (clamp(1, 10, xp) - 1) / 9;
+    const w = this.veterancy_weight;
+    return resolve * (1 - w + w * xpNorm) / (1 + this.shock_weight * shock);
+  }
+
+  /** Sum of the shock bonuses matching the charger's and the target's type and subtype. */
+  bonus(charger: Unit, target: Unit): number {
+    const keys = ([kind, sub]: Unit) => (sub ? [kind, `${kind}/${sub}`] : [kind]);
+    const c = keys(charger);
+    const t = keys(target);
+    let sum = 0;
+    for (const b of this.shock_bonus) if (c.includes(b.charger) && t.includes(b.target)) sum += b.bonus;
+    return sum;
+  }
+
+  pressure(chargerMen: number, targetMen: number, chargerSteadiness: number, targetSteadiness: number,
+    bonus: number): number {
+    return this.numbers_weight * log(chargerMen / targetMen)
+      + this.steadiness_weight * (chargerSteadiness - targetSteadiness) + bonus;
+  }
+
+  /** [defender breaks, charge falters, goes home] for pressure `x`. */
+  odds(x: number): [number, number, number] {
+    const pBreak = sigmoid((x - this.break_threshold) / this.spread);
+    const pFalter = sigmoid((-x - this.falter_threshold) / this.spread);
+    return [pBreak, pFalter, Math.max(0.0, 1.0 - pBreak - pFalter)];
+  }
+
+  toDict(): ChargeData {
+    return { ...this, approach_minutes: { ...this.approach_minutes }, shock_bonus: structuredClone(this.shock_bonus) };
   }
 }

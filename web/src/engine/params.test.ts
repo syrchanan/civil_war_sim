@@ -4,7 +4,8 @@ import defaults from './defaults.json';
 import fixture from '../../../test_cases/parity/params.json';
 import { ValueError } from './errors';
 import {
-  AftermathParams, type AftermathData, CombatParams, type CombatData, MoraleParams, type MoraleData, roundHalfEven,
+  AftermathParams, type AftermathData, ChargeParams, type ChargeData, CombatParams, type CombatData, MatchupParams,
+  type MatchupData, MoraleParams, type MoraleData, roundHalfEven, type Unit,
 } from './params';
 
 const combatDefaults = defaults.params.combat as CombatData;
@@ -93,5 +94,83 @@ describe('AftermathParams', () => {
     { field_votes_needed: 0 }, { field_votes_needed: 4 }, { field_votes_needed: 1.5 },
   ])('rejects %j', (change) => {
     expect(() => new AftermathParams({ ...data, ...change })).toThrow(ValueError);
+  });
+});
+
+/** 'inf/line' -> ['inf', 'line'], 'inf' -> ['inf', null] */
+const unit = (key: string): Unit => {
+  const [type, sub] = key.split('/');
+  return [type, sub ?? null];
+};
+
+describe('MatchupParams', () => {
+  const data = defaults.params.matchups as MatchupData;
+  const matchups = new MatchupParams(data);
+
+  it('keeps the defaults', () => {
+    expect(matchups.toDict()).toEqual(data);
+  });
+
+  it.each(fixture.matchups.multiplier as [string, string, string, number][])(
+    'multiplier(%s, %s, %s) = %s', (a, t, mode, expected) => {
+      expect(matchups.multiplier(unit(a), unit(t), mode)).toBe(expected);
+    });
+
+  it.each(fixture.matchups.melee_rating as [string, number][])('meleeRating(%s) = %s', (key, expected) => {
+    expect(matchups.meleeRating(unit(key))).toBe(expected);
+  });
+
+  const row = { inf: 1, cav: 1, art: 1 };
+  it.each([
+    { ranged: { inf: { inf: 1.0 } } },
+    { melee: { inf: { inf: -1.0, cav: 1.0, art: 1.0 }, cav: row, art: row } },
+    { melee_ratings: { 'inf/line': 0.7 } },
+    { melee_ratings: { default: 0.7, 'inf/musketeers': 0.7 } },
+    { melee_ratings: { default: 0.7, inf: 0.7 } },
+    { melee_ratings: { default: 0.7, 'inf/line': -0.1 } },
+    { overrides: [{ attacker: 'inf/pikes', target: 'cav', mode: 'charge', multiplier: 2 }] },
+    { overrides: [{ attacker: 'dragon', target: 'cav', mode: 'melee', multiplier: 2 }] },
+    { overrides: [{ attacker: 'inf', target: '*', mode: 'melee', multiplier: 2 }] },
+    { overrides: [{ attacker: 'inf/pikes', target: 'cav', mode: 'melee', multiplier: -2 }] },
+    { overrides: [{ attacker: 'inf/pikes', target: 'cav', mode: 'melee' }] },
+  ])('rejects %j', (change) => {
+    expect(() => new MatchupParams({ ...data, ...change } as MatchupData)).toThrow(ValueError);
+  });
+});
+
+describe('ChargeParams', () => {
+  const data = defaults.params.charge as ChargeData;
+  const charge = new ChargeParams(data);
+
+  it('keeps the defaults', () => {
+    expect(charge.toDict()).toEqual(data);
+  });
+
+  it.each(fixture.charge.steadiness)('steadiness(%s, %s, %s) = %s', (resolve, xp, shock, expected) => {
+    expect(charge.steadiness(resolve, xp, shock)).toBe(expected);
+  });
+
+  it.each(fixture.charge.bonus as [string, string, number][])('bonus(%s, %s) = %s', (c, t, expected) => {
+    expect(charge.bonus(unit(c), unit(t))).toBe(expected);
+  });
+
+  it.each(fixture.charge.pressure)('pressure(%s, %s, %s, %s, %s) = %s', (cm, tm, cs, ts, b, expected) => {
+    expect(charge.pressure(cm, tm, cs, ts, b)).toBe(expected);
+  });
+
+  it.each(fixture.charge.odds as [number, number[]][])('odds(%s) = %j', (x, expected) => {
+    expect(charge.odds(x)).toEqual(expected);
+  });
+
+  it.each([
+    { approach_minutes: { navy: 5 } },
+    { approach_minutes: { inf: 0, cav: 2, art: 5 } },
+    { closing_fire_multiplier: -1 }, { numbers_weight: -1 }, { steadiness_weight: -1 }, { veterancy_weight: 1.5 },
+    { shock_weight: -1 }, { break_threshold: -0.1 }, { falter_threshold: -0.1 }, { spread: 0 },
+    { falter_cost: 1.5 },
+    { shock_bonus: [{ charger: 'inf', target: 'inf' }] },
+    { shock_bonus: [{ charger: 'inf/hussars', target: 'inf', bonus: 1 }] },
+  ])('rejects %j', (change) => {
+    expect(() => new ChargeParams({ ...data, ...change } as ChargeData)).toThrow(ValueError);
   });
 });
