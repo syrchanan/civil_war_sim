@@ -59,7 +59,11 @@
       "walking_wounded_share": 0.4,
       "wounded_captured_share": 0.6,
       "wounded_return_share": 0.4,
-      "share_spread": 0.25
+      "share_spread": 0.25,
+      "field_exchange_ratio": 1.5,
+      "field_rout_gap": 0.25,
+      "field_standing_ratio": 1.5,
+      "field_votes_needed": 2
     },
     "matchups": {
       "ranged": {

@@ -51,10 +51,19 @@ def test_aftermath_defaults_from_config():
     dict(killed_share=1.5), dict(walking_wounded_share=-0.2),
     dict(wounded_captured_share=2.0), dict(wounded_return_share=-0.1),
     dict(share_spread=1.5),
+    dict(field_exchange_ratio=0.9), dict(field_standing_ratio=0.5),
+    dict(field_rout_gap=-0.1), dict(field_rout_gap=1.1),
+    dict(field_votes_needed=0), dict(field_votes_needed=4), dict(field_votes_needed=1.5),
 ])
 def test_invalid_aftermath_params_raise(overrides):
     with pytest.raises(ValueError):
         AftermathParams(**overrides)
+
+
+def test_field_holder_thresholds_default_to_placeholders():
+    p = AftermathParams()
+    thresholds = (p.field_exchange_ratio, p.field_rout_gap, p.field_standing_ratio, p.field_votes_needed)
+    assert thresholds == (1.5, 0.25, 1.5, 2)
 
 
 def test_battle_params_carry_aftermath_section():
