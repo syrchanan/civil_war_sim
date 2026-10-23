@@ -33,6 +33,7 @@ A battle saved from the site replays in Python with
 ```
 cd web
 npm install
+npm run dev         # the battle client at http://localhost:5173
 npm test            # or: npm run coverage (100% required, as in CI)
 ```
 
