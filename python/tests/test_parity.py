@@ -32,3 +32,31 @@ def test_write_all_writes_every_fixture(tmp_path):
 def test_unknown_fixture_raises():
     with pytest.raises(KeyError):
         parity.build('nope')
+
+
+# =============================================================================
+# Engine defaults for the TypeScript port (generated from config/*.yaml)
+# =============================================================================
+
+def test_committed_defaults_are_up_to_date():
+    with open(parity.DEFAULTS_PATH, encoding='utf-8') as f:
+        assert json.load(f) == parity.defaults()
+
+
+def test_defaults_carry_params_and_the_tables_units_read():
+    from imperial_generals.config import get_config
+    from imperial_generals.params import BattleParams
+    data = parity.defaults()
+    assert data['params'] == BattleParams().to_dict()
+    cfg = get_config()
+    assert data['morale_scale'] == {k: cfg['morale'][k] for k in ('min_raw', 'max_raw', 'raw_scale_factor')}
+    assert data['artillery'] == dict(cfg['artillery'])
+    assert data['unit_subtypes'] == {'inf': ['irregulars', 'light', 'line', 'marine', 'pikes'],
+                                     'cav': ['dragoons', 'heavy', 'light'],
+                                     'art': ['battery', 'horse battery', 'siege battery']}
+
+
+def test_write_all_writes_the_defaults(tmp_path):
+    target = tmp_path / 'defaults.json'
+    parity.write_all(tmp_path / 'fixtures', defaults_path=target)
+    assert json.loads(target.read_text(encoding='utf-8')) == parity.defaults()

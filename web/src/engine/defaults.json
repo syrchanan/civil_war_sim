@@ -1,0 +1,209 @@
+{
+  "description": "Engine defaults from config/*.yaml. Generated: python -m imperial_generals.parity",
+  "params": {
+    "combat": {
+      "weapon_multipliers": {
+        "-2": 0.2,
+        "-1": 0.5,
+        "0": 1.0,
+        "1": 1.5,
+        "2": 2.5
+      },
+      "xp_boost_per_level": 0.08,
+      "morale_boost_per_level": 0.04,
+      "melee_penalty_factor": 0.7,
+      "ranged_kill_rate": 0.00438,
+      "melee_kill_rate": 0.01564,
+      "broken_fire_multiplier": 0.5,
+      "broken_melee_multiplier": 0.75,
+      "artillery_ammo": {
+        "round_shot": 0.164,
+        "shell": 0.274,
+        "canister": 0.493
+      },
+      "artillery_default_ammo": "round_shot"
+    },
+    "morale": {
+      "break_fraction_min": 0.15,
+      "break_fraction_max": 0.75,
+      "experience_weight": 0.5,
+      "break_curve": 1.5,
+      "break_point_spread": 0.12,
+      "break_fraction_ceiling": 0.95,
+      "size_reference": 500,
+      "size_exponent": 0.0,
+      "acceleration": 1.0,
+      "shock_weight": 4.0,
+      "shock_half_life": 15.0,
+      "helpless_weight": 0.5,
+      "drain_per_hour": 0.05,
+      "gain_weight": 0.5
+    },
+    "aftermath": {
+      "rout_capture_share": 0.1,
+      "cavalry_capture_multiplier": 2.0,
+      "killed_share": 0.22,
+      "walking_wounded_share": 0.4,
+      "wounded_captured_share": 0.6,
+      "wounded_return_share": 0.4,
+      "share_spread": 0.25,
+      "field_exchange_ratio": 1.5,
+      "field_rout_gap": 0.25,
+      "field_standing_ratio": 1.5,
+      "field_votes_needed": 2
+    },
+    "matchups": {
+      "ranged": {
+        "inf": {
+          "inf": 1.0,
+          "cav": 1.2,
+          "art": 0.1
+        },
+        "cav": {
+          "inf": 0.6,
+          "cav": 0.6,
+          "art": 0.1
+        },
+        "art": {
+          "inf": 1.0,
+          "cav": 1.2,
+          "art": 0.6
+        }
+      },
+      "melee": {
+        "inf": {
+          "inf": 1.0,
+          "cav": 1.0,
+          "art": 1.2
+        },
+        "cav": {
+          "inf": 0.5,
+          "cav": 1.0,
+          "art": 2.0
+        },
+        "art": {
+          "inf": 1.0,
+          "cav": 1.0,
+          "art": 1.0
+        }
+      },
+      "overrides": [
+        {
+          "attacker": "inf/pikes",
+          "target": "cav",
+          "mode": "melee",
+          "multiplier": 2.0
+        },
+        {
+          "attacker": "cav/dragoons",
+          "target": "*",
+          "mode": "ranged",
+          "multiplier": 0.9
+        },
+        {
+          "attacker": "cav/dragoons",
+          "target": "art",
+          "mode": "ranged",
+          "multiplier": 0.15
+        }
+      ],
+      "melee_ratings": {
+        "default": 0.7,
+        "inf/line": 0.7,
+        "inf/light": 0.6,
+        "inf/marine": 0.8,
+        "inf/pikes": 1.0,
+        "inf/irregulars": 0.5,
+        "cav/light": 1.0,
+        "cav/heavy": 1.4,
+        "cav/dragoons": 0.9,
+        "art/battery": 0.25,
+        "art/horse battery": 0.3,
+        "art/siege battery": 0.2
+      }
+    },
+    "charge": {
+      "approach_minutes": {
+        "inf": 5.0,
+        "cav": 2.0,
+        "art": 5.0
+      },
+      "closing_fire_multiplier": 3.0,
+      "battery_closing_ammo": "canister",
+      "numbers_weight": 1.0,
+      "steadiness_weight": 3.0,
+      "veterancy_weight": 0.5,
+      "shock_weight": 2.0,
+      "break_threshold": 1.0,
+      "falter_threshold": 0.5,
+      "spread": 0.5,
+      "falter_cost": 0.15,
+      "shock_bonus": [
+        {
+          "charger": "cav",
+          "target": "inf",
+          "bonus": 0.5
+        },
+        {
+          "charger": "cav/heavy",
+          "target": "inf",
+          "bonus": 0.3
+        },
+        {
+          "charger": "cav",
+          "target": "inf/pikes",
+          "bonus": -2.0
+        },
+        {
+          "charger": "cav",
+          "target": "art",
+          "bonus": 1.0
+        },
+        {
+          "charger": "inf",
+          "target": "art",
+          "bonus": 0.5
+        },
+        {
+          "charger": "art",
+          "target": "inf",
+          "bonus": -1.0
+        },
+        {
+          "charger": "art",
+          "target": "cav",
+          "bonus": -1.0
+        }
+      ]
+    }
+  },
+  "morale_scale": {
+    "min_raw": 10,
+    "max_raw": 100,
+    "raw_scale_factor": 10
+  },
+  "unit_subtypes": {
+    "inf": [
+      "irregulars",
+      "light",
+      "line",
+      "marine",
+      "pikes"
+    ],
+    "cav": [
+      "dragoons",
+      "heavy",
+      "light"
+    ],
+    "art": [
+      "battery",
+      "horse battery",
+      "siege battery"
+    ]
+  },
+  "artillery": {
+    "guns": 8,
+    "crew_per_gun": 9,
+    "min_crew_per_gun": 7
+  }
+}
