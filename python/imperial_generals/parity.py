@@ -117,9 +117,66 @@ def params_fixture() -> dict:
     }
 
 
+def _morale_script(rng: Rng, steps: int) -> list:
+    """A random but recorded sequence of morale operations (the port replays the list, not the draws)."""
+    ops = []
+    for _ in range(steps):
+        u = rng.random()
+        if u < 0.45:
+            ops.append(['take_loss', rng.random() < 0.7])
+        elif u < 0.65:
+            ops.append(['advance', round(rng.random() * 12, 3), rng.random() < 0.8])
+        elif u < 0.9:
+            ops.append(['inflict_loss', 100 + int(rng.random() * 1900)])
+        elif u < 0.97:
+            ops.append(['advance', 0.0, True])
+        else:
+            ops.append(['shake', 0.15])
+    return ops
+
+
+def _morale_case(size: int, xp: int, morale_stat: int, scale: float, seed: int, steps: int,
+                 overrides: dict | None = None, force_break_at: int | None = None) -> dict:
+    from imperial_generals.battles.morale import MoraleState
+    params = BattleParams().with_overrides({'morale': overrides or {}}).morale
+    state = MoraleState(size, xp, morale_stat, params=params, break_scale=scale)
+    ops = _morale_script(Rng(seed), steps)
+    if force_break_at is not None:
+        ops.insert(force_break_at, ['force_break'])
+    after = []
+    for op in ops:
+        getattr(state, op[0])(*op[1:])
+        after.append([state.resolve, state.shock, state.lost, state.broken, state.morale])
+    return {'size': size, 'xp': xp, 'morale_stat': morale_stat, 'break_scale': scale, 'overrides': overrides or {},
+            'break_fraction': state.break_fraction, 'ops': ops, 'after': after}
+
+
+def morale_fixture() -> dict:
+    from imperial_generals.battles.morale import break_fraction, break_scale
+    p = BattleParams().morale
+    fractions = [[xp, m, break_fraction(xp, m, p)] for xp in range(0, 12) for m in range(0, 12)]
+    curve = BattleParams().with_overrides({'morale': {'break_curve': 0.7, 'experience_weight': 0.2}}).morale
+    fractions += [[xp, m, break_fraction(xp, m, curve), 'curve'] for xp in (1, 3, 7, 10) for m in (1, 4, 10)]
+    scales = [[u, s, break_scale(u, s)] for u in (0.0, 1e-15, 0.01, 0.25, 0.5, 0.73, 0.99, 1.0) for s in (0.0, 0.12, 1.0)]
+    cases = [
+        _morale_case(500, 5, 5, 1.0, 1, 300),
+        _morale_case(1000, 8, 9, 1.17, 2, 400),
+        _morale_case(120, 2, 2, 0.83, 3, 200),
+        _morale_case(800, 5, 6, 1.0, 4, 300, overrides={'size_exponent': 0.3, 'acceleration': 0.0,
+                                                        'helpless_weight': 1.2}),
+        _morale_case(300, 6, 4, 1.05, 5, 150, force_break_at=60),
+    ]
+    return {'description': "MoraleState: each case replays 'ops' in order and records "
+                           "[resolve, shock, lost, broken, morale] after each; plus break_fraction "
+                           "[xp, morale, value(, 'curve': break_curve 0.7, experience_weight 0.2)] and "
+                           "break_scale [u, spread, value].",
+            'break_fraction': fractions, 'break_scale': scales, 'cases': cases}
+
+
 FIXTURES = {
     'rng': rng_fixture,
     'params': params_fixture,
+    'morale': morale_fixture,
 }
 
 
