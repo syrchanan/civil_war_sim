@@ -196,7 +196,8 @@ def side_summary(state: dict) -> list[dict]:
     prisoner (they count once, as prisoners). ``casualties`` = killed + wounded + prisoners lost (the battle's
     toll before any wounded return), ``casualty_share`` its share of starting strength. Hits are men hit by fire or in melee; ``exchange_ratio`` is enemy
     men hit per own man hit (None if the side was never hit). ``loss_share`` is the share of starting strength
-    not in the ranks at the end.
+    not in the ranks at the end. ``outcome`` reads the field as the result, as it was read at the time: 'won' (held
+    the field), 'lost' (the other side held it) or 'drawn' (nobody did; the fight can go on the next day).
 
     Raises
     ------
@@ -207,6 +208,7 @@ def side_summary(state: dict) -> list[dict]:
     if result is None:
         raise ValueError('The battle has to be finished first (finish settles killed / wounded / prisoners).')
     names = _side_names(state)
+    holder = result['field_held_by']
     sides = []
     for side in (0, 1):
         units = [u for u in state['units'] if u['side'] == side]
@@ -220,6 +222,8 @@ def side_summary(state: dict) -> list[dict]:
         prisoners_lost = sum(o['captured_in_rout'] + o['wounded_captured'] for o in outcomes)
         sides.append({
             'name': names[side],
+            'outcome': 'drawn' if holder is None else 'won' if holder == side else 'lost',
+            'held_field': holder == side,
             'units': len(units),
             'units_out': sum(1 for u in units if u['morale']['broken'] or u['size'] == 0),
             'started': started,
