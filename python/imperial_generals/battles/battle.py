@@ -23,7 +23,7 @@ one-on-one ranged battle draws exactly like ``Simulation``.
 
 import json
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from imperial_generals.battles.morale import MoraleState, break_scale
 from imperial_generals.params import BattleParams
@@ -115,6 +115,16 @@ class Charge:
 
 
 @dataclass(frozen=True)
+class Retarget:
+    """A firing unit switched to a new target (on_break 'strongest' / 'weakest') when its target broke or was wiped out."""
+
+    unit: str
+    old_target: str
+    new_target: str
+    time: float
+
+
+@dataclass(frozen=True)
 class CasualtyEvent:
     time: float
     attacker: str
@@ -145,6 +155,7 @@ class RoundReport:
     guns_captured: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> enemy guns taken this round
     orders: dict = field(default_factory=dict)   # uid -> {'target', 'mode', 'ammo'} for units that acted
     charges: tuple = ()         # Charge per charge made this round
+    retargets: tuple = ()       # Retarget per switch of target this round
 
 
 @dataclass(frozen=True)
@@ -551,6 +562,7 @@ class Battle:
         if not duration > 0:
             raise ValueError(f"duration must be > 0, got {duration}.")
         valid = self._validate_orders(orders)
+        live = dict(valid)               # orders as they stand: a retarget changes the target here, not in valid
 
         self.round += 1
         start = self.time
@@ -566,7 +578,8 @@ class Battle:
         contacts = self._round_contacts(valid)
         pending, immediate = self._new_charges(valid, contacts, start, duration)
         charges = list(immediate)
-        slots, partners = self._plan(valid, cancelled, contacts, pending, frozenset(withdrawn))
+        retargets = []
+        slots, partners = self._plan(live, cancelled, contacts, pending, frozenset(withdrawn))
         opening = tuple(Engagement(*a) for a in self._rates(slots, partners))
 
         def stand_down(gone: set, t: float) -> None:
@@ -576,11 +589,22 @@ class Battle:
             contact with it stays in contact if its order says 'pursue'.
             """
             units = self.units
-            pursuit = {frozenset((uid, order.target)) for uid, order in valid.items()
+            for uid in sorted(live, key=lambda u: units[u].index):
+                order, unit = live[uid], units[uid]
+                if (order.target in gone and order.on_break in ('strongest', 'weakest') and unit.active
+                        and uid not in cancelled):
+                    # strength: men × share of morale budget left; ties go to the first unit
+                    candidates = [u for u in units.values() if u.side != unit.side and u.active]
+                    if candidates:
+                        pick = max if order.on_break == 'strongest' else min
+                        new = pick(candidates, key=lambda u: u.size * u.morale.resolve)
+                        live[uid] = replace(order, target=new.uid)
+                        retargets.append(Retarget(uid, order.target, new.uid, t))
+            pursuit = {frozenset((uid, order.target)) for uid, order in live.items()
                        if order.target in gone and order.on_break == 'pursue' and units[uid].active
                        and units[order.target].size > 0}
             pursuit &= contacts
-            cancelled.update(uid for uid, order in valid.items()
+            cancelled.update(uid for uid, order in live.items()
                              if order.target in gone and frozenset((uid, order.target)) not in pursuit
                              and (order.mode == 'melee' or units[order.target].size == 0))
             contacts.difference_update([pair for pair in contacts if pair & gone and pair not in pursuit])
@@ -643,7 +667,7 @@ class Battle:
                     if gone:
                         stand_down(gone, t)
                 if gone or due:
-                    slots, partners = self._plan(valid, cancelled, contacts, pending, frozenset(withdrawn))
+                    slots, partners = self._plan(live, cancelled, contacts, pending, frozenset(withdrawn))
                 continue
 
             # weighted pick of the arrow that caused this casualty
@@ -681,7 +705,7 @@ class Battle:
                     self._lose_guns(victim, 0, guns)            # overrun: no crew left, every gun is taken
             if gone:
                 stand_down(gone, t)
-                slots, partners = self._plan(valid, cancelled, contacts, pending, frozenset(withdrawn))
+                slots, partners = self._plan(live, cancelled, contacts, pending, frozenset(withdrawn))
 
         # contacts carry over only between units that are both still standing
         self.contacts = {pair for pair in contacts if all(self.units[u].active for u in pair)}
@@ -710,6 +734,7 @@ class Battle:
             orders={uid: {'target': o.target, 'mode': o.mode, 'ammo': o.ammo, 'on_break': o.on_break}
                     for uid, o in valid.items()},
             charges=tuple(charges),
+            retargets=tuple(retargets),
         )
         self.history.append(report)
         return report

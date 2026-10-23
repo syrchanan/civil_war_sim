@@ -1,6 +1,6 @@
 import pytest
 
-from imperial_generals.battles.battle import Battle, Engagement, Order, RoundReport
+from imperial_generals.battles.battle import Battle, Engagement, Order, Retarget, RoundReport
 from imperial_generals.battles import Simulation
 from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams, CombatParams
@@ -443,3 +443,76 @@ def test_melee_pursue_stays_in_contact_with_a_target_that_breaks():
     after = [ev for ev in report.events if ev.time > broke_at]
     assert after and {(ev.attacker, ev.target) for ev in after} == {('c', 'x')}
     assert b.contacts == set()          # contact with a broken unit doesn't carry into the next round
+
+
+# =============================================================================
+# When a fire target breaks: keep firing, or switch to the strongest / weakest enemy unit
+# =============================================================================
+
+def retarget_battle(on_break, x_size=60, seed=3):
+    """a fires on a small green x, which breaks quickly; y (500) and z (1000) are fresh and unengaged."""
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, x_size, '2/2/0/0'), 'y': (1, 500, '4/5/0/0'),
+                     'z': (1, 1000, '4/5/0/0')}, seed=seed)
+    report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': on_break}},
+                             record_events=True)
+    return b, report
+
+
+@pytest.mark.parametrize("on_break, new", [('strongest', 'z'), ('weakest', 'y')])
+def test_fire_switches_to_the_strongest_or_weakest_enemy_when_its_target_breaks(on_break, new):
+    b, report = retarget_battle(on_break)
+    broke_at = report.units['x'].broke_at
+    assert broke_at is not None
+    after = [ev for ev in report.events if ev.time > broke_at]
+    assert after and {ev.target for ev in after} == {new}
+    assert report.retargets == (Retarget('a', 'x', new, broke_at),)
+    assert report.orders['a']['target'] == 'x'          # the order as given; the switch is in retargets
+
+
+def test_strength_is_men_times_share_of_morale_budget_left():
+    # z has twice y's men but only a third of its budget left: y is the stronger
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, 60, '2/2/0/0'), 'y': (1, 500, '4/5/0/0'),
+                     'z': (1, 1000, '4/5/0/0')}, seed=3)
+    b.units['z'].morale.shake(2 / 3)
+    report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'strongest'}})
+    assert report.retargets[0].new_target == 'y'
+
+
+@pytest.mark.parametrize("on_break", ['strongest', 'weakest'])
+def test_strength_ties_go_to_the_first_unit(on_break):
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, 60, '2/2/0/0'), 'y': (1, 500, '4/5/0/0'),
+                     'z': (1, 500, '4/5/0/0')}, seed=3)
+    report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': on_break}})
+    assert report.retargets[0].new_target == 'y'
+
+
+def test_fire_switches_when_its_target_is_wiped_out():
+    b, report = retarget_battle('strongest', x_size=1)
+    assert report.units['x'].size == 0
+    r = report.retargets[0]
+    assert (r.unit, r.old_target, r.new_target) == ('a', 'x', 'z')
+    assert report.units['z'].losses > 0
+
+
+def test_with_no_active_enemy_left_fire_keeps_on_the_broken_unit():
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, 400, '2/2/0/0')}, seed=3)
+    report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'strongest'}},
+                             record_events=True)
+    broke_at = report.units['x'].broke_at
+    assert report.retargets == ()
+    assert [ev for ev in report.events if ev.time > broke_at]
+
+
+def test_with_no_enemy_left_fire_on_a_wiped_out_unit_stands_down():
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, 1, '2/2/0/0')}, seed=3)
+    report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'weakest'}},
+                             record_events=True)
+    assert report.retargets == () and len(report.events) == 1
+
+
+def test_broken_enemies_are_not_candidates():
+    b = make_battle({'a': (0, 1000, '8/8/1/0'), 'x': (1, 60, '2/2/0/0'), 'y': (1, 500, '4/5/0/0'),
+                     'z': (1, 1000, '4/5/0/0')}, seed=3)
+    break_unit(b, 'z')
+    report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'strongest'}})
+    assert report.retargets[0].new_target == 'y'

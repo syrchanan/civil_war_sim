@@ -196,3 +196,21 @@ def test_seed_is_informational_when_battle_built_from_state():
     b = Battle({'a': (0, Regiment(100, '4/5/0/0'))}, rng=Rng.from_state([1, 2, 3, 4]))
     assert b.seed is None
     assert reload(b).seed is None
+
+
+def test_history_round_trips_retargets():
+    b = Battle({'a': (0, Regiment(1000, '8/8/1/0')), 'x': (1, Regiment(60, '2/2/0/0')),
+                'y': (1, Regiment(500, '4/5/0/0'))}, rng=Rng(3))
+    b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'strongest'}})
+    assert b.history[0].retargets
+    assert reload(b).history == b.history
+
+
+def test_history_without_retargets_loads():
+    # files saved before retargets existed have no 'retargets' in their round history
+    b = build()
+    b.resolve_round(10, {})
+    data = b.to_dict()
+    for rnd in data['history']:
+        del rnd['retargets']
+    assert Battle.from_dict(data).history == b.history
