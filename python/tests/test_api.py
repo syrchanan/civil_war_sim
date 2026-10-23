@@ -238,6 +238,16 @@ def test_side_summary_adds_up():
     assert union['guns_lost'] == confed['guns_taken'] == 2
 
 
+@pytest.mark.parametrize("finish, outcomes", [
+    (0, ('won', 'lost')), ('Confederate', ('lost', 'won')), ('none', ('drawn', 'drawn')),
+])
+def test_side_summary_says_who_won_by_the_field(finish, outcomes):
+    state, _, _ = api.run_scenario({**SETUP, 'rounds': [{'duration': 30, 'orders': FIRE}], 'finish': finish})
+    sides = api.side_summary(state)
+    assert tuple(s['outcome'] for s in sides) == outcomes
+    assert [s['held_field'] for s in sides] == [o == 'won' for o in outcomes]
+
+
 def test_side_summary_needs_a_finished_battle():
     with pytest.raises(ValueError, match='finish'):
         api.side_summary(api.new_battle(example()))
