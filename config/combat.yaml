@@ -48,6 +48,15 @@ combat:
   # men firing (two 5/5 lines in full contact: ~19% per hour each). Tune in A13.
   melee_kill_rate: 0.01564
 
+  # --- Attacking a broken unit ---
+  # A broken unit is scattering, not retreating in good order, so it is harder to hit. Multipliers on the casualty
+  # rate of anything attacking it. Placeholders until the tuning pass; firing distance will get its own multiplier
+  # for every unit once positions exist.
+  # Fire (muskets, rifles, artillery) on a broken unit.
+  broken_fire_multiplier: 0.5
+  # Melee pursuit of a broken unit (a broken unit doesn't fight back).
+  broken_melee_multiplier: 0.75
+
   # Artillery (round engine): casualties/min = coef × effective_guns × per-gun rate for the ordered ammo × matchup.
   # Ammo is part of the battery's order and fixed for the round (the player chooses; the engine doesn't adapt).
   # Until positions exist the admin judges whether the range suits the ammo (canister is a close-range load).
