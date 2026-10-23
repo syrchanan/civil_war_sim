@@ -60,3 +60,10 @@ def test_write_all_writes_the_defaults(tmp_path):
     target = tmp_path / 'defaults.json'
     parity.write_all(tmp_path / 'fixtures', defaults_path=target)
     assert json.loads(target.read_text(encoding='utf-8')) == parity.defaults()
+
+
+@pytest.mark.parametrize("overrides", parity.INVALID_OVERRIDES)
+def test_invalid_overrides_in_the_params_fixture_are_rejected(overrides):
+    from imperial_generals.params import BattleParams
+    with pytest.raises(ValueError):
+        BattleParams().with_overrides(overrides)
