@@ -12,3 +12,7 @@ export type {
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';
+export {
+  ArtilleryBattery, CavalryRegiment, closestMoraleStat, InfantryRegiment, parseStats, Regiment,
+} from './units';
+export type { Position, RegimentOptions } from './units';
