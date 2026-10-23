@@ -144,3 +144,101 @@ export class CombatParams implements CombatData {
     };
   }
 }
+
+// =============================================================================
+// Morale
+// =============================================================================
+
+export interface MoraleData {
+  break_fraction_min: number;
+  break_fraction_max: number;
+  experience_weight: number;
+  break_curve: number;
+  break_point_spread: number;
+  break_fraction_ceiling: number;
+  size_reference: number;
+  size_exponent: number;
+  acceleration: number;
+  shock_weight: number;
+  shock_half_life: number;
+  helpless_weight: number;
+  drain_per_hour: number;
+  gain_weight: number;
+}
+
+export interface MoraleParams extends Readonly<MoraleData> {}
+
+/** Tunable morale constants (the model is in morale.ts). */
+export class MoraleParams {
+  constructor(data: MoraleData) {
+    if (!(0 < data.break_fraction_min && data.break_fraction_min <= data.break_fraction_max
+      && data.break_fraction_max <= 1)) {
+      throw new ValueError('Need 0 < break_fraction_min <= break_fraction_max <= 1.');
+    }
+    if (!(0 <= data.experience_weight && data.experience_weight <= 1)) {
+      throw new ValueError('experience_weight must be in [0, 1].');
+    }
+    if (!(data.break_point_spread >= 0)) throw new ValueError('break_point_spread must be >= 0.');
+    if (!(0 < data.break_fraction_ceiling && data.break_fraction_ceiling <= 1)) {
+      throw new ValueError('break_fraction_ceiling must be in (0, 1].');
+    }
+    for (const name of ['break_curve', 'size_reference', 'shock_half_life'] as const) {
+      if (!(data[name] > 0)) throw new ValueError(`${name} must be > 0.`);
+    }
+    for (const name of ['acceleration', 'shock_weight', 'helpless_weight', 'drain_per_hour', 'gain_weight'] as const) {
+      if (data[name] < 0) throw new ValueError(`${name} must be >= 0.`);
+    }
+    Object.assign(this, data);
+    Object.freeze(this);
+  }
+
+  toDict(): MoraleData {
+    return { ...this };
+  }
+}
+
+// =============================================================================
+// Aftermath
+// =============================================================================
+
+export interface AftermathData {
+  rout_capture_share: number;
+  cavalry_capture_multiplier: number;
+  killed_share: number;
+  walking_wounded_share: number;
+  wounded_captured_share: number;
+  wounded_return_share: number;
+  share_spread: number;
+  field_exchange_ratio: number;
+  field_rout_gap: number;
+  field_standing_ratio: number;
+  field_votes_needed: number;
+}
+
+export interface AftermathParams extends Readonly<AftermathData> {}
+
+/** Rout captures, end-of-battle casualty accounting, and the field-holder votes. */
+export class AftermathParams {
+  constructor(data: AftermathData) {
+    for (const name of ['rout_capture_share', 'killed_share', 'walking_wounded_share', 'wounded_captured_share',
+      'wounded_return_share', 'share_spread'] as const) {
+      if (!(0 <= data[name] && data[name] <= 1)) throw new ValueError(`${name} must be in [0, 1].`);
+    }
+    if (data.cavalry_capture_multiplier < 0) throw new ValueError('cavalry_capture_multiplier must be >= 0.');
+    for (const name of ['field_exchange_ratio', 'field_standing_ratio'] as const) {
+      if (data[name] < 1) throw new ValueError(`${name} must be >= 1.`);
+    }
+    if (!(0 <= data.field_rout_gap && data.field_rout_gap <= 1)) {
+      throw new ValueError('field_rout_gap must be in [0, 1].');
+    }
+    if (!Number.isInteger(data.field_votes_needed) || data.field_votes_needed < 1 || data.field_votes_needed > 3) {
+      throw new ValueError('field_votes_needed must be a whole number from 1 to 3.');
+    }
+    Object.assign(this, data);
+    Object.freeze(this);
+  }
+
+  toDict(): AftermathData {
+    return { ...this };
+  }
+}

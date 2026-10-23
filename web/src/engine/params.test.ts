@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import defaults from './defaults.json';
 import fixture from '../../../test_cases/parity/params.json';
 import { ValueError } from './errors';
-import { CombatParams, type CombatData, roundHalfEven } from './params';
+import {
+  AftermathParams, type AftermathData, CombatParams, type CombatData, MoraleParams, type MoraleData, roundHalfEven,
+} from './params';
 
 const combatDefaults = defaults.params.combat as CombatData;
 
@@ -55,5 +57,41 @@ describe('CombatParams', () => {
     data.weapon_multipliers['0'] = 99;
     expect(p.weapon_multipliers['0']).toBe(1.0);
     expect(Object.isFrozen(p)).toBe(true);
+  });
+});
+
+describe('MoraleParams', () => {
+  const data = defaults.params.morale as MoraleData;
+
+  it('keeps the defaults', () => {
+    expect(new MoraleParams(data).toDict()).toEqual(data);
+  });
+
+  it.each([
+    { break_fraction_min: 0.0 }, { break_fraction_min: 0.9 }, { break_fraction_max: 1.1 },
+    { experience_weight: 1.5 }, { break_point_spread: -0.1 }, { break_fraction_ceiling: 0.0 },
+    { break_fraction_ceiling: 1.1 }, { break_curve: 0.0 }, { size_reference: 0.0 }, { shock_half_life: 0.0 },
+    { acceleration: -1 }, { shock_weight: -1 }, { helpless_weight: -1 }, { drain_per_hour: -1 },
+    { gain_weight: -1 },
+  ])('rejects %j', (change) => {
+    expect(() => new MoraleParams({ ...data, ...change })).toThrow(ValueError);
+  });
+});
+
+describe('AftermathParams', () => {
+  const data = defaults.params.aftermath as AftermathData;
+
+  it('keeps the defaults', () => {
+    expect(new AftermathParams(data).toDict()).toEqual(data);
+  });
+
+  it.each([
+    { rout_capture_share: -0.1 }, { rout_capture_share: 1.1 }, { cavalry_capture_multiplier: -1 },
+    { killed_share: 1.5 }, { walking_wounded_share: -0.2 }, { wounded_captured_share: 2 },
+    { wounded_return_share: -0.1 }, { share_spread: 1.5 }, { field_exchange_ratio: 0.9 },
+    { field_standing_ratio: 0.5 }, { field_rout_gap: -0.1 }, { field_rout_gap: 1.1 },
+    { field_votes_needed: 0 }, { field_votes_needed: 4 }, { field_votes_needed: 1.5 },
+  ])('rejects %j', (change) => {
+    expect(() => new AftermathParams({ ...data, ...change })).toThrow(ValueError);
   });
 });
