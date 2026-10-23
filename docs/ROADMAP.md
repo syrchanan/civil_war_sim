@@ -50,7 +50,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A10 | Tuning harness: batch runner + matchup stats | ✓ |
 | A11 | Player-made validation scenarios (expectations + feedback) | ✓ |
 | A13 | Tuning pass on the A10 findings | ⏸ (parked 2026-10-23; larger pass later) |
-| A12 | Field holder from battle performance (`finish` 'auto') | ○ (prototyped; needed for A11) |
+| A12 | Field holder from battle performance (`finish` 'auto') | ✓ |
 
 ### Phase B — Playable web client
 | # | Item | Status |
@@ -682,28 +682,36 @@ message for players: `players/README.md`. Blank template: `players/battle_templa
     on the site).
   - **Day totals after** (`check`, 300 seeds): even firefight loser 47% → 41%, winner 34% → 33%; assault loser
     51% → 47%, winner 16%. Still high: fire keeps going on broken units, at half rate. Left for the tuning pass.
-- **Field holder**: expectations about who holds the field will disagree until A12, since 'auto' only awards the
-  field when every enemy unit is out (96% "nobody" in the example).
+- **Field holder**: decided by votes since A12 (below).
 
-### A12. Field holder from battle performance ○
-Today `finish(field_held_by='auto')` gives the field to a side only if every enemy unit has broken or been wiped
-out, which in the A9 example is 7% of seeds; otherwise nobody holds it and no wounded are captured. Battles are
-usually decided before one side is entirely gone. Idea (user, 2026-10-01): decide it from performance bands.
+### A12. Field holder from battle performance ✓
+`finish(field_held_by='auto')` used to give the field to a side only if every enemy unit had broken or been wiped
+out (7% of seeds in the A9 example); otherwise nobody held it and no wounded were captured. Battles are usually
+decided before one side is entirely gone. Built 2026-10-23 from the user's idea (2026-10-01):
 
-Proposed rule, still applied only when no side is entirely out. Three criteria, each voting for a side if it's
-decisive:
-- **Casualty exchange**: a side inflicted ≥ 1.5× the hits it took.
-- **Routs**: the share of a side's starting men in broken or wiped-out units is ≥ 25 points higher than the other
-  side's.
-- **Strength still standing**: a side has ≥ 1.5× the other's men in unbroken units.
+- A whole army broken or wiped out still decides first (`field_decided_by: 'army_out'`).
+- Otherwise three tests each vote for a side that is decisively ahead (`config/aftermath.yaml`, placeholders):
+  - **Casualty exchange**: inflicted ≥ 1.5× the men hit it took (`field_exchange_ratio`).
+  - **Routs**: the starting strength of its broken or wiped-out units, as a share of its starting total, is
+    ≥ 25 points lower than the other side's (`field_rout_gap`).
+  - **Strength still standing**: ≥ 1.5× the other's men in unbroken units (`field_standing_ratio`).
+- A side holds the field with **≥ 2 votes and none against** (`field_votes_needed`); otherwise nobody does
+  (`'votes'`). The admin can still name a holder (`'admin'`).
+- `BattleResult` records `field_decided_by` and `field_votes`; both are saved in the state file. Results finished
+  before A12 load as decided by the admin, with no votes. The CLI says how the field was decided.
+- **The side summary reads the field as the result**, as it was read at the time: `outcome` won / lost / drawn
+  and `held_field`. A draw is fine and common: both armies still stand, which pushes the players towards a
+  continuation the next day (user, 2026-10-23). Later: finer outcomes such as a Pyrrhic victory.
 
-A side holds the field with **at least 2 votes and none against**; otherwise nobody does, and the admin can still
-name a holder. The thresholds go in `config/aftermath.yaml` / `BattleParams.aftermath` so A10 can tune them, and
-the report should say which criteria decided it.
+**Field held** (300 seeds), before → after:
 
-Prototype on the example (200 seeds): Union 33%, Confederate 15%, nobody 52% (now: nobody 93%). To settle: whether
-holding the field should feed back into the side summary and ratings, and whether "nobody" should stay this
-common.
+| Scenario | Before | After |
+|---|---|---|
+| Example Ridge | nobody 97% | Union 26%, Confederate 24%, nobody 51% |
+| Even firefight | nobody 100% | North 37%, South 34%, nobody 30% |
+| Assault | Attack 72%, nobody 28% | Attack 90%, nobody 10% |
+
+Casualty totals don't change (captured wounded were already counted once, as casualties).
 
 ---
 
