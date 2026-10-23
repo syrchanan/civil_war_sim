@@ -24,3 +24,5 @@ export type {
 export { RuntimeError } from './errors';
 export { battleFromDict, battleToDict, FORMAT, VERSION } from './state';
 export type { StateData, UnitData } from './state';
+export { orderOfBattle, sideSummary } from './summary';
+export type { SideOrder, SideSummary, TypeTotal } from './summary';
