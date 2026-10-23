@@ -54,7 +54,7 @@ rsconnect/
 # TS ----
 
 node_modules
-# dist - keeping for now for jsdeliver access
+dist
 *.log
 .env
 
@@ -68,4 +68,6 @@ __pycache__/
 
 .claude/
 
-# Custom ----.coverage
+# Custom ----
+
+.coverage
