@@ -159,6 +159,17 @@ def test_params_are_saved_in_full():
     assert reload(b).params == tuned
 
 
+def test_result_from_before_field_votes_loads():
+    b = build()
+    b.resolve_round(60, ORDERS_1)
+    b.finish(field_held_by=0)
+    data = b.to_dict()
+    del data['result']['field_decided_by'], data['result']['field_votes']
+    result = Battle.from_dict(data).result
+    assert result.field_held_by == 0
+    assert (result.field_decided_by, result.field_votes) == ('admin', {})
+
+
 def test_finished_battle_stays_finished():
     b = build()
     b.resolve_round(60, ORDERS_1)
