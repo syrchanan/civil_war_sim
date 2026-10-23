@@ -35,7 +35,8 @@ function Preview({ store, arrows }: { store: Store; arrows: Engagement[] }) {
           ))}
         </tbody>
       </table>
-      <p class="note">Expected rates at the start of the round; no dice rolled yet.</p>
+      <p class="note">Expected rates at the start of the round; no dice rolled yet. Closing fire lasts only while a
+        charge approaches (a few minutes).</p>
     </div>
   );
 }
