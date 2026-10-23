@@ -66,7 +66,7 @@ button:disabled { opacity: 0.5; cursor: default; }
 input, select { font: inherit; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px;
   background: var(--bg); color: var(--text); }
 
-.sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 540px), 1fr)); gap: 16px; }
+.sides { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 860px), 1fr)); gap: 16px; }
 .side { border-top: 3px solid var(--side-0); padding-top: 8px; }
 .side.side-1 { border-top-color: var(--side-1); }
 .side-name { font-weight: 600; font-size: 1rem; margin-bottom: 8px; }
@@ -79,3 +79,5 @@ input.stat { width: 3.5em; }
 tr.side-0 td:first-child { border-left: 3px solid var(--side-0); }
 tr.side-1 td:first-child { border-left: 3px solid var(--side-1); }
 section > button { margin-top: 12px; }
+.army-builder td input:not([type]) { width: 11em; }
+input[aria-label="Seed"] { width: 9em; }
