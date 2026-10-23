@@ -9,8 +9,8 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, InfantryRegiment, ON_BREAK, type Order,
-  orderOfBattle, Regiment, Rng, type RoundReport, type UnitSpec,
+  ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, type FieldHolder, InfantryRegiment, ON_BREAK, type Order,
+  orderOfBattle, Regiment, Rng, type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
 
 export type UnitType = 'inf' | 'cav' | 'art';
@@ -69,6 +69,12 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
   const history = computed<RoundReport[]>(() => {
     revision.value;
     return battle.value === null ? [] : [...battle.value.history];
+  });
+
+  /** Each side's performance, once the battle is finished. */
+  const summary = computed<SideSummary[] | null>(() => {
+    revision.value;
+    return battle.value?.finished ? sideSummary(battle.value.toDict()) : null;
   });
 
   /** Units that can still be given orders. */
@@ -219,6 +225,12 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     return null;
   }
 
+  /** End the battle: settle killed, wounded and prisoners; `holder` 'auto' lets the engine decide the field. */
+  function finish(holder: FieldHolder): void {
+    battle.value!.finish(holder);
+    touch();
+  }
+
   /** Back to editing the armies (the battle is dropped). */
   function reset(): void {
     battle.value = null;
@@ -227,7 +239,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
-    orders, duration, recordEvents, actingUnits, preview, history, resolve,
+    orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
