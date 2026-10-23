@@ -329,7 +329,10 @@ FIXTURES = {
 
 
 def defaults() -> dict:
-    """Everything the engine reads from config: battle params, the morale scale, unit subtypes, the battery template."""
+    """
+    Everything the engine reads from config (battle params, the morale scale, unit subtypes, the battery template),
+    and the words the client shows for weapon codes, actions and ammo (config/sheets.yaml).
+    """
     cfg = get_config()
     return {
         'description': 'Engine defaults from config/*.yaml. Generated: python -m imperial_generals.parity',
@@ -337,6 +340,7 @@ def defaults() -> dict:
         'morale_scale': {k: cfg['morale'][k] for k in ('min_raw', 'max_raw', 'raw_scale_factor')},
         'unit_subtypes': {unit_type: sorted(subtypes) for unit_type, subtypes in UNIT_SUBTYPES.items()},
         'artillery': dict(cfg['artillery']),
+        'names': {k: dict(cfg['sheets'][k]) for k in ('weapons', 'artillery_weapons', 'actions', 'ammo')},
     }
 
 
