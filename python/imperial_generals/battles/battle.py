@@ -571,12 +571,19 @@ class Battle:
 
         def stand_down(gone: set, t: float) -> None:
             """
-            Units that broke or were wiped out: contacts and approaches end; melee attackers stand down, and so does
-            fire on a wiped-out unit. Fire on a broken unit keeps going (on_break 'keep').
+            Units that broke or were wiped out: contacts and approaches end; melee attackers fall back, and fire on a
+            wiped-out unit stands down. Fire on a broken unit keeps going (on_break 'keep'), and a melee unit in
+            contact with it stays in contact if its order says 'pursue'.
             """
+            units = self.units
+            pursuit = {frozenset((uid, order.target)) for uid, order in valid.items()
+                       if order.target in gone and order.on_break == 'pursue' and units[uid].active
+                       and units[order.target].size > 0}
+            pursuit &= contacts
             cancelled.update(uid for uid, order in valid.items()
-                             if order.target in gone and (order.mode == 'melee' or self.units[order.target].size == 0))
-            contacts.difference_update([pair for pair in contacts if pair & gone])
+                             if order.target in gone and frozenset((uid, order.target)) not in pursuit
+                             and (order.mode == 'melee' or units[order.target].size == 0))
+            contacts.difference_update([pair for pair in contacts if pair & gone and pair not in pursuit])
             for c in [c for c in pending if c['charger'] in gone or c['target'] in gone]:
                 pending.remove(c)
                 outcome = 'charger_broke' if c['charger'] in gone else 'target_broke'
