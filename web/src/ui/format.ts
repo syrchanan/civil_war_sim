@@ -1,12 +1,33 @@
 /** How the client words a battle: the same phrases as the Python CLI (python/imperial_generals/cli.py). */
 
-import type { Charge } from '../engine';
+import type { BattleResult, Charge } from '../engine';
 
 export const CHARGE_OUTCOMES: Record<string, string> = {
   home: 'went home', faltered: 'faltered', defender_broke: 'broke the defender before contact',
   meeting: 'met head on', pursuit: 'pursuit', charger_broke: 'charger broke on the approach',
   target_broke: 'target broke before contact',
 };
+
+const FIELD_TESTS: [string, string][] = [['exchange', 'casualty exchange'], ['routs', 'routs'],
+  ['standing', 'strength standing']];
+
+/** Who held the field and how it was decided: the whole army out, the votes, or named by the admin. */
+export function fieldText(result: Pick<BattleResult, 'field_held_by' | 'field_decided_by' | 'field_votes'>,
+  sides: readonly string[]): string {
+  const holder = result.field_held_by;
+  const who = holder === null ? 'nobody, a draw' : sides[holder];
+  let why: string;
+  if (result.field_decided_by === 'army_out') {
+    why = `the whole ${sides[1 - holder!]} army broke`;
+  } else if (result.field_decided_by === 'votes') {
+    const votes = result.field_votes as Record<string, number | null>;
+    why = 'votes: ' + FIELD_TESTS.map(([test, label]) => `${label} ${votes[test] === null ? '-' : sides[votes[test]!]}`)
+      .join(', ');
+  } else {
+    why = 'named by the admin';
+  }
+  return `Field held by: ${who} (${why})`;
+}
 
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
 

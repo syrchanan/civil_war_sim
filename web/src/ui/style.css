@@ -112,3 +112,4 @@ figcaption { font-weight: 600; margin-bottom: 4px; }
   background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;
   font-size: 0.8rem; white-space: nowrap; box-shadow: 0 2px 8px rgb(0 0 0 / 0.12); }
 .tooltip.flip { transform: translateX(calc(-100% - 8px)); }
+.field { font-weight: 600; margin: 0 0 12px; }
