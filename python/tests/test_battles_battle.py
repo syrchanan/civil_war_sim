@@ -412,3 +412,34 @@ def test_unit_worn_down_by_the_drain_breaks_at_the_round_end():
     report = b.resolve_round(60, {'a': {'target': 'x', 'mode': 'ranged'}, 'c': {'target': 'x', 'mode': 'ranged'}})
     assert report.units['x'].losses == 0
     assert report.units['x'].broken and report.units['x'].broke_at == 60
+
+
+# =============================================================================
+# When a melee target breaks: fall back (default) or pursue
+# =============================================================================
+
+def melee_rout(on_break=None, seed=3):
+    """c is in contact with a weak x and breaks it in melee."""
+    b = make_battle({'c': (0, 1000, '8/8/1/0'), 'x': (1, 300, '2/2/0/0')}, seed=seed)
+    b.contacts = {frozenset(('c', 'x'))}
+    order = {'target': 'x', 'mode': 'melee'}
+    if on_break:
+        order['on_break'] = on_break
+    report = b.resolve_round(120, {'c': order}, record_events=True)
+    assert report.units['x'].broken and report.units['x'].broke_at < report.end
+    return b, report
+
+
+def test_melee_falls_back_from_a_target_that_breaks_by_default():
+    b, report = melee_rout()
+    broke_at = report.units['x'].broke_at
+    assert not [ev for ev in report.events if ev.time > broke_at]
+    assert b.contacts == set()
+
+
+def test_melee_pursue_stays_in_contact_with_a_target_that_breaks():
+    b, report = melee_rout('pursue')
+    broke_at = report.units['x'].broke_at
+    after = [ev for ev in report.events if ev.time > broke_at]
+    assert after and {(ev.attacker, ev.target) for ev in after} == {('c', 'x')}
+    assert b.contacts == set()          # contact with a broken unit doesn't carry into the next round
