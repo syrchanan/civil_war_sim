@@ -69,3 +69,25 @@ describe('rounds panel', () => {
     expect(screen.getByRole('alert').textContent).toBe('The round length must be more than 0 minutes.');
   });
 });
+
+describe('strength charts', () => {
+  it('show men and morale for each side after a round', () => {
+    started();
+    fireEvent.click(screen.getByRole('button', { name: 'Fight round 1' }));
+    const titles = [...document.querySelectorAll('figcaption')].map((f) => f.textContent);
+    expect(titles).toEqual(['Union: Men in the ranks', 'Confederate: Men in the ranks', 'Union: Morale (raw, 10–100)',
+      'Confederate: Morale (raw, 10–100)']);
+  });
+
+  it('say when a side has more units than the palette', () => {
+    const store = createStore(1);
+    store.clearUnits();
+    for (let i = 0; i < 9; i++) store.addUnit(0);
+    store.addUnit(1);
+    render(<App store={store} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fight round 1' }));
+    expect(screen.getAllByText('Showing the first 8 of 9 units; all are in the tables.')).toHaveLength(2);
+  });
+});
+
