@@ -207,3 +207,10 @@ describe('BattleParams', () => {
     expect(() => base.withOverrides({ combat: { weapon_multipliers: { x: 1.0 } } })).toThrow(ValueError);
   });
 });
+
+describe('MatchupParams with a missing table', () => {
+  it('rejects it', () => {
+    expect(() => new MatchupParams({ ...(defaults.params.matchups as MatchupData), ranged: null as never }))
+      .toThrow(ValueError);
+  });
+});

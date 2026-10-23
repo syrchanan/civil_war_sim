@@ -128,6 +128,8 @@ export function exp(x: number): number {
     }
     x = hi - lo;
   } else if (hx < 0x3e300000) { // |x| < 2**-28
+    // always true: in C it raises the inexact flag
+    /* v8 ignore next */
     if (HUGE + x > 1.0) return 1.0 + x;
   }
 
