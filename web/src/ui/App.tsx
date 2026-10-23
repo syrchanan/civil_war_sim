@@ -3,6 +3,7 @@
 import { ArmyBuilder } from './ArmyBuilder';
 import { OrderOfBattle } from './OrderOfBattle';
 import { OrdersPanel } from './OrdersPanel';
+import { RoundsPanel } from './RoundsPanel';
 import { createStore, type Store } from './store';
 
 const defaultStore = createStore();
@@ -31,6 +32,7 @@ export function App({ store = defaultStore }: { store?: Store }) {
         </section>
         <section aria-labelledby="rounds">
           <h2 id="rounds">Rounds</h2>
+          {battle === null ? <p class="note">No rounds fought yet.</p> : <RoundsPanel store={store} />}
         </section>
         <section aria-labelledby="result">
           <h2 id="result">Result</h2>

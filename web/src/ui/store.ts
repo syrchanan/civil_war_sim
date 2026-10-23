@@ -10,7 +10,7 @@ import { computed, signal } from '@preact/signals';
 
 import {
   ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, InfantryRegiment, ON_BREAK, type Order,
-  orderOfBattle, Regiment, Rng, type UnitSpec,
+  orderOfBattle, Regiment, Rng, type RoundReport, type UnitSpec,
 } from '../engine';
 
 export type UnitType = 'inf' | 'cav' | 'art';
@@ -65,6 +65,11 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
   const orders = signal<Record<string, Order>>({});
   const duration = signal(60);
   const recordEvents = signal(false);
+
+  const history = computed<RoundReport[]>(() => {
+    revision.value;
+    return battle.value === null ? [] : [...battle.value.history];
+  });
 
   /** Units that can still be given orders. */
   const actingUnits = computed<BattleUnit[]>(() => {
@@ -193,6 +198,27 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     return [];
   }
 
+  /**
+   * Fight the next round with the current orders; returns why it couldn't be fought, or null. Orders carry into
+   * the next round, except those that can no longer be carried out (the unit broke or was wiped out, or its
+   * target was wiped out).
+   */
+  function resolve(): string | null {
+    if (!(duration.value > 0)) return 'The round length must be more than 0 minutes.';
+    const b = battle.value!;
+    try {
+      b.resolveRound(duration.value, orders.value, recordEvents.value);
+    } catch (error) {
+      return (error as Error).message;
+    }
+    orders.value = Object.fromEntries(Object.entries(orders.value).map(([uid, o]) => {
+      const keep = o.mode !== 'idle' && b.units.get(uid)!.active && b.units.get(o.target!)!.size > 0;
+      return [uid, keep ? o : IDLE];
+    }));
+    touch();
+    return null;
+  }
+
   /** Back to editing the armies (the battle is dropped). */
   function reset(): void {
     battle.value = null;
@@ -201,7 +227,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
-    orders, duration, recordEvents, actingUnits, preview,
+    orders, duration, recordEvents, actingUnits, preview, history, resolve,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

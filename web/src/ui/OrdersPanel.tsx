@@ -1,5 +1,7 @@
 /** Each unit's order for the next round, the round's length, and a preview of what the orders would start. */
 
+import { useState } from 'preact/hooks';
+
 import defaults from '../engine/defaults.json';
 import { ArtilleryBattery, type Engagement, ON_BREAK } from '../engine';
 import type { Store } from './store';
@@ -41,6 +43,7 @@ function Preview({ store, arrows }: { store: Store; arrows: Engagement[] }) {
 export function OrdersPanel({ store }: { store: Store }) {
   const battle = store.battle.value!;
   const { arrows, error } = store.preview.value;
+  const [problem, setProblem] = useState<string | null>(null);
   return (
     <div class="orders">
       <div class="table-wrap">
@@ -106,7 +109,11 @@ export function OrdersPanel({ store }: { store: Store }) {
           {' '}Record every casualty (bigger download)
         </label>
         <span class="note">Round {battle.round + 1}, from minute {battle.time}</span>
+        <button class="primary" disabled={error !== null} onClick={() => setProblem(store.resolve())}>
+          Fight round {battle.round + 1}
+        </button>
       </div>
+      {problem !== null && <p role="alert" class="problems">{problem}</p>}
       <h3>Preview</h3>
       {error === null ? <Preview store={store} arrows={arrows} /> : <p role="alert" class="problems">{error}</p>}
     </div>
