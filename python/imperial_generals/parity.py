@@ -193,11 +193,125 @@ def units_fixture() -> dict:
             'min_crew_per_gun': min_crew, 'effective_guns': guns}
 
 
+def _u(uid, side, type_, subtype, size, stats, **extra):
+    return {'id': uid, 'side': side, 'type': type_, 'subtype': subtype, 'size': size, 'stats': stats, **extra}
+
+
+def _fire(target, **extra):
+    return {'target': target, 'mode': 'ranged', **extra}
+
+
+def _melee(target, **extra):
+    return {'target': target, 'mode': 'melee', **extra}
+
+
+# Synthetic battles for what the scenario files rarely reach
+SYNTHETIC = {
+    'charges': {
+        'units': [_u('a_line', 0, 'inf', 'line', 900, '6/6/1/0'), _u('a_heavy', 0, 'cav', 'heavy', 400, '7/7/0/1'),
+                  _u('a_drag', 0, 'cav', 'dragoons', 350, '5/5/1/0'), _u('a_pikes', 0, 'inf', 'pikes', 600, '5/6/-2/1'),
+                  _u('x_line', 1, 'inf', 'line', 800, '4/5/0/0'), _u('x_light', 1, 'cav', 'light', 300, '5/5/0/1'),
+                  _u('x_bat', 1, 'art', 'battery', 72, '5/5/0/0', guns=8), _u('x_irr', 1, 'inf', 'irregulars', 500, '2/3/-1/0')],
+        'rounds': [
+            {'duration': 45, 'orders': {'a_line': _fire('x_line'), 'a_heavy': _melee('x_irr'), 'a_drag': _fire('x_bat'),
+                                        'a_pikes': _melee('x_light'), 'x_light': _melee('a_pikes'),
+                                        'x_bat': _fire('a_heavy', ammo='canister'), 'x_line': _fire('a_line')}},
+            {'duration': 60, 'orders': {'a_line': _melee('x_line'), 'a_heavy': _melee('x_bat', on_break='pursue'),
+                                        'a_drag': _fire('x_irr', on_break='strongest'), 'a_pikes': _melee('x_light'),
+                                        'x_line': _melee('a_line'), 'x_bat': _fire('a_line', ammo='shell'),
+                                        'x_irr': _fire('a_drag')}},
+            {'duration': 90, 'orders': {'a_line': _melee('x_line', on_break='pursue'), 'a_heavy': _melee('x_irr'),
+                                        'a_drag': _melee('x_bat'), 'x_line': _fire('a_line', on_break='weakest')}},
+        ],
+        'finish': True,
+    },
+    'falter_and_fire': {
+        'params': {'charge': {'falter_threshold': 0.0, 'break_threshold': 3.0}},
+        'units': [_u('a_inf', 0, 'inf', 'light', 300, '2/2/0/0'), _u('a_cav', 0, 'cav', 'light', 200, '3/3/0/1'),
+                  _u('x_inf', 1, 'inf', 'line', 1200, '8/8/1/0'), _u('x_bat', 1, 'art', 'horse battery', 54, '6/6/0/0', guns=6),
+                  _u('x_rifle', 1, 'inf', 'light', 400, '6/6/1/0')],
+        'rounds': [
+            {'duration': 60, 'orders': {'a_inf': _melee('x_inf'), 'a_cav': _melee('x_rifle'),
+                                        'x_bat': _fire('a_inf', ammo='round_shot'), 'x_rifle': _fire('a_inf'),
+                                        'x_inf': _fire('a_cav')}},
+            {'duration': 60, 'orders': {'a_inf': _fire('x_inf'), 'a_cav': _melee('x_bat'),
+                                        'x_bat': _fire('a_cav', ammo='canister'), 'x_inf': _fire('a_inf', on_break='weakest'),
+                                        'x_rifle': _fire('a_cav', on_break='strongest')}},
+        ],
+        'finish': 'none',
+    },
+    'wipe_out_and_drain': {
+        'params': {'morale': {'drain_per_hour': 0.6, 'break_point_spread': 0.0}},
+        'units': [_u('big', 0, 'inf', 'line', 3000, '9/9/2/0'), _u('mid', 0, 'inf', 'marine', 600, '5/5/0/0'),
+                  _u('tiny', 1, 'inf', 'line', 8, '1/1/-1/0'), _u('gun', 1, 'art', 'siege battery', 15, '3/3/0/0', guns=4),
+                  {'id': 'plain', 'side': 1, 'size': 400, 'stats': '4/4/0/0'}],
+        'rounds': [
+            {'duration': 30, 'orders': {'big': _fire('gun', on_break='strongest'), 'mid': _fire('tiny'),
+                                        'gun': _fire('mid'), 'plain': _fire('mid')}},
+            {'duration': 120, 'orders': {'big': _fire('plain'), 'mid': _melee('gun'), 'plain': _fire('big')}},
+        ],
+        'finish': 0,
+    },
+    'broken_on_approach': {
+        'units': [_u('s1', 0, 'inf', 'line', 3000, '9/9/2/0'), _u('s2', 0, 'inf', 'line', 3000, '9/9/2/0'),
+                  _u('slow', 0, 'inf', 'line', 500, '5/5/0/0'), _u('weak', 1, 'inf', 'irregulars', 200, '1/1/-1/0'),
+                  _u('other', 1, 'inf', 'line', 900, '5/5/0/0')],
+        'rounds': [
+            {'duration': 20, 'orders': {'s1': _fire('weak'), 's2': _fire('weak', on_break='weakest'),
+                                        'slow': _melee('weak'), 'other': _fire('slow')}},
+            {'duration': 30, 'orders': {'s1': _fire('other'), 'slow': _melee('weak', on_break='pursue'),
+                                        'other': _melee('slow')}},
+        ],
+        'finish': 1,
+    },
+}
+
+BATTLE_SEEDS = (1, 2, 3)
+
+
+def _battle_case(name: str, scenario: dict, seed: int, record_events: bool = False) -> dict:
+    from imperial_generals import api
+    from imperial_generals.battles.setup import battle_from_setup
+    battle = battle_from_setup(scenario, seed=seed)
+    start = battle.to_dict()
+    rounds = []
+    for rnd in scenario.get('rounds', []):
+        orders, _ = api._playable(battle, rnd.get('orders', {}))
+        battle.resolve_round(rnd['duration'], orders, record_events=record_events)
+        rounds.append({'duration': rnd['duration'], 'orders': orders, 'record_events': record_events})
+    finish = scenario.get('finish', False)
+    holder = None if finish is False else api._field_holder(finish, api._sides(scenario))
+    if finish is not False:
+        battle.finish(holder)
+    return {'name': name, 'seed': seed, 'start': start, 'rounds': rounds, 'finished': finish is not False,
+            'field_held_by': holder, 'final': battle.to_dict()}
+
+
+def battles_fixture() -> dict:
+    from imperial_generals.battles.setup import load_setup_file
+    scenarios = ROOT / 'scenarios'
+    files = {'example_ridge': scenarios / 'example_ridge.yaml',
+             'day_even_firefight': scenarios / 'calibration' / 'day_even_firefight.yaml',
+             'day_assault': scenarios / 'calibration' / 'day_assault.yaml'}
+    cases = []
+    for name, path in files.items():
+        scenario = load_setup_file(path)
+        cases += [_battle_case(name, scenario, seed) for seed in BATTLE_SEEDS]
+    for name, scenario in SYNTHETIC.items():
+        cases += [_battle_case(name, scenario, seed) for seed in BATTLE_SEEDS]
+    cases.append(_battle_case('example_ridge (events)', load_setup_file(files['example_ridge']), 7, record_events=True))
+    return {'description': "Whole battles: load 'start' (a state file), resolve each round's orders, then finish "
+                           "with field_held_by ('auto', 0, 1 or null) if 'finished'; the state file must equal "
+                           "'final'.",
+            'cases': cases}
+
+
 FIXTURES = {
     'rng': rng_fixture,
     'params': params_fixture,
     'morale': morale_fixture,
     'units': units_fixture,
+    'battles': battles_fixture,
 }
 
 
