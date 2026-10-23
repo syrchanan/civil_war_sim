@@ -4,7 +4,7 @@ from imperial_generals.battles.battle import Battle, Engagement, Order, RoundRep
 from imperial_generals.battles import Simulation
 from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams, CombatParams
-from imperial_generals.units import Regiment
+from imperial_generals.units import ArtilleryBattery, Regiment
 from imperial_generals.utils import Rng
 
 P = BattleParams()
@@ -183,6 +183,28 @@ def test_broken_unit_can_be_pursued_but_does_not_fight_back():
     break_unit(b, 'x')
     r = rates(b.engagements({'a': {'target': 'x', 'mode': 'ranged'}, 'c': {'target': 'x', 'mode': 'melee'}}))
     assert set(r) == {('a', 'x'), ('c', 'x')}
+
+
+def test_attacks_on_a_broken_unit_use_the_broken_target_multipliers():
+    # a broken unit scatters: fire (muskets and guns) and melee pursuit hit it less hard
+    units = {'a': (0, Regiment(500, '4/5/0/0')), 'c': (0, Regiment(500, '4/5/0/0')),
+             'g': (0, ArtilleryBattery(72, '4/5/0/0', guns=8, subtype='battery')),
+             'x': (1, Regiment(500, '4/5/0/0'))}
+    orders = {'a': {'target': 'x', 'mode': 'ranged'}, 'c': {'target': 'x', 'mode': 'melee'},
+              'g': {'target': 'x', 'mode': 'ranged'}}
+    fresh = Battle(units, rng=Rng(1))
+    fresh.contacts = {frozenset(('c', 'x'))}
+    before = rates(fresh.engagements(orders))
+
+    broken = Battle(units, rng=Rng(1))         # engagements() only previews: the regiments can be shared
+    break_unit(broken, 'x')
+    broken.contacts = {frozenset(('c', 'x'))}
+    after = rates(broken.engagements(orders))
+
+    c = P.combat
+    assert after[('a', 'x')] == pytest.approx(before[('a', 'x')] * c.broken_fire_multiplier)
+    assert after[('g', 'x')] == pytest.approx(before[('g', 'x')] * c.broken_fire_multiplier)
+    assert after[('c', 'x')] == pytest.approx(before[('c', 'x')] * c.broken_melee_multiplier)
 
 
 def test_engagements_are_ordered_by_target_then_attacker():
