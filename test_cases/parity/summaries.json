@@ -1,0 +1,1902 @@
+{
+  "description": "api.order_of_battle and api.side_summary (finished battles only) of each battle in battles.json, from its 'final' state.",
+  "cases": [
+    {
+      "name": "example_ridge",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Union",
+          "units": 3,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.538277511961723,
+          "avg_morale": 5.538277511961723
+        },
+        {
+          "name": "Confederate",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 4.190938511326861,
+          "avg_morale": 5.1618122977346275
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Union",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 3,
+          "units_out": 1,
+          "started": 1672,
+          "killed": 81,
+          "wounded": 286,
+          "prisoners_lost": 5,
+          "casualties": 372,
+          "casualty_share": 0.22248803827751196,
+          "returned": 93,
+          "final": 1393,
+          "loss_share": 0.16686602870813397,
+          "hits_taken": 367,
+          "hits_inflicted": 469,
+          "exchange_ratio": 1.2779291553133516,
+          "prisoners_taken": 59,
+          "guns_lost": 2,
+          "guns_taken": 0
+        },
+        {
+          "name": "Confederate",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 4,
+          "units_out": 1,
+          "started": 2472,
+          "killed": 122,
+          "wounded": 347,
+          "prisoners_lost": 59,
+          "casualties": 528,
+          "casualty_share": 0.21359223300970873,
+          "returned": 126,
+          "final": 2070,
+          "loss_share": 0.16262135922330098,
+          "hits_taken": 469,
+          "hits_inflicted": 367,
+          "exchange_ratio": 0.7825159914712153,
+          "prisoners_taken": 5,
+          "guns_lost": 0,
+          "guns_taken": 2
+        }
+      ]
+    },
+    {
+      "name": "example_ridge",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Union",
+          "units": 3,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.538277511961723,
+          "avg_morale": 5.538277511961723
+        },
+        {
+          "name": "Confederate",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 4.190938511326861,
+          "avg_morale": 5.1618122977346275
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Union",
+          "outcome": "won",
+          "held_field": true,
+          "units": 3,
+          "units_out": 1,
+          "started": 1672,
+          "killed": 89,
+          "wounded": 303,
+          "prisoners_lost": 6,
+          "casualties": 398,
+          "casualty_share": 0.23803827751196172,
+          "returned": 126,
+          "final": 1400,
+          "loss_share": 0.16267942583732056,
+          "hits_taken": 392,
+          "hits_inflicted": 527,
+          "exchange_ratio": 1.344387755102041,
+          "prisoners_taken": 314,
+          "guns_lost": 2,
+          "guns_taken": 0
+        },
+        {
+          "name": "Confederate",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 2,
+          "started": 2472,
+          "killed": 100,
+          "wounded": 249,
+          "prisoners_lost": 314,
+          "casualties": 663,
+          "casualty_share": 0.2682038834951456,
+          "returned": 89,
+          "final": 1898,
+          "loss_share": 0.23220064724919093,
+          "hits_taken": 527,
+          "hits_inflicted": 392,
+          "exchange_ratio": 0.7438330170777988,
+          "prisoners_taken": 6,
+          "guns_lost": 0,
+          "guns_taken": 2
+        }
+      ]
+    },
+    {
+      "name": "example_ridge",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Union",
+          "units": 3,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.538277511961723,
+          "avg_morale": 5.538277511961723
+        },
+        {
+          "name": "Confederate",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 4.190938511326861,
+          "avg_morale": 5.1618122977346275
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Union",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 3,
+          "units_out": 1,
+          "started": 1672,
+          "killed": 80,
+          "wounded": 309,
+          "prisoners_lost": 5,
+          "casualties": 394,
+          "casualty_share": 0.23564593301435408,
+          "returned": 107,
+          "final": 1385,
+          "loss_share": 0.17165071770334928,
+          "hits_taken": 389,
+          "hits_inflicted": 527,
+          "exchange_ratio": 1.3547557840616966,
+          "prisoners_taken": 74,
+          "guns_lost": 2,
+          "guns_taken": 0
+        },
+        {
+          "name": "Confederate",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 4,
+          "units_out": 1,
+          "started": 2472,
+          "killed": 100,
+          "wounded": 427,
+          "prisoners_lost": 74,
+          "casualties": 601,
+          "casualty_share": 0.24312297734627833,
+          "returned": 178,
+          "final": 2049,
+          "loss_share": 0.17111650485436894,
+          "hits_taken": 527,
+          "hits_inflicted": 389,
+          "exchange_ratio": 0.7381404174573055,
+          "prisoners_taken": 5,
+          "guns_lost": 0,
+          "guns_taken": 2
+        }
+      ]
+    },
+    {
+      "name": "day_even_firefight",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "North",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        },
+        {
+          "name": "South",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "North",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 3,
+          "started": 2472,
+          "killed": 154,
+          "wounded": 443,
+          "prisoners_lost": 375,
+          "casualties": 972,
+          "casualty_share": 0.3932038834951456,
+          "returned": 169,
+          "final": 1669,
+          "loss_share": 0.32483818770226536,
+          "hits_taken": 773,
+          "hits_inflicted": 821,
+          "exchange_ratio": 1.0620957309184993,
+          "prisoners_taken": 125,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "South",
+          "outcome": "won",
+          "held_field": true,
+          "units": 4,
+          "units_out": 2,
+          "started": 2472,
+          "killed": 164,
+          "wounded": 657,
+          "prisoners_lost": 125,
+          "casualties": 946,
+          "casualty_share": 0.3826860841423948,
+          "returned": 286,
+          "final": 1812,
+          "loss_share": 0.2669902912621359,
+          "hits_taken": 821,
+          "hits_inflicted": 773,
+          "exchange_ratio": 0.9415347137637028,
+          "prisoners_taken": 375,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "day_even_firefight",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "North",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        },
+        {
+          "name": "South",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "North",
+          "outcome": "won",
+          "held_field": true,
+          "units": 4,
+          "units_out": 2,
+          "started": 2472,
+          "killed": 145,
+          "wounded": 566,
+          "prisoners_lost": 122,
+          "casualties": 833,
+          "casualty_share": 0.33697411003236244,
+          "returned": 249,
+          "final": 1888,
+          "loss_share": 0.23624595469255663,
+          "hits_taken": 711,
+          "hits_inflicted": 761,
+          "exchange_ratio": 1.070323488045007,
+          "prisoners_taken": 397,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "South",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 3,
+          "started": 2472,
+          "killed": 165,
+          "wounded": 407,
+          "prisoners_lost": 397,
+          "casualties": 969,
+          "casualty_share": 0.3919902912621359,
+          "returned": 193,
+          "final": 1696,
+          "loss_share": 0.313915857605178,
+          "hits_taken": 761,
+          "hits_inflicted": 711,
+          "exchange_ratio": 0.9342969776609724,
+          "prisoners_taken": 122,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "day_even_firefight",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "North",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        },
+        {
+          "name": "South",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "North",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 3,
+          "started": 2472,
+          "killed": 161,
+          "wounded": 399,
+          "prisoners_lost": 442,
+          "casualties": 1002,
+          "casualty_share": 0.4053398058252427,
+          "returned": 165,
+          "final": 1635,
+          "loss_share": 0.33859223300970875,
+          "hits_taken": 819,
+          "hits_inflicted": 735,
+          "exchange_ratio": 0.8974358974358975,
+          "prisoners_taken": 120,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "South",
+          "outcome": "won",
+          "held_field": true,
+          "units": 4,
+          "units_out": 2,
+          "started": 2472,
+          "killed": 175,
+          "wounded": 560,
+          "prisoners_lost": 120,
+          "casualties": 855,
+          "casualty_share": 0.345873786407767,
+          "returned": 240,
+          "final": 1857,
+          "loss_share": 0.2487864077669903,
+          "hits_taken": 735,
+          "hits_inflicted": 819,
+          "exchange_ratio": 1.1142857142857143,
+          "prisoners_taken": 442,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "day_assault",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Attack",
+          "units": 6,
+          "men": 3744,
+          "by_type": {
+            "inf": {
+              "units": 4,
+              "men": 3600
+            },
+            "art": {
+              "units": 2,
+              "men": 144,
+              "guns": 16
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        },
+        {
+          "name": "Defence",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Attack",
+          "outcome": "won",
+          "held_field": true,
+          "units": 6,
+          "units_out": 2,
+          "started": 3744,
+          "killed": 156,
+          "wounded": 473,
+          "prisoners_lost": 77,
+          "casualties": 706,
+          "casualty_share": 0.18856837606837606,
+          "returned": 199,
+          "final": 3237,
+          "loss_share": 0.13541666666666666,
+          "hits_taken": 629,
+          "hits_inflicted": 1005,
+          "exchange_ratio": 1.5977742448330683,
+          "prisoners_taken": 450,
+          "guns_lost": 1,
+          "guns_taken": 8
+        },
+        {
+          "name": "Defence",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 3,
+          "started": 2472,
+          "killed": 234,
+          "wounded": 448,
+          "prisoners_lost": 450,
+          "casualties": 1132,
+          "casualty_share": 0.45792880258899676,
+          "returned": 190,
+          "final": 1530,
+          "loss_share": 0.38106796116504854,
+          "hits_taken": 1005,
+          "hits_inflicted": 629,
+          "exchange_ratio": 0.6258706467661691,
+          "prisoners_taken": 77,
+          "guns_lost": 8,
+          "guns_taken": 1
+        }
+      ]
+    },
+    {
+      "name": "day_assault",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Attack",
+          "units": 6,
+          "men": 3744,
+          "by_type": {
+            "inf": {
+              "units": 4,
+              "men": 3600
+            },
+            "art": {
+              "units": 2,
+              "men": 144,
+              "guns": 16
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        },
+        {
+          "name": "Defence",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Attack",
+          "outcome": "won",
+          "held_field": true,
+          "units": 6,
+          "units_out": 2,
+          "started": 3744,
+          "killed": 122,
+          "wounded": 520,
+          "prisoners_lost": 70,
+          "casualties": 712,
+          "casualty_share": 0.19017094017094016,
+          "returned": 227,
+          "final": 3259,
+          "loss_share": 0.1295405982905983,
+          "hits_taken": 642,
+          "hits_inflicted": 1012,
+          "exchange_ratio": 1.5763239875389408,
+          "prisoners_taken": 376,
+          "guns_lost": 2,
+          "guns_taken": 8
+        },
+        {
+          "name": "Defence",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 3,
+          "started": 2472,
+          "killed": 252,
+          "wounded": 515,
+          "prisoners_lost": 376,
+          "casualties": 1143,
+          "casualty_share": 0.46237864077669905,
+          "returned": 223,
+          "final": 1552,
+          "loss_share": 0.37216828478964403,
+          "hits_taken": 1012,
+          "hits_inflicted": 642,
+          "exchange_ratio": 0.6343873517786561,
+          "prisoners_taken": 70,
+          "guns_lost": 8,
+          "guns_taken": 2
+        }
+      ]
+    },
+    {
+      "name": "day_assault",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Attack",
+          "units": 6,
+          "men": 3744,
+          "by_type": {
+            "inf": {
+              "units": 4,
+              "men": 3600
+            },
+            "art": {
+              "units": 2,
+              "men": 144,
+              "guns": 16
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        },
+        {
+          "name": "Defence",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Attack",
+          "outcome": "won",
+          "held_field": true,
+          "units": 6,
+          "units_out": 2,
+          "started": 3744,
+          "killed": 147,
+          "wounded": 503,
+          "prisoners_lost": 71,
+          "casualties": 721,
+          "casualty_share": 0.19257478632478633,
+          "returned": 170,
+          "final": 3193,
+          "loss_share": 0.14716880341880342,
+          "hits_taken": 650,
+          "hits_inflicted": 947,
+          "exchange_ratio": 1.456923076923077,
+          "prisoners_taken": 497,
+          "guns_lost": 2,
+          "guns_taken": 8
+        },
+        {
+          "name": "Defence",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 4,
+          "started": 2472,
+          "killed": 171,
+          "wounded": 451,
+          "prisoners_lost": 497,
+          "casualties": 1119,
+          "casualty_share": 0.4526699029126214,
+          "returned": 172,
+          "final": 1525,
+          "loss_share": 0.3830906148867314,
+          "hits_taken": 947,
+          "hits_inflicted": 650,
+          "exchange_ratio": 0.6863780359028511,
+          "prisoners_taken": 71,
+          "guns_lost": 8,
+          "guns_taken": 2
+        }
+      ]
+    },
+    {
+      "name": "charges",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 4,
+          "men": 2250,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1500
+            },
+            "cav": {
+              "units": 2,
+              "men": 750
+            }
+          },
+          "avg_experience": 5.7555555555555555,
+          "avg_morale": 6.022222222222222
+        },
+        {
+          "name": "Side 1",
+          "units": 4,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1300
+            },
+            "cav": {
+              "units": 1,
+              "men": 300
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 3.624401913875598,
+          "avg_morale": 4.401913875598086
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "won",
+          "held_field": true,
+          "units": 4,
+          "units_out": 0,
+          "started": 2250,
+          "killed": 48,
+          "wounded": 200,
+          "prisoners_lost": 0,
+          "casualties": 248,
+          "casualty_share": 0.11022222222222222,
+          "returned": 85,
+          "final": 2087,
+          "loss_share": 0.07244444444444445,
+          "hits_taken": 248,
+          "hits_inflicted": 545,
+          "exchange_ratio": 2.1975806451612905,
+          "prisoners_taken": 306,
+          "guns_lost": 0,
+          "guns_taken": 3
+        },
+        {
+          "name": "Side 1",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 4,
+          "started": 1672,
+          "killed": 140,
+          "wounded": 269,
+          "prisoners_lost": 306,
+          "casualties": 715,
+          "casualty_share": 0.4276315789473684,
+          "returned": 105,
+          "final": 1062,
+          "loss_share": 0.36483253588516745,
+          "hits_taken": 545,
+          "hits_inflicted": 248,
+          "exchange_ratio": 0.45504587155963305,
+          "prisoners_taken": 0,
+          "guns_lost": 3,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "charges",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 4,
+          "men": 2250,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1500
+            },
+            "cav": {
+              "units": 2,
+              "men": 750
+            }
+          },
+          "avg_experience": 5.7555555555555555,
+          "avg_morale": 6.022222222222222
+        },
+        {
+          "name": "Side 1",
+          "units": 4,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1300
+            },
+            "cav": {
+              "units": 1,
+              "men": 300
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 3.624401913875598,
+          "avg_morale": 4.401913875598086
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "won",
+          "held_field": true,
+          "units": 4,
+          "units_out": 0,
+          "started": 2250,
+          "killed": 58,
+          "wounded": 214,
+          "prisoners_lost": 0,
+          "casualties": 272,
+          "casualty_share": 0.12088888888888889,
+          "returned": 97,
+          "final": 2075,
+          "loss_share": 0.07777777777777778,
+          "hits_taken": 272,
+          "hits_inflicted": 582,
+          "exchange_ratio": 2.139705882352941,
+          "prisoners_taken": 327,
+          "guns_lost": 0,
+          "guns_taken": 2
+        },
+        {
+          "name": "Side 1",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 4,
+          "started": 1672,
+          "killed": 124,
+          "wounded": 301,
+          "prisoners_lost": 327,
+          "casualties": 752,
+          "casualty_share": 0.44976076555023925,
+          "returned": 123,
+          "final": 1043,
+          "loss_share": 0.3761961722488038,
+          "hits_taken": 582,
+          "hits_inflicted": 272,
+          "exchange_ratio": 0.46735395189003437,
+          "prisoners_taken": 0,
+          "guns_lost": 2,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "charges",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 4,
+          "men": 2250,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1500
+            },
+            "cav": {
+              "units": 2,
+              "men": 750
+            }
+          },
+          "avg_experience": 5.7555555555555555,
+          "avg_morale": 6.022222222222222
+        },
+        {
+          "name": "Side 1",
+          "units": 4,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1300
+            },
+            "cav": {
+              "units": 1,
+              "men": 300
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 3.624401913875598,
+          "avg_morale": 4.401913875598086
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "won",
+          "held_field": true,
+          "units": 4,
+          "units_out": 0,
+          "started": 2250,
+          "killed": 47,
+          "wounded": 218,
+          "prisoners_lost": 0,
+          "casualties": 265,
+          "casualty_share": 0.11777777777777777,
+          "returned": 88,
+          "final": 2073,
+          "loss_share": 0.07866666666666666,
+          "hits_taken": 265,
+          "hits_inflicted": 569,
+          "exchange_ratio": 2.147169811320755,
+          "prisoners_taken": 364,
+          "guns_lost": 0,
+          "guns_taken": 3
+        },
+        {
+          "name": "Side 1",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 4,
+          "started": 1672,
+          "killed": 136,
+          "wounded": 265,
+          "prisoners_lost": 364,
+          "casualties": 765,
+          "casualty_share": 0.45753588516746413,
+          "returned": 100,
+          "final": 1007,
+          "loss_share": 0.3977272727272727,
+          "hits_taken": 569,
+          "hits_inflicted": 265,
+          "exchange_ratio": 0.46572934973637964,
+          "prisoners_taken": 0,
+          "guns_lost": 3,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "falter_and_fire",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 2,
+          "men": 500,
+          "by_type": {
+            "inf": {
+              "units": 1,
+              "men": 300
+            },
+            "cav": {
+              "units": 1,
+              "men": 200
+            }
+          },
+          "avg_experience": 2.4,
+          "avg_morale": 2.4
+        },
+        {
+          "name": "Side 1",
+          "units": 3,
+          "men": 1654,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 54,
+              "guns": 6
+            }
+          },
+          "avg_experience": 7.451027811366385,
+          "avg_morale": 7.451027811366385
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 2,
+          "units_out": 2,
+          "started": 500,
+          "killed": 73,
+          "wounded": 228,
+          "prisoners_lost": 38,
+          "casualties": 339,
+          "casualty_share": 0.678,
+          "returned": 88,
+          "final": 249,
+          "loss_share": 0.502,
+          "hits_taken": 301,
+          "hits_inflicted": 0,
+          "exchange_ratio": 0.0,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "Side 1",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 3,
+          "units_out": 0,
+          "started": 1654,
+          "killed": 0,
+          "wounded": 0,
+          "prisoners_lost": 0,
+          "casualties": 0,
+          "casualty_share": 0.0,
+          "returned": 0,
+          "final": 1654,
+          "loss_share": 0.0,
+          "hits_taken": 0,
+          "hits_inflicted": 301,
+          "exchange_ratio": null,
+          "prisoners_taken": 38,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "falter_and_fire",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 2,
+          "men": 500,
+          "by_type": {
+            "inf": {
+              "units": 1,
+              "men": 300
+            },
+            "cav": {
+              "units": 1,
+              "men": 200
+            }
+          },
+          "avg_experience": 2.4,
+          "avg_morale": 2.4
+        },
+        {
+          "name": "Side 1",
+          "units": 3,
+          "men": 1654,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 54,
+              "guns": 6
+            }
+          },
+          "avg_experience": 7.451027811366385,
+          "avg_morale": 7.451027811366385
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 2,
+          "units_out": 2,
+          "started": 500,
+          "killed": 31,
+          "wounded": 146,
+          "prisoners_lost": 43,
+          "casualties": 220,
+          "casualty_share": 0.44,
+          "returned": 65,
+          "final": 345,
+          "loss_share": 0.31,
+          "hits_taken": 177,
+          "hits_inflicted": 0,
+          "exchange_ratio": 0.0,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "Side 1",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 3,
+          "units_out": 0,
+          "started": 1654,
+          "killed": 0,
+          "wounded": 0,
+          "prisoners_lost": 0,
+          "casualties": 0,
+          "casualty_share": 0.0,
+          "returned": 0,
+          "final": 1654,
+          "loss_share": 0.0,
+          "hits_taken": 0,
+          "hits_inflicted": 177,
+          "exchange_ratio": null,
+          "prisoners_taken": 43,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "falter_and_fire",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 2,
+          "men": 500,
+          "by_type": {
+            "inf": {
+              "units": 1,
+              "men": 300
+            },
+            "cav": {
+              "units": 1,
+              "men": 200
+            }
+          },
+          "avg_experience": 2.4,
+          "avg_morale": 2.4
+        },
+        {
+          "name": "Side 1",
+          "units": 3,
+          "men": 1654,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 54,
+              "guns": 6
+            }
+          },
+          "avg_experience": 7.451027811366385,
+          "avg_morale": 7.451027811366385
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 2,
+          "units_out": 2,
+          "started": 500,
+          "killed": 47,
+          "wounded": 154,
+          "prisoners_lost": 43,
+          "casualties": 244,
+          "casualty_share": 0.488,
+          "returned": 75,
+          "final": 331,
+          "loss_share": 0.338,
+          "hits_taken": 201,
+          "hits_inflicted": 0,
+          "exchange_ratio": 0.0,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "Side 1",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 3,
+          "units_out": 0,
+          "started": 1654,
+          "killed": 0,
+          "wounded": 0,
+          "prisoners_lost": 0,
+          "casualties": 0,
+          "casualty_share": 0.0,
+          "returned": 0,
+          "final": 1654,
+          "loss_share": 0.0,
+          "hits_taken": 0,
+          "hits_inflicted": 201,
+          "exchange_ratio": null,
+          "prisoners_taken": 43,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "wipe_out_and_drain",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 2,
+          "men": 3600,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 3600
+            }
+          },
+          "avg_experience": 8.333333333333334,
+          "avg_morale": 8.333333333333334
+        },
+        {
+          "name": "Side 1",
+          "units": 3,
+          "men": 423,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 408
+            },
+            "art": {
+              "units": 1,
+              "men": 15,
+              "guns": 4
+            }
+          },
+          "avg_experience": 3.9078014184397163,
+          "avg_morale": 3.9078014184397163
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 1,
+          "started": 3600,
+          "killed": 0,
+          "wounded": 0,
+          "prisoners_lost": 46,
+          "casualties": 46,
+          "casualty_share": 0.012777777777777779,
+          "returned": 0,
+          "final": 3554,
+          "loss_share": 0.012777777777777779,
+          "hits_taken": 0,
+          "hits_inflicted": 385,
+          "exchange_ratio": null,
+          "prisoners_taken": 144,
+          "guns_lost": 0,
+          "guns_taken": 3
+        },
+        {
+          "name": "Side 1",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 3,
+          "started": 423,
+          "killed": 82,
+          "wounded": 188,
+          "prisoners_lost": 144,
+          "casualties": 414,
+          "casualty_share": 0.9787234042553191,
+          "returned": 88,
+          "final": 97,
+          "loss_share": 0.7706855791962175,
+          "hits_taken": 385,
+          "hits_inflicted": 0,
+          "exchange_ratio": 0.0,
+          "prisoners_taken": 46,
+          "guns_lost": 3,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "wipe_out_and_drain",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 2,
+          "men": 3600,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 3600
+            }
+          },
+          "avg_experience": 8.333333333333334,
+          "avg_morale": 8.333333333333334
+        },
+        {
+          "name": "Side 1",
+          "units": 3,
+          "men": 423,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 408
+            },
+            "art": {
+              "units": 1,
+              "men": 15,
+              "guns": 4
+            }
+          },
+          "avg_experience": 3.9078014184397163,
+          "avg_morale": 3.9078014184397163
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 1,
+          "started": 3600,
+          "killed": 1,
+          "wounded": 2,
+          "prisoners_lost": 46,
+          "casualties": 49,
+          "casualty_share": 0.01361111111111111,
+          "returned": 1,
+          "final": 3552,
+          "loss_share": 0.013333333333333334,
+          "hits_taken": 3,
+          "hits_inflicted": 373,
+          "exchange_ratio": 124.33333333333333,
+          "prisoners_taken": 150,
+          "guns_lost": 0,
+          "guns_taken": 3
+        },
+        {
+          "name": "Side 1",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 3,
+          "started": 423,
+          "killed": 62,
+          "wounded": 203,
+          "prisoners_lost": 150,
+          "casualties": 415,
+          "casualty_share": 0.9810874704491725,
+          "returned": 79,
+          "final": 87,
+          "loss_share": 0.7943262411347518,
+          "hits_taken": 373,
+          "hits_inflicted": 3,
+          "exchange_ratio": 0.00804289544235925,
+          "prisoners_taken": 46,
+          "guns_lost": 3,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "wipe_out_and_drain",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 2,
+          "men": 3600,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 3600
+            }
+          },
+          "avg_experience": 8.333333333333334,
+          "avg_morale": 8.333333333333334
+        },
+        {
+          "name": "Side 1",
+          "units": 3,
+          "men": 423,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 408
+            },
+            "art": {
+              "units": 1,
+              "men": 15,
+              "guns": 4
+            }
+          },
+          "avg_experience": 3.9078014184397163,
+          "avg_morale": 3.9078014184397163
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 1,
+          "started": 3600,
+          "killed": 1,
+          "wounded": 5,
+          "prisoners_lost": 63,
+          "casualties": 69,
+          "casualty_share": 0.019166666666666665,
+          "returned": 2,
+          "final": 3533,
+          "loss_share": 0.01861111111111111,
+          "hits_taken": 6,
+          "hits_inflicted": 373,
+          "exchange_ratio": 62.166666666666664,
+          "prisoners_taken": 164,
+          "guns_lost": 0,
+          "guns_taken": 3
+        },
+        {
+          "name": "Side 1",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 3,
+          "started": 423,
+          "killed": 91,
+          "wounded": 158,
+          "prisoners_lost": 164,
+          "casualties": 413,
+          "casualty_share": 0.9763593380614657,
+          "returned": 60,
+          "final": 70,
+          "loss_share": 0.83451536643026,
+          "hits_taken": 373,
+          "hits_inflicted": 6,
+          "exchange_ratio": 0.0160857908847185,
+          "prisoners_taken": 63,
+          "guns_lost": 3,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "broken_on_approach",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 3,
+          "men": 6500,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 6500
+            }
+          },
+          "avg_experience": 8.692307692307692,
+          "avg_morale": 8.692307692307692
+        },
+        {
+          "name": "Side 1",
+          "units": 2,
+          "men": 1100,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1100
+            }
+          },
+          "avg_experience": 4.2727272727272725,
+          "avg_morale": 4.2727272727272725
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 0,
+          "started": 6500,
+          "killed": 4,
+          "wounded": 8,
+          "prisoners_lost": 4,
+          "casualties": 16,
+          "casualty_share": 0.0024615384615384616,
+          "returned": 3,
+          "final": 6487,
+          "loss_share": 0.002,
+          "hits_taken": 16,
+          "hits_inflicted": 499,
+          "exchange_ratio": 31.1875,
+          "prisoners_taken": 97,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "Side 1",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 2,
+          "started": 1100,
+          "killed": 111,
+          "wounded": 388,
+          "prisoners_lost": 97,
+          "casualties": 596,
+          "casualty_share": 0.5418181818181819,
+          "returned": 152,
+          "final": 656,
+          "loss_share": 0.4036363636363636,
+          "hits_taken": 499,
+          "hits_inflicted": 16,
+          "exchange_ratio": 0.03206412825651302,
+          "prisoners_taken": 4,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "broken_on_approach",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 3,
+          "men": 6500,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 6500
+            }
+          },
+          "avg_experience": 8.692307692307692,
+          "avg_morale": 8.692307692307692
+        },
+        {
+          "name": "Side 1",
+          "units": 2,
+          "men": 1100,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1100
+            }
+          },
+          "avg_experience": 4.2727272727272725,
+          "avg_morale": 4.2727272727272725
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 0,
+          "started": 6500,
+          "killed": 3,
+          "wounded": 5,
+          "prisoners_lost": 4,
+          "casualties": 12,
+          "casualty_share": 0.0018461538461538461,
+          "returned": 2,
+          "final": 6490,
+          "loss_share": 0.0015384615384615385,
+          "hits_taken": 12,
+          "hits_inflicted": 546,
+          "exchange_ratio": 45.5,
+          "prisoners_taken": 88,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "Side 1",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 2,
+          "started": 1100,
+          "killed": 133,
+          "wounded": 413,
+          "prisoners_lost": 88,
+          "casualties": 634,
+          "casualty_share": 0.5763636363636364,
+          "returned": 173,
+          "final": 639,
+          "loss_share": 0.41909090909090907,
+          "hits_taken": 546,
+          "hits_inflicted": 12,
+          "exchange_ratio": 0.02197802197802198,
+          "prisoners_taken": 4,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "broken_on_approach",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 3,
+          "men": 6500,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 6500
+            }
+          },
+          "avg_experience": 8.692307692307692,
+          "avg_morale": 8.692307692307692
+        },
+        {
+          "name": "Side 1",
+          "units": 2,
+          "men": 1100,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1100
+            }
+          },
+          "avg_experience": 4.2727272727272725,
+          "avg_morale": 4.2727272727272725
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 0,
+          "started": 6500,
+          "killed": 5,
+          "wounded": 11,
+          "prisoners_lost": 5,
+          "casualties": 21,
+          "casualty_share": 0.0032307692307692306,
+          "returned": 5,
+          "final": 6484,
+          "loss_share": 0.0024615384615384616,
+          "hits_taken": 21,
+          "hits_inflicted": 571,
+          "exchange_ratio": 27.19047619047619,
+          "prisoners_taken": 79,
+          "guns_lost": 0,
+          "guns_taken": 0
+        },
+        {
+          "name": "Side 1",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 2,
+          "started": 1100,
+          "killed": 121,
+          "wounded": 450,
+          "prisoners_lost": 79,
+          "casualties": 650,
+          "casualty_share": 0.5909090909090909,
+          "returned": 151,
+          "final": 601,
+          "loss_share": 0.4536363636363636,
+          "hits_taken": 571,
+          "hits_inflicted": 21,
+          "exchange_ratio": 0.03677758318739054,
+          "prisoners_taken": 5,
+          "guns_lost": 0,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "example_ridge (events)",
+      "seed": 7,
+      "order_of_battle": [
+        {
+          "name": "Union",
+          "units": 3,
+          "men": 1672,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1600
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 5.538277511961723,
+          "avg_morale": 5.538277511961723
+        },
+        {
+          "name": "Confederate",
+          "units": 4,
+          "men": 2472,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 4.190938511326861,
+          "avg_morale": 5.1618122977346275
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Union",
+          "outcome": "won",
+          "held_field": true,
+          "units": 3,
+          "units_out": 1,
+          "started": 1672,
+          "killed": 56,
+          "wounded": 191,
+          "prisoners_lost": 4,
+          "casualties": 251,
+          "casualty_share": 0.15011961722488038,
+          "returned": 80,
+          "final": 1501,
+          "loss_share": 0.10227272727272728,
+          "hits_taken": 247,
+          "hits_inflicted": 426,
+          "exchange_ratio": 1.7246963562753037,
+          "prisoners_taken": 170,
+          "guns_lost": 1,
+          "guns_taken": 0
+        },
+        {
+          "name": "Confederate",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 4,
+          "units_out": 1,
+          "started": 2472,
+          "killed": 94,
+          "wounded": 238,
+          "prisoners_lost": 170,
+          "casualties": 502,
+          "casualty_share": 0.20307443365695793,
+          "returned": 79,
+          "final": 2049,
+          "loss_share": 0.17111650485436894,
+          "hits_taken": 426,
+          "hits_inflicted": 247,
+          "exchange_ratio": 0.57981220657277,
+          "prisoners_taken": 4,
+          "guns_lost": 0,
+          "guns_taken": 1
+        }
+      ]
+    }
+  ]
+}
