@@ -122,10 +122,10 @@ def test_history_round_trips_with_orders_and_events():
     b = build()
     b.resolve_round(90, ORDERS_1, record_events=True)
     report = b.history[0]
-    assert report.orders == {'inf': {'target': 'foe', 'mode': 'ranged', 'ammo': None},
-                             'gun': {'target': 'foe', 'mode': 'ranged', 'ammo': 'shell'},
-                             'cav': {'target': 'green', 'mode': 'melee', 'ammo': None},
-                             'foe': {'target': 'inf', 'mode': 'ranged', 'ammo': None}}
+    assert report.orders == {'inf': {'target': 'foe', 'mode': 'ranged', 'ammo': None, 'on_break': 'keep'},
+                             'gun': {'target': 'foe', 'mode': 'ranged', 'ammo': 'shell', 'on_break': 'keep'},
+                             'cav': {'target': 'green', 'mode': 'melee', 'ammo': None, 'on_break': 'fall_back'},
+                             'foe': {'target': 'inf', 'mode': 'ranged', 'ammo': None, 'on_break': 'keep'}}
     assert reload(b).history == b.history
     assert len(report.events) > 0
 
