@@ -5,3 +5,11 @@ export class ValueError extends Error {
     this.name = 'ValueError';
   }
 }
+
+/** An operation not allowed in the current state, as Python's RuntimeError (e.g. resolving a finished battle). */
+export class RuntimeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RuntimeError';
+  }
+}
