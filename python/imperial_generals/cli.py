@@ -135,11 +135,29 @@ def _print_report(state: dict, report: dict) -> None:
     print()
 
 
+FIELD_TESTS = {'exchange': 'casualty exchange', 'routs': 'routs', 'standing': 'strength standing'}
+
+
+def _field_text(result: dict, sides: list) -> str:
+    """Who held the field and how it was decided: the whole army out, the votes, or named by the admin."""
+    holder = result['field_held_by']
+    who = 'nobody, a draw' if holder is None else sides[holder]
+    how = result['field_decided_by']
+    if how == 'army_out':
+        why = f'the whole {sides[1 - holder]} army broke'
+    elif how == 'votes':
+        votes = result['field_votes']
+        why = 'votes: ' + ', '.join(f"{label} {'-' if votes[test] is None else sides[votes[test]]}"
+                                    for test, label in FIELD_TESTS.items())
+    else:
+        why = 'named by the admin'
+    return f'Field held by: {who} ({why})'
+
+
 def _print_result(state: dict, result: dict) -> None:
     sides, names = _side_names(state), _names(state)
     units = {u['id']: u for u in state['units']}
-    holder = result['field_held_by']
-    print(f"Field held by: {'nobody' if holder is None else sides[holder]}")
+    print(_field_text(result, sides))
     rows = []
     for uid, o in result['units'].items():
         u = units[uid]
@@ -177,6 +195,7 @@ def _print_side_summary(state: dict) -> None:
         return [label] + [fmt(s[key]) for s in sides]
 
     rows = [
+        row('Result', 'outcome', str),
         row('Started', 'started'),
         row('Killed', 'killed'),
         row('Wounded', 'wounded'),
