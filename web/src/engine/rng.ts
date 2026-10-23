@@ -7,6 +7,7 @@
  * - exponential(rate): inverse CDF, -log(1 - u) / rate, using the fdlibm log port.
  */
 
+import { ValueError } from './errors';
 import { log } from './fdlibm';
 
 const isU32 = (value: unknown): value is number =>
@@ -39,7 +40,7 @@ export class Rng {
     if (typeof seed !== 'number' || !Number.isInteger(seed)) {
       throw new TypeError(`seed must be an integer, got ${String(seed)}.`);
     }
-    if (!isU32(seed)) throw new RangeError(`seed must be in [0, 2**32), got ${seed}.`);
+    if (!isU32(seed)) throw new ValueError(`seed must be in [0, 2**32), got ${seed}.`);
     this.s = splitmix32(seed);
     this.seed = seed;
   }
@@ -47,7 +48,7 @@ export class Rng {
   /** Restore a generator from a saved state: four 32-bit unsigned ints, not all zero. */
   static fromState(state: readonly number[]): Rng {
     if (state.length !== 4 || !state.every(isU32) || state.every((v) => v === 0)) {
-      throw new RangeError(`state must be four 32-bit unsigned ints, not all zero, got [${state.join(', ')}].`);
+      throw new ValueError(`state must be four 32-bit unsigned ints, not all zero, got [${state.join(', ')}].`);
     }
     const rng = Object.create(Rng.prototype) as Rng;
     rng.s = [...state];
@@ -83,7 +84,7 @@ export class Rng {
 
   /** Exponentially distributed sample with the given rate (mean 1 / rate). */
   exponential(rate: number): number {
-    if (!(Number.isFinite(rate) && rate > 0)) throw new RangeError(`rate must be finite and > 0, got ${rate}.`);
+    if (!(Number.isFinite(rate) && rate > 0)) throw new ValueError(`rate must be finite and > 0, got ${rate}.`);
     return -log(1.0 - this.random()) / rate;
   }
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import fixture from '../../../test_cases/parity/rng.json';
+import { ValueError } from './errors';
 import { Rng } from './rng';
 
 describe('parity with the Python Rng', () => {
@@ -39,7 +40,7 @@ describe('seeds', () => {
   });
 
   it.each([-1, 2 ** 32])('rejects %s as out of range', (seed) => {
-    expect(() => new Rng(seed)).toThrow(RangeError);
+    expect(() => new Rng(seed)).toThrow(ValueError);
   });
 
   it.each([1.5, NaN, '42', null, true])('rejects %s as not an integer', (seed) => {
@@ -65,12 +66,12 @@ describe('state', () => {
 
   it.each([[[0, 0, 0, 0]], [[1, 2, 3]], [[1, 2, 3, 2 ** 32]], [[1, 2, 3, -1]], [[1, 2, 3, 1.5]]])(
     'rejects %j', (state) => {
-      expect(() => Rng.fromState(state)).toThrow(RangeError);
+      expect(() => Rng.fromState(state)).toThrow(ValueError);
     });
 });
 
 describe('exponential', () => {
   it.each([0, -1, Infinity, NaN])('rejects rate %s', (rate) => {
-    expect(() => new Rng(1).exponential(rate)).toThrow(RangeError);
+    expect(() => new Rng(1).exponential(rate)).toThrow(ValueError);
   });
 });
