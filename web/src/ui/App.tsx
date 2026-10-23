@@ -1,5 +1,13 @@
 /** The battle client: build two armies, give each round's orders, resolve, and read the result. */
-export function App() {
+
+import { ArmyBuilder } from './ArmyBuilder';
+import { OrderOfBattle } from './OrderOfBattle';
+import { createStore, type Store } from './store';
+
+const defaultStore = createStore();
+
+export function App({ store = defaultStore }: { store?: Store }) {
+  const battle = store.battle.value;
   return (
     <div class="app">
       <header>
@@ -9,6 +17,12 @@ export function App() {
       <main>
         <section aria-labelledby="armies">
           <h2 id="armies">Armies</h2>
+          {battle === null ? <ArmyBuilder store={store} /> : (
+            <>
+              <OrderOfBattle sides={store.orderOfBattle.value!} />
+              <button onClick={() => store.reset()}>Change the armies (starts over)</button>
+            </>
+          )}
         </section>
         <section aria-labelledby="orders">
           <h2 id="orders">Orders</h2>
