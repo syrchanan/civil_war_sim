@@ -140,7 +140,7 @@ def test_finish_field_choices(files, capsys, field, holder):
 def test_finish_reports_nobody_holding_the_field(files, capsys):
     new(capsys, files)
     _, out, _ = run(capsys, 'finish', files / 'state.json')
-    assert 'Field held by: nobody' in out
+    assert 'Field held by: nobody, a draw (votes: casualty exchange -, routs -, strength standing -)' in out
 
 
 def test_run_plays_a_scenario_file(files, capsys):
@@ -546,3 +546,29 @@ def test_charge_outcomes_read_in_a_fixed_order():
     assert row[3] == 'went home 40%, faltered 60%, charger broke on the approach <1%'
     assert _status(40, True, 30.0, 1) == 'broke at 30 min, 1 gun lost'
     assert _status(40, True, 30.0, 3) == 'broke at 30 min, 3 guns lost'
+
+
+@pytest.mark.parametrize('result, text', [
+    ({'field_held_by': 0, 'field_decided_by': 'army_out', 'field_votes': {}},
+     'Field held by: Union (the whole Confederate army broke)'),
+    ({'field_held_by': 1, 'field_decided_by': 'votes',
+      'field_votes': {'exchange': 1, 'routs': None, 'standing': 1}},
+     'Field held by: Confederate (votes: casualty exchange Confederate, routs -, strength standing Confederate)'),
+    ({'field_held_by': None, 'field_decided_by': 'votes',
+      'field_votes': {'exchange': 0, 'routs': 1, 'standing': 0}},
+     'Field held by: nobody, a draw (votes: casualty exchange Union, routs Confederate, strength standing Union)'),
+    ({'field_held_by': 0, 'field_decided_by': 'admin', 'field_votes': {}},
+     'Field held by: Union (named by the admin)'),
+    ({'field_held_by': None, 'field_decided_by': 'admin', 'field_votes': {}},
+     'Field held by: nobody, a draw (named by the admin)'),
+])
+def test_field_text_says_how_the_field_was_decided(result, text):
+    from imperial_generals.cli import _field_text
+    assert _field_text(result, ['Union', 'Confederate']) == text
+
+
+def test_side_summary_shows_who_won(files, capsys):
+    new(capsys, files)
+    _, out, _ = run(capsys, 'finish', files / 'state.json', '--field', 'Union')
+    result = [line for line in out.splitlines() if line.startswith('Result')][0]
+    assert result.split()[1:] == ['won', 'lost']
