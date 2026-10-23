@@ -493,3 +493,112 @@ export class ChargeParams implements ChargeData {
     return { ...this, approach_minutes: { ...this.approach_minutes }, shock_bonus: structuredClone(this.shock_bonus) };
   }
 }
+
+// =============================================================================
+// Battle
+// =============================================================================
+
+export interface ParamsData {
+  combat: CombatData;
+  morale: MoraleData;
+  aftermath: AftermathData;
+  matchups: MatchupData;
+  charge: ChargeData;
+}
+
+/** Nested partial params, e.g. `{ combat: { ranged_kill_rate: 0.005 } }`. */
+export type Overrides = Record<string, Record<string, unknown>>;
+
+const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge'] as const;
+
+function deepMerge(base: Record<string, unknown>, changes: Record<string, unknown>): Record<string, unknown> {
+  const merged = { ...base };
+  for (const [key, value] of Object.entries(changes)) {
+    const current = merged[key];
+    merged[key] = isObject(value) && isObject(current) ? deepMerge(current, value) : value;
+  }
+  return merged;
+}
+
+/** Python's int(key) for a weapon code: '1' -> '1', ' 01' -> '1'; anything else is an error. */
+function weaponCode(key: string): string {
+  if (!/^\s*[+-]?\d+\s*$/.test(key)) throw new ValueError(`Unknown weapon code ${key}.`);
+  return String(parseInt(key, 10));
+}
+
+function applySection(current: Record<string, unknown>, overrides: Record<string, unknown>,
+  section: string): Record<string, unknown> {
+  const unknown = Object.keys(overrides).filter((k) => !(k in current)).sort();
+  if (unknown.length) throw new ValueError(`Unknown ${section} parameter(s): ${unknown.join(', ')}.`);
+  const changes: Record<string, unknown> = { ...overrides };
+  for (const [name, value] of Object.entries(overrides)) {
+    const now = current[name];
+    if (name === 'weapon_multipliers' && isObject(value)) {
+      const merged: Record<string, unknown> = { ...(now as Record<string, number>) };
+      for (const [k, v] of Object.entries(value)) merged[weaponCode(k)] = v;
+      changes[name] = merged;
+    } else if (isObject(now) && isObject(value)) {
+      changes[name] = deepMerge(now, value); // partial table / rating overrides merge in
+    }
+  }
+  return { ...current, ...changes };
+}
+
+/** All tunable constants for one battle. */
+export class BattleParams {
+  readonly combat: CombatParams;
+  readonly morale: MoraleParams;
+  readonly aftermath: AftermathParams;
+  readonly matchups: MatchupParams;
+  readonly charge: ChargeParams;
+  private static cached: BattleParams | null = null;
+
+  constructor(data: ParamsData) {
+    this.combat = new CombatParams(data.combat);
+    this.morale = new MoraleParams(data.morale);
+    this.aftermath = new AftermathParams(data.aftermath);
+    this.matchups = new MatchupParams(data.matchups);
+    this.charge = new ChargeParams(data.charge);
+    if (!(this.charge.battery_closing_ammo in this.combat.artillery_ammo)) {
+      throw new ValueError(`charge.battery_closing_ammo must be one of ${Object.keys(this.combat.artillery_ammo)
+        .sort().join(', ')}.`);
+    }
+    Object.freeze(this);
+  }
+
+  /** The config defaults (built once). */
+  static defaults(): BattleParams {
+    BattleParams.cached ??= new BattleParams(defaults.params as ParamsData);
+    return BattleParams.cached;
+  }
+
+  /**
+   * New params with nested overrides applied. A partial `weapon_multipliers` merges into the current one, other
+   * tables merge key by key, lists are replaced. Unknown sections or keys, and invalid values, raise ValueError.
+   */
+  withOverrides(overrides: Overrides): BattleParams {
+    const unknown = Object.keys(overrides).filter((k) => !(SECTIONS as readonly string[]).includes(k)).sort();
+    if (unknown.length) throw new ValueError(`Unknown parameter section(s): ${unknown.join(', ')}.`);
+    const data = this.toDict() as unknown as Record<string, Record<string, unknown>>;
+    for (const section of SECTIONS) {
+      data[section] = applySection(data[section], overrides[section] ?? {}, section);
+    }
+    return new BattleParams(data as unknown as ParamsData);
+  }
+
+  /** JSON-safe dict of every parameter (the state file's `params`). */
+  toDict(): ParamsData {
+    return {
+      combat: this.combat.toDict(),
+      morale: this.morale.toDict(),
+      aftermath: this.aftermath.toDict(),
+      matchups: this.matchups.toDict(),
+      charge: this.charge.toDict(),
+    };
+  }
+
+  /** Params from a full or partial dict (missing values use the defaults). */
+  static fromDict(data: Overrides): BattleParams {
+    return BattleParams.defaults().withOverrides(data);
+  }
+}

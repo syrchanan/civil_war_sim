@@ -4,8 +4,8 @@ import defaults from './defaults.json';
 import fixture from '../../../test_cases/parity/params.json';
 import { ValueError } from './errors';
 import {
-  AftermathParams, type AftermathData, ChargeParams, type ChargeData, CombatParams, type CombatData, MatchupParams,
-  type MatchupData, MoraleParams, type MoraleData, roundHalfEven, type Unit,
+  AftermathParams, type AftermathData, BattleParams, ChargeParams, type ChargeData, CombatParams, type CombatData, MatchupParams,
+  type MatchupData, MoraleParams, type MoraleData, type Overrides, type ParamsData, roundHalfEven, type Unit,
 } from './params';
 
 const combatDefaults = defaults.params.combat as CombatData;
@@ -172,5 +172,38 @@ describe('ChargeParams', () => {
     { shock_bonus: [{ charger: 'inf/hussars', target: 'inf', bonus: 1 }] },
   ])('rejects %j', (change) => {
     expect(() => new ChargeParams({ ...data, ...change } as ChargeData)).toThrow(ValueError);
+  });
+});
+
+describe('BattleParams', () => {
+  const base = BattleParams.defaults();
+
+  it('defaults come from defaults.json', () => {
+    expect(base.toDict()).toEqual(defaults.params);
+    expect(BattleParams.defaults()).toBe(base);
+  });
+
+  it.each(fixture.overrides.valid as unknown as [Overrides, ParamsData][])('accepts %j', (overrides, expected) => {
+    expect(base.withOverrides(overrides).toDict()).toEqual(expected);
+  });
+
+  it.each(fixture.overrides.invalid as unknown as Overrides[])('rejects %j', (overrides) => {
+    expect(() => base.withOverrides(overrides)).toThrow(ValueError);
+  });
+
+  it('leaves the original unchanged and round-trips through JSON', () => {
+    const tuned = base.withOverrides({ combat: { weapon_multipliers: { 2: 3.0 } }, morale: { acceleration: 2.0 } });
+    expect(base.toDict()).toEqual(defaults.params);
+    const data = JSON.parse(JSON.stringify(tuned.toDict()));
+    expect(data.combat.weapon_multipliers['2']).toBe(3.0);
+    expect(BattleParams.fromDict(data).toDict()).toEqual(tuned.toDict());
+  });
+
+  it('fromDict accepts partial data', () => {
+    expect(BattleParams.fromDict({ morale: { gain_weight: 0.0 } }).morale.gain_weight).toBe(0.0);
+  });
+
+  it('rejects a weapon code that is not a number', () => {
+    expect(() => base.withOverrides({ combat: { weapon_multipliers: { x: 1.0 } } })).toThrow(ValueError);
   });
 });
