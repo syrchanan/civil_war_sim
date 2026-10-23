@@ -81,3 +81,7 @@ tr.side-1 td:first-child { border-left: 3px solid var(--side-1); }
 section > button { margin-top: 12px; }
 .army-builder td input:not([type]) { width: 11em; }
 input[aria-label="Seed"] { width: 9em; }
+details { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+summary { cursor: pointer; font-weight: 600; }
+details ul { margin: 8px 0 0; padding-left: 20px; }
+h3 { margin: 16px 0 8px; font-size: 1rem; }
