@@ -192,6 +192,10 @@ class AftermathParams:
     wounded_captured_share: float = _config_default('aftermath', 'wounded_captured_share')
     wounded_return_share: float = _config_default('aftermath', 'wounded_return_share')
     share_spread: float = _config_default('aftermath', 'share_spread')
+    field_exchange_ratio: float = _config_default('aftermath', 'field_exchange_ratio')
+    field_rout_gap: float = _config_default('aftermath', 'field_rout_gap')
+    field_standing_ratio: float = _config_default('aftermath', 'field_standing_ratio')
+    field_votes_needed: int = _config_default('aftermath', 'field_votes_needed')
 
     def __post_init__(self) -> None:
         for name in ('rout_capture_share', 'killed_share', 'walking_wounded_share', 'wounded_captured_share',
@@ -200,6 +204,13 @@ class AftermathParams:
                 raise ValueError(f"{name} must be in [0, 1].")
         if self.cavalry_capture_multiplier < 0:
             raise ValueError("cavalry_capture_multiplier must be >= 0.")
+        for name in ('field_exchange_ratio', 'field_standing_ratio'):
+            if getattr(self, name) < 1:
+                raise ValueError(f"{name} must be >= 1.")
+        if not 0 <= self.field_rout_gap <= 1:
+            raise ValueError("field_rout_gap must be in [0, 1].")
+        if type(self.field_votes_needed) is not int or not 1 <= self.field_votes_needed <= 3:
+            raise ValueError("field_votes_needed must be a whole number from 1 to 3.")
 
 
 # =============================================================================

@@ -30,3 +30,22 @@ aftermath:
 
   # Relative randomness of every share above: 0.25 → each draw lands in [0.75, 1.25] × the mean.
   share_spread: 0.25
+
+  # --- Who holds the field (Battle.finish 'auto', roadmap A12) ---
+  # A side whose whole army is broken or wiped out loses the field. Otherwise three tests each vote for a side when
+  # they are decisive, and a side holds the field with at least field_votes_needed votes and none against.
+  # Nobody holding it is a draw: both sides still stand, and the fight can continue the next day.
+  # Placeholders until the tuning pass.
+
+  # Casualty exchange: a side inflicted at least this many times the men hit it took.
+  field_exchange_ratio: 1.5
+
+  # Routs: the starting strength of a side's broken or wiped-out units, as a share of its starting total, is at
+  # least this many points (as a fraction) lower than the other side's.
+  field_rout_gap: 0.25
+
+  # Strength still standing: a side has at least this many times the other's men in unbroken units.
+  field_standing_ratio: 1.5
+
+  # Votes a side needs (1-3), with none against.
+  field_votes_needed: 2
