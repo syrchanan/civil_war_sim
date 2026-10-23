@@ -1,0 +1,13 @@
+# Engine, CLI, tuning and map pipeline (the parked Streamlit prototype also needs streamlit)
+matplotlib==3.10.7
+numpy==2.3.5
+openpyxl==3.1.5
+opensimplex==0.4.5.1
+pandas==2.3.3
+PyYAML==6.0.3
+scipy==1.16.3
+shapely==2.1.2
+
+# Tests
+pytest==9.0.1
+pytest-cov==7.0.0
