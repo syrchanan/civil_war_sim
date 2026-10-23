@@ -3,6 +3,7 @@
 import type { RoundReport } from '../engine';
 import { chargeText, status } from './format';
 import type { Store } from './store';
+import { StrengthCharts } from './StrengthCharts';
 
 function Round({ store, report, open }: { store: Store; report: RoundReport; open: boolean }) {
   const units = store.battle.value!.units;
@@ -55,6 +56,7 @@ export function RoundsPanel({ store }: { store: Store }) {
   if (history.length === 0) return <p class="note">No rounds fought yet.</p>;
   return (
     <div class="rounds">
+      <StrengthCharts store={store} />
       {history.map((report, i) => <Round store={store} report={report} open={i === history.length - 1} />)}
     </div>
   );
