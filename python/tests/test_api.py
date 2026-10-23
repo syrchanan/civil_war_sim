@@ -255,3 +255,13 @@ def test_run_scenario_takes_parameter_overrides():
     state, _, _ = api.run_scenario(SCENARIO, overrides={'combat': {'ranged_kill_rate': 1e-9}})
     assert state['params']['combat']['ranged_kill_rate'] == 1e-9
     assert all(u['losses'] == 0 for u in state['units'])
+
+
+def test_scenario_orders_take_on_break_and_reports_list_retargets():
+    scenario = {**ROUT, 'rounds': [{'duration': 30, 'orders': {
+        'us': {'target': 'cs', 'mode': 'ranged', 'on_break': 'strongest'}}}]}
+    _, reports, _ = api.run_scenario(scenario)
+    assert reports[0]['orders']['us']['on_break'] == 'strongest'
+    retarget = reports[0]['retargets'][0]
+    assert (retarget['unit'], retarget['old_target'], retarget['new_target']) == ('us', 'cs', 'cs2')
+    assert retarget['time'] == reports[0]['units']['cs']['broke_at']

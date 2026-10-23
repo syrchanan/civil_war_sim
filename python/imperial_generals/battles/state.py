@@ -4,7 +4,7 @@ Battle state file (roadmap A8): the JSON contract between the Python engine, the
 Everything needed to resume exactly is saved: the RNG state words, the full parameter set (not just overrides, so
 a later config change can't alter a saved battle), unit order, each unit's regiment and live morale, and the
 running totals. Resolving the next round of a reloaded battle gives the same result as if it had never been saved.
-Round history (orders, engagements, charges, per-unit reports, events) is kept for replays and UIs, and once the
+Round history (orders, engagements, charges, retargets, per-unit reports, events) is kept for replays and UIs, and once the
 battle is finished, its ``result`` (the casualty settlement from ``Battle.finish``). Units locked in melee are
 saved as ``contacts``.
 
@@ -16,7 +16,7 @@ Version 2 (A13) added contacts, charges and the charge parameters; version 1 fil
 from dataclasses import asdict
 
 from imperial_generals.battles.battle import (
-    Battle, BattleResult, CasualtyEvent, Charge, Engagement, RoundReport, UnitOutcome, UnitReport,
+    Battle, BattleResult, CasualtyEvent, Charge, Engagement, Retarget, RoundReport, UnitOutcome, UnitReport,
 )
 from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams
@@ -96,6 +96,7 @@ def report_to_dict(report: RoundReport) -> dict:
         'prisoners': _by_side(report.prisoners),
         'guns_captured': _by_side(report.guns_captured),
         'charges': [asdict(c) for c in report.charges],
+        'retargets': [asdict(r) for r in report.retargets],
     }
 
 
@@ -181,6 +182,7 @@ def _report_from_dict(data: dict) -> RoundReport:
         guns_captured=_from_sides(data['guns_captured']),
         orders=data['orders'],
         charges=tuple(Charge(**c) for c in data['charges']),
+        retargets=tuple(Retarget(**r) for r in data.get('retargets', [])),     # absent in older files
     )
 
 
