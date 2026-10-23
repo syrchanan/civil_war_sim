@@ -18,8 +18,14 @@ def test_combat_defaults_come_from_config():
     p = CombatParams()
     assert p.weapon_multipliers == {int(k): v for k, v in cfg['weapon_multipliers'].items()}
     for key in ['xp_boost_per_level', 'morale_boost_per_level', 'melee_penalty_factor',
-                'ranged_kill_rate', 'melee_kill_rate']:
+                'ranged_kill_rate', 'melee_kill_rate', 'broken_fire_multiplier', 'broken_melee_multiplier']:
         assert getattr(p, key) == cfg[key]
+
+
+def test_broken_target_multipliers_default_to_placeholders():
+    p = CombatParams()
+    assert p.broken_fire_multiplier == 0.5
+    assert p.broken_melee_multiplier == 0.75
 
 
 @pytest.mark.parametrize("xp, morale, weapon, melee",
@@ -52,6 +58,8 @@ def test_unit_coef_modes():
     dict(melee_penalty_factor=0.0),
     dict(ranged_kill_rate=0.0),
     dict(melee_kill_rate=-1.0),
+    dict(broken_fire_multiplier=-0.1),
+    dict(broken_melee_multiplier=-0.1),
 ])
 def test_invalid_combat_params_raise(overrides):
     with pytest.raises(ValueError):

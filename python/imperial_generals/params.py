@@ -43,6 +43,8 @@ class CombatParams:
     melee_penalty_factor: float = _config_default('combat', 'melee_penalty_factor')
     ranged_kill_rate: float = _config_default('combat', 'ranged_kill_rate')
     melee_kill_rate: float = _config_default('combat', 'melee_kill_rate')
+    broken_fire_multiplier: float = _config_default('combat', 'broken_fire_multiplier')
+    broken_melee_multiplier: float = _config_default('combat', 'broken_melee_multiplier')
     artillery_ammo: dict = field(default_factory=lambda: dict(get_config()['combat']['artillery_ammo']))
     artillery_default_ammo: str = _config_default('combat', 'artillery_default_ammo')
 
@@ -52,7 +54,8 @@ class CombatParams:
             raise ValueError(f"weapon_multipliers must have exactly the codes {WEAPON_CODES}, got {sorted(multipliers)}.")
         if any(v <= 0 for v in multipliers.values()):
             raise ValueError("weapon multipliers must be > 0.")
-        for name in ('xp_boost_per_level', 'morale_boost_per_level'):
+        for name in ('xp_boost_per_level', 'morale_boost_per_level', 'broken_fire_multiplier',
+                     'broken_melee_multiplier'):
             if getattr(self, name) < 0:
                 raise ValueError(f"{name} must be >= 0.")
         for name in ('melee_penalty_factor', 'ranged_kill_rate', 'melee_kill_rate'):

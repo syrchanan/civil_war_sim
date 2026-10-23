@@ -27,6 +27,8 @@
       "melee_penalty_factor": 0.7,
       "ranged_kill_rate": 0.004,
       "melee_kill_rate": 2.4e-05,
+      "broken_fire_multiplier": 0.5,
+      "broken_melee_multiplier": 0.75,
       "artillery_ammo": {
         "round_shot": 0.15,
         "shell": 0.25,
