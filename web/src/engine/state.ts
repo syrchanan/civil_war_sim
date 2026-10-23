@@ -99,7 +99,8 @@ export function battleToDict(battle: Battle): StateData {
   const index = (uid: string) => battle.units.get(uid)!.index;
   // each pair in unit order, then the pairs sorted (as Python sorts lists of strings)
   const contacts = [...battle.contacts].map((key) => key.split('\u0000').sort((a, b) => index(a) - index(b)));
-  contacts.sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0));
+  // pairs are unique: when the first ids match the second ones differ
+  contacts.sort((a, b) => (a[0] !== b[0] ? (a[0] < b[0] ? -1 : 1) : (a[1] < b[1] ? -1 : 1)));
   return {
     format: FORMAT,
     version: VERSION,
