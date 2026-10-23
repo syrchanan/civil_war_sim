@@ -9,7 +9,8 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, CavalryRegiment, InfantryRegiment, orderOfBattle, Regiment, Rng, type UnitSpec,
+  ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, InfantryRegiment, ON_BREAK, type Order,
+  orderOfBattle, Regiment, Rng, type UnitSpec,
 } from '../engine';
 
 export type UnitType = 'inf' | 'cav' | 'art';
@@ -53,12 +54,34 @@ function buildRegiment(u: UnitDraft): Regiment {
   return new Regiment(u.size, u.stats);
 }
 
+const IDLE: Order = { mode: 'idle', target: null, ammo: null, on_break: null };
+
 export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) {
   const units = signal<UnitDraft[]>(structuredClone(EXAMPLE_ARMIES.units));
   const sides = signal<[string, string]>([...EXAMPLE_ARMIES.sides]);
   const seedSignal = signal(seed);
   const battle = signal<Battle | null>(null);
   const revision = signal(0);
+  const orders = signal<Record<string, Order>>({});
+  const duration = signal(60);
+  const recordEvents = signal(false);
+
+  /** Units that can still be given orders. */
+  const actingUnits = computed<BattleUnit[]>(() => {
+    revision.value;
+    return battle.value === null ? [] : [...battle.value.units.values()].filter((u) => u.active);
+  });
+
+  /** The engagements these orders would create now, with no dice rolled; or why the orders can't be carried out. */
+  const preview = computed<{ arrows: Engagement[]; error: string | null }>(() => {
+    revision.value;
+    if (battle.value === null) return { arrows: [], error: null };
+    try {
+      return { arrows: battle.value.engagements(orders.value), error: null };
+    } catch (error) {
+      return { arrows: [], error: (error as Error).message };
+    }
+  });
 
   const orderOfBattleView = computed(() => {
     revision.value;
@@ -106,6 +129,33 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     sides.value = next;
   }
 
+  /** Enemy units a unit can target: any not wiped out (broken ones can still be fired on or pursued). */
+  function targetsFor(uid: string): BattleUnit[] {
+    const units = [...battle.value!.units.values()];
+    const side = battle.value!.units.get(uid)!.side;
+    return units.filter((u) => u.side !== side && u.size > 0);
+  }
+
+  /** Change one unit's order; a new mode gets a target, its default on-break choice, and ammo for batteries. */
+  function setOrder(uid: string, change: Partial<Order>): void {
+    const current = orders.value[uid];
+    let next: Order = { ...current, ...change };
+    if (change.mode !== undefined && change.mode !== current.mode) {
+      if (change.mode === 'idle') {
+        next = IDLE;
+      } else {
+        const battery = battle.value!.units.get(uid)!.regiment instanceof ArtilleryBattery;
+        next = {
+          mode: change.mode,
+          target: change.target ?? current.target ?? targetsFor(uid)[0].uid,
+          ammo: change.mode === 'ranged' && battery ? battle.value!.params.combat.artillery_default_ammo : null,
+          on_break: change.on_break ?? ON_BREAK[change.mode][0],
+        };
+      }
+    }
+    orders.value = { ...orders.value, [uid]: next };
+  }
+
   function newSeed(random: () => number = Math.random): void {
     seedSignal.value = Math.floor(random() * 2 ** 32);
   }
@@ -138,6 +188,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     }
     if (problems.length) return problems;
     battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] });
+    orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return [];
   }
@@ -150,7 +201,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
-    addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch,
+    orders, duration, recordEvents, actingUnits, preview,
+    addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
 
