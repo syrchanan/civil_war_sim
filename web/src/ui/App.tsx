@@ -1,6 +1,7 @@
 /** The battle client: build two armies, give each round's orders, resolve, and read the result. */
 
 import { ArmyBuilder } from './ArmyBuilder';
+import { FileBar } from './FileBar';
 import { OrderOfBattle } from './OrderOfBattle';
 import { OrdersPanel } from './OrdersPanel';
 import { ResultPanel } from './ResultPanel';
@@ -16,6 +17,7 @@ export function App({ store = defaultStore }: { store?: Store }) {
       <header>
         <h1>Imperial Generals</h1>
         <p class="lede">Battle resolver: same seed, same battle as the Python engine.</p>
+        <FileBar store={store} />
       </header>
       <main>
         <section aria-labelledby="armies">

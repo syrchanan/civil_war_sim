@@ -225,6 +225,35 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     return null;
   }
 
+  /** The battle state file to download: everything needed to resume it, or replay it in Python. */
+  function download(): { name: string; text: string } {
+    const b = battle.value!;
+    const when = b.finished ? 'finished' : `round-${b.round}`;
+    return { name: `battle-${b.seed}-${when}.json`, text: b.toJson(2) };
+  }
+
+  /** Open a saved battle (from this client or the Python engine); returns what is wrong with it, or null. */
+  function open(text: string): string | null {
+    let b: Battle;
+    try {
+      b = Battle.fromJson(text);
+    } catch (error) {
+      return error instanceof SyntaxError ? `This file is not valid JSON: ${error.message}` : (error as Error).message;
+    }
+    const data = b.toDict();
+    const named = b.meta.sides;
+    sides.value = Array.isArray(named) && named.length === 2 ? [String(named[0]), String(named[1])] : ['Side 0', 'Side 1'];
+    if (b.seed !== null) seedSignal.value = b.seed;
+    units.value = data.units.map((u) => ({
+      id: u.id, name: u.name, side: u.side as 0 | 1, type: u.type as UnitType | null, subtype: u.subtype,
+      size: u.initial_size, stats: u.initial_stats, guns: u.guns === undefined ? null : u.guns + u.guns_lost,
+    }));
+    battle.value = b;
+    orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
+    touch();
+    return null;
+  }
+
   /** End the battle: settle killed, wounded and prisoners; `holder` 'auto' lets the engine decide the field. */
   function finish(holder: FieldHolder): void {
     battle.value!.finish(holder);
@@ -239,7 +268,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
-    orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish,
+    orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
