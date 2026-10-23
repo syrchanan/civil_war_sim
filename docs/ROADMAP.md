@@ -49,7 +49,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | A9 | Setup file + step API + CLI | ✓ |
 | A10 | Tuning harness: batch runner + matchup stats | ✓ |
 | A11 | Player-made validation scenarios (expectations + feedback) | ✓ |
-| A13 | Tuning pass on the A10 findings | ► |
+| A13 | Tuning pass on the A10 findings | ⏸ (parked 2026-10-23; larger pass later) |
 | A12 | Field holder from battle performance (`finish` 'auto') | ○ (prototyped; needed for A11) |
 
 ### Phase B — Playable web client
@@ -514,7 +514,7 @@ stay strict.
    seed (median 50 min) under counter-battery shell. 1st Minnesota breaks only 14% of the time with 31% hit,
    which may be the morale-gain pinning noted under A2.
 
-### A13. Tuning pass ►
+### A13. Tuning pass ⏸
 **Harness facets** (2026-10-01): `matchups` runs several grids. Each answers a different question:
 - **ranged**: everyone fires. Melee-only units (stats flag `x/x/x/1`, not the subtype) inflict nothing.
 - **melee**: everyone fights hand to hand. Both sides hold melee orders, so they meet head on.
@@ -666,8 +666,22 @@ message for players: `players/README.md`. Blank template: `players/battle_templa
 - **Why the first two run high**: their scripted orders keep firing on units that have already broken. That
   adds 14% (firefight) and 20% (assault) of the loser's strength. In the assault, 19% are prisoners, mostly
   wounded captured on the held field.
-- **Proposed** (not decided): a broken unit falls back out of musket range after it breaks, as a faltered charge
-  does. Only artillery and cavalry or melee pursuit could still reach it.
+- **Decided (2026-10-23)**: falling back out of range waits for positions. Instead, a broken unit is scattering, so
+  it is harder to hit:
+  - **Broken-target multipliers** (`config/combat.yaml`): fire (muskets, rifles, guns) on a broken unit ×0.5
+    (`broken_fire_multiplier`), melee pursuit ×0.75 (`broken_melee_multiplier`). Placeholders. Firing distance
+    will get its own multiplier for every unit once positions exist.
+  - **`on_break` in each order**, what a unit does when its target breaks or is wiped out mid-round:
+    - fire: `keep` (default) firing on the broken unit; or switch to the `strongest` / `weakest` active enemy
+      unit, measured as men × share of morale budget left (ties go to the first unit). No active enemy left: keep
+      firing on the broken unit (a wiped-out one: stand down). Switches are listed in `RoundReport.retargets` and
+      saved in the state history. `closest` / `farthest` wait for positions.
+    - melee: `fall_back` (default), leaving it; or `pursue`, staying in contact for the rest of the round. A charge
+      whose target breaks before contact just ends. A melee order on an already-broken unit is pursuit, as before.
+  - Engine and API only; the player sheets don't carry `on_break` (they are due to be replaced by scenarios built
+    on the site).
+  - **Day totals after** (`check`, 300 seeds): even firefight loser 47% → 41%, winner 34% → 33%; assault loser
+    51% → 47%, winner 16%. Still high: fire keeps going on broken units, at half rate. Left for the tuning pass.
 - **Field holder**: expectations about who holds the field will disagree until A12, since 'auto' only awards the
   field when every enemy unit is out (96% "nobody" in the example).
 
@@ -785,6 +799,10 @@ MapGenerator(MapConfig(...)).generate_map()
 
 ### Movement ⏸
 Superseded by admins placing units. Terrain speed modifiers kept in `movement.yaml` for reference.
+
+**Broken units' flight** (user, 2026-10-23), once positions exist: a broken unit moves away and can be reached by
+units with the range to target it until it is out of range, and by melee pursuit fast enough to catch it. Its
+flight slows down over time, round after round, so pursuit catches up later.
 
 ### Streamlit prototype ⏸
 `streamlit run streamlit/app.py`: Setup + Results pages, map layers, army builder, 1-v-1 sim plots. Frozen. The
