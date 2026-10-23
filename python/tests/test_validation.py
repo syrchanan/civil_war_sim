@@ -156,9 +156,9 @@ def test_side_summary_casualties():
 
 
 def test_winner_by_men_broken_when_nobody_holds_the_field():
-    # Red keeps an idle reserve, so the field isn't won outright; Blue still won (fewer of its men broke)
+    # Red keeps a big idle reserve: Blue wins only the exchange vote, a draw; Blue still won (fewer of its men broke)
     data = scenario({'casualties': {'winner': '1-10%', 1: '>10%'}, 'field_held_by': 0})
-    data['units'].append({'id': 'reserve', 'side': 'Red', 'size': 100, 'stats': '5/5/0/0'})
+    data['units'].append({'id': 'reserve', 'side': 'Red', 'size': 3000, 'stats': '5/5/0/0'})
     report = validation.check(data, seeds=10)
     field, winner, red = report['expectations']
     assert field['share'] == 0 and 'nobody 100%' in field['engine']

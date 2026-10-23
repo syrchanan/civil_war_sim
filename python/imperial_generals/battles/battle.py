@@ -179,6 +179,8 @@ class BattleResult:
     units: dict                 # uid -> UnitOutcome
     prisoners: dict             # side -> prisoners taken over the whole battle
     guns_captured: dict = field(default_factory=lambda: {0: 0, 1: 0})   # side -> enemy guns taken
+    field_decided_by: str = 'admin'     # 'army_out' (a whole army broken), 'votes' or 'admin' (named in finish)
+    field_votes: dict = field(default_factory=dict)     # test ('exchange', 'routs', 'standing') -> side or None
 
 
 @dataclass
@@ -771,13 +773,46 @@ class Battle:
     # After the battle
     # -------------------------------------------------------------------------
 
-    def _auto_field_holder(self) -> int | None:
+    def _army_out_holder(self) -> int | None:
         """The side still standing when every unit of the other side is broken or wiped out; else None."""
         out = {side: all(not u.active for u in self.units.values() if u.side == side) for side in (0, 1)}
         if out[1] and not out[0]:
             return 0
         if out[0] and not out[1]:
             return 1
+        return None
+
+    def _field_votes(self) -> dict:
+        """
+        Each test's vote for the side that is decisively ahead, or None:
+        - 'exchange': inflicted at least ``field_exchange_ratio`` × the men hit it took (and hit someone);
+        - 'routs': the starting strength of its broken or wiped-out units, as a share of its starting total, is
+          at least ``field_rout_gap`` lower than the other side's;
+        - 'standing': at least ``field_standing_ratio`` × the other side's men in unbroken units.
+        """
+        after = self.params.aftermath
+        sides = {side: [u for u in self.units.values() if u.side == side] for side in (0, 1)}
+        taken = {s: sum(u.losses for u in us) for s, us in sides.items()}
+        inflicted = {s: sum(u.inflicted for u in us) for s, us in sides.items()}
+        routed = {s: sum(u.initial_size for u in us if not u.active) / sum(u.initial_size for u in us)
+                  for s, us in sides.items()}
+        standing = {s: sum(u.size for u in us if u.active) for s, us in sides.items()}
+
+        def vote(ahead) -> int | None:
+            return next((s for s in (0, 1) if ahead(s, 1 - s)), None)
+
+        return {
+            'exchange': vote(lambda s, o: inflicted[s] > 0 and inflicted[s] >= after.field_exchange_ratio * taken[s]),
+            'routs': vote(lambda s, o: routed[o] - routed[s] >= after.field_rout_gap),
+            'standing': vote(lambda s, o: standing[s] > 0 and standing[s] >= after.field_standing_ratio * standing[o]),
+        }
+
+    def _voted_holder(self, votes: dict) -> int | None:
+        """The side with at least ``field_votes_needed`` votes and none against; else None (a draw)."""
+        count = {side: sum(v == side for v in votes.values()) for side in (0, 1)}
+        for side in (0, 1):
+            if count[side] >= self.params.aftermath.field_votes_needed and count[1 - side] == 0:
+                return side
         return None
 
     def finish(self, field_held_by='auto') -> BattleResult:
@@ -793,7 +828,8 @@ class Battle:
         ----------
         field_held_by : 0, 1, None or 'auto'
             Side holding the field at the end. 'auto' picks the side still standing when the other is entirely
-            broken or wiped out, else None (no wounded captured).
+            broken or wiped out; otherwise the side the field tests vote for (``_field_votes``), or None, a draw
+            (no wounded captured). The result records how it was decided and the votes.
 
         Raises
         ------
@@ -804,10 +840,14 @@ class Battle:
         """
         if self.finished:
             raise RuntimeError("This battle is already finished.")
+        votes = self._field_votes()
         if field_held_by == 'auto':
-            holder = self._auto_field_holder()
+            holder = self._army_out_holder()
+            decided_by = 'votes' if holder is None else 'army_out'
+            if holder is None:
+                holder = self._voted_holder(votes)
         elif field_held_by is None or (type(field_held_by) is int and field_held_by in (0, 1)):
-            holder = field_held_by
+            holder, decided_by = field_held_by, 'admin'
         else:
             raise ValueError(f"field_held_by must be 0, 1, None or 'auto', got {field_held_by!r}.")
 
@@ -832,5 +872,6 @@ class Battle:
 
         self.finished = True
         self.result = BattleResult(field_held_by=holder, units=outcomes, prisoners=dict(self.prisoners),
-                                   guns_captured=dict(self.guns_captured))
+                                   guns_captured=dict(self.guns_captured), field_decided_by=decided_by,
+                                   field_votes=votes)
         return self.result
