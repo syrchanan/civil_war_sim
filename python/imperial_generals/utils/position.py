@@ -22,11 +22,15 @@ class Position:
         Cover percentage, must be in [0.0, 1.0].
     terrain_type : str
         Terrain type, must be one of VALID_TERRAIN_TYPES (derived from movement config).
+    facing : float | None
+        The way the unit's front faces, in compass degrees clockwise from map north (towards y = 0), kept in
+        [0, 360); None when not given. Display only for now: no combat rule uses it.
     """
 
     VALID_TERRAIN_TYPES: frozenset = _load_valid_terrain_types()
 
-    def __init__(self, x: float, y: float, z: float, cover: float, terrain_type: str) -> None:
+    def __init__(self, x: float, y: float, z: float, cover: float, terrain_type: str,
+                 facing: float | None = None) -> None:
         if not (0.0 <= cover <= 1.0):
             raise ValueError(f"cover must be between 0.0 and 1.0, got {cover}.")
         if terrain_type not in self.VALID_TERRAIN_TYPES:
@@ -34,11 +38,14 @@ class Position:
                 f"terrain_type '{terrain_type}' is not valid. "
                 f"Must be one of: {sorted(self.VALID_TERRAIN_TYPES)}."
             )
+        if facing is not None and not math.isfinite(facing):
+            raise ValueError(f"facing must be a finite number of degrees, got {facing}.")
         self.x = x
         self.y = y
         self.z = z
         self.cover = cover
         self.terrain_type = terrain_type
+        self.facing = None if facing is None else facing % 360
 
     def flat_distance_to(self, other: 'Position') -> float:
         """Euclidean distance on the x/y plane, ignoring elevation."""
@@ -65,6 +72,7 @@ class Position:
             and self.z == other.z
             and self.cover == other.cover
             and self.terrain_type == other.terrain_type
+            and self.facing == other.facing
         )
 
     def __str__(self) -> str:
@@ -73,12 +81,13 @@ class Position:
             f"Elevation={self.z} | "
             f"Cover={self.cover:.0%} | "
             f"Terrain={self.terrain_type}"
+            + ('' if self.facing is None else f" | Facing={self.facing:g}")
         )
 
     def __repr__(self) -> str:
         return (
             f"Position(x={self.x!r}, y={self.y!r}, z={self.z!r}, "
-            f"cover={self.cover!r}, terrain_type={self.terrain_type!r})"
+            f"cover={self.cover!r}, terrain_type={self.terrain_type!r}, facing={self.facing!r})"
         )
 
     @classmethod
@@ -86,6 +95,7 @@ class Position:
         return cls(
             x=d['x'], y=d['y'], z=d['z'],
             cover=d['cover'], terrain_type=d['terrain_type'],
+            facing=d.get('facing'),   # absent in files saved before facing existed
         )
 
     @classmethod
