@@ -104,6 +104,8 @@ class MoraleState:
         self.shock: float = 0.0
         self.lost: int = 0
         self.broken: bool = False
+        # an admin's morale modifier for the current round scales everything spent (1 - modifier); 1 otherwise
+        self.spend_factor: float = 1.0
 
         p = self.params
         fb = self.break_fraction
@@ -165,7 +167,7 @@ class MoraleState:
         self.broken = True
 
     def _spend(self, amount: float) -> None:
-        self.resolve -= amount
+        self.resolve -= amount * self.spend_factor
         if self.resolve <= _BREAK_EPSILON:
             self.resolve = 0.0
             self.broken = True

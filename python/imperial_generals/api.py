@@ -33,7 +33,7 @@ from imperial_generals.battles.battle import Battle
 from imperial_generals.battles.setup import SetupError, battle_from_setup
 from imperial_generals.battles.state import report_to_dict, result_to_dict
 
-ROUND_KEYS = ('duration', 'orders')
+ROUND_KEYS = ('duration', 'orders', 'modifiers')
 
 
 def new_battle(setup: dict, seed: int | None = None) -> dict:
@@ -41,16 +41,20 @@ def new_battle(setup: dict, seed: int | None = None) -> dict:
     return battle_from_setup(setup, seed=seed).to_dict()
 
 
-def step(state: dict, duration: float, orders: dict | None = None, record_events: bool = False) -> tuple:
-    """Resolve one round of ``duration`` game minutes. Returns ``(new_state, report)``; units without orders idle."""
+def step(state: dict, duration: float, orders: dict | None = None, record_events: bool = False,
+         modifiers: dict | None = None) -> tuple:
+    """
+    Resolve one round of ``duration`` game minutes. Returns ``(new_state, report)``; units without orders idle.
+    ``modifiers`` are the admin's for this round (``{uid: {'fire', 'melee', 'morale', 'note'}}``).
+    """
     battle = Battle.from_dict(state)
-    report = battle.resolve_round(duration, orders or {}, record_events=record_events)
+    report = battle.resolve_round(duration, orders or {}, record_events=record_events, modifiers=modifiers)
     return battle.to_dict(), report_to_dict(report)
 
 
-def preview(state: dict, orders: dict) -> list[dict]:
-    """The engagements these orders would create, with their current casualty rates. No dice are rolled."""
-    return [asdict(e) for e in Battle.from_dict(state).engagements(orders)]
+def preview(state: dict, orders: dict, modifiers: dict | None = None) -> list[dict]:
+    """The engagements these orders (and modifiers) would create, with their current casualty rates. No dice rolled."""
+    return [asdict(e) for e in Battle.from_dict(state).engagements(orders, modifiers)]
 
 
 def finish(state: dict, field_held_by='auto') -> tuple:
@@ -103,6 +107,8 @@ def _check_script(scenario: dict) -> list[str]:
             errors.append(f'Round {n}: duration must be a positive number of minutes.')
         if not isinstance(rnd.get('orders', {}), dict):
             errors.append(f'Round {n}: "orders" must be a mapping of unit id to order.')
+        if not isinstance(rnd.get('modifiers', {}), dict):
+            errors.append(f'Round {n}: "modifiers" must be a mapping of unit id to modifiers.')
     return errors
 
 
@@ -145,7 +151,8 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
     for n, rnd in enumerate(scenario.get('rounds', []), start=1):
         orders, skipped = _playable(battle, rnd.get('orders', {}))
         try:
-            report = battle.resolve_round(rnd['duration'], orders, record_events=record_events)
+            report = battle.resolve_round(rnd['duration'], orders, record_events=record_events,
+                                          modifiers=rnd.get('modifiers'))
         except (ValueError, TypeError) as exc:
             raise SetupError([f'Round {n}: {exc}']) from None
         reports.append({**report_to_dict(report), 'skipped_orders': skipped})
@@ -242,7 +249,10 @@ def scenario_from_state(state: dict) -> dict:
     rounds = []
     for r in state['history']:
         orders = {uid: {k: v for k, v in o.items() if v is not None} for uid, o in r['orders'].items()}
-        rounds.append({'duration': r['end'] - r['start'], 'orders': orders})
+        rnd = {'duration': r['end'] - r['start'], 'orders': orders}
+        if r.get('modifiers'):
+            rnd['modifiers'] = r['modifiers']
+        rounds.append(rnd)
     result = state['result']
     if result is None:
         finish = False

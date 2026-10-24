@@ -91,6 +91,7 @@ def report_to_dict(report: RoundReport) -> dict:
         'charges': [asdict(c) for c in report.charges],
         'retargets': [asdict(r) for r in report.retargets],
         'positions': report.positions,
+        'modifiers': report.modifiers,
     }
 
 
@@ -180,6 +181,7 @@ def _report_from_dict(data: dict) -> RoundReport:
         charges=tuple(Charge(**c) for c in data['charges']),
         retargets=tuple(Retarget(**r) for r in data.get('retargets', [])),     # absent in older files
         positions=data.get('positions', {}),                                   # absent in older files
+        modifiers=data.get('modifiers', {}),                                   # absent in older files
     )
 
 
