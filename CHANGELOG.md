@@ -34,6 +34,9 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
 - Order of battle and side summary in the TypeScript port.
 - `scenario-from-state` (CLI and `api.scenario_from_state`): a saved battle, e.g. downloaded from the site, becomes
   a scenario that replays it exactly and can be rerun over other seeds or parameters.
+- Player mode: the site opens in a player view (`?mode=admin` for admins); players command one side, estimate the
+  next round over 200 runs (typical outcome and an 8-in-10 range), and download an orders file for the admin, who
+  loads players' files (as does Python's `resolve --orders`).
 - Deploys to GitHub Pages (https://syrchanan.github.io/civil_war_sim/) after CI passes on main.
 - `CHANGELOG.md`, `python/requirements.txt`, CI (Python and TypeScript tests, both with 100% coverage, and a web
   typecheck).
