@@ -1,0 +1,26 @@
+#!/bin/sh
+# Before every push: the same checks as CI (.github/workflows/ci.yml), so a broken branch never leaves this machine.
+# Python tests with 100% coverage (including the parity-fixture check), then the web typecheck and tests with 100%
+# coverage. Takes a minute or two. Turn it on once per clone with:  git config core.hooksPath .githooks
+# Skip it for one push (e.g. docs only) with:  git push --no-verify
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+if [ -x .venv/Scripts/python.exe ]; then
+  python=.venv/Scripts/python.exe        # Windows
+elif [ -x .venv/bin/python ]; then
+  python=.venv/bin/python                # macOS / Linux
+else
+  echo "pre-push: no .venv found; create it first (see README)." >&2
+  exit 1
+fi
+
+echo "pre-push: Python tests and coverage..."
+"$python" -m pytest -q --cov=imperial_generals --cov-report=term-missing:skip-covered --cov-fail-under=100
+
+echo "pre-push: web typecheck, tests and coverage..."
+cd web
+npm run --silent typecheck
+npm run --silent coverage
+
+echo "pre-push: all checks passed."

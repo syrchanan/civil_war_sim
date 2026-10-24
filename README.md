@@ -63,3 +63,15 @@ npm test            # or: npm run coverage (100% required, as in CI)
 
 After changing the Python engine or `config/`, regenerate the shared fixtures and defaults with
 `python -m imperial_generals.parity`; tests on both sides fail while they are stale.
+
+## Checks before pushing
+
+CI runs only on `main` (where a pass deploys the site) and on pull requests into `main`. Work branches are checked
+on your machine instead: a pre-push hook runs the same checks as CI (Python and web tests, both at 100% coverage,
+and the web typecheck; a minute or two). Turn it on once per clone:
+
+```
+git config core.hooksPath .githooks
+```
+
+`git push --no-verify` skips it for one push (e.g. a docs-only change).

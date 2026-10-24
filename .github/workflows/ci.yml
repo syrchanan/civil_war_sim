@@ -1,8 +1,13 @@
 name: CI
 
+# Runs where it matters: on main (a pass there deploys the site) and on pull requests into main. Work branches are
+# checked locally before every push by .githooks/pre-push (the same commands). Can also be run by hand.
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read

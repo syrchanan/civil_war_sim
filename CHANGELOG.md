@@ -51,6 +51,8 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
 - Army files: save and load one side's units as CSV from the army builder.
 - Phone layout: editable tables become cards, read-only tables keep their unit column in view, the map scrolls
   sideways at a readable size.
+- A pre-push git hook (`.githooks/pre-push`, enabled with `git config core.hooksPath .githooks`) runs the same
+  checks as CI; CI itself now runs only on `main` and on pull requests into `main`.
 - Deploys to GitHub Pages (https://syrchanan.github.io/civil_war_sim/) after CI passes on main.
 - `CHANGELOG.md`, `python/requirements.txt`, CI (Python and TypeScript tests, both with 100% coverage, and a web
   typecheck).
