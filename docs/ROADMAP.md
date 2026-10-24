@@ -58,7 +58,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ► |
 | B2 | Parity fixtures: Python ↔ TS identical results | ► |
 | B3 | GitHub Pages client: place units, set round length, resolve | ► (built; deploys from main) |
-| B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ○ |
+| B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ✓ (2026-10-23) |
 
 ### Phase C — Later
 | Item | Status |
@@ -797,10 +797,25 @@ Decided (2026-10-23):
 - Map, later: unit facing (needs a `facing` on positions in both languages), positions recorded each round so a
   saved battle can be replayed on the map, click-to-target orders. Then range, cover and elevation (Phase C).
 
-### B4. Player vs admin mode ○
-- **Admin mode**: exact seeded result.
-- **Player mode**: fuzzy estimate, e.g. Monte Carlo over N seeds, shown as ranges/quantiles rather than exact
-  numbers.
+### B4. Player vs admin mode ✓
+Decided with the user (2026-10-23): players plan, admins resolve. Long term the whole loop could be automated;
+for now players submit their plans as downloads and the admin runs the rounds.
+- **Which view**: the page opens in the player view; `?mode=admin` opens the admin view. No visible switch (a
+  static site can't stop anyone switching; this is about where people land).
+- **Player view**: pick the side you command; give its orders; set what you expect each enemy unit to do (default:
+  return fire on whoever fires at or charges it, if it can fire; else hold). Expectations drive the preview, the
+  map arrows and the estimate, never the orders file. No fighting or finishing. Between rounds a player moves only
+  their own units.
+- **Estimate** (both views): the next round fought 200 times from the current state with fixed seeds (the same
+  battle and orders give the same estimate; plans are compared on the same dice). Per unit: typical losses and men
+  left (the middle run) with an 8-in-10 range, and the chance to end the round broken; per charge, how often each
+  outcome happened. About 0.2 s for the calibration battles. Outcomes can be two-humped (a charge goes home or
+  falters), so the ranges matter more than the typical value.
+- **Orders file** (`imperial-generals-orders`, version 1): one side's orders and unit places for a battle's next
+  round (seed and round checked). The admin view loads several at once; Python's `resolve` / `preview` take several
+  `--orders` files (`api.merge_plans`), plans or plain mappings. `test_cases/parity/plan_example.json`, written by the
+  client, is loaded by Python in a test.
+- Later: fog of war (hide the enemy's exact numbers and stats from players).
 
 ---
 
