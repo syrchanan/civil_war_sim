@@ -49,7 +49,7 @@ export function LineChart({ title, series }: { title: string; series: Series[] }
         </ul>
       )}
       <div class="plot">
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" tabIndex={0} aria-label={`${title}, by game minute; exact values in the round tables`}
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" tabindex={0} aria-label={`${title}, by game minute; exact values in the round tables`}
           onPointerMove={(e) => setHover(nearest(e.clientX, e.currentTarget.getBoundingClientRect()))}
           onPointerLeave={() => setHover(null)} onKeyDown={onKey} onBlur={() => setHover(null)}>
           {yTicks.map((t) => (

@@ -16,6 +16,7 @@ describe('LineChart', () => {
   it('draws one line per series with a legend and end labels', () => {
     render(<LineChart title="Union: Men" series={[line('A', [900, 850, 700]), line('B', [700, 690, 695])]} />);
     expect(screen.getByRole('img').getAttribute('aria-label')).toMatch(/^Union: Men, by game minute/);
+    expect(screen.getByRole('img').getAttribute('tabindex')).toBe('0');   // lowercase: SVG is case-sensitive
     expect(document.querySelectorAll('polyline')).toHaveLength(2);
     expect(document.querySelectorAll('circle')).toHaveLength(6);
     expect(screen.getByRole('list', { name: 'Union: Men legend' }).textContent).toBe('AB');
