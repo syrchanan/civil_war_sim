@@ -322,6 +322,7 @@ def test_a_plain_orders_mapping_still_works():
     (lambda p: p.update(orders={'nobody': {'mode': 'idle'}}), 'unknown unit nobody'),
     (lambda p: p.update(positions={'cs': {'x': 1, 'y': 2}}), "cs is not on Union's side"),
     (lambda p: p.update(version=2), 'version'),
+    (lambda p: p['battle'].update(tag='0-1-2-3-4'), 'older copy of the battle'),
 ])
 def test_plans_for_another_battle_round_or_side_are_refused(change, message):
     state = api.new_battle(SETUP)
@@ -329,6 +330,16 @@ def test_plans_for_another_battle_round_or_side_are_refused(change, message):
     change(plan)
     with pytest.raises(ValueError, match=message):
         api.merge_plans(state, [plan])
+
+
+def test_the_battle_tag_changes_with_every_round_fought():
+    state = api.new_battle(SETUP)
+    tag = api.battle_tag(state)
+    assert tag == f"0-{'-'.join(str(w) for w in state['rng_state'])}"
+    after, _ = api.step(state, 30, FIRE)
+    assert api.battle_tag(after) != tag
+    plan = _plan(after, 0, {}, tag=api.battle_tag(after))
+    assert api.merge_plans(after, [plan])[1] == {}            # a tag that matches is fine; files without one too
 
 
 def test_a_unit_in_two_plans_is_refused():

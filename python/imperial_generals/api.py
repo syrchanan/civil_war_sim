@@ -165,6 +165,14 @@ PLAN_FORMAT = 'imperial-generals-orders'
 PLAN_VERSION = 1
 
 
+def battle_tag(state: dict) -> str:
+    """
+    A tag for a battle state as it stands between rounds: the rounds fought and the dice generator's state. It
+    changes with every round fought, so an orders file made from an older copy of the battle can be refused.
+    """
+    return '-'.join(str(n) for n in [state['round'], *state['rng_state']])
+
+
 def _check_plan(state: dict, plan: dict, units: dict) -> None:
     """A plan file must be for this battle and its next round, and only move and order its own side's units."""
     if plan.get('version') != PLAN_VERSION:
@@ -174,6 +182,8 @@ def _check_plan(state: dict, plan: dict, units: dict) -> None:
         raise ValueError(f"These orders are for another battle (seed {battle['seed']}, this one {state['seed']}).")
     if battle['round'] != state['round'] + 1:
         raise ValueError(f"These orders are for round {battle['round']}; the next round is {state['round'] + 1}.")
+    if 'tag' in battle and battle['tag'] != battle_tag(state):
+        raise ValueError('These orders were made from an older copy of the battle; ask the admin for the latest.')
     side = plan['side']
     for uid in [*plan['orders'], *plan.get('positions', {})]:
         if uid not in units:
