@@ -20,9 +20,14 @@ describe('block size (yards)', () => {
     expect(blockSize('art', 72, 72, 8)).toEqual({ width: 120, depth: 40 });
   });
 
+  it('a unit with no front left is drawn at the minimum width, one block deep', () => {
+    expect(blockSize('inf', 100, 0, null)).toEqual({ width: 20, depth: 20 });
+  });
+
   it('never vanishes: a minimum size', () => {
     expect(blockSize('inf', 3, 3, null).width).toBe(20);
     expect(blockSize('art', 0, 0, 0).width).toBe(20);
+    expect(blockSize('art', 72, 72, null).width).toBe(20);     // no gun count given
   });
 });
 
@@ -37,7 +42,8 @@ describe('default layout', () => {
     expect(layout.x.y).toBe(FIELD.height * 0.25);
     // a and b side by side with a 60 yd gap, the pair centred on the field
     expect(layout.b.x - layout.a.x).toBe(300 / 2 + 60 + 200 / 2);
-    expect((layout.a.x - 150 + layout.b.x + 100) / 2).toBe(FIELD.width / 2);
+    expect((layout.a.x - 150 + layout.b.x + 100) / 2).toBeCloseTo(FIELD.width / 2, -0.5);   // within a yard
+    expect(Object.values(layout).every((p) => Number.isInteger(p.x))).toBe(true);
     expect(layout.x.x).toBe(FIELD.width / 2);
   });
 

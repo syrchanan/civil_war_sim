@@ -61,7 +61,7 @@ export function defaultLayout(units: { id: string; side: 0 | 1; width: number }[
       const total = line.reduce((s, u) => s + u.width, 0) + GAP * Math.max(0, line.length - 1);
       let left = (FIELD.width - total) / 2;
       for (const u of line) {
-        layout[u.id] = { x: left + u.width / 2, y: front + n * back };
+        layout[u.id] = { x: Math.round(left + u.width / 2), y: front + n * back }; // whole yards
         left += u.width + GAP;
       }
     });
