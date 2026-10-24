@@ -117,6 +117,44 @@ function OrdersTable({ store, units, title, expected, admin = false }:
   );
 }
 
+/** Player, from a player file: their guesses about each enemy unit's men and stats (otherwise unknown). */
+function Guesses({ store }: { store: Store }) {
+  const [problem, setProblem] = useState<string | null>(null);
+  const enemy = [...store.battle.value!.units.values()].filter((u) => u.side === store.hiddenSide.value && u.size > 0);
+  const guess = (uid: string, name: string, change: { size?: number; stats?: string }) => {
+    const error = store.setGuess(uid, change);
+    setProblem(error === null ? null : `${name}: ${error}`);
+  };
+  return (
+    <>
+      <h3>Your guesses about the enemy</h3>
+      <p class="note">You see the enemy's men only roughly, and not their experience, morale or weapons. Your guesses
+        drive the preview and the estimate; they never leave this page.</p>
+      <div class="table-wrap">
+        <table aria-label="Your guesses about the enemy">
+          <thead><tr><th>Unit</th><th class="num">Men</th><th>Stats (exp/morale/weapon/melee only)</th></tr></thead>
+          <tbody>
+            {enemy.map((u) => (
+              <tr class={`side-${u.side}`}>
+                <td>{u.name}</td>
+                <td class="num">
+                  <input type="number" min="1" class="num" aria-label={`${u.name} men (guess)`} value={u.size}
+                    onChange={(e) => guess(u.uid, u.name, { size: Number(e.currentTarget.value) })} />
+                </td>
+                <td>
+                  <input type="text" aria-label={`${u.name} stats (guess)`} value={u.regiment.stats.join('/')}
+                    onChange={(e) => guess(u.uid, u.name, { stats: e.currentTarget.value })} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {problem !== null && <tfoot><tr><td colSpan={3} role="alert" class="problems">{problem}</td></tr></tfoot>}
+        </table>
+      </div>
+    </>
+  );
+}
+
 /** Admin: which side's orders file is loaded, and the units that would hold for want of orders. */
 function Received({ store }: { store: Store }) {
   const sides = store.sides.value;
@@ -198,6 +236,7 @@ export function OrdersPanel({ store }: { store: Store }) {
           <p class="note">Only for the preview and the estimate; your orders file never includes it.</p>
           <OrdersTable store={store} units={acting.filter((u) => u.side !== side)}
             title="What you expect the enemy to do" expected />
+          {store.hiddenSide.value !== null && <Guesses store={store} />}
         </>
       ) : (
         <>

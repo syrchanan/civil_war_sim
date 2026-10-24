@@ -70,7 +70,8 @@ function Block({ store, unit, movable, selectable, aim }:
   const dragged = useRef(false); // a drag ends in a click, which is not a click on the unit
   const turning = useRef(false);
   const svgOf = (el: Element) => el.closest('svg') as SVGSVGElement;
-  const label = `${unit.name}, ${unit.men.toLocaleString('en-US')} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°`;
+  const men = `${unit.rough ? 'about ' : ''}${unit.men.toLocaleString('en-US')}`;
+  const label = `${unit.name}, ${men} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°`;
   // two text lines (name, men): below the block for side 0, above it for side 1
   const labelY = unit.side === 0 ? unit.depth / 2 + 30 : -unit.depth / 2 - 36;
   return (
@@ -140,7 +141,7 @@ function Block({ store, unit, movable, selectable, aim }:
       </g>
       <text y={labelY} text-anchor="middle">
         <tspan class="unit-name">{unit.name}</tspan>
-        <tspan class="unit-men" x="0" dy="1.1em">{unit.men.toLocaleString('en-US')}</tspan>
+        <tspan class="unit-men" x="0" dy="1.1em">{men}</tspan>
       </text>
     </g>
   );

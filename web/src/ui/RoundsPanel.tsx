@@ -20,7 +20,7 @@ function Round({ store, report, open }: { store: Store; report: RoundReport; ope
             </tr>
           </thead>
           <tbody>
-            {Object.entries(report.units).map(([uid, u]) => (
+            {Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.hiddenSide.value).map(([uid, u]) => (
               <tr class={`side-${units.get(uid)!.side}`}>
                 <td>{name(uid)}</td>
                 <td class="num">{u.losses}</td>
