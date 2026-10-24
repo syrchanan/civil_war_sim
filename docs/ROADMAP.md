@@ -784,7 +784,15 @@ Decided (2026-10-23):
   casualties by unit.
 - **Files**: download the battle (state file), open a saved one (from the client or Python). Checked end to end: a
   battle fought in the browser replays in Python to the identical state.
+- **Map** (user, 2026-10-23: "a different visual representation of the battle"): a plain 2,000 × 1,200 yd field,
+  each unit a block roughly to scale (two ranks, about 2/3 yd per infantry file, 1.1 yd per cavalry file, 15 yd per
+  gun), side colors, men shown; broken units faded and dashed, wiped-out units crossed out; orders as arrows (fire
+  dashed, charge solid). Drag or arrow keys place units before the battle and move them between rounds. Positions
+  are saved as positions on open ground (elevation 0, no cover), which Python loads; **the engine ignores them**:
+  no range, cover or elevation.
 - Not yet: deploying to GitHub Pages (CD on main), fog of war, player mode (B4).
+- Map, later: unit facing (needs a `facing` on positions in both languages), positions recorded each round so a
+  saved battle can be replayed on the map, click-to-target orders. Then range, cover and elevation (Phase C).
 
 ### B4. Player vs admin mode ○
 - **Admin mode**: exact seeded result.
