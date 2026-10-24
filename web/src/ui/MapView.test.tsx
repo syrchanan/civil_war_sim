@@ -156,6 +156,72 @@ describe('map replay', () => {
   });
 });
 
+describe('map targeting', () => {
+  const started = () => {
+    const store = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+    return store;
+  };
+
+  it('click a unit, then an enemy; the menu offers what it can do, and confirming sets the order', () => {
+    const store = started();
+    fireEvent.click(unit('1st Minnesota'));
+    expect(unit('1st Minnesota').classList.contains('aiming')).toBe(true);
+    expect(unit('8th Alabama').classList.contains('can-target')).toBe(true);
+    expect(unit('15th Massachusetts').classList.contains('can-target')).toBe(false);
+    expect(screen.getByText(/Pick a target for 1st Minnesota/)).toBeTruthy();
+    fireEvent.click(unit('8th Alabama'));
+    const menu = screen.getByRole('dialog', { name: '1st Minnesota against 8th Alabama' });
+    expect([...menu.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Fire', 'Charge', 'Cancel']);
+    expect(document.activeElement).toBe(menu.querySelector('button'));
+    fireEvent.click(screen.getByRole('button', { name: 'Charge' }));
+    expect(store.orders.value.us_1mn).toMatchObject({ mode: 'melee', target: 'cs_8al' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect((screen.getByLabelText('1st Minnesota action') as HTMLSelectElement).value).toBe('melee');
+  });
+
+  it('Cancel or Escape closes the menu without an order', () => {
+    const store = started();
+    fireEvent.click(unit('1st Minnesota'));
+    fireEvent.click(unit('8th Alabama'));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.click(unit('1st Minnesota'));
+    fireEvent.click(unit('8th Alabama'));
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Tab' });     // other keys leave it open
+    expect(screen.getByRole('dialog')).toBeTruthy();
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'Enter' });
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'Escape' });
+    expect(store.aiming.value).toBeNull();
+    expect(store.orders.value.us_1mn.mode).toBe('idle');
+  });
+
+  it('with the keyboard: Enter on a unit, then Enter (or Space) on the enemy', () => {
+    const store = started();
+    // the enemy can be selected to be targeted, though a player can't move it
+    expect(unit('8th Alabama').getAttribute('tabindex')).toBe('0');
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'Enter' });
+    fireEvent.keyDown(unit('8th Alabama'), { key: ' ' });
+    fireEvent.click(screen.getByRole('button', { name: 'Fire' }));
+    expect(store.orders.value.us_1mn).toMatchObject({ mode: 'ranged', target: 'cs_8al' });
+  });
+
+  it('a drag is not a click', () => {
+    const store = started();
+    const block = unit('1st Minnesota');
+    const start = store.mapUnits.value[0];
+    fireEvent.pointerDown(block, { clientX: start.x / 2, clientY: start.y / 2, pointerId: 1 });
+    fireEvent.pointerMove(block, { clientX: start.x / 2 + 20, clientY: start.y / 2, pointerId: 1 });
+    fireEvent.pointerUp(block, { pointerId: 1 });
+    fireEvent.click(block);
+    expect(store.aiming.value).toBeNull();
+    fireEvent.click(block);                                     // the next click is a click
+    expect(store.aiming.value).toBe('us_1mn');
+  });
+});
+
 describe('map arrows', () => {
   it('two units ordered at each other get arrows side by side, not on top of each other', () => {
     const store = setup();

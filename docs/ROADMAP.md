@@ -794,8 +794,20 @@ Decided (2026-10-23):
   https://syrchanan.github.io/civil_war_sim/ when CI passes on main (building the commit CI tested), or by hand from
   the Actions tab. Pages uses GitHub Actions as its source; only `main` may deploy (the `github-pages` environment).
 - Not yet: fog of war, player mode (B4).
-- Map, later: unit facing (needs a `facing` on positions in both languages), positions recorded each round so a
-  saved battle can be replayed on the map, click-to-target orders. Then range, cover and elevation (Phase C).
+- **Richer map** ✓ (2026-10-24):
+  - **Facing**: `facing` on positions, compass degrees clockwise from the top of the map (towards y = 0), in
+    [0, 360); null when not given (older files, Python setups), drawn as facing the other side (side 0 up, side 1
+    down). Blocks turn to it, front edge marked; Q / E turn 15° (45° with Shift), or drag the handle in front of
+    the block. Saved in state files and players' orders files (a move without one keeps the old facing).
+  - **Per-round positions**: each round report has `positions` (placed units' positions as the round began), in
+    both engines; absent in older files. The map's "Show on the map" picker replays any round as it began: places,
+    men, broken units and that round's orders. Moves are off while replaying.
+  - **Click-to-target**: in battle, click a unit (or select it and press Enter), then an enemy; a menu offers what
+    the unit can do (fire if its ranged coefficient is above 0, charge if its melee one is) and Cancel. Confirming
+    sets the order (a new target keeps the action's ammo and on-break choice). Players aim enemy units too, which
+    sets what they expect of them.
+  - Still display only: the engine ignores positions and facings.
+- Map, later: range, cover, elevation and flanks from facing (Phase C).
 
 ### B4. Player vs admin mode ✓
 Decided with the user (2026-10-23): players plan, admins resolve. Long term the whole loop could be automated;

@@ -37,6 +37,10 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
 - Player mode: the site opens in a player view (`?mode=admin` for admins); players command one side, estimate the
   next round over 200 runs (typical outcome and an 8-in-10 range), and download an orders file for the admin, who
   loads players' files (as does Python's `resolve --orders`).
+- The richer map: units face a way (rotated blocks, front edge marked; Q / E or a handle to turn them; `facing` on
+  positions, compass degrees, saved in state and orders files); every round records where units stood as it began
+  (`positions` in the round history, both engines), so any round can be replayed on the map; click a unit, then an
+  enemy, and confirm fire or charge (only what the unit can do) to give it that target.
 - Deploys to GitHub Pages (https://syrchanan.github.io/civil_war_sim/) after CI passes on main.
 - `CHANGELOG.md`, `python/requirements.txt`, CI (Python and TypeScript tests, both with 100% coverage, and a web
   typecheck).
