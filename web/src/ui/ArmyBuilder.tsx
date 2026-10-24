@@ -63,7 +63,7 @@ function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
       </td>
       <td><input aria-label={label('melee only')} type="checkbox" checked={meleeOnly === '1'}
         onChange={(e) => setStat(3, e.currentTarget.checked ? '1' : '0')} /></td>
-      <td>
+      <td class="num">
         {unit.type === 'art'
           ? <input aria-label={label('guns')} type="number" min="0" class="num" value={numberText(unit.guns)}
             onInput={(e) => set({ guns: toNumber(e.currentTarget.value) })} />

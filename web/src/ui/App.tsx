@@ -26,7 +26,9 @@ export function App({ store = defaultStore }: { store?: Store }) {
           {battle === null ? <ArmyBuilder store={store} /> : (
             <>
               <OrderOfBattle sides={store.orderOfBattle.value!} hidden={store.hiddenSide.value} />
-              <button onClick={() => store.reset()}>Change the armies (starts over)</button>
+              {store.playerFileInfo.value === null && (
+                <button onClick={() => store.reset()}>Change the armies (starts over)</button>
+              )}
             </>
           )}
         </section>

@@ -91,3 +91,18 @@ describe('modifier wording', () => {
     expect(modifierText({ fire: 0, melee: 0, morale: 0, note: 'rain' })).toBe('(rain)');
   });
 });
+
+describe('orders table: only what a unit can do', () => {
+  it('a melee-only unit is offered hold and charge; an order it already has stays listed', () => {
+    const store = createStore(1863);
+    store.updateUnit('cs_11al', { stats: '3/4/0/1' });
+    render(<App store={store} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+    const options = () => [...(screen.getByLabelText('11th Alabama action') as HTMLSelectElement).options].map((o) => o.value);
+    expect(options()).toEqual(['melee', 'idle']);
+    expect([...(screen.getByLabelText('1st Minnesota action') as HTMLSelectElement).options].map((o) => o.value))
+      .toEqual(['ranged', 'melee', 'idle']);
+    act(() => store.setOrder('cs_11al', { mode: 'ranged', target: 'us_1mn' }));  // e.g. from an orders file
+    expect(options()).toEqual(['ranged', 'melee', 'idle']);
+  });
+});

@@ -182,30 +182,32 @@ export function MapView({ store }: { store: Store }) {
           </select>
         </label>
       )}
-      <div class="field-wrap">
-      <svg viewBox={`0 0 ${FIELD.width} ${FIELD.height}`} role="img"
-        aria-label={`Battlefield, ${FIELD.width} by ${FIELD.height} yards`}>
-        <defs>
-          {[0, 1].map((side) => (
-            <marker id={`arrowhead-${side}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5"
-              orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" class={`arrowhead side-${side}`} />
-            </marker>
-          ))}
-        </defs>
-        <rect class="field" width={FIELD.width} height={FIELD.height} />
-        {gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
-        {gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
-        <g class="scale-bar" transform={`translate(40 ${FIELD.height - 40})`}>
-          <line x1={0} x2={SCALE_BAR} y1={0} y2={0} />
-          <text x={SCALE_BAR / 2} y={-12} text-anchor="middle">{SCALE_BAR} yards</text>
-        </g>
-        {store.orderArrows.value.map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} />)}
-        {units.map((u) => (
-          <Block key={u.uid} store={store} unit={u} movable={canMove(u)} selectable={selectable} aim={aimOf(u.uid)} />
-        ))}
-      </svg>
-      {choice !== null && <TargetMenu store={store} choice={choice} at={byId[choice.to]} />}
+      <div class="field-scroll">
+        <div class="field-wrap">
+          <svg viewBox={`0 0 ${FIELD.width} ${FIELD.height}`} role="img"
+            aria-label={`Battlefield, ${FIELD.width} by ${FIELD.height} yards`}>
+            <defs>
+              {[0, 1].map((side) => (
+                <marker id={`arrowhead-${side}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5"
+                  orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" class={`arrowhead side-${side}`} />
+                </marker>
+              ))}
+            </defs>
+            <rect class="field" width={FIELD.width} height={FIELD.height} />
+            {gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
+            {gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
+            <g class="scale-bar" transform={`translate(40 ${FIELD.height - 40})`}>
+              <line x1={0} x2={SCALE_BAR} y1={0} y2={0} />
+              <text x={SCALE_BAR / 2} y={-12} text-anchor="middle">{SCALE_BAR} yards</text>
+            </g>
+            {store.orderArrows.value.map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} />)}
+            {units.map((u) => (
+              <Block key={u.uid} store={store} unit={u} movable={canMove(u)} selectable={selectable} aim={aimOf(u.uid)} />
+            ))}
+          </svg>
+          {choice !== null && <TargetMenu store={store} choice={choice} at={byId[choice.to]} />}
+        </div>
       </div>
       <p class="note">
         {aiming !== null ? `Pick a target for ${byId[aiming].name}: click an enemy (Escape to stop). ` : ''}
@@ -218,6 +220,7 @@ export function MapView({ store }: { store: Store }) {
             + 'Q and E, to turn it (Shift for bigger steps). '
           : ''}
         Positions are for the picture only: the engine doesn't use distance, facing, cover or elevation yet.
+        <span class="phone-only"> On a small screen, scroll the map sideways.</span>
       </p>
     </div>
   );

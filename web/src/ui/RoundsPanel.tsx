@@ -8,6 +8,8 @@ import { StrengthCharts } from './StrengthCharts';
 function Round({ store, report, open }: { store: Store; report: RoundReport; open: boolean }) {
   const units = store.battle.value!.units;
   const name = (uid: string) => units.get(uid)!.name;
+  // from a player file, only the player's own units
+  const rows = Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.hiddenSide.value);
   return (
     <details open={open}>
       <summary>Round {report.round} ({report.start.toFixed(0)}–{report.end.toFixed(0)} min)</summary>
@@ -20,7 +22,7 @@ function Round({ store, report, open }: { store: Store; report: RoundReport; ope
             </tr>
           </thead>
           <tbody>
-            {Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.hiddenSide.value).map(([uid, u]) => (
+            {rows.map(([uid, u]) => (
               <tr class={`side-${units.get(uid)!.side}`}>
                 <td>{name(uid)}</td>
                 <td class="num">{u.losses}</td>

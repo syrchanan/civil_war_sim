@@ -245,7 +245,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         uid: u.uid, name: u.name, side: u.side as 0 | 1, type: u.regiment.unitType, men: u.size, front: u.front,
         guns: u.regiment instanceof ArtilleryBattery ? u.regiment.guns : null, broken: u.morale.broken,
         wiped: u.size === 0,
-        place: u.regiment.position === null ? undefined : { x: u.regiment.position.x, y: u.regiment.position.y, facing: facingOf(u) },
+        place: u.regiment.position === null ? undefined
+          : { x: u.regiment.position.x, y: u.regiment.position.y, facing: facingOf(u) },
       }));
     const sized = shown.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
     const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
@@ -374,7 +375,10 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (modeSignal.value === 'admin') orderSources.value = { ...orderSources.value, [uid]: 'admin' };
   }
 
-  /** Admin: change a unit's modifiers for the next round (fractions, -0.15 is -15%); all zero and no note drops them. */
+  /**
+   * Admin: change a unit's modifiers for the next round (fractions, -0.15 is -15%); all zero and no note drops
+   * them.
+   */
   function setModifier(uid: string, change: Partial<Modifier>): void {
     const next = { ...(modifiers.value[uid] ?? { fire: 0, melee: 0, morale: 0, note: '' }), ...change };
     const rest = { ...modifiers.value };
@@ -572,7 +576,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     };
     const plan = {
       format: PLAN_FORMAT, version: PLAN_VERSION,
-      battle: { seed: b.seed, round: b.round + 1, time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()) },
+      battle: {
+        seed: b.seed, round: b.round + 1, time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()),
+      },
       side, side_name: sides.value[side],
       orders: Object.fromEntries(own.filter((u) => u.active).map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
       positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
@@ -669,7 +675,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       orderSources.value = sources;
       plansLoaded.value = { ...plansLoaded.value, [side]: file.name };
       // a move without a facing (from an older orders file) keeps the unit's facing
-      for (const [uid, place] of Object.entries((plan.positions ?? {}) as Record<string, Point & { facing?: number }>)) {
+      const moves = (plan.positions ?? {}) as Record<string, Point & { facing?: number }>;
+      for (const [uid, place] of Object.entries(moves)) {
         const unit = battle.value!.units.get(uid)!;
         unit.regiment.position = onOpenGround({ ...clampToField(place), facing: place.facing ?? facingOf(unit) });
       }

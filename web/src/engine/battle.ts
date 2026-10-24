@@ -162,7 +162,8 @@ export type ModifierInput = Partial<Modifier>;
 
 export const MODIFIER_KEYS = ['fire', 'melee', 'morale'] as const;
 
-const isMapping = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isMapping = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** Check one round's admin modifiers (port of Python's validate_modifiers); returns them complete. */
 export function validateModifiers(modifiers: unknown, units: Map<string, unknown>): Record<string, Modifier> {
@@ -172,14 +173,19 @@ export function validateModifiers(modifiers: unknown, units: Map<string, unknown
     if (!units.has(uid)) throw new ValueError(`Unknown unit ${uid} in modifiers.`);
     if (!isMapping(mod)) throw new ValueError(`${uid}: modifiers must be a mapping (fire, melee, morale, note).`);
     const unknown = Object.keys(mod).filter((k) => !['fire', 'melee', 'morale', 'note'].includes(k)).sort();
-    if (unknown.length) throw new ValueError(`Unknown modifier(s) [${unknown.join(', ')}] for ${uid}; use fire, melee, morale, note.`);
+    if (unknown.length) {
+      throw new ValueError(`Unknown modifier(s) [${unknown.join(', ')}] for ${uid}; use fire, melee, morale, note.`);
+    }
     const out = { fire: 0, melee: 0, morale: 0, note: '' };
     for (const key of MODIFIER_KEYS) {
       const value = mod[key] ?? 0;
       if (typeof value !== 'number') {
-        throw new ValueError(`${uid}: ${key} must be a number (a fraction, -0.15 for -15%), got ${JSON.stringify(value)}.`);
+        throw new ValueError(
+          `${uid}: ${key} must be a number (a fraction, -0.15 for -15%), got ${JSON.stringify(value)}.`);
       }
-      if (!(value >= -1 && value <= 1)) throw new ValueError(`${uid}: ${key} must be between -1 and 1 (-100% to +100%), got ${value}.`);
+      if (!(value >= -1 && value <= 1)) {
+        throw new ValueError(`${uid}: ${key} must be between -1 and 1 (-100% to +100%), got ${value}.`);
+      }
       out[key] = value;
     }
     const note = mod.note ?? '';
@@ -647,7 +653,8 @@ export class Battle {
     const before = new Map([...this.units].map(([uid, u]) => [uid, [u.losses, u.inflicted, u.captured, u.gunsLost]]));
     const placed: Record<string, Position> = {};
     for (const [uid, u] of this.units) {
-      if (u.regiment.position !== null) placed[uid] = { ...u.regiment.position, facing: u.regiment.position.facing ?? null };
+      const at = u.regiment.position;
+      if (at !== null) placed[uid] = { ...at, facing: at.facing ?? null };
     }
     const prisoners = bySide();
     const guns = bySide();

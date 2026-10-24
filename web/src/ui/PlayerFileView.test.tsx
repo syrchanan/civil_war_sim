@@ -45,8 +45,9 @@ describe('admin: downloading player files', () => {
 });
 
 describe('player: planning from their file', () => {
-  it('commands their side only: no side to pick, no battle download, no player-file buttons', () => {
+  it('commands their side only: no side to pick, no battle download, no player-file buttons, no army changes', () => {
     setup(1);
+    expect(screen.queryByRole('button', { name: /^Change the armies/ })).toBeNull();
     expect(screen.queryByLabelText('You command')).toBeNull();
     expect(screen.getByText('You command: Confederate')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Download battle' })).toBeNull();
