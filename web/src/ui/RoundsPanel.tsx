@@ -1,7 +1,7 @@
 /** Every round fought so far: per unit losses, inflicted, men left, morale and breaks; charges and target switches. */
 
 import type { RoundReport } from '../engine';
-import { chargeText, status } from './format';
+import { chargeText, modifierText, status } from './format';
 import type { Store } from './store';
 import { StrengthCharts } from './StrengthCharts';
 
@@ -44,6 +44,11 @@ function Round({ store, report, open }: { store: Store; report: RoundReport; ope
           {report.retargets.map((r) => (
             <li>{name(r.unit)} switched from {name(r.old_target)} to {name(r.new_target)} at {r.time.toFixed(0)} min</li>
           ))}
+        </ul>
+      )}
+      {Object.keys(report.modifiers).length > 0 && (
+        <ul aria-label={`Round ${report.round} modifiers`}>
+          {Object.entries(report.modifiers).map(([uid, m]) => <li>{name(uid)}: {modifierText(m)}</li>)}
         </ul>
       )}
       {report.events.length > 0 && <p class="note">{report.events.length} casualties recorded one by one.</p>}

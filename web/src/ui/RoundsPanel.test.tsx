@@ -43,7 +43,7 @@ describe('rounds panel', () => {
 
     fireEvent.click(screen.getByLabelText(/Record every casualty/));
     fireEvent.click(screen.getByRole('button', { name: 'Fight round 2' }));
-    const details = document.querySelectorAll('details');
+    const details = document.querySelectorAll<HTMLDetailsElement>('.rounds details');
     expect([...details].map((d) => d.open)).toEqual([false, true]);
     expect(store.history.value).toHaveLength(2);
   });
