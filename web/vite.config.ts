@@ -1,6 +1,8 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // relative asset paths: the site works under any path, e.g. GitHub Pages' /civil_war_sim/
+  base: './',
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     coverage: {
