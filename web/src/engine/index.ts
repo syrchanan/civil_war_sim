@@ -16,10 +16,10 @@ export {
   ArtilleryBattery, CavalryRegiment, closestMoraleStat, InfantryRegiment, parseStats, Regiment,
 } from './units';
 export type { Position, RegimentOptions } from './units';
-export { Battle, BattleUnit, makeOrder, ON_BREAK, ORDER_KEYS } from './battle';
+export { Battle, BattleUnit, makeOrder, MODIFIER_KEYS, ON_BREAK, ORDER_KEYS, validateModifiers } from './battle';
 export type {
-  BattleResult, BySide, CasualtyEvent, Charge, Engagement, FieldHolder, FieldTest, Order, OrderInput, Retarget,
-  RoundReport, UnitOutcome, UnitReport, UnitSpec,
+  BattleResult, BySide, CasualtyEvent, Charge, Engagement, FieldHolder, FieldTest, Modifier, ModifierInput, Order,
+  OrderInput, Retarget, RoundReport, UnitOutcome, UnitReport, UnitSpec,
 } from './battle';
 export { RuntimeError } from './errors';
 export { battleFromDict, battleToDict, FORMAT, VERSION } from './state';

@@ -439,7 +439,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -470,7 +471,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -501,7 +503,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -1972,7 +1975,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -2003,7 +2007,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -2030,7 +2035,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -3480,7 +3486,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -3511,7 +3518,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -3542,7 +3550,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -5038,7 +5047,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -5078,7 +5088,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -5118,7 +5129,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -5142,7 +5154,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -5166,7 +5179,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -7085,7 +7099,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -7125,7 +7140,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -7157,7 +7173,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -7181,7 +7198,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -7205,7 +7223,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -9100,7 +9119,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -9140,7 +9160,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -9172,7 +9193,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -9200,7 +9222,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -9220,7 +9243,8 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -11166,7 +11190,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -11210,7 +11235,8 @@
               "ammo": "canister"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -11250,7 +11276,8 @@
               "ammo": "canister"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -11277,7 +11304,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -13322,7 +13350,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -13366,7 +13395,8 @@
               "ammo": "canister"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -13402,7 +13432,8 @@
               "ammo": "canister"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -13429,7 +13460,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -15462,7 +15494,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -15506,7 +15539,8 @@
               "ammo": "canister"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -15546,7 +15580,8 @@
               "ammo": "canister"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 90,
@@ -15573,7 +15608,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -17554,7 +17590,23 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {
+            "a_line": {
+              "fire": -0.2,
+              "note": "uphill"
+            },
+            "x_light": {
+              "melee": 0.3
+            },
+            "x_bat": {
+              "fire": 0.15
+            },
+            "x_irr": {
+              "morale": -0.4,
+              "note": "surprised"
+            }
+          }
         },
         {
           "duration": 60,
@@ -17591,7 +17643,17 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {
+            "a_heavy": {
+              "melee": 0.25,
+              "morale": 0.5
+            },
+            "x_line": {
+              "fire": -0.1,
+              "melee": -0.3
+            }
+          }
         },
         {
           "duration": 90,
@@ -17610,7 +17672,8 @@
               "mode": "melee"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -17621,10 +17684,10 @@
         "meta": {},
         "seed": 1,
         "rng_state": [
-          667081160,
-          1854402589,
-          1169499066,
-          1646600026
+          1225181014,
+          2253099768,
+          2501181871,
+          413071321
         ],
         "params": {
           "combat": {
@@ -17807,11 +17870,11 @@
         "round": 3,
         "finished": true,
         "prisoners": {
-          "0": 306,
+          "0": 348,
           "1": 0
         },
         "guns_captured": {
-          "0": 3,
+          "0": 8,
           "1": 0
         },
         "units": [
@@ -17821,23 +17884,23 @@
             "side": 0,
             "type": "inf",
             "subtype": "line",
-            "size": 825,
+            "size": 845,
             "initial_size": 900,
-            "stats": "6/3/1/0",
+            "stats": "6/5/1/0",
             "initial_stats": "6/6/1/0",
             "front_size": 900,
-            "raw_morale": 34.725806243992935,
+            "raw_morale": 45.602974408190846,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.5787634373998822,
-              "shock": 0.0004574725735016947,
-              "lost": 118,
+              "resolve": 0.7600495734698475,
+              "shock": 0.00018473584086185177,
+              "lost": 77,
               "broken": false,
               "break_scale": 0.759303000733753
             },
-            "losses": 118,
-            "inflicted": 275,
+            "losses": 77,
+            "inflicted": 287,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -17848,23 +17911,23 @@
             "side": 0,
             "type": "cav",
             "subtype": "heavy",
-            "size": 338,
+            "size": 329,
             "initial_size": 400,
-            "stats": "7/5/0/1",
+            "stats": "7/4/0/1",
             "initial_stats": "7/7/0/1",
             "front_size": 400,
-            "raw_morale": 52.14790813209943,
+            "raw_morale": 39.6756276102443,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.744970116172849,
-              "shock": 0.00019500085004144695,
-              "lost": 94,
+              "resolve": 0.5667946801463472,
+              "shock": 0.00014387220455167163,
+              "lost": 97,
               "broken": false,
               "break_scale": 1.2823438828419877
             },
-            "losses": 94,
-            "inflicted": 77,
+            "losses": 97,
+            "inflicted": 41,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -17875,23 +17938,23 @@
             "side": 0,
             "type": "cav",
             "subtype": "dragoons",
-            "size": 337,
+            "size": 343,
             "initial_size": 350,
-            "stats": "5/4/1/0",
+            "stats": "5/5/1/0",
             "initial_stats": "5/5/1/0",
             "front_size": 350,
-            "raw_morale": 39.4091612292564,
+            "raw_morale": 47.78112458491221,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.7881832245851279,
-              "shock": 0.00020647828510996557,
-              "lost": 18,
+              "resolve": 0.9556224916982443,
+              "shock": 0.00011007885168036557,
+              "lost": 10,
               "broken": false,
               "break_scale": 0.9687642680107383
             },
-            "losses": 18,
-            "inflicted": 41,
+            "losses": 10,
+            "inflicted": 57,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -17902,23 +17965,23 @@
             "side": 0,
             "type": "inf",
             "subtype": "pikes",
-            "size": 587,
+            "size": 588,
             "initial_size": 600,
             "stats": "5/6/-2/1",
             "initial_stats": "5/6/-2/1",
             "front_size": 600,
-            "raw_morale": 59.91826704536653,
+            "raw_morale": 59.94060307983729,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9986377840894421,
-              "shock": 1.078658370170354e-05,
+              "resolve": 0.9990100513306215,
+              "shock": 1.119669353110655e-05,
               "lost": 18,
               "broken": false,
               "break_scale": 1.1385793444836028
             },
             "losses": 18,
-            "inflicted": 152,
+            "inflicted": 159,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -17929,7 +17992,7 @@
             "side": 1,
             "type": "inf",
             "subtype": "line",
-            "size": 530,
+            "size": 508,
             "initial_size": 800,
             "stats": "4/1/0/0",
             "initial_stats": "4/5/0/0",
@@ -17939,14 +18002,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.030214323443193747,
-              "lost": 275,
+              "shock": 0.035181326769746134,
+              "lost": 287,
               "broken": true,
               "break_scale": 0.7961760722793094
             },
-            "losses": 275,
-            "inflicted": 118,
-            "captured": 48,
+            "losses": 287,
+            "inflicted": 77,
+            "captured": 58,
             "guns_lost": 0,
             "meta": {}
           },
@@ -17956,7 +18019,7 @@
             "side": 1,
             "type": "cav",
             "subtype": "light",
-            "size": 157,
+            "size": 147,
             "initial_size": 300,
             "stats": "5/1/0/1",
             "initial_stats": "5/5/0/1",
@@ -17966,12 +18029,12 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.0009330581205650435,
-              "lost": 152,
+              "shock": 0.001069180597380116,
+              "lost": 159,
               "broken": true,
               "break_scale": 1.3900374229227568
             },
-            "losses": 152,
+            "losses": 159,
             "inflicted": 18,
             "captured": 20,
             "guns_lost": 0,
@@ -17983,7 +18046,7 @@
             "side": 1,
             "type": "art",
             "subtype": "battery",
-            "size": 26,
+            "size": 42,
             "initial_size": 72,
             "stats": "5/1/0/0",
             "initial_stats": "5/5/0/0",
@@ -17993,17 +18056,17 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.03263582691587139,
-              "lost": 43,
+              "shock": 0.05515255293616134,
+              "lost": 24,
               "broken": true,
               "break_scale": 1.424111936742242
             },
-            "losses": 43,
-            "inflicted": 67,
+            "losses": 24,
+            "inflicted": 69,
             "captured": 11,
-            "guns_lost": 3,
+            "guns_lost": 8,
             "meta": {},
-            "guns": 5
+            "guns": 0
           },
           {
             "id": "x_irr",
@@ -18011,7 +18074,7 @@
             "side": 1,
             "type": "inf",
             "subtype": "irregulars",
-            "size": 349,
+            "size": 336,
             "initial_size": 500,
             "stats": "2/1/-1/0",
             "initial_stats": "2/3/-1/0",
@@ -18021,14 +18084,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.0003214738927116115,
-              "lost": 75,
+              "shock": 0.00036497451558568564,
+              "lost": 74,
               "broken": true,
               "break_scale": 1.076762663685134
             },
-            "losses": 75,
-            "inflicted": 45,
-            "captured": 91,
+            "losses": 74,
+            "inflicted": 38,
+            "captured": 106,
             "guns_lost": 0,
             "meta": {}
           }
@@ -18094,7 +18157,7 @@
                 "attacker": "x_bat",
                 "target": "a_heavy",
                 "mode": "ranged",
-                "rate": 1.3470276923076923
+                "rate": 1.549081846153846
               },
               {
                 "attacker": "x_irr",
@@ -18106,7 +18169,7 @@
                 "attacker": "a_line",
                 "target": "x_line",
                 "mode": "ranged",
-                "rate": 1.8193846153846154
+                "rate": 1.4555076923076924
               },
               {
                 "attacker": "a_drag",
@@ -18117,20 +18180,20 @@
             ],
             "units": {
               "a_line": {
-                "losses": 35,
-                "inflicted": 70,
-                "size": 865,
-                "morale": 53.1530020685325,
+                "losses": 36,
+                "inflicted": 57,
+                "size": 864,
+                "morale": 52.49201493805337,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 81,
-                "inflicted": 44,
-                "size": 319,
-                "morale": 46.125675049493246,
+                "losses": 93,
+                "inflicted": 41,
+                "size": 307,
+                "morale": 41.108666426253045,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18138,9 +18201,9 @@
               },
               "a_drag": {
                 "losses": 0,
-                "inflicted": 1,
+                "inflicted": 3,
                 "size": 350,
-                "morale": 48.47222222222225,
+                "morale": 49.11984587442188,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18157,10 +18220,10 @@
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 70,
-                "inflicted": 35,
-                "size": 730,
-                "morale": 30.115992760178223,
+                "losses": 57,
+                "inflicted": 36,
+                "size": 743,
+                "morale": 34.03044497051156,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18172,25 +18235,25 @@
                 "size": 179,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 38.930726709723956,
+                "broke_at": 39.01520551022259,
                 "captured": 20,
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 1,
-                "inflicted": 56,
-                "size": 71,
-                "morale": 49.67489741894579,
+                "losses": 3,
+                "inflicted": 66,
+                "size": 69,
+                "morale": 48.01651556473348,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_irr": {
-                "losses": 44,
-                "inflicted": 25,
-                "size": 456,
-                "morale": 16.40724379581919,
+                "losses": 41,
+                "inflicted": 27,
+                "size": 459,
+                "morale": 12.099975376474548,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18213,9 +18276,9 @@
                 "start": 0.0,
                 "resolved_at": 2.0,
                 "outcome": "home",
-                "p_defender_breaks": 0.6474784159801039,
-                "p_falter": 0.02639133751883002,
-                "p_home": 0.32613024650106603
+                "p_defender_breaks": 0.6360958068398063,
+                "p_falter": 0.027693898275384356,
+                "p_home": 0.33621029488480936
               },
               {
                 "charger": "a_pikes",
@@ -18230,7 +18293,32 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {
+              "a_line": {
+                "fire": -0.2,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": "uphill"
+              },
+              "x_light": {
+                "fire": 0.0,
+                "melee": 0.3,
+                "morale": 0.0,
+                "note": ""
+              },
+              "x_bat": {
+                "fire": 0.15,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": ""
+              },
+              "x_irr": {
+                "fire": 0.0,
+                "melee": 0.0,
+                "morale": -0.4,
+                "note": "surprised"
+              }
+            }
           },
           {
             "round": 2,
@@ -18291,7 +18379,7 @@
                 "attacker": "x_irr",
                 "target": "a_drag",
                 "mode": "ranged",
-                "rate": 0.2581100307692308
+                "rate": 0.25052926153846156
               },
               {
                 "attacker": "a_pikes",
@@ -18308,30 +18396,30 @@
             ],
             "units": {
               "a_line": {
-                "losses": 83,
-                "inflicted": 96,
-                "size": 782,
-                "morale": 35.13830624399304,
+                "losses": 41,
+                "inflicted": 105,
+                "size": 823,
+                "morale": 45.41547440819096,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 11,
-                "inflicted": 33,
-                "size": 308,
-                "morale": 53.10093579336104,
+                "losses": 3,
+                "inflicted": 0,
+                "size": 304,
+                "morale": 40.21080844563426,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_drag": {
-                "losses": 18,
-                "inflicted": 31,
-                "size": 332,
-                "morale": 40.034161229256426,
+                "losses": 10,
+                "inflicted": 33,
+                "size": 340,
+                "morale": 44.239457918245584,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18339,28 +18427,28 @@
               },
               "a_pikes": {
                 "losses": 0,
-                "inflicted": 51,
+                "inflicted": 58,
                 "size": 582,
-                "morale": 59.91826704536653,
+                "morale": 59.94060307983729,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 96,
-                "inflicted": 83,
-                "size": 586,
+                "losses": 105,
+                "inflicted": 41,
+                "size": 580,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 99.11022459940996,
-                "captured": 48,
+                "broke_at": 91.55536071364254,
+                "captured": 58,
                 "guns_lost": 0
               },
               "x_light": {
-                "losses": 51,
+                "losses": 58,
                 "inflicted": 0,
-                "size": 128,
+                "size": 121,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -18368,20 +18456,20 @@
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 33,
-                "inflicted": 11,
-                "size": 27,
+                "losses": 0,
+                "inflicted": 3,
+                "size": 58,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 80.5366092257315,
+                "broke_at": 47.0,
                 "captured": 11,
-                "guns_lost": 3
+                "guns_lost": 8
               },
               "x_irr": {
-                "losses": 31,
-                "inflicted": 18,
-                "size": 425,
-                "morale": 5.465507218276054,
+                "losses": 33,
+                "inflicted": 10,
+                "size": 426,
+                "morale": 0.27795676651724677,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18390,11 +18478,11 @@
             },
             "events": [],
             "prisoners": {
-              "0": 59,
+              "0": 69,
               "1": 0
             },
             "guns_captured": {
-              "0": 3,
+              "0": 8,
               "1": 0
             },
             "charges": [
@@ -18413,10 +18501,10 @@
                 "target": "x_bat",
                 "start": 45.0,
                 "resolved_at": 47.0,
-                "outcome": "home",
-                "p_defender_breaks": 0.7515697415336552,
-                "p_falter": 0.0161905920406538,
-                "p_home": 0.23223966642569102
+                "outcome": "defender_broke",
+                "p_defender_breaks": 0.7926336122606691,
+                "p_falter": 0.012857668014527698,
+                "p_home": 0.19450871972480321
               },
               {
                 "charger": "a_line",
@@ -18431,7 +18519,20 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {
+              "a_heavy": {
+                "fire": 0.0,
+                "melee": 0.25,
+                "morale": 0.5,
+                "note": ""
+              },
+              "x_line": {
+                "fire": -0.1,
+                "melee": -0.3,
+                "morale": 0.0,
+                "note": ""
+              }
+            }
           },
           {
             "round": 3,
@@ -18462,37 +18563,37 @@
                 "attacker": "x_irr",
                 "target": "a_heavy",
                 "mode": "closing",
-                "rate": 0.6959146153846154
+                "rate": 0.6975520615384616
               },
               {
                 "attacker": "a_line",
                 "target": "x_line",
                 "mode": "melee",
-                "rate": 1.4064811384615383
+                "rate": 1.428714
               },
               {
                 "attacker": "a_drag",
                 "target": "x_bat",
                 "mode": "melee",
-                "rate": 0.15786775384615387
+                "rate": 0.3391233230769231
               }
             ],
             "units": {
               "a_line": {
                 "losses": 0,
-                "inflicted": 109,
-                "size": 782,
-                "morale": 34.725806243992935,
+                "inflicted": 125,
+                "size": 823,
+                "morale": 45.602974408190846,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 2,
+                "losses": 1,
                 "inflicted": 0,
-                "size": 306,
-                "morale": 52.14790813209943,
+                "size": 303,
+                "morale": 39.6756276102443,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18500,9 +18601,9 @@
               },
               "a_drag": {
                 "losses": 0,
-                "inflicted": 9,
-                "size": 332,
-                "morale": 39.4091612292564,
+                "inflicted": 21,
+                "size": 340,
+                "morale": 47.78112458491221,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -18512,16 +18613,16 @@
                 "losses": 0,
                 "inflicted": 0,
                 "size": 582,
-                "morale": 59.91826704536653,
+                "morale": 59.94060307983729,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 109,
+                "losses": 125,
                 "inflicted": 0,
-                "size": 477,
+                "size": 455,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -18531,7 +18632,7 @@
               "x_light": {
                 "losses": 0,
                 "inflicted": 0,
-                "size": 128,
+                "size": 121,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -18539,9 +18640,9 @@
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 9,
+                "losses": 21,
                 "inflicted": 0,
-                "size": 18,
+                "size": 37,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -18550,18 +18651,18 @@
               },
               "x_irr": {
                 "losses": 0,
-                "inflicted": 2,
-                "size": 334,
+                "inflicted": 1,
+                "size": 320,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": 107.0,
-                "captured": 91,
+                "captured": 106,
                 "guns_lost": 0
               }
             },
             "events": [],
             "prisoners": {
-              "0": 91,
+              "0": 106,
               "1": 0
             },
             "guns_captured": {
@@ -18595,9 +18696,9 @@
                 "start": 105.0,
                 "resolved_at": 107.0,
                 "outcome": "defender_broke",
-                "p_defender_breaks": 0.8804781859262444,
-                "p_falter": 0.006713049654755065,
-                "p_home": 0.11280876441900055
+                "p_defender_breaks": 0.8425696918584366,
+                "p_falter": 0.009216748213157972,
+                "p_home": 0.14821355992840549
               }
             ],
             "retargets": [],
@@ -18609,100 +18710,100 @@
           "field_held_by": 0,
           "units": {
             "a_line": {
-              "hits": 118,
-              "killed": 24,
-              "wounded": 94,
+              "hits": 77,
+              "killed": 16,
+              "wounded": 61,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 43,
+              "wounded_returned": 22,
               "captured_in_rout": 0,
-              "final_size": 825,
+              "final_size": 845,
               "guns_lost": 0
             },
             "a_heavy": {
-              "hits": 94,
-              "killed": 17,
-              "wounded": 77,
+              "hits": 97,
+              "killed": 26,
+              "wounded": 71,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 32,
+              "wounded_returned": 26,
               "captured_in_rout": 0,
-              "final_size": 338,
+              "final_size": 329,
               "guns_lost": 0
             },
             "a_drag": {
-              "hits": 18,
-              "killed": 4,
-              "wounded": 14,
+              "hits": 10,
+              "killed": 2,
+              "wounded": 8,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 5,
+              "wounded_returned": 3,
               "captured_in_rout": 0,
-              "final_size": 337,
+              "final_size": 343,
               "guns_lost": 0
             },
             "a_pikes": {
               "hits": 18,
-              "killed": 3,
-              "wounded": 15,
+              "killed": 5,
+              "wounded": 13,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 5,
+              "wounded_returned": 6,
               "captured_in_rout": 0,
-              "final_size": 587,
+              "final_size": 588,
               "guns_lost": 0
             },
             "x_line": {
-              "hits": 275,
-              "killed": 72,
-              "wounded": 203,
-              "walking_wounded": 79,
-              "wounded_captured": 62,
+              "hits": 287,
+              "killed": 74,
+              "wounded": 213,
+              "walking_wounded": 81,
+              "wounded_captured": 77,
               "wounded_returned": 53,
-              "captured_in_rout": 48,
-              "final_size": 530,
+              "captured_in_rout": 58,
+              "final_size": 508,
               "guns_lost": 0
             },
             "x_light": {
-              "hits": 152,
-              "killed": 40,
-              "wounded": 112,
-              "walking_wounded": 39,
-              "wounded_captured": 39,
-              "wounded_returned": 29,
+              "hits": 159,
+              "killed": 41,
+              "wounded": 118,
+              "walking_wounded": 37,
+              "wounded_captured": 50,
+              "wounded_returned": 26,
               "captured_in_rout": 20,
-              "final_size": 157,
+              "final_size": 147,
               "guns_lost": 0
             },
             "x_bat": {
-              "hits": 43,
-              "killed": 11,
-              "wounded": 32,
-              "walking_wounded": 10,
-              "wounded_captured": 15,
-              "wounded_returned": 8,
+              "hits": 24,
+              "killed": 4,
+              "wounded": 20,
+              "walking_wounded": 7,
+              "wounded_captured": 10,
+              "wounded_returned": 5,
               "captured_in_rout": 11,
-              "final_size": 26,
-              "guns_lost": 3
+              "final_size": 42,
+              "guns_lost": 8
             },
             "x_irr": {
-              "hits": 75,
-              "killed": 17,
-              "wounded": 58,
-              "walking_wounded": 20,
-              "wounded_captured": 20,
-              "wounded_returned": 15,
-              "captured_in_rout": 91,
-              "final_size": 349,
+              "hits": 74,
+              "killed": 19,
+              "wounded": 55,
+              "walking_wounded": 27,
+              "wounded_captured": 16,
+              "wounded_returned": 16,
+              "captured_in_rout": 106,
+              "final_size": 336,
               "guns_lost": 0
             }
           },
           "prisoners": {
-            "0": 306,
+            "0": 348,
             "1": 0
           },
           "guns_captured": {
-            "0": 3,
+            "0": 8,
             "1": 0
           },
           "field_decided_by": "army_out",
@@ -19173,7 +19274,23 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {
+            "a_line": {
+              "fire": -0.2,
+              "note": "uphill"
+            },
+            "x_light": {
+              "melee": 0.3
+            },
+            "x_bat": {
+              "fire": 0.15
+            },
+            "x_irr": {
+              "morale": -0.4,
+              "note": "surprised"
+            }
+          }
         },
         {
           "duration": 60,
@@ -19210,7 +19327,17 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {
+            "a_heavy": {
+              "melee": 0.25,
+              "morale": 0.5
+            },
+            "x_line": {
+              "fire": -0.1,
+              "melee": -0.3
+            }
+          }
         },
         {
           "duration": 90,
@@ -19229,7 +19356,8 @@
               "mode": "melee"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -19240,10 +19368,10 @@
         "meta": {},
         "seed": 2,
         "rng_state": [
-          664850080,
-          14130092,
-          1234475779,
-          2125352859
+          2770268453,
+          3564560006,
+          3966056931,
+          2156046028
         ],
         "params": {
           "combat": {
@@ -19426,11 +19554,11 @@
         "round": 3,
         "finished": true,
         "prisoners": {
-          "0": 327,
+          "0": 368,
           "1": 0
         },
         "guns_captured": {
-          "0": 2,
+          "0": 8,
           "1": 0
         },
         "units": [
@@ -19440,23 +19568,23 @@
             "side": 0,
             "type": "inf",
             "subtype": "line",
-            "size": 830,
+            "size": 831,
             "initial_size": 900,
             "stats": "6/5/1/0",
             "initial_stats": "6/6/1/0",
             "front_size": 900,
-            "raw_morale": 51.67352606803458,
+            "raw_morale": 53.20723362340028,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.8612254344672431,
-              "shock": 0.0004501434973384157,
-              "lost": 118,
+              "resolve": 0.8867872270566713,
+              "shock": 0.0004043805262941916,
+              "lost": 100,
               "broken": false,
               "break_scale": 1.682797947426395
             },
-            "losses": 118,
-            "inflicted": 297,
+            "losses": 100,
+            "inflicted": 295,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -19467,23 +19595,23 @@
             "side": 0,
             "type": "cav",
             "subtype": "heavy",
-            "size": 312,
+            "size": 309,
             "initial_size": 400,
-            "stats": "7/2/0/1",
+            "stats": "7/1/0/1",
             "initial_stats": "7/7/0/1",
             "front_size": 400,
-            "raw_morale": 17.279148090555232,
+            "raw_morale": 5.063213125167588,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.24684497272221761,
-              "shock": 0.005602532936655451,
-              "lost": 128,
+              "resolve": 0.07233161607382269,
+              "shock": 0.0037409244413320274,
+              "lost": 132,
               "broken": false,
               "break_scale": 0.906125969742664
             },
-            "losses": 128,
-            "inflicted": 118,
+            "losses": 132,
+            "inflicted": 80,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -19494,23 +19622,23 @@
             "side": 0,
             "type": "cav",
             "subtype": "dragoons",
-            "size": 340,
+            "size": 342,
             "initial_size": 350,
-            "stats": "5/4/1/0",
+            "stats": "5/5/1/0",
             "initial_stats": "5/5/1/0",
             "front_size": 350,
-            "raw_morale": 40.49018387989962,
+            "raw_morale": 47.129233015435155,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.8098036775979924,
-              "shock": 0.0001491501084740881,
-              "lost": 15,
+              "resolve": 0.942584660308703,
+              "shock": 0.00016209539524788974,
+              "lost": 13,
               "broken": false,
               "break_scale": 0.9532504313308675
             },
-            "losses": 15,
-            "inflicted": 42,
+            "losses": 13,
+            "inflicted": 54,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -19521,23 +19649,23 @@
             "side": 0,
             "type": "inf",
             "subtype": "pikes",
-            "size": 593,
+            "size": 591,
             "initial_size": 600,
             "stats": "5/6/-2/1",
             "initial_stats": "5/6/-2/1",
             "front_size": 600,
-            "raw_morale": 59.966815200930064,
+            "raw_morale": 59.900682662895946,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9994469200155011,
-              "shock": 3.6971911579314825e-06,
-              "lost": 11,
+              "resolve": 0.9983447110482657,
+              "shock": 5.351485117445293e-06,
+              "lost": 14,
               "broken": false,
               "break_scale": 0.8767831588762557
             },
-            "losses": 11,
-            "inflicted": 125,
+            "losses": 14,
+            "inflicted": 123,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -19548,7 +19676,7 @@
             "side": 1,
             "type": "inf",
             "subtype": "line",
-            "size": 513,
+            "size": 515,
             "initial_size": 800,
             "stats": "4/1/0/0",
             "initial_stats": "4/5/0/0",
@@ -19558,14 +19686,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.028317102161504615,
-              "lost": 297,
+              "shock": 0.03202441226082158,
+              "lost": 295,
               "broken": true,
               "break_scale": 0.9410215060486755
             },
-            "losses": 297,
-            "inflicted": 118,
-            "captured": 64,
+            "losses": 295,
+            "inflicted": 100,
+            "captured": 60,
             "guns_lost": 0,
             "meta": {}
           },
@@ -19585,14 +19713,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.0011771558050291612,
-              "lost": 125,
+              "shock": 0.0010800478673329626,
+              "lost": 123,
               "broken": true,
               "break_scale": 0.722798092384682
             },
-            "losses": 125,
-            "inflicted": 11,
-            "captured": 30,
+            "losses": 123,
+            "inflicted": 14,
+            "captured": 25,
             "guns_lost": 0,
             "meta": {}
           },
@@ -19602,7 +19730,7 @@
             "side": 1,
             "type": "art",
             "subtype": "battery",
-            "size": 28,
+            "size": 39,
             "initial_size": 72,
             "stats": "5/1/0/0",
             "initial_stats": "5/5/0/0",
@@ -19612,17 +19740,17 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.014535186045839595,
-              "lost": 41,
+              "shock": 0.06447895682866672,
+              "lost": 28,
               "broken": true,
               "break_scale": 0.9843565538332364
             },
-            "losses": 41,
-            "inflicted": 73,
-            "captured": 10,
-            "guns_lost": 2,
+            "losses": 28,
+            "inflicted": 82,
+            "captured": 11,
+            "guns_lost": 8,
             "meta": {},
-            "guns": 6
+            "guns": 0
           },
           {
             "id": "x_irr",
@@ -19630,7 +19758,7 @@
             "side": 1,
             "type": "inf",
             "subtype": "irregulars",
-            "size": 331,
+            "size": 315,
             "initial_size": 500,
             "stats": "2/1/-1/0",
             "initial_stats": "2/3/-1/0",
@@ -19640,14 +19768,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.010769669437512229,
-              "lost": 119,
+              "shock": 0.005599904810552808,
+              "lost": 106,
               "broken": true,
               "break_scale": 1.4242489712566622
             },
-            "losses": 119,
-            "inflicted": 70,
-            "captured": 66,
+            "losses": 106,
+            "inflicted": 63,
+            "captured": 96,
             "guns_lost": 0,
             "meta": {}
           }
@@ -19713,7 +19841,7 @@
                 "attacker": "x_bat",
                 "target": "a_heavy",
                 "mode": "ranged",
-                "rate": 1.3470276923076923
+                "rate": 1.549081846153846
               },
               {
                 "attacker": "x_irr",
@@ -19725,7 +19853,7 @@
                 "attacker": "a_line",
                 "target": "x_line",
                 "mode": "ranged",
-                "rate": 1.8193846153846154
+                "rate": 1.4555076923076924
               },
               {
                 "attacker": "a_drag",
@@ -19737,19 +19865,19 @@
             "units": {
               "a_line": {
                 "losses": 33,
-                "inflicted": 81,
+                "inflicted": 67,
                 "size": 867,
-                "morale": 58.18876639671505,
+                "morale": 57.662364427225356,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 94,
-                "inflicted": 36,
-                "size": 306,
-                "morale": 24.666079619332756,
+                "losses": 103,
+                "inflicted": 35,
+                "size": 297,
+                "morale": 18.901903089509187,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -19757,29 +19885,29 @@
               },
               "a_drag": {
                 "losses": 0,
-                "inflicted": 3,
+                "inflicted": 4,
                 "size": 350,
-                "morale": 49.00107525526957,
+                "morale": 49.1628308186257,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_pikes": {
-                "losses": 11,
+                "losses": 14,
                 "inflicted": 57,
-                "size": 589,
-                "morale": 60.0,
+                "size": 586,
+                "morale": 59.76381932856326,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 81,
+                "losses": 67,
                 "inflicted": 33,
-                "size": 719,
-                "morale": 30.321184829458936,
+                "size": 733,
+                "morale": 33.95594562876792,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -19787,29 +19915,29 @@
               },
               "x_light": {
                 "losses": 57,
-                "inflicted": 11,
-                "size": 213,
+                "inflicted": 14,
+                "size": 218,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 24.759337238004793,
-                "captured": 30,
+                "broke_at": 24.797012777279313,
+                "captured": 25,
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 3,
-                "inflicted": 66,
-                "size": 69,
-                "morale": 45.62642791332951,
+                "losses": 4,
+                "inflicted": 78,
+                "size": 68,
+                "morale": 44.17238191927376,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_irr": {
-                "losses": 36,
-                "inflicted": 28,
-                "size": 464,
-                "morale": 22.0599416898577,
+                "losses": 35,
+                "inflicted": 25,
+                "size": 465,
+                "morale": 18.696781835089595,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -19818,7 +19946,7 @@
             },
             "events": [],
             "prisoners": {
-              "0": 30,
+              "0": 25,
               "1": 0
             },
             "guns_captured": {
@@ -19832,9 +19960,9 @@
                 "start": 0.0,
                 "resolved_at": 2.0,
                 "outcome": "home",
-                "p_defender_breaks": 0.6223189422815598,
-                "p_falter": 0.029329231846376237,
-                "p_home": 0.3483518258720639
+                "p_defender_breaks": 0.6065769066297587,
+                "p_falter": 0.031281538709269655,
+                "p_home": 0.36214155466097164
               },
               {
                 "charger": "a_pikes",
@@ -19849,7 +19977,32 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {
+              "a_line": {
+                "fire": -0.2,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": "uphill"
+              },
+              "x_light": {
+                "fire": 0.0,
+                "melee": 0.3,
+                "morale": 0.0,
+                "note": ""
+              },
+              "x_bat": {
+                "fire": 0.15,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": ""
+              },
+              "x_irr": {
+                "fire": 0.0,
+                "melee": 0.0,
+                "morale": -0.4,
+                "note": "surprised"
+              }
+            }
           },
           {
             "round": 2,
@@ -19904,19 +20057,19 @@
                 "attacker": "x_bat",
                 "target": "a_heavy",
                 "mode": "closing",
-                "rate": 4.041083076923076
+                "rate": 3.931864615384615
               },
               {
                 "attacker": "x_irr",
                 "target": "a_drag",
                 "mode": "ranged",
-                "rate": 0.26263827692307695
+                "rate": 0.2632043076923077
               },
               {
                 "attacker": "a_pikes",
                 "target": "x_light",
                 "mode": "melee",
-                "rate": 1.4606556923076923
+                "rate": 1.4949433846153846
               },
               {
                 "attacker": "a_drag",
@@ -19927,30 +20080,30 @@
             ],
             "units": {
               "a_line": {
-                "losses": 85,
-                "inflicted": 111,
-                "size": 782,
-                "morale": 52.23602606803472,
+                "losses": 67,
+                "inflicted": 123,
+                "size": 800,
+                "morale": 53.76973362340034,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 7,
-                "inflicted": 31,
-                "size": 299,
-                "morale": 30.19562500548247,
+                "losses": 4,
+                "inflicted": 0,
+                "size": 293,
+                "morale": 17.058279547365878,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_drag": {
-                "losses": 15,
-                "inflicted": 32,
-                "size": 335,
-                "morale": 41.80962832434412,
+                "losses": 13,
+                "inflicted": 26,
+                "size": 337,
+                "morale": 42.545899682101826,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -19958,28 +20111,28 @@
               },
               "a_pikes": {
                 "losses": 0,
-                "inflicted": 68,
-                "size": 589,
-                "morale": 59.966815200930064,
+                "inflicted": 66,
+                "size": 586,
+                "morale": 59.900682662895946,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 111,
-                "inflicted": 85,
-                "size": 544,
+                "losses": 123,
+                "inflicted": 67,
+                "size": 550,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 98.4431402451164,
-                "captured": 64,
+                "broke_at": 102.89962449781738,
+                "captured": 60,
                 "guns_lost": 0
               },
               "x_light": {
-                "losses": 68,
+                "losses": 66,
                 "inflicted": 0,
-                "size": 145,
+                "size": 152,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -19987,20 +20140,20 @@
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 31,
-                "inflicted": 7,
-                "size": 28,
+                "losses": 0,
+                "inflicted": 4,
+                "size": 57,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 59.34246595161161,
-                "captured": 10,
-                "guns_lost": 2
+                "broke_at": 47.0,
+                "captured": 11,
+                "guns_lost": 8
               },
               "x_irr": {
-                "losses": 32,
-                "inflicted": 15,
-                "size": 432,
-                "morale": 13.66928507860569,
+                "losses": 26,
+                "inflicted": 13,
+                "size": 439,
+                "morale": 11.745714519699636,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -20009,11 +20162,11 @@
             },
             "events": [],
             "prisoners": {
-              "0": 74,
+              "0": 71,
               "1": 0
             },
             "guns_captured": {
-              "0": 2,
+              "0": 8,
               "1": 0
             },
             "charges": [
@@ -20032,10 +20185,10 @@
                 "target": "x_bat",
                 "start": 45.0,
                 "resolved_at": 47.0,
-                "outcome": "home",
-                "p_defender_breaks": 0.543932033102695,
-                "p_falter": 0.040071922848877964,
-                "p_home": 0.41599604404842705
+                "outcome": "defender_broke",
+                "p_defender_breaks": 0.5594247439977396,
+                "p_falter": 0.037730428516905744,
+                "p_home": 0.4028448274853547
               },
               {
                 "charger": "a_line",
@@ -20050,7 +20203,20 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {
+              "a_heavy": {
+                "fire": 0.0,
+                "melee": 0.25,
+                "morale": 0.5,
+                "note": ""
+              },
+              "x_line": {
+                "fire": -0.1,
+                "melee": -0.3,
+                "morale": 0.0,
+                "note": ""
+              }
+            }
           },
           {
             "round": 3,
@@ -20081,37 +20247,37 @@
                 "attacker": "x_irr",
                 "target": "a_heavy",
                 "mode": "closing",
-                "rate": 0.7073767384615386
+                "rate": 0.7188388615384617
               },
               {
                 "attacker": "a_line",
                 "target": "x_line",
                 "mode": "melee",
-                "rate": 1.3400352
+                "rate": 1.3548149999999999
               },
               {
                 "attacker": "a_drag",
                 "target": "x_bat",
                 "mode": "melee",
-                "rate": 0.1637147076923077
+                "rate": 0.33327636923076925
               }
             ],
             "units": {
               "a_line": {
                 "losses": 0,
                 "inflicted": 105,
-                "size": 782,
-                "morale": 51.67352606803458,
+                "size": 800,
+                "morale": 53.20723362340028,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 27,
-                "inflicted": 51,
-                "size": 272,
-                "morale": 17.279148090555232,
+                "losses": 25,
+                "inflicted": 45,
+                "size": 268,
+                "morale": 5.063213125167588,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -20119,9 +20285,9 @@
               },
               "a_drag": {
                 "losses": 0,
-                "inflicted": 7,
-                "size": 335,
-                "morale": 40.49018387989962,
+                "inflicted": 24,
+                "size": 337,
+                "morale": 47.129233015435155,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -20130,8 +20296,8 @@
               "a_pikes": {
                 "losses": 0,
                 "inflicted": 0,
-                "size": 589,
-                "morale": 59.966815200930064,
+                "size": 586,
+                "morale": 59.900682662895946,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -20140,7 +20306,7 @@
               "x_line": {
                 "losses": 105,
                 "inflicted": 0,
-                "size": 439,
+                "size": 445,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -20150,7 +20316,7 @@
               "x_light": {
                 "losses": 0,
                 "inflicted": 0,
-                "size": 145,
+                "size": 152,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -20158,9 +20324,9 @@
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 7,
+                "losses": 24,
                 "inflicted": 0,
-                "size": 21,
+                "size": 33,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -20168,19 +20334,19 @@
                 "guns_lost": 0
               },
               "x_irr": {
-                "losses": 51,
-                "inflicted": 27,
-                "size": 315,
+                "losses": 45,
+                "inflicted": 25,
+                "size": 298,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 168.12128386309072,
-                "captured": 66,
+                "broke_at": 158.02662770490358,
+                "captured": 96,
                 "guns_lost": 0
               }
             },
             "events": [],
             "prisoners": {
-              "0": 66,
+              "0": 96,
               "1": 0
             },
             "guns_captured": {
@@ -20214,9 +20380,9 @@
                 "start": 105.0,
                 "resolved_at": 107.0,
                 "outcome": "home",
-                "p_defender_breaks": 0.3553023196795715,
-                "p_falter": 0.08285393268269474,
-                "p_home": 0.5618437476377338
+                "p_defender_breaks": 0.19880203400297974,
+                "p_falter": 0.16711665894909347,
+                "p_home": 0.6340813070479269
               }
             ],
             "retargets": [],
@@ -20228,100 +20394,100 @@
           "field_held_by": 0,
           "units": {
             "a_line": {
-              "hits": 118,
-              "killed": 21,
-              "wounded": 97,
+              "hits": 100,
+              "killed": 17,
+              "wounded": 83,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 48,
+              "wounded_returned": 31,
               "captured_in_rout": 0,
-              "final_size": 830,
+              "final_size": 831,
               "guns_lost": 0
             },
             "a_heavy": {
-              "hits": 128,
-              "killed": 31,
-              "wounded": 97,
+              "hits": 132,
+              "killed": 27,
+              "wounded": 105,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 40,
+              "wounded_returned": 41,
               "captured_in_rout": 0,
-              "final_size": 312,
+              "final_size": 309,
               "guns_lost": 0
             },
             "a_drag": {
-              "hits": 15,
-              "killed": 4,
+              "hits": 13,
+              "killed": 3,
+              "wounded": 10,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 5,
+              "captured_in_rout": 0,
+              "final_size": 342,
+              "guns_lost": 0
+            },
+            "a_pikes": {
+              "hits": 14,
+              "killed": 3,
               "wounded": 11,
               "walking_wounded": 0,
               "wounded_captured": 0,
               "wounded_returned": 5,
               "captured_in_rout": 0,
-              "final_size": 340,
-              "guns_lost": 0
-            },
-            "a_pikes": {
-              "hits": 11,
-              "killed": 2,
-              "wounded": 9,
-              "walking_wounded": 0,
-              "wounded_captured": 0,
-              "wounded_returned": 4,
-              "captured_in_rout": 0,
-              "final_size": 593,
+              "final_size": 591,
               "guns_lost": 0
             },
             "x_line": {
-              "hits": 297,
-              "killed": 63,
-              "wounded": 234,
-              "walking_wounded": 92,
-              "wounded_captured": 66,
-              "wounded_returned": 74,
-              "captured_in_rout": 64,
-              "final_size": 513,
+              "hits": 295,
+              "killed": 67,
+              "wounded": 228,
+              "walking_wounded": 96,
+              "wounded_captured": 85,
+              "wounded_returned": 70,
+              "captured_in_rout": 60,
+              "final_size": 515,
               "guns_lost": 0
             },
             "x_light": {
-              "hits": 125,
-              "killed": 22,
-              "wounded": 103,
-              "walking_wounded": 47,
-              "wounded_captured": 39,
-              "wounded_returned": 26,
-              "captured_in_rout": 30,
+              "hits": 123,
+              "killed": 25,
+              "wounded": 98,
+              "walking_wounded": 39,
+              "wounded_captured": 44,
+              "wounded_returned": 19,
+              "captured_in_rout": 25,
               "final_size": 171,
               "guns_lost": 0
             },
             "x_bat": {
-              "hits": 41,
-              "killed": 11,
-              "wounded": 30,
-              "walking_wounded": 12,
+              "hits": 28,
+              "killed": 5,
+              "wounded": 23,
+              "walking_wounded": 7,
               "wounded_captured": 11,
-              "wounded_returned": 7,
-              "captured_in_rout": 10,
-              "final_size": 28,
-              "guns_lost": 2
+              "wounded_returned": 6,
+              "captured_in_rout": 11,
+              "final_size": 39,
+              "guns_lost": 8
             },
             "x_irr": {
-              "hits": 119,
-              "killed": 28,
-              "wounded": 91,
-              "walking_wounded": 31,
-              "wounded_captured": 41,
-              "wounded_returned": 16,
-              "captured_in_rout": 66,
-              "final_size": 331,
+              "hits": 106,
+              "killed": 29,
+              "wounded": 77,
+              "walking_wounded": 27,
+              "wounded_captured": 36,
+              "wounded_returned": 17,
+              "captured_in_rout": 96,
+              "final_size": 315,
               "guns_lost": 0
             }
           },
           "prisoners": {
-            "0": 327,
+            "0": 368,
             "1": 0
           },
           "guns_captured": {
-            "0": 2,
+            "0": 8,
             "1": 0
           },
           "field_decided_by": "army_out",
@@ -20792,7 +20958,23 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {
+            "a_line": {
+              "fire": -0.2,
+              "note": "uphill"
+            },
+            "x_light": {
+              "melee": 0.3
+            },
+            "x_bat": {
+              "fire": 0.15
+            },
+            "x_irr": {
+              "morale": -0.4,
+              "note": "surprised"
+            }
+          }
         },
         {
           "duration": 60,
@@ -20825,7 +21007,17 @@
               "ammo": "shell"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {
+            "a_heavy": {
+              "melee": 0.25,
+              "morale": 0.5
+            },
+            "x_line": {
+              "fire": -0.1,
+              "melee": -0.3
+            }
+          }
         },
         {
           "duration": 90,
@@ -20849,7 +21041,8 @@
               "on_break": "weakest"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -20860,10 +21053,10 @@
         "meta": {},
         "seed": 3,
         "rng_state": [
-          2152346047,
-          1454600294,
-          1517573620,
-          3859850650
+          3037607877,
+          2211691964,
+          364156304,
+          340361328
         ],
         "params": {
           "combat": {
@@ -21046,7 +21239,7 @@
         "round": 3,
         "finished": true,
         "prisoners": {
-          "0": 364,
+          "0": 393,
           "1": 0
         },
         "guns_captured": {
@@ -21060,22 +21253,22 @@
             "side": 0,
             "type": "inf",
             "subtype": "line",
-            "size": 783,
+            "size": 795,
             "initial_size": 900,
-            "stats": "6/3/1/0",
+            "stats": "6/4/1/0",
             "initial_stats": "6/6/1/0",
             "front_size": 900,
-            "raw_morale": 29.070146329501178,
+            "raw_morale": 38.7212354755089,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.48450243882501964,
-              "shock": 0.0024379697503172787,
-              "lost": 184,
+              "resolve": 0.645353924591815,
+              "shock": 0.0018505677494812195,
+              "lost": 138,
               "broken": false,
               "break_scale": 0.9714524218042124
             },
-            "losses": 184,
+            "losses": 138,
             "inflicted": 308,
             "captured": 0,
             "guns_lost": 0,
@@ -21087,23 +21280,23 @@
             "side": 0,
             "type": "cav",
             "subtype": "heavy",
-            "size": 352,
+            "size": 340,
             "initial_size": 400,
             "stats": "7/4/0/1",
             "initial_stats": "7/7/0/1",
             "front_size": 400,
-            "raw_morale": 43.854086132134846,
+            "raw_morale": 42.345637945830596,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.6264869447447835,
-              "shock": 8.04762316431083e-05,
-              "lost": 64,
+              "resolve": 0.6049376849404371,
+              "shock": 9.804782651027308e-05,
+              "lost": 78,
               "broken": false,
               "break_scale": 0.9789357744694057
             },
-            "losses": 64,
-            "inflicted": 99,
+            "losses": 78,
+            "inflicted": 98,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -21116,14 +21309,14 @@
             "subtype": "dragoons",
             "size": 350,
             "initial_size": 350,
-            "stats": "5/5/1/0",
+            "stats": "5/4/1/0",
             "initial_stats": "5/5/1/0",
             "front_size": 350,
-            "raw_morale": 45.25277777777779,
+            "raw_morale": 44.95555555555556,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9050555555555557,
+              "resolve": 0.8991111111111113,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
@@ -21141,23 +21334,23 @@
             "side": 0,
             "type": "inf",
             "subtype": "pikes",
-            "size": 588,
+            "size": 587,
             "initial_size": 600,
             "stats": "5/6/-2/1",
             "initial_stats": "5/6/-2/1",
             "front_size": 600,
-            "raw_morale": 59.95176262577734,
+            "raw_morale": 59.97882093633352,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9991960437629557,
-              "shock": 7.216977578349633e-06,
-              "lost": 17,
+              "resolve": 0.9996470156055587,
+              "shock": 7.9509411151281e-06,
+              "lost": 18,
               "broken": false,
               "break_scale": 1.0412060156953316
             },
-            "losses": 17,
-            "inflicted": 142,
+            "losses": 18,
+            "inflicted": 138,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -21168,7 +21361,7 @@
             "side": 1,
             "type": "inf",
             "subtype": "line",
-            "size": 496,
+            "size": 489,
             "initial_size": 800,
             "stats": "4/1/0/0",
             "initial_stats": "4/5/0/0",
@@ -21178,14 +21371,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.02760307256615833,
+              "shock": 0.026117026691102566,
               "lost": 308,
               "broken": true,
               "break_scale": 1.2485799061380043
             },
             "losses": 308,
-            "inflicted": 184,
-            "captured": 43,
+            "inflicted": 138,
+            "captured": 58,
             "guns_lost": 0,
             "meta": {}
           },
@@ -21195,7 +21388,7 @@
             "side": 1,
             "type": "cav",
             "subtype": "light",
-            "size": 168,
+            "size": 161,
             "initial_size": 300,
             "stats": "5/1/0/1",
             "initial_stats": "5/5/0/1",
@@ -21205,14 +21398,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.001407456202456012,
-              "lost": 142,
+              "shock": 0.0012793393509342133,
+              "lost": 138,
               "broken": true,
               "break_scale": 0.7990575534105598
             },
-            "losses": 142,
-            "inflicted": 17,
-            "captured": 19,
+            "losses": 138,
+            "inflicted": 18,
+            "captured": 25,
             "guns_lost": 0,
             "meta": {}
           },
@@ -21232,14 +21425,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.016020251489171803,
-              "lost": 43,
+              "shock": 0.019043030102408726,
+              "lost": 50,
               "broken": true,
               "break_scale": 1.0982741945832701
             },
-            "losses": 43,
-            "inflicted": 60,
-            "captured": 12,
+            "losses": 50,
+            "inflicted": 75,
+            "captured": 11,
             "guns_lost": 3,
             "meta": {},
             "guns": 5
@@ -21250,7 +21443,7 @@
             "side": 1,
             "type": "inf",
             "subtype": "irregulars",
-            "size": 319,
+            "size": 328,
             "initial_size": 500,
             "stats": "2/1/-1/0",
             "initial_stats": "2/3/-1/0",
@@ -21260,13 +21453,13 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.026390028896139277,
-              "lost": 76,
+              "shock": 0.03051953713362165,
+              "lost": 68,
               "broken": true,
               "break_scale": 1.0179904378633309
             },
-            "losses": 76,
-            "inflicted": 4,
+            "losses": 68,
+            "inflicted": 3,
             "captured": 122,
             "guns_lost": 0,
             "meta": {}
@@ -21333,7 +21526,7 @@
                 "attacker": "x_bat",
                 "target": "a_heavy",
                 "mode": "ranged",
-                "rate": 1.3470276923076923
+                "rate": 1.549081846153846
               },
               {
                 "attacker": "x_irr",
@@ -21345,7 +21538,7 @@
                 "attacker": "a_line",
                 "target": "x_line",
                 "mode": "ranged",
-                "rate": 1.8193846153846154
+                "rate": 1.4555076923076924
               },
               {
                 "attacker": "a_drag",
@@ -21356,20 +21549,20 @@
             ],
             "units": {
               "a_line": {
-                "losses": 34,
-                "inflicted": 78,
-                "size": 866,
-                "morale": 55.47591750577563,
+                "losses": 33,
+                "inflicted": 63,
+                "size": 867,
+                "morale": 55.073476457775435,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_heavy": {
-                "losses": 53,
+                "losses": 67,
                 "inflicted": 0,
-                "size": 347,
-                "morale": 38.03644700685146,
+                "size": 333,
+                "morale": 28.35447412676214,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21379,27 +21572,27 @@
                 "losses": 0,
                 "inflicted": 1,
                 "size": 350,
-                "morale": 48.47222222222228,
+                "morale": 48.47222222222221,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "a_pikes": {
-                "losses": 17,
+                "losses": 18,
                 "inflicted": 63,
-                "size": 583,
-                "morale": 59.61269706381419,
+                "size": 582,
+                "morale": 59.625344893995255,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 78,
-                "inflicted": 34,
-                "size": 722,
-                "morale": 36.05453532565752,
+                "losses": 63,
+                "inflicted": 33,
+                "size": 737,
+                "morale": 38.825453626472665,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21407,19 +21600,19 @@
               },
               "x_light": {
                 "losses": 63,
-                "inflicted": 17,
-                "size": 218,
+                "inflicted": 18,
+                "size": 212,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 29.74668524083612,
-                "captured": 19,
+                "broke_at": 29.68215041999352,
+                "captured": 25,
                 "guns_lost": 0
               },
               "x_bat": {
                 "losses": 1,
-                "inflicted": 49,
+                "inflicted": 64,
                 "size": 71,
-                "morale": 48.54587356237079,
+                "morale": 48.96720324084178,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21427,7 +21620,7 @@
               },
               "x_irr": {
                 "losses": 0,
-                "inflicted": 4,
+                "inflicted": 3,
                 "size": 378,
                 "morale": 0.0,
                 "broken": true,
@@ -21438,7 +21631,7 @@
             },
             "events": [],
             "prisoners": {
-              "0": 141,
+              "0": 147,
               "1": 0
             },
             "guns_captured": {
@@ -21452,9 +21645,9 @@
                 "start": 0.0,
                 "resolved_at": 2.0,
                 "outcome": "defender_broke",
-                "p_defender_breaks": 0.5660260738551525,
-                "p_falter": 0.036768379138184724,
-                "p_home": 0.39720554700666283
+                "p_defender_breaks": 0.5659495166526745,
+                "p_falter": 0.036779418525320975,
+                "p_home": 0.3972710648220046
               },
               {
                 "charger": "a_pikes",
@@ -21469,7 +21662,32 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {
+              "a_line": {
+                "fire": -0.2,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": "uphill"
+              },
+              "x_light": {
+                "fire": 0.0,
+                "melee": 0.3,
+                "morale": 0.0,
+                "note": ""
+              },
+              "x_bat": {
+                "fire": 0.15,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": ""
+              },
+              "x_irr": {
+                "fire": 0.0,
+                "melee": 0.0,
+                "morale": -0.4,
+                "note": "surprised"
+              }
+            }
           },
           {
             "round": 2,
@@ -21524,7 +21742,7 @@
                 "attacker": "a_pikes",
                 "target": "x_light",
                 "mode": "melee",
-                "rate": 1.4949433846153846
+                "rate": 1.453798153846154
               },
               {
                 "attacker": "a_drag",
@@ -21535,10 +21753,10 @@
             ],
             "units": {
               "a_line": {
-                "losses": 106,
-                "inflicted": 125,
-                "size": 760,
-                "morale": 38.290191574540934,
+                "losses": 65,
+                "inflicted": 139,
+                "size": 802,
+                "morale": 46.54442947267394,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21546,9 +21764,9 @@
               },
               "a_heavy": {
                 "losses": 11,
-                "inflicted": 35,
-                "size": 336,
-                "morale": 44.624086132134835,
+                "inflicted": 43,
+                "size": 322,
+                "morale": 43.74563794583054,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21556,9 +21774,9 @@
               },
               "a_drag": {
                 "losses": 0,
-                "inflicted": 12,
+                "inflicted": 13,
                 "size": 350,
-                "morale": 46.57222222222224,
+                "morale": 46.6222222222222,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21566,28 +21784,28 @@
               },
               "a_pikes": {
                 "losses": 0,
-                "inflicted": 79,
-                "size": 583,
-                "morale": 59.95176262577734,
+                "inflicted": 75,
+                "size": 582,
+                "morale": 59.97882093633352,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 125,
-                "inflicted": 106,
-                "size": 597,
-                "morale": 11.510350664057713,
+                "losses": 139,
+                "inflicted": 65,
+                "size": 598,
+                "morale": 10.417856663970225,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_light": {
-                "losses": 79,
+                "losses": 75,
                 "inflicted": 0,
-                "size": 139,
+                "size": 137,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -21595,19 +21813,19 @@
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 35,
+                "losses": 43,
                 "inflicted": 11,
-                "size": 24,
+                "size": 17,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 65.26292724253446,
-                "captured": 12,
+                "broke_at": 61.96433150627078,
+                "captured": 11,
                 "guns_lost": 3
               },
               "x_irr": {
-                "losses": 12,
+                "losses": 13,
                 "inflicted": 0,
-                "size": 366,
+                "size": 365,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -21617,7 +21835,7 @@
             },
             "events": [],
             "prisoners": {
-              "0": 12,
+              "0": 11,
               "1": 0
             },
             "guns_captured": {
@@ -21641,9 +21859,9 @@
                 "start": 45.0,
                 "resolved_at": 47.0,
                 "outcome": "home",
-                "p_defender_breaks": 0.7062685814557721,
-                "p_falter": 0.02028599830433037,
-                "p_home": 0.27344542023989754
+                "p_defender_breaks": 0.573563638916663,
+                "p_falter": 0.035694699135044645,
+                "p_home": 0.3907416619482924
               },
               {
                 "charger": "a_line",
@@ -21658,7 +21876,20 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {
+              "a_heavy": {
+                "fire": 0.0,
+                "melee": 0.25,
+                "morale": 0.5,
+                "note": ""
+              },
+              "x_line": {
+                "fire": -0.1,
+                "melee": -0.3,
+                "morale": 0.0,
+                "note": ""
+              }
+            }
           },
           {
             "round": 3,
@@ -21695,33 +21926,33 @@
                 "attacker": "x_line",
                 "target": "a_line",
                 "mode": "melee",
-                "rate": 1.5585741230769232
+                "rate": 1.5611848000000002
               },
               {
                 "attacker": "a_line",
                 "target": "x_line",
                 "mode": "melee",
-                "rate": 1.9105102153846154
+                "rate": 1.9640711999999998
               },
               {
                 "attacker": "a_drag",
                 "target": "x_bat",
                 "mode": "melee",
-                "rate": 0.14422486153846156
+                "rate": 0.10215927692307693
               },
               {
                 "attacker": "a_heavy",
                 "target": "x_irr",
                 "mode": "melee",
-                "rate": 0.8488910769230769
+                "rate": 0.8135206153846154
               }
             ],
             "units": {
               "a_line": {
-                "losses": 44,
-                "inflicted": 105,
-                "size": 716,
-                "morale": 29.070146329501178,
+                "losses": 40,
+                "inflicted": 106,
+                "size": 762,
+                "morale": 38.7212354755089,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21729,9 +21960,9 @@
               },
               "a_heavy": {
                 "losses": 0,
-                "inflicted": 64,
-                "size": 336,
-                "morale": 43.854086132134846,
+                "inflicted": 55,
+                "size": 322,
+                "morale": 42.345637945830596,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21739,9 +21970,9 @@
               },
               "a_drag": {
                 "losses": 0,
-                "inflicted": 7,
+                "inflicted": 6,
                 "size": 350,
-                "morale": 45.25277777777779,
+                "morale": 44.95555555555556,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -21750,27 +21981,27 @@
               "a_pikes": {
                 "losses": 0,
                 "inflicted": 0,
-                "size": 583,
-                "morale": 59.95176262577734,
+                "size": 582,
+                "morale": 59.97882093633352,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_line": {
-                "losses": 105,
-                "inflicted": 44,
-                "size": 449,
+                "losses": 106,
+                "inflicted": 40,
+                "size": 434,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 139.96874521967212,
-                "captured": 43,
+                "broke_at": 135.6916748468607,
+                "captured": 58,
                 "guns_lost": 0
               },
               "x_light": {
                 "losses": 0,
                 "inflicted": 0,
-                "size": 139,
+                "size": 137,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -21778,9 +22009,9 @@
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 7,
+                "losses": 6,
                 "inflicted": 0,
-                "size": 17,
+                "size": 11,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -21788,9 +22019,9 @@
                 "guns_lost": 0
               },
               "x_irr": {
-                "losses": 64,
+                "losses": 55,
                 "inflicted": 0,
-                "size": 302,
+                "size": 310,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -21800,7 +22031,7 @@
             },
             "events": [],
             "prisoners": {
-              "0": 43,
+              "0": 58,
               "1": 0
             },
             "guns_captured": {
@@ -21838,25 +22069,25 @@
           "field_held_by": 0,
           "units": {
             "a_line": {
-              "hits": 184,
+              "hits": 138,
               "killed": 33,
-              "wounded": 151,
+              "wounded": 105,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 67,
+              "wounded_returned": 33,
               "captured_in_rout": 0,
-              "final_size": 783,
+              "final_size": 795,
               "guns_lost": 0
             },
             "a_heavy": {
-              "hits": 64,
-              "killed": 11,
-              "wounded": 53,
+              "hits": 78,
+              "killed": 21,
+              "wounded": 57,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 16,
+              "wounded_returned": 18,
               "captured_in_rout": 0,
-              "final_size": 352,
+              "final_size": 340,
               "guns_lost": 0
             },
             "a_drag": {
@@ -21871,63 +22102,63 @@
               "guns_lost": 0
             },
             "a_pikes": {
-              "hits": 17,
-              "killed": 3,
+              "hits": 18,
+              "killed": 4,
               "wounded": 14,
               "walking_wounded": 0,
               "wounded_captured": 0,
               "wounded_returned": 5,
               "captured_in_rout": 0,
-              "final_size": 588,
+              "final_size": 587,
               "guns_lost": 0
             },
             "x_line": {
               "hits": 308,
-              "killed": 76,
-              "wounded": 232,
-              "walking_wounded": 77,
-              "wounded_captured": 89,
-              "wounded_returned": 47,
-              "captured_in_rout": 43,
-              "final_size": 496,
+              "killed": 57,
+              "wounded": 251,
+              "walking_wounded": 114,
+              "wounded_captured": 101,
+              "wounded_returned": 55,
+              "captured_in_rout": 58,
+              "final_size": 489,
               "guns_lost": 0
             },
             "x_light": {
-              "hits": 142,
-              "killed": 37,
-              "wounded": 105,
-              "walking_wounded": 40,
-              "wounded_captured": 41,
-              "wounded_returned": 29,
-              "captured_in_rout": 19,
-              "final_size": 168,
+              "hits": 138,
+              "killed": 24,
+              "wounded": 114,
+              "walking_wounded": 35,
+              "wounded_captured": 50,
+              "wounded_returned": 24,
+              "captured_in_rout": 25,
+              "final_size": 161,
               "guns_lost": 0
             },
             "x_bat": {
-              "hits": 43,
+              "hits": 50,
               "killed": 10,
-              "wounded": 33,
-              "walking_wounded": 16,
-              "wounded_captured": 13,
-              "wounded_returned": 7,
-              "captured_in_rout": 12,
+              "wounded": 40,
+              "walking_wounded": 14,
+              "wounded_captured": 12,
+              "wounded_returned": 13,
+              "captured_in_rout": 11,
               "final_size": 24,
               "guns_lost": 3
             },
             "x_irr": {
-              "hits": 76,
-              "killed": 13,
-              "wounded": 63,
-              "walking_wounded": 23,
-              "wounded_captured": 25,
-              "wounded_returned": 17,
+              "hits": 68,
+              "killed": 15,
+              "wounded": 53,
+              "walking_wounded": 25,
+              "wounded_captured": 14,
+              "wounded_returned": 18,
               "captured_in_rout": 122,
-              "final_size": 319,
+              "final_size": 328,
               "guns_lost": 0
             }
           },
           "prisoners": {
-            "0": 364,
+            "0": 393,
             "1": 0
           },
           "guns_captured": {
@@ -22313,7 +22544,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -22334,7 +22566,8 @@
               "on_break": "strongest"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -23378,7 +23611,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -23403,7 +23637,8 @@
               "on_break": "strongest"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -24464,7 +24699,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -24489,7 +24725,8 @@
               "on_break": "strongest"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -25546,7 +25783,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 120,
@@ -25560,7 +25798,8 @@
               "mode": "melee"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -26585,7 +26824,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 120,
@@ -26599,7 +26839,8 @@
               "mode": "melee"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -27624,7 +27865,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 120,
@@ -27638,7 +27880,8 @@
               "mode": "melee"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -28662,7 +28905,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 30,
@@ -28677,7 +28921,8 @@
               "on_break": "pursue"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -29711,7 +29956,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 30,
@@ -29726,7 +29972,8 @@
               "on_break": "pursue"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -30760,7 +31007,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         },
         {
           "duration": 30,
@@ -30779,7 +31027,8 @@
               "mode": "melee"
             }
           },
-          "record_events": false
+          "record_events": false,
+          "modifiers": {}
         }
       ],
       "finished": true,
@@ -31902,7 +32151,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": true
+          "record_events": true,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -31938,7 +32188,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": true
+          "record_events": true,
+          "modifiers": {}
         },
         {
           "duration": 60,
@@ -31969,7 +32220,8 @@
               "mode": "ranged"
             }
           },
-          "record_events": true
+          "record_events": true,
+          "modifiers": {}
         }
       ],
       "finished": true,

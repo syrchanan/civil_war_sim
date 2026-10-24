@@ -176,9 +176,9 @@ export function battleFromDict(data: StateData): Battle {
   battle.finished = data.finished;
   battle.prisoners = { ...data.prisoners };
   battle.gunsCaptured = { ...data.guns_captured };
-  // retargets and round positions are absent in files saved before they existed
+  // retargets, round positions and modifiers are absent in files saved before they existed
   battle.history = structuredClone(data.history)
-    .map((r) => ({ ...r, retargets: r.retargets ?? [], positions: r.positions ?? {} }));
+    .map((r) => ({ ...r, retargets: r.retargets ?? [], positions: r.positions ?? {}, modifiers: r.modifiers ?? {} }));
   battle.contacts = new Set(data.contacts.map(([a, b]) => (a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`)));
   battle.result = data.result === null ? null : {
     ...structuredClone(data.result),
