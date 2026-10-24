@@ -516,3 +516,19 @@ def test_broken_enemies_are_not_candidates():
     break_unit(b, 'z')
     report = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged', 'on_break': 'strongest'}})
     assert report.retargets[0].new_target == 'y'
+
+
+# =============================================================================
+# Where units stood each round (for replays on the map)
+# =============================================================================
+
+def test_each_round_records_where_units_stood_as_it_began():
+    from imperial_generals.utils import Position
+    b = Battle({'a': (0, Regiment(500, '5/5/0/0', position=Position(100, 900, 0, 0, 'open', facing=0))),
+                'x': (1, Regiment(500, '5/5/0/0'))}, rng=Rng(1))
+    first = b.resolve_round(30, {'a': {'target': 'x', 'mode': 'ranged'}})
+    b.units['a'].regiment.deploy(Position(150, 850, 0, 0, 'open', facing=45))     # moved between rounds
+    second = b.resolve_round(30, {})
+    assert first.positions == {'a': {'x': 100, 'y': 900, 'z': 0, 'cover': 0, 'terrain_type': 'open', 'facing': 0}}
+    assert second.positions['a']['facing'] == 45 and b.history[0].positions['a']['x'] == 100
+    assert 'x' not in first.positions                       # never placed

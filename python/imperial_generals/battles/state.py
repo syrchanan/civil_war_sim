@@ -39,13 +39,6 @@ def _from_sides(d: dict) -> dict:
     return {int(side): n for side, n in d.items()}
 
 
-def _position(position: Position | None) -> dict | None:
-    if position is None:
-        return None
-    return {'x': position.x, 'y': position.y, 'z': position.z, 'cover': position.cover,
-            'terrain_type': position.terrain_type, 'facing': position.facing}
-
-
 # =============================================================================
 # Saving
 # =============================================================================
@@ -65,7 +58,7 @@ def _unit_to_dict(unit) -> dict:
         'front_size': reg.front_size,
         'raw_morale': reg.raw_morale,
         'combat_mode': reg.combat_mode,
-        'position': _position(reg.position),
+        'position': None if reg.position is None else reg.position.to_dict(),
         'morale': {
             'resolve': unit.morale.resolve,
             'shock': unit.morale.shock,
@@ -97,6 +90,7 @@ def report_to_dict(report: RoundReport) -> dict:
         'guns_captured': _by_side(report.guns_captured),
         'charges': [asdict(c) for c in report.charges],
         'retargets': [asdict(r) for r in report.retargets],
+        'positions': report.positions,
     }
 
 
@@ -185,6 +179,7 @@ def _report_from_dict(data: dict) -> RoundReport:
         orders=data['orders'],
         charges=tuple(Charge(**c) for c in data['charges']),
         retargets=tuple(Retarget(**r) for r in data.get('retargets', [])),     # absent in older files
+        positions=data.get('positions', {}),                                   # absent in older files
     )
 
 

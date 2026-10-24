@@ -1075,7 +1075,8 @@
               "1": 2
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -1244,7 +1245,8 @@
                 "p_home": 0.4914757587183069
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -1427,7 +1429,8 @@
                 "p_home": 0.5207244692445792
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -2593,7 +2596,8 @@
               "1": 2
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -2762,7 +2766,8 @@
                 "p_home": 0.2520162663615032
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -2929,7 +2934,8 @@
                 "p_home": 0.3766424511310633
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -4099,7 +4105,8 @@
               "1": 2
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -4268,7 +4275,8 @@
                 "p_home": 0.3366275719390147
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -4447,7 +4455,8 @@
                 "p_home": 0.30327792965158573
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -5777,7 +5786,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -5975,7 +5985,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -6173,7 +6184,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 4,
@@ -6323,7 +6335,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 5,
@@ -6473,7 +6486,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -7806,7 +7820,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -8004,7 +8019,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -8178,7 +8194,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 4,
@@ -8328,7 +8345,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 5,
@@ -8478,7 +8496,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -9811,7 +9830,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -10009,7 +10029,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -10183,7 +10204,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 4,
@@ -10345,7 +10367,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 5,
@@ -10483,7 +10506,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -11920,7 +11944,8 @@
               "1": 1
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -12163,7 +12188,8 @@
                 "p_home": 0.6017023744649379
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -12396,7 +12422,8 @@
                 "p_home": 0.027413256401005604
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 4,
@@ -12609,7 +12636,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -14064,7 +14092,8 @@
               "1": 2
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -14307,7 +14336,8 @@
                 "p_home": 0.5732348079274463
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -14528,7 +14558,8 @@
                 "p_home": 0.03156733297516912
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 4,
@@ -14741,7 +14772,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -16200,7 +16232,8 @@
               "1": 2
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -16443,7 +16476,8 @@
                 "p_home": 0.604325916345152
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -16676,7 +16710,8 @@
                 "p_home": 0.028725292318993657
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 4,
@@ -16889,7 +16924,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -18156,7 +18192,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -18355,7 +18392,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -18524,7 +18562,8 @@
                 "p_home": 0.11280876441900055
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -19769,7 +19808,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -19968,7 +20008,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -20137,7 +20178,8 @@
                 "p_home": 0.5618437476377338
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -21383,7 +21425,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -21570,7 +21613,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -21741,7 +21785,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -22727,7 +22772,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -22835,7 +22881,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -23792,7 +23839,8 @@
                 "p_home": 0.00027780351924011626
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -23917,7 +23965,8 @@
                 "p_home": 0.5414375480177205
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -24874,7 +24923,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -24999,7 +25049,8 @@
                 "p_home": 0.6739674500506183
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -25927,7 +25978,8 @@
                 "new_target": "plain",
                 "time": 0.3203226091024224
               }
-            ]
+            ],
+            "positions": {}
           },
           {
             "round": 2,
@@ -26034,7 +26086,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -26962,7 +27015,8 @@
                 "new_target": "plain",
                 "time": 4.278479798278564
               }
-            ]
+            ],
+            "positions": {}
           },
           {
             "round": 2,
@@ -27069,7 +27123,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -27997,7 +28052,8 @@
                 "new_target": "plain",
                 "time": 1.5537764452966876
               }
-            ]
+            ],
+            "positions": {}
           },
           {
             "round": 2,
@@ -28104,7 +28160,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -29042,7 +29099,8 @@
                 "new_target": "other",
                 "time": 1.3419130564087025
               }
-            ]
+            ],
+            "positions": {}
           },
           {
             "round": 2,
@@ -29149,7 +29207,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -30087,7 +30146,8 @@
                 "new_target": "other",
                 "time": 0.9281274138881584
               }
-            ]
+            ],
+            "positions": {}
           },
           {
             "round": 2,
@@ -30194,7 +30254,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -31136,7 +31197,8 @@
                 "new_target": "other",
                 "time": 0.9423571157295504
               }
-            ]
+            ],
+            "positions": {}
           },
           {
             "round": 2,
@@ -31259,7 +31321,8 @@
                 "p_home": null
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {
@@ -34248,7 +34311,8 @@
               "1": 0
             },
             "charges": [],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 2,
@@ -35585,7 +35649,8 @@
                 "p_home": 0.17718419402244412
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           },
           {
             "round": 3,
@@ -36144,7 +36209,8 @@
                 "p_home": 0.1772525531805782
               }
             ],
-            "retargets": []
+            "retargets": [],
+            "positions": {}
           }
         ],
         "result": {

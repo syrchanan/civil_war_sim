@@ -243,3 +243,13 @@ def test_position_without_facing_loads():
     data = b.to_dict()
     del next(u for u in data['units'] if u['id'] == 'inf')['position']['facing']
     assert Battle.from_dict(data).units['inf'].regiment.position.facing is None
+
+
+def test_round_positions_round_trip_and_are_absent_in_older_files():
+    b = build()
+    b.resolve_round(10, {})
+    assert b.history[0].positions['inf']['terrain_type'] == 'forest'
+    assert reload(b).history == b.history
+    data = b.to_dict()
+    del data['history'][0]['positions']                   # saved before round positions existed
+    assert Battle.from_dict(data).history[0].positions == {}

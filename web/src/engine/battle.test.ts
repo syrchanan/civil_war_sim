@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import fixture from '../../../test_cases/parity/battles.json';
-import { Battle, makeOrder } from './battle';
+import { Battle, makeOrder, type RoundReport } from './battle';
 import { RuntimeError, ValueError } from './errors';
 import { Rng } from './rng';
 import type { StateData } from './state';
@@ -173,6 +173,21 @@ describe('edge cases', () => {
     expect(data.contacts).toEqual([['a1', 'c3'], ['a1', 'x9'], ['b2', 'x9']]);
     expect(data.units[0].position).toEqual({ ...position, facing: null }); // facing not given
     expect(Battle.fromDict(data).toDict()).toEqual(data);
+  });
+
+  it('each round records where placed units stood as it began; older files have none', () => {
+    const b = new Battle({
+      a: { side: 0, regiment: new Regiment(500, '5/5/0/0', { position: { x: 100, y: 900, z: 0, cover: 0, terrain_type: 'open' } }) },
+      x: { side: 1, regiment: new Regiment(500, '5/5/0/0') },
+    }, new Rng(1));
+    b.resolveRound(30, { a: { target: 'x', mode: 'ranged' } });
+    b.units.get('a')!.regiment.position = { x: 150, y: 850, z: 0, cover: 0, terrain_type: 'open', facing: 45 };
+    const second = b.resolveRound(30, {});
+    expect(b.history[0].positions).toEqual({ a: { x: 100, y: 900, z: 0, cover: 0, terrain_type: 'open', facing: null } });
+    expect(second.positions.a).toMatchObject({ x: 150, facing: 45 });
+    const data = b.toDict();
+    delete (data.history[0] as Partial<RoundReport>).positions;
+    expect(Battle.fromDict(data).history[0].positions).toEqual({});
   });
 
   it('saves a facing, and loads positions saved before facing existed', () => {
