@@ -12,7 +12,7 @@ export function StrengthCharts({ store }: { store: Store }) {
   const sides = store.sides.value;
   return (
     <div class="charts">
-      {MEASURES.map(([measure, label]) => [0, 1].map((side) => {
+      {MEASURES.map(([measure, label]) => [0, 1].filter((side) => side !== store.hiddenSide.value).map((side) => {
         const count = [...battle.units.values()].filter((u) => u.side === side).length;
         return (
           <div>

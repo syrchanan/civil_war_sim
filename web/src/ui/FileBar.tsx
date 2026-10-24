@@ -1,7 +1,8 @@
 /**
  * Save and open battles, and pass orders between players and the admin. The battle download resumes here, and in
  * Python `python -m imperial_generals scenario-from-state battle.json` turns it into a scenario that replays it
- * exactly. A player downloads their orders file for the next round; the admin loads one per player.
+ * exactly. A player downloads their orders file for the next round; the admin loads one per player. The admin
+ * also downloads a player file per side (the battle as that side sees it) to send to each player.
  */
 
 import { useState } from 'preact/hooks';
@@ -23,8 +24,10 @@ const readAll = (input: HTMLInputElement) =>
 
 export function FileBar({ store }: { store: Store }) {
   const [problem, setProblem] = useState<string | null>(null);
+  store.revision.value; // the battle changes in place (a round fought, or finished)
   const battle = store.battle.value;
   const player = store.mode.value === 'player';
+  const locked = store.playerFileInfo.value;
   const onOpen = async (input: HTMLInputElement) => {
     const [file] = await readAll(input);
     input.value = '';
@@ -41,7 +44,8 @@ export function FileBar({ store }: { store: Store }) {
   };
   return (
     <div class="file-bar">
-      {player && battle !== null && (
+      {player && locked !== null && <span>You command: {store.sides.value[locked.side]}</span>}
+      {player && battle !== null && locked === null && (
         <label>
           You command{' '}
           <select aria-label="You command" value={String(store.playerSide.value)}
@@ -51,10 +55,18 @@ export function FileBar({ store }: { store: Store }) {
           </select>
         </label>
       )}
-      <button disabled={battle === null} onClick={() => {
-        const { name, text } = store.download();
-        save(name, text);
-      }}>Download battle</button>
+      {locked === null && (
+        <button disabled={battle === null} onClick={() => {
+          const { name, text } = store.download();
+          save(name, text);
+        }}>Download battle</button>
+      )}
+      {!player && ([0, 1] as const).map((side) => (
+        <button disabled={battle === null || battle.finished} onClick={() => {
+          const { name, text } = store.playerFileDownload(side);
+          save(name, text);
+        }}>Player file: {store.sides.value[side]}</button>
+      ))}
       <label class="button">
         Open a saved battle
         <input type="file" accept=".json,application/json" aria-label="Open a saved battle"
