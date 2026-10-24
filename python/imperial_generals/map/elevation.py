@@ -6,7 +6,6 @@ Consolidates ElevationConfig, TerrainPresets, and ElevationGenerator.
 
 import logging
 from dataclasses import dataclass, field
-from typing import List
 
 import numpy as np
 from opensimplex import OpenSimplex

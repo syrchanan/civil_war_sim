@@ -1,4 +1,3 @@
-import pytest
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
 

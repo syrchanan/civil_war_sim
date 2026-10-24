@@ -10,7 +10,6 @@ Uses a deterministic grid of square cells to verify:
   - Determinism with a fixed seed
 """
 
-import pytest
 from shapely.geometry import box
 
 from imperial_generals.map.Cell import Cell

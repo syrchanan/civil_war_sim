@@ -3,7 +3,7 @@ Tests for the Cell class.
 """
 
 import pytest
-from shapely.geometry import box, Polygon
+from shapely.geometry import box
 from imperial_generals.map import Cell
 
 

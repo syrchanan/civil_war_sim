@@ -49,9 +49,12 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
 - Admin modifiers: per unit, one round, fire / melee / morale ±% with a note, in both engines, the round history,
   scenarios and the CLI (`--modifiers`).
 - Army files: save and load one side's units as CSV from the army builder.
+- Phone layout: editable tables become cards, read-only tables keep their unit column in view, the map scrolls
+  sideways at a readable size.
 - Deploys to GitHub Pages (https://syrchanan.github.io/civil_war_sim/) after CI passes on main.
 - `CHANGELOG.md`, `python/requirements.txt`, CI (Python and TypeScript tests, both with 100% coverage, and a web
   typecheck).
 
 ### Removed
+- The Streamlit prototype (`streamlit/`); the web client replaces it.
 - The stale v0.2 TypeScript port (`typescript/`) and `run_tests.py`; the new port lives in `web/`.
