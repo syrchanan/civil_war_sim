@@ -1,8 +1,12 @@
-/** Two side-by-side tables of units, a seed, and the button that starts the battle. */
+/**
+ * Two side-by-side tables of units, a seed, and the button that starts the battle. Each side's army can be saved
+ * as a CSV file and loaded again (see armyCsv).
+ */
 
 import { useState } from 'preact/hooks';
 
 import defaults from '../engine/defaults.json';
+import { save } from './FileBar';
 import type { Store, UnitDraft, UnitType } from './store';
 
 const SUBTYPES: Record<string, string[]> = defaults.unit_subtypes;
@@ -71,7 +75,15 @@ function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
 }
 
 function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
+  const [problems, setProblems] = useState<string[]>([]);
   const units = store.units.value.filter((u) => u.side === side);
+  const name = store.sides.value[side];
+  const onLoad = async (input: HTMLInputElement) => {
+    const file = input.files![0];
+    input.value = '';
+    if (!file) return;
+    setProblems(store.loadArmy(side, await file.text()).map((p) => `${file.name}: ${p}`));
+  };
   return (
     <div class={`side side-${side}`}>
       <input class="side-name" aria-label={`Side ${side + 1} name`} value={store.sides.value[side]}
@@ -87,7 +99,19 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
           <tbody>{units.map((u) => <UnitRow key={u.id} store={store} unit={u} />)}</tbody>
         </table>
       </div>
-      <button onClick={() => store.addUnit(side)}>Add unit to {store.sides.value[side]}</button>
+      <div class="controls">
+        <button onClick={() => store.addUnit(side)}>Add unit to {name}</button>
+        <button aria-label={`Download ${name} army (CSV)`} onClick={() => {
+          const file = store.armyDownload(side);
+          save(file.name, file.text, 'text/csv');
+        }}>Download army (CSV)</button>
+        <label class="button">
+          Load army (CSV)
+          <input type="file" accept=".csv,text/csv" aria-label={`Load ${name} army (CSV)`}
+            onChange={(e) => onLoad(e.currentTarget)} />
+        </label>
+      </div>
+      {problems.length > 0 && <ul role="alert" class="problems">{problems.map((p) => <li>{p}</li>)}</ul>}
     </div>
   );
 }

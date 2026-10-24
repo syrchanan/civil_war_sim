@@ -14,6 +14,7 @@ import {
   PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
+import { armyFromCsv, armyToCsv } from './armyCsv';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
 
 export type UnitType = 'inf' | 'cav' | 'art';
@@ -311,6 +312,27 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   function removeUnit(id: string): void {
     units.value = units.value.filter((u) => u.id !== id);
+  }
+
+  /** One side's army as a CSV file, to keep and load again. */
+  function armyDownload(side: 0 | 1): { name: string; text: string } {
+    return { name: `army-${sides.value[side]}.csv`, text: armyToCsv(units.value.filter((u) => u.side === side)) };
+  }
+
+  /** Replace one side's units with those in an army file; returns the problems (none: loaded). */
+  function loadArmy(side: 0 | 1, text: string): string[] {
+    const { units: read, problems } = armyFromCsv(text, side);
+    if (problems.length) return problems;
+    if (read.length === 0) return ['The file has no units.'];
+    const others = units.value.filter((u) => u.side !== side);
+    const used = new Set(others.map((u) => u.id));
+    let n = 0;
+    const fresh = read.map((u) => {
+      do n += 1; while (used.has(`s${side}u${n}`));
+      return { ...u, id: `s${side}u${n}` };
+    });
+    units.value = side === 0 ? [...fresh, ...others] : [...others, ...fresh];
+    return [];
   }
 
   function clearUnits(): void {
@@ -703,7 +725,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
     modifiers, setModifier, plansLoaded, orderSources, withoutOrders,
-    addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
+    addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
 

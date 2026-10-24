@@ -9,8 +9,9 @@ import { useState } from 'preact/hooks';
 
 import type { Store } from './store';
 
-function save(name: string, text: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+/** Hand the viewer a file to save. */
+export function save(name: string, text: string, type = 'application/json'): void {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const link = document.createElement('a');
   link.href = url;
   link.download = name;
