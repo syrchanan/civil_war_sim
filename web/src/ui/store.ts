@@ -345,7 +345,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   /** Admin: change a unit's modifiers for the next round (fractions, -0.15 is -15%); all zero and no note drops them. */
   function setModifier(uid: string, change: Partial<Modifier>): void {
-    const next = { fire: 0, melee: 0, morale: 0, note: '', ...modifiers.value[uid], ...change };
+    const next = { ...(modifiers.value[uid] ?? { fire: 0, melee: 0, morale: 0, note: '' }), ...change };
     const rest = { ...modifiers.value };
     delete rest[uid];
     const empty = next.fire === 0 && next.melee === 0 && next.morale === 0 && next.note === '';

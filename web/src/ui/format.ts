@@ -1,12 +1,19 @@
 /** How the client words a battle: the same phrases as the Python CLI (python/imperial_generals/cli.py). */
 
-import type { BattleResult, Charge } from '../engine';
+import type { BattleResult, Charge, Modifier } from '../engine';
 
 export const CHARGE_OUTCOMES: Record<string, string> = {
   home: 'went home', faltered: 'faltered', defender_broke: 'broke the defender before contact',
   meeting: 'met head on', pursuit: 'pursuit', charger_broke: 'charger broke on the approach',
   target_broke: 'target broke before contact',
 };
+
+/** An admin's modifiers in words: 'fire -15%, morale +10% (uphill)'; only what is set. */
+export function modifierText(mod: Modifier): string {
+  const changes = (['fire', 'melee', 'morale'] as const).filter((key) => mod[key] !== 0)
+    .map((key) => `${key} ${mod[key] > 0 ? '+' : ''}${Math.round(mod[key] * 100)}%`).join(', ');
+  return [changes, mod.note ? `(${mod.note})` : ''].filter(Boolean).join(' ');
+}
 
 const FIELD_TESTS: [string, string][] = [['exchange', 'casualty exchange'], ['routs', 'routs'],
   ['standing', 'strength standing']];

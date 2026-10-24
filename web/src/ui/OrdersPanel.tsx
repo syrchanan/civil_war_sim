@@ -46,7 +46,8 @@ function Preview({ store, arrows }: { store: Store; arrows: Engagement[] }) {
   );
 }
 
-function OrderRow({ store, unit, expected }: { store: Store; unit: BattleUnit; expected: boolean }) {
+function OrderRow({ store, unit, expected, admin }:
+  { store: Store; unit: BattleUnit; expected: boolean; admin: boolean }) {
   const order = store.effectiveOrders.value[unit.uid];
   const battery = unit.regiment instanceof ArtilleryBattery;
   const label = (what: string) => `${unit.name} ${what}`;
@@ -93,12 +94,13 @@ function OrderRow({ store, unit, expected }: { store: Store; unit: BattleUnit; e
             : <span class="note">default: {order.mode === 'idle' ? 'holds' : 'returns fire'}</span>}
         </td>
       )}
+      {admin && <td>{store.orderSources.value[unit.uid] ?? '—'}</td>}
     </tr>
   );
 }
 
-function OrdersTable({ store, units, title, expected }:
-  { store: Store; units: BattleUnit[]; title: string; expected: boolean }) {
+function OrdersTable({ store, units, title, expected, admin = false }:
+  { store: Store; units: BattleUnit[]; title: string; expected: boolean; admin?: boolean }) {
   return (
     <div class="table-wrap">
       <table aria-label={title}>
@@ -106,11 +108,76 @@ function OrdersTable({ store, units, title, expected }:
           <tr>
             <th>Unit</th><th>Action</th><th>Target</th><th>Ammo</th><th>If the target breaks</th>
             {expected && <th />}
+            {admin && <th>From</th>}
           </tr>
         </thead>
-        <tbody>{units.map((u) => <OrderRow store={store} unit={u} expected={expected} />)}</tbody>
+        <tbody>{units.map((u) => <OrderRow store={store} unit={u} expected={expected} admin={admin} />)}</tbody>
       </table>
     </div>
+  );
+}
+
+/** Admin: which side's orders file is loaded, and the units that would hold for want of orders. */
+function Received({ store }: { store: Store }) {
+  const sides = store.sides.value;
+  const loaded = store.plansLoaded.value;
+  const missing = store.withoutOrders.value;
+  return (
+    <>
+      <h3>Players' orders</h3>
+      <ul aria-label="Orders received">
+        {([0, 1] as const).map((side) => <li>{sides[side]}: {loaded[side] ?? 'no orders file yet'}</li>)}
+      </ul>
+      {missing.length > 0 && (
+        <p class="note">Without orders (they will hold): {missing.map((u) => u.name).join(', ')}</p>
+      )}
+    </>
+  );
+}
+
+const percent = (v: number) => (v === 0 ? '' : String(Math.round(v * 100)));
+
+/** Admin: this round's modifiers per unit, in percent, with a note. */
+function Modifiers({ store }: { store: Store }) {
+  const mods = store.modifiers.value;
+  const units = [...store.battle.value!.units.values()].filter((u) => u.size > 0);
+  const count = Object.keys(mods).length;
+  // a number input reads '' while empty or half typed (a lone '-'), which counts as 0
+  const setPercent = (uid: string, key: 'fire' | 'melee' | 'morale', text: string) =>
+    store.setModifier(uid, { [key]: Number(text) / 100 });
+  return (
+    <details class="modifiers">
+      <summary>Modifiers for this round ({count === 0 ? 'none set' : `${count} set`})</summary>
+      <p class="note">Percent changes for the next round only, e.g. fire -15 for a unit firing uphill. Fire and
+        melee change the casualties the unit inflicts (closing fire counts as fire); morale changes how fast it
+        loses morale (+10: 10% slower). From -100 to +100.</p>
+      <div class="table-wrap">
+        <table aria-label="Modifiers">
+          <thead>
+            <tr><th>Unit</th><th class="num">Fire %</th><th class="num">Melee %</th><th class="num">Morale %</th>
+              <th>Note</th></tr>
+          </thead>
+          <tbody>
+            {units.map((u) => (
+              <tr class={`side-${u.side}`}>
+                <td>{u.name}</td>
+                {(['fire', 'melee', 'morale'] as const).map((key) => (
+                  <td class="num">
+                    <input type="number" step="5" class="num" aria-label={`${u.name} ${key} %`}
+                      value={percent(mods[u.uid]?.[key] ?? 0)}
+                      onInput={(e) => setPercent(u.uid, key, e.currentTarget.value)} />
+                  </td>
+                ))}
+                <td>
+                  <input type="text" aria-label={`${u.name} note`} value={mods[u.uid]?.note ?? ''}
+                    onInput={(e) => store.setModifier(u.uid, { note: e.currentTarget.value })} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
   );
 }
 
@@ -132,7 +199,13 @@ export function OrdersPanel({ store }: { store: Store }) {
           <OrdersTable store={store} units={acting.filter((u) => u.side !== side)}
             title="What you expect the enemy to do" expected />
         </>
-      ) : <OrdersTable store={store} units={acting} title="Orders" expected={false} />}
+      ) : (
+        <>
+          <Received store={store} />
+          <OrdersTable store={store} units={acting} title="Orders" expected={false} admin />
+          <Modifiers store={store} />
+        </>
+      )}
       <div class="controls">
         <label>
           Round length (minutes){' '}
