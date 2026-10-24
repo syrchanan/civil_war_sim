@@ -28,3 +28,5 @@ export { orderOfBattle, sideSummary } from './summary';
 export type { SideOrder, SideSummary, TypeTotal } from './summary';
 export { estimateRound, quantile } from './estimate';
 export type { ChargeEstimate, Range, RoundEstimate, UnitEstimate } from './estimate';
+export { PLAYER_FORMAT, PLAYER_VERSION, playerFile, roughly, UNKNOWN_STATS } from './playerFile';
+export type { PlayerFile } from './playerFile';
