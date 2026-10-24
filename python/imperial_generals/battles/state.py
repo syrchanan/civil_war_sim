@@ -8,7 +8,9 @@ Round history (orders, engagements, charges, retargets, per-unit reports, events
 battle is finished, its ``result`` (the casualty settlement from ``Battle.finish``). Units locked in melee are
 saved as ``contacts``.
 
-Version 2 (A13) added contacts, charges and the charge parameters; version 1 files are not loaded.
+Version 2 (A13) added contacts, charges and the charge parameters; version 1 files are not loaded. Added since,
+within version 2 (absent in older files, which still load): target switches, facing on positions, and per-round
+positions and modifiers.
 
 ``meta`` (battle and per unit) is free-form and round-tripped untouched.
 """

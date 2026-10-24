@@ -2,7 +2,7 @@
 Cell class representing a single Voronoi cell with associated metadata.
 """
 
-from typing import Tuple, Optional
+from typing import Tuple
 from shapely.geometry import Polygon
 import logging
 

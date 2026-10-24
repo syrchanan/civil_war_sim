@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from imperial_generals.map import VoronoiMap
 from imperial_generals.map.Cell import Cell
-from shapely.geometry import Polygon, box
+from shapely.geometry import Polygon
 
 
 @pytest.fixture

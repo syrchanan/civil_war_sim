@@ -1,4 +1,4 @@
-# Engine, CLI, tuning and map pipeline (the parked Streamlit prototype also needs streamlit)
+# Engine, CLI, tuning and map pipeline
 matplotlib==3.10.7
 numpy==2.3.5
 openpyxl==3.1.5

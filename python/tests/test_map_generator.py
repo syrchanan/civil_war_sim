@@ -7,7 +7,7 @@ test_map_map_config.py and test_map_elevation.py; this file focuses on the new s
 
 import pytest
 from imperial_generals.map import (
-    MapConfig, MapResult, MapGenerator, VoronoiMap, BiomePresets, ElevationConfig, Cell
+    MapConfig, MapResult, MapGenerator, VoronoiMap, BiomePresets, Cell
 )
 
 

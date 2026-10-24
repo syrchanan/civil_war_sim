@@ -3,7 +3,7 @@ import pytest
 from imperial_generals.battles.battle import Battle, Engagement, Order, Retarget, RoundReport
 from imperial_generals.battles import Simulation
 from imperial_generals.battles.morale import MoraleState
-from imperial_generals.params import BattleParams, CombatParams
+from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, Regiment
 from imperial_generals.utils import Rng
 

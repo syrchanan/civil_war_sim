@@ -2,8 +2,8 @@
  * Units on the field (port of python/imperial_generals/units).
  *
  * Only what the round engine and the state file use: Python's legacy 1-v-1 coefficient helpers and the distance
- * methods are not ported. A position is carried as plain data so state files round-trip; positions are parked
- * until the map returns.
+ * methods are not ported. A position is carried as plain data so state files round-trip; the map draws it, but no
+ * combat rule uses it yet.
  */
 
 import defaults from './defaults.json';
@@ -40,7 +40,7 @@ export function closestMoraleStat(raw: number): number {
   return Math.floor((minRaw + index * scale) / scale);
 }
 
-/** Battlefield position, kept as data (positions are parked). */
+/** Battlefield position, kept as data (drawn on the map; no combat rule uses it yet). */
 export interface Position {
   x: number;
   y: number;

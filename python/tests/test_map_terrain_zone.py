@@ -3,7 +3,7 @@ Tests for TerrainZone, BiomeMapConfig, and BiomePresets.
 """
 
 import pytest
-from imperial_generals.map import ElevationConfig, TerrainPresets, TerrainZone, BiomeMapConfig, BiomePresets
+from imperial_generals.map import ElevationConfig, TerrainZone, BiomeMapConfig, BiomePresets
 
 
 # =============================================================================

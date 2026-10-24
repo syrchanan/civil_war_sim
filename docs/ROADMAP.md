@@ -55,25 +55,25 @@ with unlimited line of sight. The map pipeline is kept but parked.
 ### Phase B — Playable web client
 | # | Item | Status |
 |---|---|---|
-| B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ► |
-| B2 | Parity fixtures: Python ↔ TS identical results | ► |
-| B3 | GitHub Pages client: place units, set round length, resolve | ► (built; deploys from main) |
+| B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ✓ |
+| B2 | Parity fixtures: Python ↔ TS identical results | ✓ |
+| B3 | GitHub Pages client: place units, set round length, resolve; the map | ✓ (deploys from main) |
 | B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ✓ (2026-10-23) |
+| B5 | One side per player (player files), admin rounds and modifiers, army files, phones | ✓ (2026-10-24) |
 
 ### Phase C — Later
 | Item | Status |
 |---|---|
 | Between-battle morale reconciliation / cooling-off | ○ (needs design) |
 | Rally override for broken units | ○ |
-| Admin effect modifier | ○ |
+| Admin effect modifier | ○ (per-unit, per-round modifiers done in B5; a per-side scalar for the whole battle is open) |
 | Commander rating: historical general by performance | ○ (needs design) |
 | Weapon range stat + range/distance accuracy | ○ |
-| Map in the web client (port of map pipeline) | ○ |
+| Terrain map in the web client (port of map pipeline; the plain map is B3) | ○ |
 | Terrain effects: elevation, cover, fences, LoS, flanking | ⏸ |
 | Weather | ⏸ |
 | Lakes, river→lake termination, roads, fences (map stages 4–6) | ⏸ |
 | Movement system | ⏸ (admins place units instead) |
-| Streamlit prototype UI | ⏸ (first version works; frozen) |
 
 ### Done
 | Item | Status |
@@ -82,7 +82,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | Units: Infantry/Cavalry/Artillery, Army, Position, subtypes | ✓ |
 | Regiment combat modes (idle / ranged / melee, Lanchester law dispatch) | ✓ |
 | Map pipeline stages 1–3 (Voronoi, biome/elevation, rivers) | ✓ |
-| Streamlit prototype v1 (`streamlit run streamlit/app.py`) | ✓ |
+| Streamlit prototype v1 (removed 2026-10-24; the web client replaces it) | ✓ |
 
 ---
 
@@ -241,7 +241,7 @@ report = battle.resolve_round(duration=90, orders=orders)
 - `RoundReport` gives per-unit losses, inflicted, size, morale, broken and `broke_at`; `record_events=True` adds a
   per-casualty event log.
 - Bit-identical to `Simulation` in a 1-v-1 ranged fight (tested over 5 seeds). `Simulation` stays as the legacy
-  1-v-1 used by Streamlit and `main.py`, and can be retired once nothing uses it.
+  1-v-1 used by `main.py` (and the bit-identical test), and can be retired once nothing uses it.
 - A break from the in-combat drain alone is detected at the next casualty or at the round's end. The exact moment
   between events isn't solved for.
 
@@ -717,7 +717,7 @@ Casualty totals don't change (captured wounded were already counted once, as cas
 
 ## Phase B — Playable web client
 
-### B1. TypeScript port ►
+### B1. TypeScript port ✓
 Port the Phase A engine (RNG, params, round engine, engagements, morale, matchups, serialization) to TypeScript,
 built together with B2: each piece lands with its parity fixture. The stale v0.2 `typescript/` port is deleted.
 
@@ -744,7 +744,7 @@ Python's (`ValueError`, `RuntimeError`, built-in `TypeError`).
 **Not ported** (decided 2026-10-23): setup files. The client builds units directly in its UI. Still to come: the
 tuning batch, needed for B4's Monte Carlo player mode.
 
-### B2. Parity fixtures ►
+### B2. Parity fixtures ✓
 Shared JSON in `test_cases/parity/`, asserted in both test suites. `imperial_generals.parity` builds them from the
 Python engine (`python -m imperial_generals.parity` rewrites them), and a Python test fails if a committed fixture
 is stale, so CI catches drift. `fdlibm.json` is the exception: V8 reference values, not generated.
@@ -755,7 +755,7 @@ drain-only breaks and each kind of finish).
 **CI** (`.github/workflows/ci.yml`): pytest with 100% coverage required, and web typecheck + Vitest with 100%
 coverage, on every push and PR. **CD**: `deploy.yml` publishes the site after CI passes on `main` (see B3).
 
-### B3. GitHub Pages client ►
+### B3. GitHub Pages client ✓
 A static client-side page. No backend. Build armies, drop units on a plain field, pick round length, set engagements,
 resolve, and see casualties and morale per round. Import/export state JSON.
 
@@ -793,7 +793,7 @@ Decided (2026-10-23):
 - **Deploy** (2026-10-23): `.github/workflows/deploy.yml` publishes the client to
   https://syrchanan.github.io/civil_war_sim/ when CI passes on main (building the commit CI tested), or by hand from
   the Actions tab. Pages uses GitHub Actions as its source; only `main` may deploy (the `github-pages` environment).
-- Not yet: fog of war, player mode (B4).
+- Player mode: B4; fog of war: B5.
 - **Richer map** ✓ (2026-10-24):
   - **Facing**: `facing` on positions, compass degrees clockwise from the top of the map (towards y = 0), in
     [0, 360); null when not given (older files, Python setups), drawn as facing the other side (side 0 up, side 1
@@ -862,8 +862,13 @@ admin reconciles both sides' orders, can override them, and applies modifiers.
   nothing loads while there are any. "Download / Load army (CSV)" per side in the army builder.
 - Later (user, 2026-10-24): **prospective battles** for players, to try scenarios of how they might fare; until
   then players can still build armies and fight practice battles in the player view as before.
-- Open: the orders table still offers every action to every unit (the map's target menu offers only what a unit
-  can do).
+- The orders table offers only what a unit can do (as the map's target menu does); an order it already has stays
+  listed.
+- **Phones** (user, 2026-10-24: mostly desktop, but should work on a phone): below 640px, tables you edit (army
+  builder, orders, modifiers, guesses) become one card per row with each field labelled; tables you read
+  (estimate, rounds, preview, order of battle) scroll sideways with the unit column held in place; the map
+  scrolls sideways at a readable size; 16px inputs and larger tap targets.
+- Later (user, 2026-10-24): import / export army files to and from **Google Sheets**, for players on phones.
 
 ---
 
@@ -943,6 +948,6 @@ Superseded by admins placing units. Terrain speed modifiers kept in `movement.ya
 units with the range to target it until it is out of range, and by melee pursuit fast enough to catch it. Its
 flight slows down over time, round after round, so pursuit catches up later.
 
-### Streamlit prototype ⏸
-`streamlit run streamlit/app.py`: Setup + Results pages, map layers, army builder, 1-v-1 sim plots. Frozen. The
-Python side is API/CLI-first and the web client replaces it for players.
+### Streamlit prototype (removed 2026-10-24)
+Setup + Results pages, map layers, army builder, 1-v-1 sim plots. Removed once the web client did all of it and
+more (user, 2026-10-24); it is in the git history (`streamlit/app.py`).

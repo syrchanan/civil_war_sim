@@ -1,5 +1,5 @@
 import pytest
-from imperial_generals.map import MapConfig, ElevationConfig, BiomeMapConfig, TerrainZone, BiomePresets
+from imperial_generals.map import MapConfig, ElevationConfig, BiomePresets
 
 
 def make_biome_config():
