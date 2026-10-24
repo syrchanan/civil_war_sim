@@ -53,7 +53,9 @@ export function ResultPanel({ store }: { store: Store }) {
   const battle = store.battle.value;
   if (battle === null) return <p class="note">Start the battle, fight its rounds, then finish it here.</p>;
   const summary = store.summary.value;
-  if (summary === null) return <FinishControls store={store} />;
+  if (summary === null) {
+    return store.mode.value === 'player' ? <p class="note">Not finished yet.</p> : <FinishControls store={store} />;
+  }
   const result = battle.result!;
   return (
     <div class="result">
