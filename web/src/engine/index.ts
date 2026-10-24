@@ -26,3 +26,5 @@ export { battleFromDict, battleToDict, FORMAT, VERSION } from './state';
 export type { StateData, UnitData } from './state';
 export { orderOfBattle, sideSummary } from './summary';
 export type { SideOrder, SideSummary, TypeTotal } from './summary';
+export { estimateRound, quantile } from './estimate';
+export type { ChargeEstimate, Range, RoundEstimate, UnitEstimate } from './estimate';
