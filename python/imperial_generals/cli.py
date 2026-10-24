@@ -46,15 +46,20 @@ def _load_state(path: Path) -> dict:
     return data
 
 
-def _load_orders(path: Path | None) -> dict:
-    if path is None:
-        return {}
-    data = load_setup_file(path)
-    if data is None:
-        return {}
-    if not isinstance(data, dict):
-        raise CliError(f'{path.name} must map unit ids to orders.')
-    return data
+def _load_orders(state: dict, paths: list[Path] | None) -> tuple:
+    """
+    The round's orders from any number of files, each a plain mapping of unit id to order or a player's orders
+    file (with their moves); returns ``(state with the moves applied, orders)``.
+    """
+    docs = []
+    for path in paths or []:
+        data = load_setup_file(path)
+        if data is None:
+            continue
+        if not isinstance(data, dict):
+            raise CliError(f'{path.name} must map unit ids to orders.')
+        docs.append(data)
+    return api.merge_plans(state, docs)
 
 
 def _save(state: dict, path: Path) -> None:
@@ -246,8 +251,8 @@ def _cmd_new(args) -> None:
 
 
 def _cmd_resolve(args) -> None:
-    state, report = api.step(_load_state(args.state), args.duration, _load_orders(args.orders),
-                             record_events=args.events)
+    state, orders = _load_orders(_load_state(args.state), args.orders)
+    state, report = api.step(state, args.duration, orders, record_events=args.events)
     _save(state, args.output or args.state)
     if args.json:
         _print_json(report)
@@ -256,8 +261,8 @@ def _cmd_resolve(args) -> None:
 
 
 def _cmd_preview(args) -> None:
-    state = _load_state(args.state)
-    arrows = api.preview(state, _load_orders(args.orders))
+    state, orders = _load_orders(_load_state(args.state), args.orders)
+    arrows = api.preview(state, orders)
     if args.json:
         _print_json(arrows)
         return
@@ -629,7 +634,9 @@ def _parser() -> argparse.ArgumentParser:
     p = commands.add_parser('resolve', help='fight one round')
     p.add_argument('state', type=Path)
     p.add_argument('--duration', type=float, required=True, help='round length in game minutes')
-    p.add_argument('--orders', type=Path, help='orders file: unit id -> {target, mode, ammo, on_break}; others idle')
+    p.add_argument('--orders', type=Path, nargs='+',
+                   help="orders files: unit id -> {target, mode, ammo, on_break}, or players' orders files from the "
+                        'site (one per side); units without orders idle')
     p.add_argument('-o', '--output', type=Path, help='write the new state here instead of updating STATE')
     p.add_argument('--events', action='store_true', help='record every casualty in the report')
     p.add_argument('--json', action='store_true', help='print the report as JSON')
@@ -637,7 +644,7 @@ def _parser() -> argparse.ArgumentParser:
 
     p = commands.add_parser('preview', help='show the engagements some orders would create (no dice rolled)')
     p.add_argument('state', type=Path)
-    p.add_argument('--orders', type=Path)
+    p.add_argument('--orders', type=Path, nargs='+')
     p.add_argument('--json', action='store_true')
     p.set_defaults(run=_cmd_preview)
 
