@@ -1076,7 +1076,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -1246,7 +1247,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -1430,7 +1432,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -2597,7 +2600,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -2767,7 +2771,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -2935,7 +2940,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -4106,7 +4112,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -4276,7 +4283,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -4456,7 +4464,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -5787,7 +5796,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -5986,7 +5996,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -6185,7 +6196,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 4,
@@ -6336,7 +6348,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 5,
@@ -6487,7 +6500,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -7821,7 +7835,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -8020,7 +8035,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -8195,7 +8211,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 4,
@@ -8346,7 +8363,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 5,
@@ -8497,7 +8515,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -9831,7 +9850,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -10030,7 +10050,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -10205,7 +10226,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 4,
@@ -10368,7 +10390,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 5,
@@ -10507,7 +10530,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -11945,7 +11969,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -12189,7 +12214,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -12423,7 +12449,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 4,
@@ -12637,7 +12664,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -14093,7 +14121,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -14337,7 +14366,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -14559,7 +14589,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 4,
@@ -14773,7 +14804,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -16233,7 +16265,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -16477,7 +16510,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -16711,7 +16745,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 4,
@@ -16925,7 +16960,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -18193,7 +18229,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -18393,7 +18430,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -18563,7 +18601,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -19809,7 +19848,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -20009,7 +20049,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -20179,7 +20220,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -21426,7 +21468,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -21614,7 +21657,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -21786,7 +21830,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -22773,7 +22818,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -22882,7 +22928,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -23840,7 +23887,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -23966,7 +24014,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -24924,7 +24973,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -25050,7 +25100,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -25979,7 +26030,8 @@
                 "time": 0.3203226091024224
               }
             ],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -26087,7 +26139,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -27016,7 +27069,8 @@
                 "time": 4.278479798278564
               }
             ],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -27124,7 +27178,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -28053,7 +28108,8 @@
                 "time": 1.5537764452966876
               }
             ],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -28161,7 +28217,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -29100,7 +29157,8 @@
                 "time": 1.3419130564087025
               }
             ],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -29208,7 +29266,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -30147,7 +30206,8 @@
                 "time": 0.9281274138881584
               }
             ],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -30255,7 +30315,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -31198,7 +31259,8 @@
                 "time": 0.9423571157295504
               }
             ],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -31322,7 +31384,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {
@@ -34312,7 +34375,8 @@
             },
             "charges": [],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 2,
@@ -35650,7 +35714,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           },
           {
             "round": 3,
@@ -36210,7 +36275,8 @@
               }
             ],
             "retargets": [],
-            "positions": {}
+            "positions": {},
+            "modifiers": {}
           }
         ],
         "result": {

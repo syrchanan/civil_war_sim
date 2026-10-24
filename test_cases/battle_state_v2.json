@@ -423,7 +423,8 @@
       },
       "charges": [],
       "retargets": [],
-      "positions": {}
+      "positions": {},
+      "modifiers": {}
     }
   ],
   "result": null

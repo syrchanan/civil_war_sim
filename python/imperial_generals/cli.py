@@ -4,6 +4,7 @@ Command line for the battle engine (roadmap A9). Run ``python -m imperial_genera
     python -m imperial_generals new setup.yaml -o battle.json         # start a battle from a setup file
     python -m imperial_generals preview battle.json --orders o.yaml   # who would fight whom, no dice rolled
     python -m imperial_generals resolve battle.json --duration 90 --orders o.yaml
+    python -m imperial_generals resolve battle.json --duration 90 --orders o.yaml --modifiers m.yaml   # admin's
     python -m imperial_generals finish battle.json --field Union      # settle killed / wounded / captured
     python -m imperial_generals show battle.json
     python -m imperial_generals run scenario.yaml                     # setup + scripted rounds, start to end
@@ -60,6 +61,26 @@ def _load_orders(state: dict, paths: list[Path] | None) -> tuple:
             raise CliError(f'{path.name} must map unit ids to orders.')
         docs.append(data)
     return api.merge_plans(state, docs)
+
+
+def _load_modifiers(path: Path | None) -> dict | None:
+    """The admin's modifiers for this round: unit id -> {fire, melee, morale, note} (fractions, -0.15 is -15%)."""
+    if path is None:
+        return None
+    data = load_setup_file(path)
+    if data is not None and not isinstance(data, dict):
+        raise CliError(f'{path.name} must map unit ids to modifiers (fire, melee, morale, note).')
+    return data
+
+
+def _modifiers_text(report: dict, names: dict) -> str:
+    """'1st Minnesota fire -50% (uphill); ...': the round's modifiers that aren't zero."""
+    parts = []
+    for uid, mod in report['modifiers'].items():
+        changes = ', '.join(f'{key} {mod[key]:+.0%}' for key in ('fire', 'melee', 'morale') if mod[key])
+        note = f"({mod['note']})" if mod['note'] else ''
+        parts.append(' '.join(part for part in (names[uid], changes, note) if part))
+    return '; '.join(parts)
 
 
 def _save(state: dict, path: Path) -> None:
@@ -133,6 +154,8 @@ def _print_report(state: dict, report: dict) -> None:
         for uid, u in report['units'].items()
     ]
     print(_table(['Unit', 'Side', 'Size', 'Lost', 'Captured', 'Inflicted', 'Morale', 'Status'], rows))
+    if report['modifiers']:
+        print('Modifiers: ' + _modifiers_text(report, names))
     if report['charges']:
         print('Charges: ' + '; '.join(_charge_text(c, names) for c in report['charges']))
     skipped = report.get('skipped_orders', {})
@@ -252,7 +275,8 @@ def _cmd_new(args) -> None:
 
 def _cmd_resolve(args) -> None:
     state, orders = _load_orders(_load_state(args.state), args.orders)
-    state, report = api.step(state, args.duration, orders, record_events=args.events)
+    state, report = api.step(state, args.duration, orders, record_events=args.events,
+                             modifiers=_load_modifiers(args.modifiers))
     _save(state, args.output or args.state)
     if args.json:
         _print_json(report)
@@ -262,7 +286,7 @@ def _cmd_resolve(args) -> None:
 
 def _cmd_preview(args) -> None:
     state, orders = _load_orders(_load_state(args.state), args.orders)
-    arrows = api.preview(state, orders)
+    arrows = api.preview(state, orders, _load_modifiers(args.modifiers))
     if args.json:
         _print_json(arrows)
         return
@@ -637,6 +661,8 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument('--orders', type=Path, nargs='+',
                    help="orders files: unit id -> {target, mode, ammo, on_break}, or players' orders files from the "
                         'site (one per side); units without orders idle')
+    p.add_argument('--modifiers', type=Path, help="the admin's modifiers for this round: unit id -> {fire, melee, "
+                                                  'morale, note}, fractions from -1 to 1 (-0.15 is -15%%)')
     p.add_argument('-o', '--output', type=Path, help='write the new state here instead of updating STATE')
     p.add_argument('--events', action='store_true', help='record every casualty in the report')
     p.add_argument('--json', action='store_true', help='print the report as JSON')
@@ -645,6 +671,7 @@ def _parser() -> argparse.ArgumentParser:
     p = commands.add_parser('preview', help='show the engagements some orders would create (no dice rolled)')
     p.add_argument('state', type=Path)
     p.add_argument('--orders', type=Path, nargs='+')
+    p.add_argument('--modifiers', type=Path)
     p.add_argument('--json', action='store_true')
     p.set_defaults(run=_cmd_preview)
 

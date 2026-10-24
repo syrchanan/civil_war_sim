@@ -620,3 +620,29 @@ def test_resolve_refuses_orders_for_another_round(files, capsys):
     stale = _plan_file(files / 'stale.json', {**state, 'round': 3}, 0, {'us_1mn': ORDERS['us_1mn']})
     code, _, err = run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--orders', stale)
     assert code == 2 and 'round 4; the next round is 1' in err
+
+
+def test_resolve_and_preview_take_the_admins_modifiers(files, capsys):
+    new(capsys, files)
+    orders = files / 'orders.json'
+    orders.write_text(json.dumps(ORDERS), encoding='utf-8')
+    mods = files / 'mods.yaml'
+    mods.write_text("us_1mn: {fire: -0.5, note: uphill}\ncs_26nc: {morale: 0.1}\n", encoding='utf-8')
+    _, plain, _ = run(capsys, 'preview', files / 'state.json', '--orders', orders, '--json')
+    _, halved, _ = run(capsys, 'preview', files / 'state.json', '--orders', orders, '--modifiers', mods, '--json')
+    rate = lambda out: next(a['rate'] for a in json.loads(out) if a['attacker'] == 'us_1mn')
+    assert rate(halved) == pytest.approx(rate(plain) / 2)
+    code, out, err = run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--orders', orders, '--modifiers', mods)
+    assert code == 0, err
+    assert 'Modifiers: 1st Minnesota fire -50% (uphill); 26th North Carolina morale +10%' in out
+    assert read(files / 'state.json')['history'][0]['modifiers']['us_1mn']['note'] == 'uphill'
+
+
+def test_bad_modifiers_file_is_reported(files, capsys):
+    new(capsys, files)
+    mods = files / 'mods.yaml'
+    mods.write_text("- us_1mn\n", encoding='utf-8')
+    code, _, err = run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--modifiers', mods)
+    assert code != 0 and 'mods.yaml must map unit ids to modifiers' in err
+    mods.write_text("", encoding='utf-8')                       # an empty file: no modifiers
+    assert run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--modifiers', mods)[0] == 0

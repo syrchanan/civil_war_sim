@@ -14,6 +14,8 @@ graph: at most one outgoing arrow per unit (its target), any number of incoming 
   target's close-range fire, then a contact test decides whether it goes home, falters, or the defender breaks
   before contact. Contact persists across rounds while either unit keeps a melee order on the other.
 - Melee casualties scale with the width in contact: min(attacker's men facing the target, target's front).
+- An admin can give units modifiers for one round (e.g. 'uphill, fire -15%'): fire and melee scale the casualties
+  the unit inflicts (closing fire counts as fire), morale scales what it spends from its morale budget.
 
 All arrows run in one continuous-time Markov chain: the next casualty arrives after Exp(sum of rates), and the
 arrow that caused it is chosen by a uniform draw weighted by rate. Approaches end at fixed times; the chain
@@ -124,6 +126,46 @@ class Retarget:
     time: float
 
 
+MODIFIER_KEYS = ('fire', 'melee', 'morale')
+
+
+def validate_modifiers(modifiers, units) -> dict:
+    """
+    Check one round's admin modifiers, ``{uid: {'fire', 'melee', 'morale', 'note'}}``: each a fraction from -1 to 1
+    (-0.15 is -15%), all optional, plus a free-text note. Returns them complete (missing values 0, note '').
+
+    Raises
+    ------
+    ValueError
+        Naming the unit and what is wrong.
+    """
+    if not isinstance(modifiers, dict):
+        raise ValueError(f"modifiers must be a mapping of unit id to modifiers, got {type(modifiers).__name__}.")
+    checked = {}
+    for uid, mod in modifiers.items():
+        if uid not in units:
+            raise ValueError(f"Unknown unit {uid} in modifiers.")
+        if not isinstance(mod, dict):
+            raise ValueError(f"{uid}: modifiers must be a mapping (fire, melee, morale, note).")
+        unknown = sorted(k for k in mod if k not in (*MODIFIER_KEYS, 'note'))
+        if unknown:
+            raise ValueError(f"Unknown modifier(s) {unknown} for {uid}; use fire, melee, morale, note.")
+        out = {}
+        for key in MODIFIER_KEYS:
+            value = mod.get(key, 0.0)
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(f"{uid}: {key} must be a number (a fraction, -0.15 for -15%), got {value!r}.")
+            if not -1 <= value <= 1:
+                raise ValueError(f"{uid}: {key} must be between -1 and 1 (-100% to +100%), got {value}.")
+            out[key] = float(value)
+        note = mod.get('note', '')
+        if not isinstance(note, str):
+            raise ValueError(f"{uid}: the note must be text, got {note!r}.")
+        out['note'] = note
+        checked[uid] = out
+    return checked
+
+
 @dataclass(frozen=True)
 class CasualtyEvent:
     time: float
@@ -157,6 +199,7 @@ class RoundReport:
     charges: tuple = ()         # Charge per charge made this round
     retargets: tuple = ()       # Retarget per switch of target this round
     positions: dict = field(default_factory=dict)   # uid -> position (as saved) as the round began, for placed units
+    modifiers: dict = field(default_factory=dict)   # uid -> admin modifiers for this round (fire, melee, morale, note)
 
 
 @dataclass(frozen=True)
@@ -279,6 +322,7 @@ class Battle:
         self.contacts: set[frozenset] = set()       # pairs of unit ids locked in melee, carried across rounds
         self.result: BattleResult | None = None      # set by finish()
         self._broken_before_round: set[str] = set()
+        self._modifiers: dict = {}                   # this round's admin modifiers, while it is fought or previewed
 
     # -------------------------------------------------------------------------
     # Orders and the targeting graph
@@ -427,6 +471,7 @@ class Battle:
         units = self.units
         combat = self.params.combat
         closing = self.params.charge.closing_fire_multiplier
+        modifiers = self._modifiers
         total_fronts = {uid: sum(units[p].front for p in ps) for uid, ps in partners.items()}
         arrows = []
         for attacker, target, mode, matchup, share, gun_rate in slots:
@@ -451,6 +496,9 @@ class Battle:
                 # (coef * size) * kill_rate first: same operation order as Simulation, for bit-identical
                 # 1-v-1 draws (the infantry-v-infantry matchup is 1.0, an exact multiply)
                 rate = c * unit.size * combat.ranged_kill_rate * matchup
+            mod = modifiers.get(attacker)
+            if mod is not None:
+                rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))
             if mode == 'closing':
                 rate = rate * closing * share
             if units[target].morale.broken:
@@ -460,12 +508,20 @@ class Battle:
                 arrows.append((attacker, target, mode, rate))
         return arrows
 
-    def engagements(self, orders: dict) -> tuple:
+    def engagements(self, orders: dict, modifiers: dict | None = None) -> tuple:
         """
-        Preview the arrows and their current casualty rates for these orders at the start of a round (no dice
-        rolled): melee along existing contacts, closing fire on new charges, ranged fire.
+        Preview the arrows and their current casualty rates for these orders (and admin modifiers) at the start of a
+        round (no dice rolled): melee along existing contacts, closing fire on new charges, ranged fire.
         """
         valid = self._validate_orders(orders)
+        checked = validate_modifiers(modifiers or {}, self.units)
+        self._modifiers = checked
+        try:
+            return self._engagements(valid)
+        finally:
+            self._modifiers = {}
+
+    def _engagements(self, valid: dict) -> tuple:
         contacts = self._round_contacts(valid)
         pending, _ = self._new_charges(valid, contacts, self.time, float('inf'))
         return tuple(Engagement(*a) for a in self._rates(*self._plan(valid, set(), contacts, pending)))
@@ -547,7 +603,8 @@ class Battle:
             return 'faltered', odds
         return 'home', odds
 
-    def resolve_round(self, duration: float, orders: dict, record_events: bool = False) -> RoundReport:
+    def resolve_round(self, duration: float, orders: dict, record_events: bool = False,
+                      modifiers: dict | None = None) -> RoundReport:
         """
         Fight one round of ``duration`` game minutes under ``orders`` and return its report.
 
@@ -559,12 +616,26 @@ class Battle:
         rest of the round. A unit that breaks loses a share of its remaining men as prisoners (more if enemy cavalry
         is attacking it). Broken units can be attacked (pursued) but don't fight back; they are scattering, so
         fire and pursuit on them use ``broken_fire_multiplier`` / ``broken_melee_multiplier``.
+
+        ``modifiers`` are the admin's for this round only (see ``validate_modifiers``), recorded in the report.
         """
         if self.finished:
             raise RuntimeError("This battle is finished.")
         if not duration > 0:
             raise ValueError(f"duration must be > 0, got {duration}.")
         valid = self._validate_orders(orders)
+        checked = validate_modifiers(modifiers or {}, self.units)
+        self._modifiers = checked
+        for uid, mod in checked.items():
+            self.units[uid].morale.spend_factor = 1 - mod['morale']
+        try:
+            return self._resolve_round(duration, valid, record_events, checked)
+        finally:
+            self._modifiers = {}
+            for uid in checked:
+                self.units[uid].morale.spend_factor = 1.0
+
+    def _resolve_round(self, duration: float, valid: dict, record_events: bool, checked: dict) -> RoundReport:
         live = dict(valid)               # orders as they stand: a retarget changes the target here, not in valid
 
         self.round += 1
@@ -739,6 +810,7 @@ class Battle:
                     for uid, o in valid.items()},
             charges=tuple(charges),
             positions=placed,
+            modifiers=checked,
             retargets=tuple(retargets),
         )
         self.history.append(report)

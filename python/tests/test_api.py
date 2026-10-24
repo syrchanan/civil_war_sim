@@ -115,7 +115,7 @@ def test_round_without_orders_is_idle():
     ({'rounds': [{'duration': 0}]}, 'Round 1: duration must be a positive number of minutes.'),
     ({'rounds': [{'duration': True}]}, 'Round 1: duration must be a positive number of minutes.'),
     ({'rounds': [{'duration': 60, 'orders': []}]}, 'Round 1: "orders" must be a mapping of unit id to order.'),
-    ({'rounds': [{'duration': 60, 'order': FIRE}]}, 'Round 1: unknown key "order". Allowed: duration, orders.'),
+    ({'rounds': [{'duration': 60, 'order': FIRE}]}, 'Round 1: unknown key "order". Allowed: duration, orders, modifiers.'),
     ({'finish': 'yes'}, '"finish" must be true, false, auto, none, 0, 1 or a side name (Union, Confederate).'),
     ({'finish': 2}, '"finish" must be true, false, auto, none, 0, 1 or a side name (Union, Confederate).'),
 ])
