@@ -12,6 +12,7 @@ import {
   ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, type FieldHolder, InfantryRegiment, ON_BREAK, type Order,
   orderOfBattle, Regiment, Rng, type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
+import { blockSize, clampToField, defaultLayout, type Point } from './field';
 
 export type UnitType = 'inf' | 'cav' | 'art';
 
@@ -53,6 +54,31 @@ function buildRegiment(u: UnitDraft): Regiment {
   if (u.type === 'art') return new ArtilleryBattery(u.size, u.stats, u.guns!, u.subtype!);
   return new Regiment(u.size, u.stats);
 }
+
+/** A unit as drawn on the map: where it stands (yards), how big its block is, and how it fares. */
+export interface MapUnit {
+  uid: string;
+  name: string;
+  side: 0 | 1;
+  type: string | null;
+  men: number;
+  x: number;
+  y: number;
+  width: number;
+  depth: number;
+  broken: boolean;
+  wiped: boolean;
+}
+
+export interface OrderArrow {
+  from: string;
+  to: string;
+  mode: string;
+  side: number;
+}
+
+const finite = (n: number | null): number => (Number.isFinite(n) ? (n as number) : 0);
+const onOpenGround = (p: Point) => ({ x: p.x, y: p.y, z: 0, cover: 0, terrain_type: 'open' });
 
 const IDLE: Order = { mode: 'idle', target: null, ammo: null, on_break: null };
 
@@ -97,6 +123,39 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
   const orderOfBattleView = computed(() => {
     revision.value;
     return battle.value === null ? null : orderOfBattle(battle.value.toDict());
+  });
+
+  const positions = signal<Record<string, Point>>({}); // places given before the battle starts
+
+  /** Every unit on the map; any without a place yet stands where the default layout puts it. */
+  const mapUnits = computed<MapUnit[]>(() => {
+    revision.value;
+    const b = battle.value;
+    const shown = b === null
+      ? units.value.map((u) => ({
+        uid: u.id, name: u.name, side: u.side, type: u.type, men: finite(u.size), front: finite(u.size),
+        guns: u.guns === null ? null : finite(u.guns), broken: false, wiped: false, place: positions.value[u.id],
+      }))
+      : [...b.units.values()].map((u) => ({
+        uid: u.uid, name: u.name, side: u.side as 0 | 1, type: u.regiment.unitType, men: u.size, front: u.front,
+        guns: u.regiment instanceof ArtilleryBattery ? u.regiment.guns : null, broken: u.morale.broken,
+        wiped: u.size === 0, place: u.regiment.position ?? undefined,
+      }));
+    const sized = shown.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
+    const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
+    return sized.map(({ front: _front, guns: _guns, place, ...u }) => {
+      const { x, y } = place ?? layout[u.uid];
+      return { ...u, x, y };
+    });
+  });
+
+  /** The current fire and charge orders, as arrows on the map. */
+  const orderArrows = computed<OrderArrow[]>(() => {
+    revision.value;
+    if (battle.value === null || battle.value.finished) return [];
+    return actingUnits.value
+      .filter((u) => orders.value[u.uid].mode !== 'idle')
+      .map((u) => ({ from: u.uid, to: orders.value[u.uid].target!, mode: orders.value[u.uid].mode, side: u.side }));
   });
 
   const touch = () => {
@@ -198,6 +257,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
       problems.push(`The seed must be a whole number from 0 to ${2 ** 32 - 1}.`);
     }
     if (problems.length) return problems;
+    for (const u of mapUnits.value) specs[u.uid].regiment.position = onOpenGround(u);
     battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] });
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
@@ -254,6 +314,18 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     return null;
   }
 
+  /** Move a unit on the map (kept on the field): before the battle, or between rounds; not once it is over. */
+  function moveUnit(uid: string, point: Point): void {
+    const place = clampToField(point);
+    const b = battle.value;
+    if (b === null) {
+      positions.value = { ...positions.value, [uid]: place };
+    } else if (!b.finished) {
+      b.units.get(uid)!.regiment.position = onOpenGround(place);
+      touch();
+    }
+  }
+
   /** End the battle: settle killed, wounded and prisoners; `holder` 'auto' lets the engine decide the field. */
   function finish(holder: FieldHolder): void {
     battle.value!.finish(holder);
@@ -269,6 +341,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
+    mapUnits, orderArrows, moveUnit,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
