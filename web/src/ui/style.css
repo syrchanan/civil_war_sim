@@ -124,6 +124,7 @@ label.button { display: inline-block; padding: 4px 12px; border: 1px solid var(-
 label.button input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; }
 label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+.map-replay { display: inline-block; margin-bottom: 0.5rem; }
 .map svg { width: 100%; height: auto; display: block; border-radius: 6px; touch-action: none; user-select: none; }
 .field { fill: var(--field); }
 .field-grid { stroke: var(--field-grid); stroke-width: 1; }
