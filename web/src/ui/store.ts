@@ -184,12 +184,34 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   });
 
   const positions = signal<Record<string, Place>>({}); // places given before the battle starts
+  const mapRound = signal<number | null>(null); // the round the map replays as it began; null: now
 
-  /** Every unit on the map; any without a place yet stands where the default layout puts it. */
+  /** The rounds the map can replay. */
+  const replayRounds = computed<number[]>(() => history.value.map((r) => r.round));
+
+  /** A unit as it stood when round n began: its place then, men, guns and whether it had broken. */
+  function asRoundBegan(b: Battle, u: BattleUnit, n: number) {
+    const prev = n === 1 ? null : b.history[n - 2].units[u.uid];
+    const men = prev === null ? u.initialSize : prev.size;
+    const battery = u.regiment instanceof ArtilleryBattery ? u.regiment : null;
+    const lostSince = b.history.slice(n - 1).reduce((sum, r) => sum + r.units[u.uid].guns_lost, 0);
+    const at = b.history[n - 1].positions[u.uid];
+    return {
+      uid: u.uid, name: u.name, side: u.side as 0 | 1, type: u.regiment.unitType, men, front: men,
+      guns: battery === null ? null : battery.guns + lostSince, broken: prev?.broken ?? false, wiped: men === 0,
+      place: at === undefined ? undefined : { x: at.x, y: at.y, facing: at.facing ?? defaultFacing(u.side as 0 | 1) },
+    };
+  }
+
+  /**
+   * Every unit on the map, now or as a replayed round began; any without a place stands where the default layout
+   * puts it.
+   */
   const mapUnits = computed<MapUnit[]>(() => {
     revision.value;
     const b = battle.value;
-    const shown = b === null
+    const n = mapRound.value;
+    const shown = b !== null && n !== null ? [...b.units.values()].map((u) => asRoundBegan(b, u, n)) : b === null
       ? units.value.map((u) => ({
         uid: u.id, name: u.name, side: u.side, type: u.type, men: finite(u.size), front: finite(u.size),
         guns: u.guns === null ? null : finite(u.guns), broken: false, wiped: false, place: positions.value[u.id],
@@ -208,9 +230,18 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     });
   });
 
-  /** The current fire and charge orders (and, for a player, what they expect of the enemy), as arrows. */
+  /**
+   * The current fire and charge orders (and, for a player, what they expect of the enemy), as arrows; when
+   * replaying a round, the orders given for it.
+   */
   const orderArrows = computed<OrderArrow[]>(() => {
     revision.value;
+    if (battle.value !== null && mapRound.value !== null) {
+      const b = battle.value;
+      return Object.entries(b.history[mapRound.value - 1].orders)
+        .filter(([, o]) => o.mode !== 'idle')
+        .map(([uid, o]) => ({ from: uid, to: o.target!, mode: o.mode, side: b.units.get(uid)!.side }));
+    }
     if (battle.value === null || battle.value.finished) return [];
     const eff = effectiveOrders.value;
     return actingUnits.value
@@ -346,6 +377,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (problems.length) return problems;
     for (const u of mapUnits.value) specs[u.uid].regiment.position = onOpenGround(u);
     battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] });
+    mapRound.value = null;
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return [];
@@ -397,6 +429,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       size: u.initial_size, stats: u.initial_stats, guns: u.guns === undefined ? null : u.guns + u.guns_lost,
     }));
     battle.value = b;
+    mapRound.value = null;
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return null;
@@ -472,9 +505,10 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return problems;
   }
 
-  /** Put a unit in a new place: before the battle, or between rounds; not once it is over. */
+  /** Put a unit in a new place: before the battle, or between rounds; not once it is over, nor while replaying. */
   function placeUnit(uid: string, place: Place): void {
     const b = battle.value;
+    if (mapRound.value !== null) return;
     if (b === null) {
       positions.value = { ...positions.value, [uid]: place };
     } else if (!b.finished) {
@@ -505,13 +539,14 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   /** Back to editing the armies (the battle is dropped). */
   function reset(): void {
     battle.value = null;
+    mapRound.value = null;
     touch();
   }
 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
-    mapUnits, orderArrows, moveUnit, faceUnit, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
+    mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };

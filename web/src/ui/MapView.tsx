@@ -2,7 +2,8 @@
  * The battlefield seen from above: a plain field in yards, each unit a block in its side's color turned to its
  * facing (front edge marked), orders drawn as arrows (fire dashed, charge solid). Drag a unit, or select it and use
  * the arrow keys, to place it before the battle or move it between rounds; drag the handle in front of it, or use
- * Q and E, to turn it. Display only: the engine ignores positions and facings.
+ * Q and E, to turn it. Once rounds are fought, any round can be replayed as it began: where units stood, their
+ * men and the orders given. Display only: the engine ignores positions and facings.
  */
 
 import { useRef } from 'preact/hooks';
@@ -110,13 +111,29 @@ export function MapView({ store }: { store: Store }) {
   const byId = Object.fromEntries(units.map((u) => [u.uid, u]));
   const battle = store.battle.value;
   // anything before the battle; between rounds, a player moves only their own side's units
-  const canMove = (u: MapUnit) => battle === null
-    || (!battle.finished && (store.mode.value === 'admin' || u.side === store.playerSide.value));
-  const movable = !battle?.finished;
+  const replaying = store.mapRound.value;
+  const canMove = (u: MapUnit) => replaying === null && (battle === null
+    || (!battle.finished && (store.mode.value === 'admin' || u.side === store.playerSide.value)));
+  const movable = replaying === null && !battle?.finished;
   const gridX = Array.from({ length: FIELD.width / GRID - 1 }, (_, i) => (i + 1) * GRID);
   const gridY = Array.from({ length: FIELD.height / GRID - 1 }, (_, i) => (i + 1) * GRID);
   return (
     <div class="map">
+      {store.replayRounds.value.length > 0 && (
+        <label class="map-replay">
+          Show on the map{' '}
+          <select aria-label="Show on the map" value={replaying ?? ''}
+            onChange={(e) => {
+              const v = e.currentTarget.value;
+              store.mapRound.value = v === '' ? null : Number(v);
+            }}>
+            <option value="">Now</option>
+            {battle!.history.map((r) => (
+              <option value={r.round}>{`Round ${r.round}, as it began (${r.start} min)`}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <svg viewBox={`0 0 ${FIELD.width} ${FIELD.height}`} role="img"
         aria-label={`Battlefield, ${FIELD.width} by ${FIELD.height} yards`}>
         <defs>
@@ -138,6 +155,9 @@ export function MapView({ store }: { store: Store }) {
         {units.map((u) => <Block key={u.uid} store={store} unit={u} movable={canMove(u)} />)}
       </svg>
       <p class="note">
+        {replaying !== null
+          ? `Round ${replaying} as it began: where units stood, their men and the orders given. Pick Now to move units. `
+          : ''}
         {movable
           ? 'Drag a unit, or select it and use the arrow keys, to place it; drag the handle in front of it, or use '
             + 'Q and E, to turn it (Shift for bigger steps). '

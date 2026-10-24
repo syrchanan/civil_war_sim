@@ -136,6 +136,26 @@ describe('map', () => {
   });
 });
 
+describe('map replay', () => {
+  it('pick a round to see it as it began; moves are off until back to now', () => {
+    const store = setup();
+    expect(screen.queryByLabelText('Show on the map')).toBeNull();          // no rounds fought yet
+    fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+    fireEvent.change(screen.getByLabelText('1st Minnesota action'), { target: { value: 'ranged' } });
+    fireEvent.click(screen.getByRole('button', { name: /^Fight/ }));
+    const picker = screen.getByLabelText('Show on the map') as HTMLSelectElement;
+    expect([...picker.options].map((o) => o.textContent)).toEqual(['Now', 'Round 1, as it began (0 min)']);
+    fireEvent.change(picker, { target: { value: '1' } });
+    expect(store.mapRound.value).toBe(1);
+    expect(screen.getByText(/Round 1 as it began/)).toBeTruthy();
+    expect(unit('1st Minnesota').getAttribute('tabindex')).toBeNull();
+    expect(unit('1st Minnesota').querySelector('.turn-handle')).toBeNull();
+    fireEvent.change(picker, { target: { value: '' } });
+    expect(store.mapRound.value).toBeNull();
+    expect(unit('1st Minnesota').getAttribute('tabindex')).toBe('0');
+  });
+});
+
 describe('map arrows', () => {
   it('two units ordered at each other get arrows side by side, not on top of each other', () => {
     const store = setup();
