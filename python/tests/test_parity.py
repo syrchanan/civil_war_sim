@@ -145,3 +145,16 @@ def test_scenario_from_state_keeps_unit_meta():
                                   {'id': 'x', 'side': 1, 'size': 100, 'stats': '4/4/0/0'}]}
     scenario = api.scenario_from_state(api.new_battle(setup))
     assert scenario['units'][0]['meta'] == {'player': 'p1'} and 'meta' not in scenario['units'][1]
+
+
+def test_an_orders_file_written_by_the_client_merges_and_resolves():
+    # written by the web client's planDownload (web/src/ui/player.test.ts checks it still writes exactly this)
+    from imperial_generals import api
+    with open(os.path.join(PARITY_DIR, 'plan_example.json'), encoding='utf-8') as f:
+        plan = json.load(f)
+    start = next(c for c in parity.build('battles')['cases'] if c['name'] == 'example_ridge' and c['seed'] == 1)['start']
+    state, orders = api.merge_plans(start, [plan])
+    assert orders['cs_8al'] == {'mode': 'melee', 'target': 'us_1mn', 'on_break': 'pursue'}
+    assert next(u for u in state['units'] if u['id'] == 'cs_8al')['position']['x'] == 700
+    _, report = api.step(state, 60, orders)
+    assert report['orders']['cs_bat']['ammo'] == 'shell'
