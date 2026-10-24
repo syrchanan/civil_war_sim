@@ -827,7 +827,43 @@ for now players submit their plans as downloads and the admin runs the rounds.
   round (seed and round checked). The admin view loads several at once; Python's `resolve` / `preview` take several
   `--orders` files (`api.merge_plans`), plans or plain mappings. `test_cases/parity/plan_example.json`, written by the
   client, is loaded by Python in a test.
-- Later: fog of war (hide the enemy's exact numbers and stats from players).
+- Fog of war: done in B5 (player files).
+
+### B5. One side per player, admin rounds, army files ✓
+Decided with the user (2026-10-24): players get the battle as their side sees it and act only for that side; the
+admin reconciles both sides' orders, can override them, and applies modifiers.
+- **Player files** (`imperial-generals-player`, version 1: `{side, tag, state}`): the admin downloads one per side
+  ("Player file: <side>", while the battle is being fought). `state` is a battle state file where the player's own
+  units are exact and enemy units keep only what could be seen: name, type and subtype, positions (now and per
+  round), broken or wiped out, guns, and men roughly (nearest 10 under 100, at least 10; else nearest 50). Enemy
+  stats become 5/5/0/0; their morale, losses, inflicted, meta, engagement rates, target switches and modifiers are
+  removed; charge odds and casualty events are removed for everyone; the dice state is replaced. Hiding is in the
+  file itself, so reading the JSON reveals nothing more. Only for unfinished battles.
+- **Player view from a player file**: locked to the file's side (no side picker, no battle download); enemy men
+  shown as "about N" on the map and in the order of battle (no enemy averages); rounds and charts show only the
+  player's units. **Guesses** (user, 2026-10-24): a table of the player's guesses for each enemy unit's men and
+  stats, defaulting to the rough men and 5/5/0/0, used by the preview and the estimate (enemy rows marked as
+  guesses); guesses never leave the page. Admins can't open player files (they need the full battle).
+- **Battle tag**: the rounds fought and the dice state (`api.battle_tag` / `battleTag`, the same in both
+  languages). Orders files carry the tag of the battle they were made from; a file made from an older copy is
+  refused (files without a tag are accepted). It changes with every round fought.
+- **Admin round view**: per side, the orders file loaded (or "no orders file yet"; loading a side again replaces
+  it) and the units that would hold for want of orders; a From column (file name, "admin" once the admin changes
+  it, or —). The admin can edit any order before fighting (overrides).
+- **Admin modifiers** (user, 2026-10-24: effectiveness %, one round): per unit, fire / melee / morale from -100% to
+  +100% and a note. Fire and melee scale the casualties the unit inflicts (closing fire counts as fire); morale
+  scales what it spends from its morale budget (+10%: spends 10% less; +100%: spends nothing). Both engines
+  (`resolve_round(..., modifiers=)`, `engagements(orders, modifiers)`), recorded per round in the history
+  (`modifiers`), replayed by scenarios (round key `modifiers`), CLI `resolve/preview --modifiers m.yaml`; the
+  `charges` parity battles use them. Players see the modifiers on their own units in past rounds.
+- **Army files** (CSV, one side; user: players aren't tech-savvy): columns name, type, subtype, men, experience,
+  morale, weapon, melee_only, guns, in any order; words (Infantry, rifled musket, yes/no); blank cells take the
+  usual values (generic unit, usual subtype, 5/5, smoothbore, not melee only, 8 guns). Problems named by line;
+  nothing loads while there are any. "Download / Load army (CSV)" per side in the army builder.
+- Later (user, 2026-10-24): **prospective battles** for players, to try scenarios of how they might fare; until
+  then players can still build armies and fight practice battles in the player view as before.
+- Open: the orders table still offers every action to every unit (the map's target menu offers only what a unit
+  can do).
 
 ---
 
