@@ -41,6 +41,14 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
   positions, compass degrees, saved in state and orders files); every round records where units stood as it began
   (`positions` in the round history, both engines), so any round can be replayed on the map; click a unit, then an
   enemy, and confirm fire or charge (only what the unit can do) to give it that target.
+- Player files: the admin downloads the battle as each side sees it (enemy men rough, enemy stats, morale and
+  numbers removed from the file itself); a player opening one is locked to that side and plans with their own
+  guesses about the enemy. Orders files carry a battle tag, and files made from an older copy are refused.
+- Admin round view: which side's orders file is loaded, units without orders, where each order came from (file or
+  admin override).
+- Admin modifiers: per unit, one round, fire / melee / morale ±% with a note, in both engines, the round history,
+  scenarios and the CLI (`--modifiers`).
+- Army files: save and load one side's units as CSV from the army builder.
 - Deploys to GitHub Pages (https://syrchanan.github.io/civil_war_sim/) after CI passes on main.
 - `CHANGELOG.md`, `python/requirements.txt`, CI (Python and TypeScript tests, both with 100% coverage, and a web
   typecheck).
