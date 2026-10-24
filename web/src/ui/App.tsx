@@ -2,6 +2,7 @@
 
 import { ArmyBuilder } from './ArmyBuilder';
 import { FileBar } from './FileBar';
+import { MapView } from './MapView';
 import { OrderOfBattle } from './OrderOfBattle';
 import { OrdersPanel } from './OrdersPanel';
 import { ResultPanel } from './ResultPanel';
@@ -28,6 +29,10 @@ export function App({ store = defaultStore }: { store?: Store }) {
               <button onClick={() => store.reset()}>Change the armies (starts over)</button>
             </>
           )}
+        </section>
+        <section aria-labelledby="map">
+          <h2 id="map">Map</h2>
+          <MapView store={store} />
         </section>
         <section aria-labelledby="orders">
           <h2 id="orders">Orders</h2>
