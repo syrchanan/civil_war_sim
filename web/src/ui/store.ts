@@ -10,7 +10,8 @@ import { computed, signal } from '@preact/signals';
 
 import {
   ArtilleryBattery, Battle, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
-  type FieldHolder, InfantryRegiment, makeOrder, type Modifier, ON_BREAK, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
+  type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
+  PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
@@ -70,6 +71,7 @@ export interface MapUnit {
   depth: number;
   broken: boolean;
   wiped: boolean;
+  rough: boolean; // an enemy unit in a player file: men roughly, or the player's guess
 }
 
 /** Picking a target on the map: the unit aiming, the enemy clicked, and what the unit can do to it. */
@@ -131,6 +133,13 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const modifiers = signal<Record<string, Modifier>>({}); // admin: this round's modifiers per unit
   const plansLoaded = signal<Partial<Record<0 | 1, string>>>({}); // admin: the orders file loaded for each side
   const orderSources = signal<Record<string, string>>({}); // admin: where each order came from (a file, or 'admin')
+  // player: the side and real battle tag of the player file being planned on (null: a full battle file)
+  const playerFileInfo = signal<{ side: 0 | 1; tag: string } | null>(null);
+  const guesses = signal<Record<string, { size: number; stats: string }>>({}); // player: guesses about enemy units
+
+  /** The side whose details are hidden: the enemy, when planning from a player file. */
+  const hiddenSide = computed<0 | 1 | null>(() => (playerFileInfo.value === null ? null
+    : (1 - playerFileInfo.value.side) as 0 | 1));
 
   const history = computed<RoundReport[]>(() => {
     revision.value;
@@ -241,7 +250,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
     return sized.map(({ front: _front, guns: _guns, place, ...u }) => {
       const { x, y, facing } = place ?? { ...layout[u.uid], facing: defaultFacing(u.side) };
-      return { ...u, x, y, facing };
+      return { ...u, x, y, facing, rough: u.side === hiddenSide.value };
     });
   });
 
@@ -493,8 +502,21 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   /** Open a saved battle (from this client or the Python engine); returns what is wrong with it, or null. */
   function open(text: string): string | null {
     let b: Battle;
+    let file: { side: 0 | 1; tag: string } | null = null;
     try {
-      b = Battle.fromJson(text);
+      const data = JSON.parse(text);
+      if (data?.format === PLAYER_FORMAT) {
+        if (modeSignal.value === 'admin') {
+          return `This is the ${data.state.meta.sides[data.side]} player's file; open the full battle file instead.`;
+        }
+        if (data.version !== PLAYER_VERSION) {
+          return `Unsupported player file version ${data.version} (expected ${PLAYER_VERSION}).`;
+        }
+        file = { side: data.side, tag: data.tag };
+        b = Battle.fromDict(data.state);
+      } else {
+        b = Battle.fromDict(data);
+      }
     } catch (error) {
       return error instanceof SyntaxError ? `This file is not valid JSON: ${error.message}` : (error as Error).message;
     }
@@ -509,6 +531,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     battle.value = b;
     mapRound.value = null;
     newRound();
+    playerFileInfo.value = file;
+    guesses.value = {};
+    if (file !== null) playerSide.value = file.side;
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return null;
@@ -525,13 +550,49 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     };
     const plan = {
       format: PLAN_FORMAT, version: PLAN_VERSION,
-      battle: { seed: b.seed, round: b.round + 1, time: b.time, tag: battleTag(b.toDict()) },
+      battle: { seed: b.seed, round: b.round + 1, time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()) },
       side, side_name: sides.value[side],
       orders: Object.fromEntries(own.filter((u) => u.active).map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
       positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
     };
     const name = `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
     return { name, text: JSON.stringify(plan, null, 2) };
+  }
+
+  /** Admin: the player file for one side: the battle as that side sees it, for planning their next orders. */
+  function playerFileDownload(side: 0 | 1): { name: string; text: string } {
+    const b = battle.value!;
+    return {
+      name: `player-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`,
+      text: JSON.stringify(playerFile(b.toDict(), side), null, 2),
+    };
+  }
+
+  /**
+   * Player: guess an enemy unit's men and stats (from a player file, they are unknown). The guess replaces them in
+   * the battle being planned on, so the preview and the estimate use it. Returns what is wrong, or null.
+   */
+  function setGuess(uid: string, change: Partial<{ size: number; stats: string }>): string | null {
+    const b = battle.value!;
+    const unit = b.units.get(uid)!;
+    const next = { ...(guesses.value[uid] ?? { size: unit.size, stats: unit.regiment.stats.join('/') }), ...change };
+    if (!wholeAtLeast(next.size, 1)) return 'Men must be a whole number, 1 or more.';
+    let stats;
+    try {
+      stats = parseStats(next.stats);
+    } catch (error) {
+      return (error as Error).message;
+    }
+    const broken = unit.morale.broken;
+    unit.regiment.updateSize(next.size);
+    unit.regiment.setFrontSize(next.size);
+    unit.regiment.updateStats(next.stats);
+    unit.morale = new MoraleState(next.size, stats[0], stats[1], b.params.morale);
+    if (broken) unit.morale.forceBreak();
+    unit.regiment.rawMorale = unit.morale.morale;
+    guesses.value = { ...guesses.value, [uid]: next };
+    touch();
+    return null;
   }
 
   /** What is wrong with an orders file for this battle's next round, or null. */
@@ -640,7 +701,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
-    estimate, runEstimate, planDownload, loadPlans, modifiers, setModifier, plansLoaded, orderSources, withoutOrders,
+    estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
+    modifiers, setModifier, plansLoaded, orderSources, withoutOrders,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
