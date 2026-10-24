@@ -86,7 +86,11 @@ function Block({ store, unit, movable }: { store: Store; unit: MapUnit; movable:
 export function MapView({ store }: { store: Store }) {
   const units = store.mapUnits.value;
   const byId = Object.fromEntries(units.map((u) => [u.uid, u]));
-  const movable = !store.battle.value?.finished;
+  const battle = store.battle.value;
+  // anything before the battle; between rounds, a player moves only their own side's units
+  const canMove = (u: MapUnit) => battle === null
+    || (!battle.finished && (store.mode.value === 'admin' || u.side === store.playerSide.value));
+  const movable = !battle?.finished;
   const gridX = Array.from({ length: FIELD.width / GRID - 1 }, (_, i) => (i + 1) * GRID);
   const gridY = Array.from({ length: FIELD.height / GRID - 1 }, (_, i) => (i + 1) * GRID);
   return (
@@ -109,7 +113,7 @@ export function MapView({ store }: { store: Store }) {
           <text x={SCALE_BAR / 2} y={-12} text-anchor="middle">{SCALE_BAR} yards</text>
         </g>
         {store.orderArrows.value.map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} />)}
-        {units.map((u) => <Block key={u.uid} store={store} unit={u} movable={movable} />)}
+        {units.map((u) => <Block key={u.uid} store={store} unit={u} movable={canMove(u)} />)}
       </svg>
       <p class="note">
         {movable
