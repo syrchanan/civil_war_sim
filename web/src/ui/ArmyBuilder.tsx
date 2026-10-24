@@ -34,15 +34,15 @@ function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
   const weapons = weaponNames(unit.type);
   return (
     <tr>
-      <td><input aria-label={label('name')} value={unit.name}
+      <td data-label="Name"><input aria-label={label('name')} value={unit.name}
         onInput={(e) => set({ name: e.currentTarget.value })} /></td>
-      <td>
+      <td data-label="Type">
         <select aria-label={label('type')} value={unit.type ?? ''}
           onChange={(e) => set({ type: (e.currentTarget.value || null) as UnitType | null })}>
           {TYPE_LABELS.map(([value, text]) => <option value={value}>{text}</option>)}
         </select>
       </td>
-      <td>
+      <td data-label="Subtype">
         {unit.type === null ? '—' : (
           <select aria-label={label('subtype')} value={unit.subtype!}
             onChange={(e) => set({ subtype: e.currentTarget.value })}>
@@ -50,26 +50,26 @@ function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
           </select>
         )}
       </td>
-      <td><input aria-label={label(unit.type === 'art' ? 'crew' : 'men')} type="number" min="1" class="num"
+      <td data-label="Men"><input aria-label={label(unit.type === 'art' ? 'crew' : 'men')} type="number" min="1" class="num"
         value={numberText(unit.size)} onInput={(e) => set({ size: toNumber(e.currentTarget.value) })} /></td>
-      <td><input aria-label={label('experience')} type="number" min="1" max="10" class="stat" value={xp}
+      <td data-label="Exp"><input aria-label={label('experience')} type="number" min="1" max="10" class="stat" value={xp}
         onInput={(e) => setStat(0, e.currentTarget.value)} /></td>
-      <td><input aria-label={label('morale')} type="number" min="1" max="10" class="stat" value={morale}
+      <td data-label="Morale"><input aria-label={label('morale')} type="number" min="1" max="10" class="stat" value={morale}
         onInput={(e) => setStat(1, e.currentTarget.value)} /></td>
-      <td>
+      <td data-label="Weapon">
         <select aria-label={label('weapon')} value={weapon} onChange={(e) => setStat(2, e.currentTarget.value)}>
           {weapons.map(([code, name]) => <option value={String(code)}>{name}</option>)}
         </select>
       </td>
-      <td><input aria-label={label('melee only')} type="checkbox" checked={meleeOnly === '1'}
+      <td data-label="Melee only"><input aria-label={label('melee only')} type="checkbox" checked={meleeOnly === '1'}
         onChange={(e) => setStat(3, e.currentTarget.checked ? '1' : '0')} /></td>
-      <td class="num">
+      <td class="num" data-label="Guns">
         {unit.type === 'art'
           ? <input aria-label={label('guns')} type="number" min="0" class="num" value={numberText(unit.guns)}
             onInput={(e) => set({ guns: toNumber(e.currentTarget.value) })} />
           : '—'}
       </td>
-      <td><button aria-label={`Remove ${unit.name}`} onClick={() => store.removeUnit(unit.id)}>×</button></td>
+      <td class="card-action"><button aria-label={`Remove ${unit.name}`} onClick={() => store.removeUnit(unit.id)}>×</button></td>
     </tr>
   );
 }
@@ -89,7 +89,7 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
       <input class="side-name" aria-label={`Side ${side + 1} name`} value={store.sides.value[side]}
         onInput={(e) => store.renameSide(side, e.currentTarget.value)} />
       <div class="table-wrap">
-        <table aria-label={`${store.sides.value[side]} units`}>
+        <table aria-label={`${store.sides.value[side]} units`} class="stack">
           <thead>
             <tr>
               <th>Name</th><th>Type</th><th>Subtype</th><th class="num">Men</th><th>Exp</th><th>Morale</th>

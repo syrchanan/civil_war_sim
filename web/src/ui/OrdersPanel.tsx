@@ -54,15 +54,15 @@ function OrderRow({ store, unit, expected, admin }:
   const label = (what: string) => `${unit.name} ${what}`;
   return (
     <tr class={`side-${unit.side}`}>
-      <td>{unit.name}</td>
-      <td>
+      <td class="card-title">{unit.name}</td>
+      <td data-label="Action">
         <select aria-label={label('action')} value={order.mode}
           onChange={(e) => store.setOrder(unit.uid, { mode: e.currentTarget.value })}>
           {ACTIONS.filter(([, mode]) => mode === 'idle' || mode === order.mode || can.includes(mode))
             .map(([word, mode]) => <option value={mode}>{word}</option>)}
         </select>
       </td>
-      <td>
+      <td data-label="Target">
         {order.mode === 'idle' ? '—' : (
           <select aria-label={label('target')} value={order.target!}
             onChange={(e) => store.setOrder(unit.uid, { target: e.currentTarget.value })}>
@@ -72,7 +72,7 @@ function OrderRow({ store, unit, expected, admin }:
           </select>
         )}
       </td>
-      <td>
+      <td data-label="Ammo">
         {battery && order.mode === 'ranged' ? (
           <select aria-label={label('ammo')} value={order.ammo!}
             onChange={(e) => store.setOrder(unit.uid, { ammo: e.currentTarget.value })}>
@@ -80,7 +80,7 @@ function OrderRow({ store, unit, expected, admin }:
           </select>
         ) : '—'}
       </td>
-      <td>
+      <td data-label="If the target breaks">
         {order.mode === 'idle' ? '—' : (
           <select aria-label={label('if the target breaks')} value={order.on_break!}
             onChange={(e) => store.setOrder(unit.uid, { on_break: e.currentTarget.value })}>
@@ -96,7 +96,7 @@ function OrderRow({ store, unit, expected, admin }:
             : <span class="note">default: {order.mode === 'idle' ? 'holds' : 'returns fire'}</span>}
         </td>
       )}
-      {admin && <td>{store.orderSources.value[unit.uid] ?? '—'}</td>}
+      {admin && <td data-label="From">{store.orderSources.value[unit.uid] ?? '—'}</td>}
     </tr>
   );
 }
@@ -105,7 +105,7 @@ function OrdersTable({ store, units, title, expected, admin = false }:
   { store: Store; units: BattleUnit[]; title: string; expected: boolean; admin?: boolean }) {
   return (
     <div class="table-wrap">
-      <table aria-label={title} class="order-table">
+      <table aria-label={title} class="order-table stack">
         <thead>
           <tr>
             <th>Unit</th><th>Action</th><th>Target</th><th>Ammo</th><th>If the target breaks</th>
@@ -133,17 +133,17 @@ function Guesses({ store }: { store: Store }) {
       <p class="note">You see the enemy's men only roughly, and not their experience, morale or weapons. Your guesses
         drive the preview and the estimate; they never leave this page.</p>
       <div class="table-wrap">
-        <table aria-label="Your guesses about the enemy">
+        <table aria-label="Your guesses about the enemy" class="stack">
           <thead><tr><th>Unit</th><th class="num">Men</th><th>Stats (exp/morale/weapon/melee only)</th></tr></thead>
           <tbody>
             {enemy.map((u) => (
               <tr class={`side-${u.side}`}>
-                <td>{u.name}</td>
-                <td class="num">
+                <td class="card-title">{u.name}</td>
+                <td class="num" data-label="Men">
                   <input type="number" min="1" class="num" aria-label={`${u.name} men (guess)`} value={u.size}
                     onChange={(e) => guess(u.uid, u.name, { size: Number(e.currentTarget.value) })} />
                 </td>
-                <td>
+                <td data-label="Stats">
                   <input type="text" aria-label={`${u.name} stats (guess)`} value={u.regiment.stats.join('/')}
                     onChange={(e) => guess(u.uid, u.name, { stats: e.currentTarget.value })} />
                 </td>
@@ -192,7 +192,7 @@ function Modifiers({ store }: { store: Store }) {
         melee change the casualties the unit inflicts (closing fire counts as fire); morale changes how fast it
         loses morale (+10: 10% slower). From -100 to +100.</p>
       <div class="table-wrap">
-        <table aria-label="Modifiers">
+        <table aria-label="Modifiers" class="stack">
           <thead>
             <tr><th>Unit</th><th class="num">Fire %</th><th class="num">Melee %</th><th class="num">Morale %</th>
               <th>Note</th></tr>
@@ -200,15 +200,15 @@ function Modifiers({ store }: { store: Store }) {
           <tbody>
             {units.map((u) => (
               <tr class={`side-${u.side}`}>
-                <td>{u.name}</td>
+                <td class="card-title">{u.name}</td>
                 {(['fire', 'melee', 'morale'] as const).map((key) => (
-                  <td class="num">
+                  <td class="num" data-label={`${key[0].toUpperCase()}${key.slice(1)} %`}>
                     <input type="number" step="5" class="num" aria-label={`${u.name} ${key} %`}
                       value={percent(mods[u.uid]?.[key] ?? 0)}
                       onInput={(e) => setPercent(u.uid, key, e.currentTarget.value)} />
                   </td>
                 ))}
-                <td>
+                <td data-label="Note">
                   <input type="text" aria-label={`${u.name} note`} value={mods[u.uid]?.note ?? ''}
                     onInput={(e) => store.setModifier(u.uid, { note: e.currentTarget.value })} />
                 </td>
