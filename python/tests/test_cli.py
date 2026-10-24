@@ -589,3 +589,33 @@ def test_scenario_from_state_defaults_to_a_yaml_next_to_the_state(files, capsys)
     new(capsys, files)
     code, _, _ = run(capsys, 'scenario-from-state', files / 'state.json')
     assert code == 0 and (files / 'state.yaml').exists()
+
+
+def _plan_file(path, state, side, orders, positions=None):
+    plan = {'format': 'imperial-generals-orders', 'version': 1,
+            'battle': {'seed': state['seed'], 'round': state['round'] + 1, 'time': state['time']},
+            'side': side, 'side_name': '', 'orders': orders, 'positions': positions or {}}
+    path.write_text(json.dumps(plan), encoding='utf-8')
+    return path
+
+
+def test_resolve_takes_one_orders_file_per_player(files, capsys):
+    new(capsys, files)
+    state = read(files / 'state.json')
+    union = _plan_file(files / 'union.json', state, 0, {'us_1mn': ORDERS['us_1mn']}, {'us_1mn': {'x': 400, 'y': 900}})
+    confed = _plan_file(files / 'confed.json', state, 1, {k: ORDERS[k] for k in ('cs_26nc', 'cs_bat')})
+    code, out, _ = run(capsys, 'preview', files / 'state.json', '--orders', union, confed)
+    assert code == 0 and 'Battery A' in out
+    code, _, err = run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--orders', union, confed)
+    assert code == 0, err
+    after = read(files / 'state.json')
+    assert after['history'][0]['orders'].keys() == ORDERS.keys()
+    assert after['units'][0]['position'] == {'x': 400, 'y': 900, 'z': 0, 'cover': 0, 'terrain_type': 'open'}
+
+
+def test_resolve_refuses_orders_for_another_round(files, capsys):
+    new(capsys, files)
+    state = read(files / 'state.json')
+    stale = _plan_file(files / 'stale.json', {**state, 'round': 3}, 0, {'us_1mn': ORDERS['us_1mn']})
+    code, _, err = run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--orders', stale)
+    assert code == 2 and 'round 4; the next round is 1' in err

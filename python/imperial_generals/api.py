@@ -26,6 +26,7 @@ been wiped out, or its target has been wiped out) are skipped and listed in the 
 Broken targets can still be attacked (pursuit).
 """
 
+import copy
 from dataclasses import asdict
 
 from imperial_generals.battles.battle import Battle
@@ -151,6 +152,57 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
     finish = scenario.get('finish', False)
     result = None if finish is False else result_to_dict(battle.finish(_field_holder(finish, _sides(scenario))))
     return battle.to_dict(), reports, result
+
+
+PLAN_FORMAT = 'imperial-generals-orders'
+PLAN_VERSION = 1
+
+
+def _check_plan(state: dict, plan: dict, units: dict) -> None:
+    """A plan file must be for this battle and its next round, and only move and order its own side's units."""
+    if plan.get('version') != PLAN_VERSION:
+        raise ValueError(f"Unsupported orders file version {plan.get('version')!r} (expected {PLAN_VERSION}).")
+    battle = plan['battle']
+    if battle['seed'] != state['seed']:
+        raise ValueError(f"These orders are for another battle (seed {battle['seed']}, this one {state['seed']}).")
+    if battle['round'] != state['round'] + 1:
+        raise ValueError(f"These orders are for round {battle['round']}; the next round is {state['round'] + 1}.")
+    side = plan['side']
+    for uid in [*plan['orders'], *plan.get('positions', {})]:
+        if uid not in units:
+            raise ValueError(f'The orders name an unknown unit {uid}.')
+        if units[uid]['side'] != side:
+            raise ValueError(f"{uid} is not on {_side_names(state)[side]}'s side.")
+
+
+def merge_plans(state: dict, plans: list) -> tuple:
+    """
+    Merge orders files into one round's orders: ``(state with the plans' moves applied, orders)``.
+
+    Each item is either a plan file submitted by a player (``format`` 'imperial-generals-orders': the orders and
+    moves for one side, for this battle's next round) or a plain mapping of unit id to order. A unit with orders in
+    two files is refused, as is a plan for another battle or round, or one touching the other side's units.
+    Moves are positions on open ground (elevation 0, no cover). The given state is left unchanged.
+
+    Raises
+    ------
+    ValueError
+        Naming what is wrong.
+    """
+    state = copy.deepcopy(state)
+    units = {u['id']: u for u in state['units']}
+    orders: dict = {}
+    for plan in plans:
+        is_plan = isinstance(plan, dict) and plan.get('format') == PLAN_FORMAT
+        if is_plan:
+            _check_plan(state, plan, units)
+            for uid, place in plan.get('positions', {}).items():
+                units[uid]['position'] = {'x': place['x'], 'y': place['y'], 'z': 0, 'cover': 0, 'terrain_type': 'open'}
+        for uid, order in (plan['orders'] if is_plan else plan).items():
+            if uid in orders:
+                raise ValueError(f'{uid} has orders in two files.')
+            orders[uid] = order
+    return state, orders
 
 
 def scenario_from_state(state: dict) -> dict:

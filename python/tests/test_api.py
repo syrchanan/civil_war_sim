@@ -275,3 +275,55 @@ def test_scenario_orders_take_on_break_and_reports_list_retargets():
     retarget = reports[0]['retargets'][0]
     assert (retarget['unit'], retarget['old_target'], retarget['new_target']) == ('us', 'cs', 'cs2')
     assert retarget['time'] == reports[0]['units']['cs']['broke_at']
+
+
+# =============================================================================
+# Plans: orders files submitted by players
+# =============================================================================
+
+def _plan(state, side, orders, positions=None, **battle):
+    return {'format': api.PLAN_FORMAT, 'version': 1,
+            'battle': {'seed': state['seed'], 'round': state['round'] + 1, 'time': state['time'], **battle},
+            'side': side, 'side_name': 'x', 'orders': orders, 'positions': positions or {}}
+
+
+def test_plans_from_both_sides_merge_and_apply_moves():
+    state = api.new_battle(SETUP)
+    union = _plan(state, 0, {'us': {'target': 'cs', 'mode': 'ranged'}}, {'us': {'x': 500, 'y': 800}})
+    confed = _plan(state, 1, {'cs': {'target': 'us', 'mode': 'ranged', 'on_break': 'keep'}})
+    moved, orders = api.merge_plans(state, [union, confed])
+    assert orders == {'us': {'target': 'cs', 'mode': 'ranged'}, 'cs': {'target': 'us', 'mode': 'ranged', 'on_break': 'keep'}}
+    us = next(u for u in moved['units'] if u['id'] == 'us')
+    assert us['position'] == {'x': 500, 'y': 800, 'z': 0, 'cover': 0, 'terrain_type': 'open'}
+    assert state['units'][0]['position'] is None                # the original state is left alone
+    after, report = api.step(moved, 30, orders)
+    assert report['round'] == 1 and after['units'][0]['position']['x'] == 500
+
+
+def test_a_plain_orders_mapping_still_works():
+    state = api.new_battle(SETUP)
+    _, orders = api.merge_plans(state, [{'us': {'target': 'cs', 'mode': 'ranged'}}])
+    assert orders == {'us': {'target': 'cs', 'mode': 'ranged'}}
+
+
+@pytest.mark.parametrize('change, message', [
+    (lambda p: p['battle'].update(seed=1), 'another battle'),
+    (lambda p: p['battle'].update(round=2), 'round 2'),
+    (lambda p: p.update(orders={'cs': {'target': 'us', 'mode': 'ranged'}}), "cs is not on Union's side"),
+    (lambda p: p.update(orders={'nobody': {'mode': 'idle'}}), 'unknown unit nobody'),
+    (lambda p: p.update(positions={'cs': {'x': 1, 'y': 2}}), "cs is not on Union's side"),
+    (lambda p: p.update(version=2), 'version'),
+])
+def test_plans_for_another_battle_round_or_side_are_refused(change, message):
+    state = api.new_battle(SETUP)
+    plan = _plan(state, 0, {})
+    change(plan)
+    with pytest.raises(ValueError, match=message):
+        api.merge_plans(state, [plan])
+
+
+def test_a_unit_in_two_plans_is_refused():
+    state = api.new_battle(SETUP)
+    order = {'us': {'target': 'cs', 'mode': 'ranged'}}
+    with pytest.raises(ValueError, match='us has orders in two files'):
+        api.merge_plans(state, [_plan(state, 0, order), order])
