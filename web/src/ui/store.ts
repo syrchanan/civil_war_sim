@@ -9,8 +9,8 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, estimateRound, type FieldHolder,
-  InfantryRegiment, makeOrder, ON_BREAK, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
+  ArtilleryBattery, Battle, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
+  type FieldHolder, InfantryRegiment, makeOrder, type Modifier, ON_BREAK, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
@@ -128,6 +128,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const playerSide = signal<0 | 1>(0);
   const assumptions = signal<Record<string, Order>>({}); // player mode: what the player expects of enemy units
   const estimateRun = signal<{ key: string; result: RoundEstimate } | null>(null);
+  const modifiers = signal<Record<string, Modifier>>({}); // admin: this round's modifiers per unit
+  const plansLoaded = signal<Partial<Record<0 | 1, string>>>({}); // admin: the orders file loaded for each side
+  const orderSources = signal<Record<string, string>>({}); // admin: where each order came from (a file, or 'admin')
 
   const history = computed<RoundReport[]>(() => {
     revision.value;
@@ -176,12 +179,15 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }));
   });
 
+  /** The modifiers the preview, estimate and round use: the admin's; players have none. */
+  const effectiveModifiers = computed(() => (modeSignal.value === 'admin' ? modifiers.value : {}));
+
   /** The engagements these orders would create now, with no dice rolled; or why the orders can't be carried out. */
   const preview = computed<{ arrows: Engagement[]; error: string | null }>(() => {
     revision.value;
     if (battle.value === null) return { arrows: [], error: null };
     try {
-      return { arrows: battle.value.engagements(effectiveOrders.value), error: null };
+      return { arrows: battle.value.engagements(effectiveOrders.value, effectiveModifiers.value), error: null };
     } catch (error) {
       return { arrows: [], error: (error as Error).message };
     }
@@ -260,7 +266,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   const estimateKey = computed(() => {
     revision.value;
-    return JSON.stringify([effectiveOrders.value, duration.value, revision.value]);
+    return JSON.stringify([effectiveOrders.value, effectiveModifiers.value, duration.value, revision.value]);
   });
 
   /** The last estimate, and whether it still matches the battle, orders and round length. */
@@ -334,6 +340,27 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
     if (isEnemy(uid)) assumptions.value = { ...assumptions.value, [uid]: next };
     else orders.value = { ...orders.value, [uid]: next };
+    if (modeSignal.value === 'admin') orderSources.value = { ...orderSources.value, [uid]: 'admin' };
+  }
+
+  /** Admin: change a unit's modifiers for the next round (fractions, -0.15 is -15%); all zero and no note drops them. */
+  function setModifier(uid: string, change: Partial<Modifier>): void {
+    const next = { fire: 0, melee: 0, morale: 0, note: '', ...modifiers.value[uid], ...change };
+    const rest = { ...modifiers.value };
+    delete rest[uid];
+    const empty = next.fire === 0 && next.melee === 0 && next.morale === 0 && next.note === '';
+    modifiers.value = empty ? rest : { ...rest, [uid]: next };
+  }
+
+  /** Admin: units that can act but have no orders yet, from a file or the admin (they would hold). */
+  const withoutOrders = computed<BattleUnit[]>(() => actingUnits.value
+    .filter((u) => !(u.uid in orderSources.value) && orders.value[u.uid].mode === 'idle'));
+
+  /** Forget this round's admin work: modifiers and the players' files loaded. */
+  function newRound(): void {
+    modifiers.value = {};
+    plansLoaded.value = {};
+    orderSources.value = {};
   }
 
   const aiming = signal<string | null>(null); // the unit whose target is being picked on the map
@@ -389,7 +416,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   function runEstimate(runs = ESTIMATE_RUNS): void {
     estimateRun.value = {
       key: estimateKey.value,
-      result: estimateRound(battle.value!, effectiveOrders.value, duration.value, runs),
+      result: estimateRound(battle.value!, effectiveOrders.value, duration.value, runs, effectiveModifiers.value),
     };
   }
 
@@ -427,6 +454,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     for (const u of mapUnits.value) specs[u.uid].regiment.position = onOpenGround(u);
     battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] });
     mapRound.value = null;
+    newRound();
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return [];
@@ -442,10 +470,11 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (!(duration.value > 0)) return 'The round length must be more than 0 minutes.';
     const b = battle.value!;
     try {
-      b.resolveRound(duration.value, orders.value, recordEvents.value);
+      b.resolveRound(duration.value, orders.value, recordEvents.value, modifiers.value);
     } catch (error) {
       return (error as Error).message;
     }
+    newRound();
     orders.value = Object.fromEntries(Object.entries(orders.value).map(([uid, o]) => {
       const keep = o.mode !== 'idle' && b.units.get(uid)!.active && b.units.get(o.target!)!.size > 0;
       return [uid, keep ? o : IDLE];
@@ -479,6 +508,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }));
     battle.value = b;
     mapRound.value = null;
+    newRound();
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return null;
@@ -494,7 +524,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       return { x, y, facing };
     };
     const plan = {
-      format: PLAN_FORMAT, version: PLAN_VERSION, battle: { seed: b.seed, round: b.round + 1, time: b.time },
+      format: PLAN_FORMAT, version: PLAN_VERSION,
+      battle: { seed: b.seed, round: b.round + 1, time: b.time, tag: battleTag(b.toDict()) },
       side, side_name: sides.value[side],
       orders: Object.fromEntries(own.filter((u) => u.active).map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
       positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
@@ -508,9 +539,13 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const b = battle.value!;
     if (plan.format !== PLAN_FORMAT) return 'not an orders file.';
     if (plan.version !== PLAN_VERSION) return `unsupported orders file version ${plan.version} (expected ${PLAN_VERSION}).`;
-    const meta = plan.battle as { seed: number; round: number };
+    const meta = plan.battle as { seed: number; round: number; tag?: string };
     if (meta.seed !== b.seed) return `these orders are for another battle (seed ${meta.seed}, this one ${b.seed}).`;
     if (meta.round !== b.round + 1) return `these orders are for round ${meta.round}; the next round is ${b.round + 1}.`;
+    // files from before tags have none
+    if (meta.tag !== undefined && meta.tag !== battleTag(b.toDict())) {
+      return 'these orders were made from an older copy of the battle; send the player the latest.';
+    }
     const named = [...Object.keys(plan.orders as object), ...Object.keys((plan.positions ?? {}) as object)];
     for (const uid of named) {
       const unit = b.units.get(uid);
@@ -539,10 +574,17 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         problems.push(`${file.name}: ${problem}`);
         continue;
       }
+      // a side's file replaces any loaded before for that side
+      const side = plan.side as 0 | 1;
+      const sources = Object.fromEntries(Object.entries(orderSources.value)
+        .filter(([uid]) => battle.value!.units.get(uid)!.side !== side));
       for (const [uid, order] of Object.entries(plan.orders as Record<string, OrderInput>)) {
         merged[uid] = makeOrder(order);
         taken.add(uid);
+        sources[uid] = file.name;
       }
+      orderSources.value = sources;
+      plansLoaded.value = { ...plansLoaded.value, [side]: file.name };
       // a move without a facing (from an older orders file) keeps the unit's facing
       for (const [uid, place] of Object.entries((plan.positions ?? {}) as Record<string, Point & { facing?: number }>)) {
         const unit = battle.value!.units.get(uid)!;
@@ -589,6 +631,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   function reset(): void {
     battle.value = null;
     mapRound.value = null;
+    newRound();
     touch();
   }
 
@@ -597,7 +640,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
-    estimate, runEstimate, planDownload, loadPlans,
+    estimate, runEstimate, planDownload, loadPlans, modifiers, setModifier, plansLoaded, orderSources, withoutOrders,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

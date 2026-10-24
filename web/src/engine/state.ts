@@ -58,6 +58,14 @@ export interface StateData {
 
 const statsText = (stats: Stats): string => stats.join('/');
 
+/**
+ * A tag for a battle as it stands between rounds: the rounds fought and the dice generator's state (as Python's
+ * api.battle_tag). It changes with every round fought, so an orders file made from an older copy can be refused.
+ */
+export function battleTag(data: { round: number; rng_state: number[] }): string {
+  return [data.round, ...data.rng_state].join('-');
+}
+
 // =============================================================================
 // Saving
 // =============================================================================
