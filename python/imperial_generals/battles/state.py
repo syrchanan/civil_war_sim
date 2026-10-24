@@ -43,7 +43,7 @@ def _position(position: Position | None) -> dict | None:
     if position is None:
         return None
     return {'x': position.x, 'y': position.y, 'z': position.z, 'cover': position.cover,
-            'terrain_type': position.terrain_type}
+            'terrain_type': position.terrain_type, 'facing': position.facing}
 
 
 # =============================================================================

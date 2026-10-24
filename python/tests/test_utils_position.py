@@ -215,3 +215,33 @@ def test_position_from_cell_terrain_and_cover():
 
 def test_position_from_cell_returns_position():
     assert isinstance(Position.from_cell(_make_cell()), Position)
+
+
+# ---------------------------------------------------------------------------
+# Facing: compass degrees, clockwise from map north (towards y = 0); None when not given
+# ---------------------------------------------------------------------------
+
+def test_position_facing_defaults_to_none():
+    assert Position(0.0, 0.0, 0.0, 0.0, 'open').facing is None
+
+@pytest.mark.parametrize('given, kept', [(0, 0), (90, 90), (359.5, 359.5), (360, 0), (-90, 270), (450, 90)])
+def test_position_facing_is_kept_within_a_turn(given, kept):
+    assert Position(0.0, 0.0, 0.0, 0.0, 'open', facing=given).facing == kept
+
+def test_position_facing_must_be_a_finite_number():
+    with pytest.raises(ValueError, match='facing'):
+        Position(0.0, 0.0, 0.0, 0.0, 'open', facing=float('nan'))
+
+def test_position_facing_counts_in_equality():
+    a = Position(0.0, 0.0, 0.0, 0.0, 'open', facing=90)
+    assert a == Position(0.0, 0.0, 0.0, 0.0, 'open', facing=90)
+    assert a != Position(0.0, 0.0, 0.0, 0.0, 'open', facing=180)
+    assert a != Position(0.0, 0.0, 0.0, 0.0, 'open')
+
+def test_position_facing_from_dict_and_shown():
+    p = Position.from_dict({'x': 1, 'y': 2, 'z': 0, 'cover': 0, 'terrain_type': 'open', 'facing': 180})
+    assert p.facing == 180
+    assert 'Facing=180' in str(p) and 'facing=180' in repr(p)
+    # saved before facing existed
+    assert Position.from_dict({'x': 1, 'y': 2, 'z': 0, 'cover': 0, 'terrain_type': 'open'}).facing is None
+    assert 'Facing' not in str(Position(0.0, 0.0, 0.0, 0.0, 'open'))

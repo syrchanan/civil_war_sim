@@ -610,7 +610,8 @@ def test_resolve_takes_one_orders_file_per_player(files, capsys):
     assert code == 0, err
     after = read(files / 'state.json')
     assert after['history'][0]['orders'].keys() == ORDERS.keys()
-    assert after['units'][0]['position'] == {'x': 400, 'y': 900, 'z': 0, 'cover': 0, 'terrain_type': 'open'}
+    assert after['units'][0]['position'] == {'x': 400, 'y': 900, 'z': 0, 'cover': 0, 'terrain_type': 'open',
+                                             'facing': None}
 
 
 def test_resolve_refuses_orders_for_another_round(files, capsys):

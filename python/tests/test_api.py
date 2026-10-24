@@ -294,10 +294,19 @@ def test_plans_from_both_sides_merge_and_apply_moves():
     moved, orders = api.merge_plans(state, [union, confed])
     assert orders == {'us': {'target': 'cs', 'mode': 'ranged'}, 'cs': {'target': 'us', 'mode': 'ranged', 'on_break': 'keep'}}
     us = next(u for u in moved['units'] if u['id'] == 'us')
-    assert us['position'] == {'x': 500, 'y': 800, 'z': 0, 'cover': 0, 'terrain_type': 'open'}
+    assert us['position'] == {'x': 500, 'y': 800, 'z': 0, 'cover': 0, 'terrain_type': 'open', 'facing': None}
     assert state['units'][0]['position'] is None                # the original state is left alone
     after, report = api.step(moved, 30, orders)
     assert report['round'] == 1 and after['units'][0]['position']['x'] == 500
+
+
+def test_plan_moves_carry_facing_or_keep_the_old_one():
+    state = api.new_battle(SETUP)
+    turned, _ = api.merge_plans(state, [_plan(state, 0, {}, {'us': {'x': 500, 'y': 800, 'facing': 45}})])
+    assert turned['units'][0]['position']['facing'] == 45
+    moved, _ = api.merge_plans(turned, [_plan(turned, 0, {}, {'us': {'x': 600, 'y': 800}})])
+    assert moved['units'][0]['position'] == {'x': 600, 'y': 800, 'z': 0, 'cover': 0, 'terrain_type': 'open',
+                                             'facing': 45}
 
 
 def test_a_plain_orders_mapping_still_works():

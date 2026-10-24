@@ -225,3 +225,21 @@ def test_history_without_retargets_loads():
     for rnd in data['history']:
         del rnd['retargets']
     assert Battle.from_dict(data).history == b.history
+
+
+def test_facing_round_trips():
+    b = build()
+    b.units['foe'].regiment.deploy(Position(500.0, 300.0, 0, 0, 'open', facing=180))
+    data = b.to_dict()
+    units = {u['id']: u for u in data['units']}
+    assert units['foe']['position']['facing'] == 180
+    assert units['inf']['position']['facing'] is None           # never given
+    assert reload(b).units['foe'].regiment.position.facing == 180
+
+
+def test_position_without_facing_loads():
+    # files saved before facing existed have no 'facing' in their positions
+    b = build()
+    data = b.to_dict()
+    del next(u for u in data['units'] if u['id'] == 'inf')['position']['facing']
+    assert Battle.from_dict(data).units['inf'].regiment.position.facing is None

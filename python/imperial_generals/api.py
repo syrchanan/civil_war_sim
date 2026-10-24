@@ -182,7 +182,8 @@ def merge_plans(state: dict, plans: list) -> tuple:
     Each item is either a plan file submitted by a player (``format`` 'imperial-generals-orders': the orders and
     moves for one side, for this battle's next round) or a plain mapping of unit id to order. A unit with orders in
     two files is refused, as is a plan for another battle or round, or one touching the other side's units.
-    Moves are positions on open ground (elevation 0, no cover). The given state is left unchanged.
+    Moves are positions on open ground (elevation 0, no cover); a move without a facing keeps the unit's old one.
+    The given state is left unchanged.
 
     Raises
     ------
@@ -197,7 +198,9 @@ def merge_plans(state: dict, plans: list) -> tuple:
         if is_plan:
             _check_plan(state, plan, units)
             for uid, place in plan.get('positions', {}).items():
-                units[uid]['position'] = {'x': place['x'], 'y': place['y'], 'z': 0, 'cover': 0, 'terrain_type': 'open'}
+                old = units[uid]['position'] or {}
+                units[uid]['position'] = {'x': place['x'], 'y': place['y'], 'z': 0, 'cover': 0, 'terrain_type': 'open',
+                                          'facing': place.get('facing', old.get('facing'))}
         for uid, order in (plan['orders'] if is_plan else plan).items():
             if uid in orders:
                 raise ValueError(f'{uid} has orders in two files.')
