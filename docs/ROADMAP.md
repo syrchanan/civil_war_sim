@@ -57,7 +57,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 |---|---|---|
 | B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ► |
 | B2 | Parity fixtures: Python ↔ TS identical results | ► |
-| B3 | GitHub Pages client: place units, set round length, resolve | ► (built; runs locally, deploy with CD on main) |
+| B3 | GitHub Pages client: place units, set round length, resolve | ► (built; deploys from main) |
 | B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ○ |
 
 ### Phase C — Later
@@ -752,8 +752,8 @@ Done: `rng`, `fdlibm`, `params`, `morale`, `units`, `battles` (whole battles: th
 scenarios over three seeds, plus synthetic battles for every charge outcome, `on_break`, wipe-outs, battery overrun,
 drain-only breaks and each kind of finish).
 
-**CI** (`.github/workflows/ci.yml`): pytest with 100% coverage required, and web typecheck + Vitest, on every push
-and PR. CD for `main` comes later.
+**CI** (`.github/workflows/ci.yml`): pytest with 100% coverage required, and web typecheck + Vitest with 100%
+coverage, on every push and PR. **CD**: `deploy.yml` publishes the site after CI passes on `main` (see B3).
 
 ### B3. GitHub Pages client ►
 A static client-side page. No backend. Build armies, drop units on a plain field, pick round length, set engagements,
@@ -790,7 +790,10 @@ Decided (2026-10-23):
   dashed, charge solid). Drag or arrow keys place units before the battle and move them between rounds. Positions
   are saved as positions on open ground (elevation 0, no cover), which Python loads; **the engine ignores them**:
   no range, cover or elevation.
-- Not yet: deploying to GitHub Pages (CD on main), fog of war, player mode (B4).
+- **Deploy** (2026-10-23): `.github/workflows/deploy.yml` publishes the client to
+  https://syrchanan.github.io/civil_war_sim/ when CI passes on main (building the commit CI tested), or by hand from
+  the Actions tab. Pages uses GitHub Actions as its source; only `main` may deploy (the `github-pages` environment).
+- Not yet: fog of war, player mode (B4).
 - Map, later: unit facing (needs a `facing` on positions in both languages), positions recorded each round so a
   saved battle can be replayed on the map, click-to-target orders. Then range, cover and elevation (Phase C).
 

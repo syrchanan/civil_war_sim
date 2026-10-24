@@ -2,7 +2,9 @@
 
 A battle resolver for the admin-run game [Imperial Generals](https://imperial-generals.connorhanan.com/). Admins place
 units and give orders; the engine fights the battle in rounds of game time and reports casualties, morale, breaks,
-prisoners and who held the field. Same seed, same battle, in Python and (soon) in the browser.
+prisoners and who held the field. Same seed, same battle, in Python and in the browser.
+
+**Try it:** https://syrchanan.github.io/civil_war_sim/ (published from `main` after CI passes).
 
 - `python/`: the engine, CLI and tuning tools (Python, the reference implementation)
 - `web/`: the TypeScript port and browser client (in progress)

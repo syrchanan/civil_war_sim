@@ -34,6 +34,7 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
 - Order of battle and side summary in the TypeScript port.
 - `scenario-from-state` (CLI and `api.scenario_from_state`): a saved battle, e.g. downloaded from the site, becomes
   a scenario that replays it exactly and can be rerun over other seeds or parameters.
+- Deploys to GitHub Pages (https://syrchanan.github.io/civil_war_sim/) after CI passes on main.
 - `CHANGELOG.md`, `python/requirements.txt`, CI (Python and TypeScript tests, both with 100% coverage, and a web
   typecheck).
 
