@@ -171,8 +171,21 @@ describe('edge cases', () => {
     b.contacts = new Set(['b2\u0000x9', 'a1\u0000c3', 'a1\u0000x9']);
     const data = b.toDict();
     expect(data.contacts).toEqual([['a1', 'c3'], ['a1', 'x9'], ['b2', 'x9']]);
-    expect(data.units[0].position).toEqual(position);
+    expect(data.units[0].position).toEqual({ ...position, facing: null }); // facing not given
     expect(Battle.fromDict(data).toDict()).toEqual(data);
+  });
+
+  it('saves a facing, and loads positions saved before facing existed', () => {
+    const position = { x: 1, y: 2, z: 0, cover: 0, terrain_type: 'open', facing: 180 };
+    const b = new Battle({
+      a: { side: 0, regiment: new Regiment(100, '4/4/0/0', { position }) },
+      x: { side: 1, regiment: new Regiment(100, '4/4/0/0') },
+    }, new Rng(1));
+    const data = b.toDict();
+    expect(data.units[0].position).toEqual(position);
+    expect(Battle.fromDict(data).units.get('a')!.regiment.position).toEqual(position);
+    delete (data.units[0].position as { facing?: number }).facing;
+    expect(Battle.fromDict(data).units.get('a')!.regiment.position!.facing).toBeNull();
   });
 });
 

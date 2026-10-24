@@ -137,7 +137,10 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
 .map-unit.side-1 rect { fill: var(--side-1); }
 .map-unit.broken rect { fill-opacity: 0.3; stroke-dasharray: 6 4; stroke: var(--muted); }
 .map-unit.wiped { opacity: 0.4; }
-.map-unit.wiped line { stroke: var(--text); stroke-width: 3; }
+.map-unit.wiped .cross { stroke: var(--text); stroke-width: 3; }
+.map-unit .front { stroke: var(--text); stroke-width: 4; stroke-linecap: round; }
+.map-unit.broken .front { stroke: var(--muted); }
+.turn-handle { fill: var(--surface); stroke: var(--text); stroke-width: 3; cursor: alias; }
 .map-unit text { fill: var(--text); font-size: 22px; pointer-events: none; }
 .map-unit .unit-men { fill: var(--muted); font-size: 18px; }
 .order-arrow { stroke-width: 4; fill: none; }

@@ -155,6 +155,6 @@ def test_an_orders_file_written_by_the_client_merges_and_resolves():
     start = next(c for c in parity.build('battles')['cases'] if c['name'] == 'example_ridge' and c['seed'] == 1)['start']
     state, orders = api.merge_plans(start, [plan])
     assert orders['cs_8al'] == {'mode': 'melee', 'target': 'us_1mn', 'on_break': 'pursue'}
-    assert next(u for u in state['units'] if u['id'] == 'cs_8al')['position']['x'] == 700
+    assert next(u for u in state['units'] if u['id'] == 'cs_8al')['position'].items() >= {'x': 700, 'facing': 200}.items()
     _, report = api.step(state, 60, orders)
     assert report['orders']['cs_bat']['ammo'] == 'shell'
