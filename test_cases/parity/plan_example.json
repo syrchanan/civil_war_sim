@@ -1,0 +1,48 @@
+{
+  "format": "imperial-generals-orders",
+  "version": 1,
+  "battle": {
+    "seed": 1,
+    "round": 1,
+    "time": 0
+  },
+  "side": 1,
+  "side_name": "Confederate",
+  "orders": {
+    "cs_8al": {
+      "mode": "melee",
+      "target": "us_1mn",
+      "on_break": "pursue"
+    },
+    "cs_10al": {
+      "mode": "idle"
+    },
+    "cs_11al": {
+      "mode": "idle"
+    },
+    "cs_bat": {
+      "mode": "ranged",
+      "target": "us_bat",
+      "ammo": "shell",
+      "on_break": "keep"
+    }
+  },
+  "positions": {
+    "cs_8al": {
+      "x": 700,
+      "y": 520
+    },
+    "cs_10al": {
+      "x": 976,
+      "y": 300
+    },
+    "cs_11al": {
+      "x": 1267,
+      "y": 300
+    },
+    "cs_bat": {
+      "x": 1486,
+      "y": 300
+    }
+  }
+}

@@ -9,8 +9,9 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, type FieldHolder, InfantryRegiment, ON_BREAK, type Order,
-  orderOfBattle, Regiment, Rng, type RoundReport, sideSummary, type SideSummary, type UnitSpec,
+  ArtilleryBattery, Battle, type BattleUnit, CavalryRegiment, type Engagement, estimateRound, type FieldHolder,
+  InfantryRegiment, makeOrder, ON_BREAK, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
+  type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
 import { blockSize, clampToField, defaultLayout, type Point } from './field';
 
@@ -82,7 +83,26 @@ const onOpenGround = (p: Point) => ({ x: p.x, y: p.y, z: 0, cover: 0, terrain_ty
 
 const IDLE: Order = { mode: 'idle', target: null, ammo: null, on_break: null };
 
-export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) {
+export type Mode = 'player' | 'admin';
+export const PLAN_FORMAT = 'imperial-generals-orders';
+export const PLAN_VERSION = 1;
+export const ESTIMATE_RUNS = 200;
+
+/** The view a link opens: ?mode=admin for admins; anything else is the player view. */
+export function modeFromUrl(search: string): Mode {
+  return new URLSearchParams(search).get('mode') === 'admin' ? 'admin' : 'player';
+}
+
+/** An order as written in an orders file: no empty fields. */
+const orderForFile = (o: Order): OrderInput =>
+  Object.fromEntries(Object.entries(o).filter(([, v]) => v !== null)) as OrderInput;
+
+/**
+ * @param seed the battle's seed (random by default)
+ * @param mode 'admin' fights rounds with everyone's orders; 'player' commands one side, sets what it expects of
+ *   the enemy, estimates the next round and downloads its orders for the admin
+ */
+export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), mode: Mode = 'admin') {
   const units = signal<UnitDraft[]>(structuredClone(EXAMPLE_ARMIES.units));
   const sides = signal<[string, string]>([...EXAMPLE_ARMIES.sides]);
   const seedSignal = signal(seed);
@@ -91,6 +111,10 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
   const orders = signal<Record<string, Order>>({});
   const duration = signal(60);
   const recordEvents = signal(false);
+  const modeSignal = signal<Mode>(mode);
+  const playerSide = signal<0 | 1>(0);
+  const assumptions = signal<Record<string, Order>>({}); // player mode: what the player expects of enemy units
+  const estimateRun = signal<{ key: string; result: RoundEstimate } | null>(null);
 
   const history = computed<RoundReport[]>(() => {
     revision.value;
@@ -109,12 +133,42 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     return battle.value === null ? [] : [...battle.value.units.values()].filter((u) => u.active);
   });
 
+  const isEnemy = (uid: string) =>
+    modeSignal.value === 'player' && battle.value!.units.get(uid)!.side !== playerSide.value;
+
+  /**
+   * What an enemy unit is expected to do when the player hasn't said: return fire on the first of the player's
+   * units firing at or charging it, if it can fire; otherwise hold.
+   */
+  function defaultExpectation(enemy: BattleUnit): Order {
+    const attacker = actingUnits.value.find((u) => !isEnemy(u.uid) && orders.value[u.uid].target === enemy.uid
+      && orders.value[u.uid].mode !== 'idle');
+    const canFire = battle.value!.params.combat.unitCoef(enemy.regiment.stats, 'ranged') > 0;
+    if (attacker === undefined || !canFire) return IDLE;
+    const battery = enemy.regiment instanceof ArtilleryBattery;
+    return {
+      mode: 'ranged', target: attacker.uid,
+      ammo: battery ? battle.value!.params.combat.artillery_default_ammo : null, on_break: 'keep',
+    };
+  }
+
+  /** The orders the preview and the estimate use: admin, the real orders; player, theirs plus their expectations. */
+  const effectiveOrders = computed<Record<string, Order>>(() => {
+    revision.value;
+    if (modeSignal.value === 'admin' || battle.value === null) return orders.value;
+    return Object.fromEntries(Object.entries(orders.value).map(([uid, o]) => {
+      if (!isEnemy(uid)) return [uid, o];
+      const unit = battle.value!.units.get(uid)!;
+      return [uid, assumptions.value[uid] ?? (unit.active ? defaultExpectation(unit) : IDLE)];
+    }));
+  });
+
   /** The engagements these orders would create now, with no dice rolled; or why the orders can't be carried out. */
   const preview = computed<{ arrows: Engagement[]; error: string | null }>(() => {
     revision.value;
     if (battle.value === null) return { arrows: [], error: null };
     try {
-      return { arrows: battle.value.engagements(orders.value), error: null };
+      return { arrows: battle.value.engagements(effectiveOrders.value), error: null };
     } catch (error) {
       return { arrows: [], error: (error as Error).message };
     }
@@ -149,14 +203,24 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     });
   });
 
-  /** The current fire and charge orders, as arrows on the map. */
+  /** The current fire and charge orders (and, for a player, what they expect of the enemy), as arrows. */
   const orderArrows = computed<OrderArrow[]>(() => {
     revision.value;
     if (battle.value === null || battle.value.finished) return [];
+    const eff = effectiveOrders.value;
     return actingUnits.value
-      .filter((u) => orders.value[u.uid].mode !== 'idle')
-      .map((u) => ({ from: u.uid, to: orders.value[u.uid].target!, mode: orders.value[u.uid].mode, side: u.side }));
+      .filter((u) => eff[u.uid].mode !== 'idle')
+      .map((u) => ({ from: u.uid, to: eff[u.uid].target!, mode: eff[u.uid].mode, side: u.side }));
   });
+
+  const estimateKey = computed(() => {
+    revision.value;
+    return JSON.stringify([effectiveOrders.value, duration.value, revision.value]);
+  });
+
+  /** The last estimate, and whether it still matches the battle, orders and round length. */
+  const estimate = computed(() => (estimateRun.value === null ? null
+    : { result: estimateRun.value.result, current: estimateRun.value.key === estimateKey.value }));
 
   const touch = () => {
     revision.value += 1;
@@ -208,7 +272,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
 
   /** Change one unit's order; a new mode gets a target, its default on-break choice, and ammo for batteries. */
   function setOrder(uid: string, change: Partial<Order>): void {
-    const current = orders.value[uid];
+    const current = effectiveOrders.value[uid];
     let next: Order = { ...current, ...change };
     if (change.mode !== undefined && change.mode !== current.mode) {
       if (change.mode === 'idle') {
@@ -223,7 +287,25 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
         };
       }
     }
-    orders.value = { ...orders.value, [uid]: next };
+    if (isEnemy(uid)) assumptions.value = { ...assumptions.value, [uid]: next };
+    else orders.value = { ...orders.value, [uid]: next };
+  }
+
+  /** Player mode: is this enemy unit's expected order one the player set (rather than the default)? */
+  const isAssumed = (uid: string): boolean => uid in assumptions.value;
+
+  function resetAssumption(uid: string): void {
+    const rest = { ...assumptions.value };
+    delete rest[uid];
+    assumptions.value = rest;
+  }
+
+  /** Estimate the next round with the effective orders. */
+  function runEstimate(runs = ESTIMATE_RUNS): void {
+    estimateRun.value = {
+      key: estimateKey.value,
+      result: estimateRound(battle.value!, effectiveOrders.value, duration.value, runs),
+    };
   }
 
   function newSeed(random: () => number = Math.random): void {
@@ -270,6 +352,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
    * target was wiped out).
    */
   function resolve(): string | null {
+    if (modeSignal.value === 'player') return 'Rounds are fought in admin mode.';
     if (!(duration.value > 0)) return 'The round length must be more than 0 minutes.';
     const b = battle.value!;
     try {
@@ -314,6 +397,74 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
     return null;
   }
 
+  /** Player mode: the orders file for the admin: this side's orders for the next round, and where its units stand. */
+  function planDownload(): { name: string; text: string } {
+    const b = battle.value!;
+    const side = playerSide.value;
+    const own = [...b.units.values()].filter((u) => u.side === side);
+    const place = (uid: string) => {
+      const { x, y } = mapUnits.value.find((m) => m.uid === uid)!;
+      return { x, y };
+    };
+    const plan = {
+      format: PLAN_FORMAT, version: PLAN_VERSION, battle: { seed: b.seed, round: b.round + 1, time: b.time },
+      side, side_name: sides.value[side],
+      orders: Object.fromEntries(own.filter((u) => u.active).map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
+      positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
+    };
+    const name = `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
+    return { name, text: JSON.stringify(plan, null, 2) };
+  }
+
+  /** What is wrong with an orders file for this battle's next round, or null. */
+  function planProblem(plan: Record<string, unknown>, taken: Set<string>): string | null {
+    const b = battle.value!;
+    if (plan.format !== PLAN_FORMAT) return 'not an orders file.';
+    if (plan.version !== PLAN_VERSION) return `unsupported orders file version ${plan.version} (expected ${PLAN_VERSION}).`;
+    const meta = plan.battle as { seed: number; round: number };
+    if (meta.seed !== b.seed) return `these orders are for another battle (seed ${meta.seed}, this one ${b.seed}).`;
+    if (meta.round !== b.round + 1) return `these orders are for round ${meta.round}; the next round is ${b.round + 1}.`;
+    const named = [...Object.keys(plan.orders as object), ...Object.keys((plan.positions ?? {}) as object)];
+    for (const uid of named) {
+      const unit = b.units.get(uid);
+      if (unit === undefined) return `the orders name an unknown unit ${uid}.`;
+      if (unit.side !== plan.side) return `${uid} is not on ${sides.value[plan.side as number]}'s side.`;
+    }
+    const twice = Object.keys(plan.orders as object).find((uid) => taken.has(uid));
+    return twice === undefined ? null : `${twice} has orders in two files.`;
+  }
+
+  /** Admin: load players' orders files; their orders merge in and their moves apply. Returns the problems. */
+  function loadPlans(files: { name: string; text: string }[]): string[] {
+    const problems: string[] = [];
+    const taken = new Set<string>();
+    const merged = { ...orders.value };
+    for (const file of files) {
+      let plan: Record<string, unknown>;
+      try {
+        plan = JSON.parse(file.text);
+      } catch (error) {
+        problems.push(`${file.name}: not valid JSON (${(error as Error).message}).`);
+        continue;
+      }
+      const problem = planProblem(plan, taken);
+      if (problem !== null) {
+        problems.push(`${file.name}: ${problem}`);
+        continue;
+      }
+      for (const [uid, order] of Object.entries(plan.orders as Record<string, OrderInput>)) {
+        merged[uid] = makeOrder(order);
+        taken.add(uid);
+      }
+      for (const [uid, place] of Object.entries((plan.positions ?? {}) as Record<string, Point>)) {
+        battle.value!.units.get(uid)!.regiment.position = onOpenGround(clampToField(place));
+      }
+    }
+    orders.value = merged;
+    touch();
+    return problems;
+  }
+
   /** Move a unit on the map (kept on the field): before the battle, or between rounds; not once it is over. */
   function moveUnit(uid: string, point: Point): void {
     const place = clampToField(point);
@@ -341,7 +492,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32)) 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
-    mapUnits, orderArrows, moveUnit,
+    mapUnits, orderArrows, moveUnit, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
+    estimate, runEstimate, planDownload, loadPlans,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
