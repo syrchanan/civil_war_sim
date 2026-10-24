@@ -1,0 +1,94 @@
+import { describe, expect, it } from 'vitest';
+
+import { FIELD } from './field';
+import { createStore } from './store';
+
+describe('store: the map before the battle', () => {
+  it('every unit has a place, from the default layout', () => {
+    const s = createStore(1863);
+    const units = s.mapUnits.value;
+    expect(units.map((u) => u.uid)).toEqual(s.units.value.map((u) => u.id));
+    expect(units.every((u) => u.x > 0 && u.x < FIELD.width)).toBe(true);
+    expect(units.find((u) => u.uid === 'us_1mn')).toMatchObject({ side: 0, y: FIELD.height * 0.75, width: 297,
+      depth: 20, men: 900, broken: false, wiped: false, type: 'inf' });
+    expect(units.find((u) => u.uid === 'cs_bat')!.width).toBe(120);
+  });
+
+  it('dragging moves a unit, kept on the field', () => {
+    const s = createStore(1863);
+    s.moveUnit('us_1mn', { x: 400.4, y: -30 });
+    expect(s.mapUnits.value[0]).toMatchObject({ x: 400, y: 0 });
+  });
+
+  it('new units get a place too', () => {
+    const s = createStore(1);
+    s.addUnit(1);
+    expect(s.mapUnits.value.at(-1)!.y).toBe(FIELD.height * 0.25);
+  });
+});
+
+describe('store: the map in battle', () => {
+  const started = () => {
+    const s = createStore(1863);
+    s.moveUnit('us_1mn', { x: 500, y: 700 });
+    s.start();
+    return s;
+  };
+
+  it('starting the battle keeps the places, saved as positions on open ground', () => {
+    const s = started();
+    expect(s.battle.value!.units.get('us_1mn')!.regiment.position)
+      .toEqual({ x: 500, y: 700, z: 0, cover: 0, terrain_type: 'open' });
+    expect(s.battle.value!.toDict().units[0].position).toEqual({ x: 500, y: 700, z: 0, cover: 0, terrain_type: 'open' });
+    expect(s.mapUnits.value[0]).toMatchObject({ x: 500, y: 700 });
+  });
+
+  it('units move between rounds, and the move is saved', () => {
+    const s = started();
+    s.moveUnit('cs_8al', { x: 600, y: 600 });
+    expect(s.battle.value!.units.get('cs_8al')!.regiment.position).toMatchObject({ x: 600, y: 600 });
+    expect(s.mapUnits.value.find((u) => u.uid === 'cs_8al')).toMatchObject({ x: 600, y: 600 });
+  });
+
+  it('blocks shrink with losses; broken and wiped-out units are marked', () => {
+    const s = started();
+    const battle = s.battle.value!;
+    battle.units.get('us_1mn')!.regiment.updateSize(450);
+    battle.units.get('cs_8al')!.morale.forceBreak();
+    battle.units.get('cs_10al')!.regiment.updateSize(0);
+    s.touch();
+    const byId = Object.fromEntries(s.mapUnits.value.map((u) => [u.uid, u]));
+    expect(byId.us_1mn).toMatchObject({ men: 450, width: 149 });
+    expect(byId.cs_8al.broken).toBe(true);
+    expect(byId.cs_10al.wiped).toBe(true);
+  });
+
+  it('orders are arrows: fire and charge, not hold', () => {
+    const s = started();
+    s.setOrder('us_1mn', { mode: 'ranged', target: 'cs_8al' });
+    s.setOrder('cs_8al', { mode: 'melee', target: 'us_1mn' });
+    expect(s.orderArrows.value).toEqual([
+      { from: 'us_1mn', to: 'cs_8al', mode: 'ranged', side: 0 },
+      { from: 'cs_8al', to: 'us_1mn', mode: 'melee', side: 1 },
+    ]);
+  });
+
+  it('no moves once the battle is finished', () => {
+    const s = started();
+    s.finish('auto');
+    s.moveUnit('us_1mn', { x: 10, y: 10 });
+    expect(s.mapUnits.value[0]).toMatchObject({ x: 500, y: 700 });
+    expect(s.orderArrows.value).toEqual([]);
+  });
+
+  it('a saved battle opens with its positions; units without one get the default layout', () => {
+    const s = started();
+    const data = s.battle.value!.toDict();
+    data.units[1].position = null;
+    const other = createStore(1);
+    other.open(JSON.stringify(data));
+    const units = other.mapUnits.value;
+    expect(units[0]).toMatchObject({ x: 500, y: 700 });
+    expect(units[1].y).toBe(FIELD.height * 0.75);
+  });
+});
