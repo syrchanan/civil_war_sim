@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ArtilleryBattery } from '../engine';
 import { blockSize, FIELD } from './field';
 import { createStore } from './store';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('store: the map before the battle', () => {
   it('every unit has a place, from the default layout', () => {
@@ -189,3 +193,110 @@ describe('store: replaying rounds on the map', () => {
     expect(other.replayRounds.value).toEqual([]);
   });
 });
+
+describe('store: picking targets on the map', () => {
+  const started = (mode: 'admin' | 'player' = 'admin') => {
+    const s = createStore(1863, mode);
+    s.updateUnit('cs_11al', { stats: '3/4/0/1' });              // melee only
+    s.start();
+    return s;
+  };
+
+  it('what a unit can do: fire if it has a ranged weapon, charge if it can fight hand to hand', () => {
+    const s = started();
+    expect(s.actionsFor('us_1mn')).toEqual(['ranged', 'melee']);
+    expect(s.actionsFor('cs_11al')).toEqual(['melee']);
+  });
+
+  it('click a unit, then an enemy, then confirm how to attack it', () => {
+    const s = started();
+    s.clickUnit('us_1mn');
+    expect(s.aiming.value).toBe('us_1mn');
+    s.clickUnit('us_15ma');                                    // not a target: aim with that unit instead
+    expect(s.aiming.value).toBe('us_15ma');
+    s.clickUnit('cs_8al');
+    expect(s.targetChoice.value).toEqual({ from: 'us_15ma', to: 'cs_8al', actions: ['ranged', 'melee'] });
+    expect(s.orders.value.us_15ma.mode).toBe('idle');          // nothing changes until confirmed
+    s.chooseAction('melee');
+    expect(s.orders.value.us_15ma).toMatchObject({ mode: 'melee', target: 'cs_8al' });
+    expect([s.aiming.value, s.targetChoice.value]).toEqual([null, null]);
+  });
+
+  it('a new target keeps the action; a unit that only fights hand to hand is only offered a charge', () => {
+    const s = started();
+    s.setOrder('us_bat', { mode: 'ranged', target: 'cs_8al' });
+    s.setOrder('us_bat', { ammo: 'canister' });
+    s.clickUnit('us_bat');
+    s.clickUnit('cs_bat');
+    s.chooseAction('ranged');
+    expect(s.orders.value.us_bat).toMatchObject({ mode: 'ranged', target: 'cs_bat', ammo: 'canister' });
+    s.clickUnit('cs_11al');
+    s.clickUnit('us_1mn');
+    expect(s.targetChoice.value!.actions).toEqual(['melee']);
+  });
+
+  it('clicking the aiming unit again, or cancelling, stops aiming', () => {
+    const s = started();
+    s.clickUnit('us_1mn');
+    s.clickUnit('us_1mn');
+    expect(s.aiming.value).toBeNull();
+    s.clickUnit('us_1mn');
+    s.clickUnit('cs_8al');
+    s.cancelTargeting();
+    expect([s.aiming.value, s.targetChoice.value]).toEqual([null, null]);
+    expect(s.orders.value.us_1mn.mode).toBe('idle');
+  });
+
+  it('broken, wiped-out and can\'t-fight units don\'t aim; broken enemies can still be targeted', () => {
+    const s = started();
+    const b = s.battle.value!;
+    b.units.get('cs_8al')!.morale.forceBreak();
+    b.units.get('us_15ma')!.regiment.updateSize(0);
+    s.touch();
+    s.clickUnit('cs_8al');
+    s.clickUnit('us_15ma');
+    expect(s.aiming.value).toBeNull();
+    s.clickUnit('us_1mn');
+    s.clickUnit('us_15ma');                                    // wiped out: neither aims nor is a target
+    expect(s.aiming.value).toBe('us_1mn');
+    s.clickUnit('cs_8al');
+    expect(s.targetChoice.value).toMatchObject({ from: 'us_1mn', to: 'cs_8al' });
+  });
+
+  it('a unit with nothing it can do doesn\'t aim', () => {
+    const s = started();
+    b_noActions(s);
+    s.clickUnit('us_1mn');
+    expect(s.aiming.value).toBeNull();
+  });
+
+  it('nothing to aim before the battle, once it is over, or while replaying', () => {
+    const before = createStore(1863);
+    before.clickUnit('us_1mn');
+    expect(before.aiming.value).toBeNull();
+    const s = started();
+    s.resolve();
+    s.mapRound.value = 1;
+    s.clickUnit('us_1mn');
+    expect(s.aiming.value).toBeNull();
+    s.mapRound.value = null;
+    s.finish('auto');
+    s.clickUnit('us_1mn');
+    expect(s.aiming.value).toBeNull();
+  });
+
+  it('a player aims their own units (orders) and enemy units (what they expect)', () => {
+    const s = started('player');
+    s.clickUnit('cs_8al');
+    s.clickUnit('us_1mn');
+    s.chooseAction('ranged');
+    expect(s.isAssumed('cs_8al')).toBe(true);
+    expect(s.effectiveOrders.value.cs_8al).toMatchObject({ mode: 'ranged', target: 'us_1mn' });
+    expect(s.orders.value.cs_8al.mode).toBe('idle');
+  });
+});
+
+/** Make every unit unable to fire or fight (all combat coefficients 0). */
+function b_noActions(s: ReturnType<typeof createStore>) {
+  vi.spyOn(Object.getPrototypeOf(s.battle.value!.params.combat), 'unitCoef').mockReturnValue(0);
+}

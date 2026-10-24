@@ -72,6 +72,15 @@ export interface MapUnit {
   wiped: boolean;
 }
 
+/** Picking a target on the map: the unit aiming, the enemy clicked, and what the unit can do to it. */
+export interface TargetChoice {
+  from: string;
+  to: string;
+  actions: AttackMode[];
+}
+
+export type AttackMode = 'ranged' | 'melee';
+
 export interface OrderArrow {
   from: string;
   to: string;
@@ -327,6 +336,46 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     else orders.value = { ...orders.value, [uid]: next };
   }
 
+  const aiming = signal<string | null>(null); // the unit whose target is being picked on the map
+  const targetChoice = signal<TargetChoice | null>(null); // the enemy picked, waiting for fire or charge
+
+  /** What a unit can do to an enemy: fire if it has a ranged weapon, charge if it can fight hand to hand. */
+  function actionsFor(uid: string): AttackMode[] {
+    const b = battle.value!;
+    const stats = b.units.get(uid)!.regiment.stats;
+    return (['ranged', 'melee'] as const).filter((m) => b.params.combat.unitCoef(stats, m) > 0);
+  }
+
+  function cancelTargeting(): void {
+    aiming.value = null;
+    targetChoice.value = null;
+  }
+
+  /**
+   * A unit clicked on the map, while the battle is being fought (not replaying). With a unit aiming, an enemy it
+   * can target opens the choice of fire or charge; otherwise a unit that can act starts aiming (the aiming unit
+   * again stops). A player aims their own units (orders) and enemy units (what they expect of them).
+   */
+  function clickUnit(uid: string): void {
+    const b = battle.value;
+    if (b === null || b.finished || mapRound.value !== null) return;
+    const from = aiming.value;
+    if (from !== null && targetsFor(from).some((t) => t.uid === uid)) {
+      targetChoice.value = { from, to: uid, actions: actionsFor(from) };
+      return;
+    }
+    targetChoice.value = null;
+    if (uid === from) aiming.value = null;
+    else if (b.units.get(uid)!.active && actionsFor(uid).length > 0) aiming.value = uid;
+  }
+
+  /** Confirm the picked target: the aiming unit fires on or charges it. */
+  function chooseAction(mode: AttackMode): void {
+    const { from, to } = targetChoice.value!;
+    setOrder(from, { mode, target: to });
+    cancelTargeting();
+  }
+
   /** Player mode: is this enemy unit's expected order one the player set (rather than the default)? */
   const isAssumed = (uid: string): boolean => uid in assumptions.value;
 
@@ -546,7 +595,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
-    mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
+    mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
+    chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
