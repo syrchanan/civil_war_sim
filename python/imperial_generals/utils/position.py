@@ -90,6 +90,11 @@ class Position:
             f"cover={self.cover!r}, terrain_type={self.terrain_type!r}, facing={self.facing!r})"
         )
 
+    def to_dict(self) -> dict:
+        """The position as saved in a battle state file."""
+        return {'x': self.x, 'y': self.y, 'z': self.z, 'cover': self.cover, 'terrain_type': self.terrain_type,
+                'facing': self.facing}
+
     @classmethod
     def from_dict(cls, d: dict) -> 'Position':
         return cls(

@@ -422,7 +422,8 @@
         "1": 2
       },
       "charges": [],
-      "retargets": []
+      "retargets": [],
+      "positions": {}
     }
   ],
   "result": null

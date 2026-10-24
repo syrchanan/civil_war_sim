@@ -156,6 +156,7 @@ class RoundReport:
     orders: dict = field(default_factory=dict)   # uid -> {'target', 'mode', 'ammo'} for units that acted
     charges: tuple = ()         # Charge per charge made this round
     retargets: tuple = ()       # Retarget per switch of target this round
+    positions: dict = field(default_factory=dict)   # uid -> position (as saved) as the round began, for placed units
 
 
 @dataclass(frozen=True)
@@ -570,6 +571,7 @@ class Battle:
         start = self.time
         end = start + duration
         before = {uid: (u.losses, u.inflicted, u.captured, u.guns_lost) for uid, u in self.units.items()}
+        placed = {uid: u.regiment.position.to_dict() for uid, u in self.units.items() if u.regiment.position is not None}
         prisoners = {0: 0, 1: 0}
         guns = {0: 0, 1: 0}
         self._broken_before_round = {uid for uid, u in self.units.items() if u.morale.broken}
@@ -736,6 +738,7 @@ class Battle:
             orders={uid: {'target': o.target, 'mode': o.mode, 'ammo': o.ammo, 'on_break': o.on_break}
                     for uid, o in valid.items()},
             charges=tuple(charges),
+            positions=placed,
             retargets=tuple(retargets),
         )
         self.history.append(report)

@@ -18,7 +18,7 @@ import { breakScale, MoraleState } from './morale';
 import { BattleParams, type Stats, type Unit } from './params';
 import { Rng } from './rng';
 import { battleFromDict, battleToDict, type StateData } from './state';
-import { ArtilleryBattery, CavalryRegiment, Regiment } from './units';
+import { ArtilleryBattery, CavalryRegiment, type Position, Regiment } from './units';
 
 const MODES = ['idle', 'ranged', 'melee'] as const;
 export const ORDER_KEYS = ['target', 'mode', 'ammo', 'on_break'] as const;
@@ -144,6 +144,8 @@ export interface RoundReport {
   guns_captured: BySide;
   charges: Charge[];
   retargets: Retarget[];
+  /** Where placed units stood as the round began (as saved), for replays on the map. */
+  positions: Record<string, Position>;
 }
 
 export interface UnitOutcome {
@@ -578,6 +580,10 @@ export class Battle {
     const start = this.time;
     const end = start + duration;
     const before = new Map([...this.units].map(([uid, u]) => [uid, [u.losses, u.inflicted, u.captured, u.gunsLost]]));
+    const placed: Record<string, Position> = {};
+    for (const [uid, u] of this.units) {
+      if (u.regiment.position !== null) placed[uid] = { ...u.regiment.position, facing: u.regiment.position.facing ?? null };
+    }
     const prisoners = bySide();
     const guns = bySide();
     this.brokenBeforeRound = new Set([...this.units].filter(([, u]) => u.morale.broken).map(([uid]) => uid));
@@ -765,6 +771,7 @@ export class Battle {
       guns_captured: guns,
       charges,
       retargets,
+      positions: placed,
     };
     this.history.push(report);
     return report;
