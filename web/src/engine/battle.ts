@@ -146,6 +146,48 @@ export interface RoundReport {
   retargets: Retarget[];
   /** Where placed units stood as the round began (as saved), for replays on the map. */
   positions: Record<string, Position>;
+  /** The admin's modifiers for this round. */
+  modifiers: Record<string, Modifier>;
+}
+
+/** An admin's modifiers for one unit and one round: fractions from -1 to 1 (-0.15 is -15%), and a note. */
+export interface Modifier {
+  fire: number; // scales the casualties the unit inflicts by fire (closing fire included)
+  melee: number; // scales the casualties it inflicts in melee
+  morale: number; // scales what it spends from its morale budget (+0.1: spends 10% less)
+  note: string;
+}
+
+export type ModifierInput = Partial<Modifier>;
+
+export const MODIFIER_KEYS = ['fire', 'melee', 'morale'] as const;
+
+const isMapping = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Check one round's admin modifiers (port of Python's validate_modifiers); returns them complete. */
+export function validateModifiers(modifiers: unknown, units: Map<string, unknown>): Record<string, Modifier> {
+  if (!isMapping(modifiers)) throw new ValueError('modifiers must be a mapping of unit id to modifiers.');
+  const checked: Record<string, Modifier> = {};
+  for (const [uid, mod] of Object.entries(modifiers)) {
+    if (!units.has(uid)) throw new ValueError(`Unknown unit ${uid} in modifiers.`);
+    if (!isMapping(mod)) throw new ValueError(`${uid}: modifiers must be a mapping (fire, melee, morale, note).`);
+    const unknown = Object.keys(mod).filter((k) => !['fire', 'melee', 'morale', 'note'].includes(k)).sort();
+    if (unknown.length) throw new ValueError(`Unknown modifier(s) [${unknown.join(', ')}] for ${uid}; use fire, melee, morale, note.`);
+    const out = { fire: 0, melee: 0, morale: 0, note: '' };
+    for (const key of MODIFIER_KEYS) {
+      const value = mod[key] ?? 0;
+      if (typeof value !== 'number') {
+        throw new ValueError(`${uid}: ${key} must be a number (a fraction, -0.15 for -15%), got ${JSON.stringify(value)}.`);
+      }
+      if (!(value >= -1 && value <= 1)) throw new ValueError(`${uid}: ${key} must be between -1 and 1 (-100% to +100%), got ${value}.`);
+      out[key] = value;
+    }
+    const note = mod.note ?? '';
+    if (typeof note !== 'string') throw new ValueError(`${uid}: the note must be text, got ${JSON.stringify(note)}.`);
+    out.note = note;
+    checked[uid] = out;
+  }
+  return checked;
 }
 
 export interface UnitOutcome {
@@ -255,6 +297,7 @@ export class Battle {
   contacts = new Set<string>(); // pairs of unit ids locked in melee, carried across rounds
   result: BattleResult | null = null;
   private brokenBeforeRound = new Set<string>();
+  private modifiers: Record<string, Modifier> = {}; // this round's admin modifiers, while it is fought or previewed
 
   /**
    * @param units unit id -> {side, regiment, name?, meta?}; side is 0 or 1. Insertion order is the unit order
@@ -462,6 +505,8 @@ export class Battle {
         const c = combat.unitCoef(stats, 'ranged');
         rate = c * unit.size * combat.ranged_kill_rate * matchup;
       }
+      const mod = this.modifiers[attacker];
+      if (mod !== undefined) rate = rate * (1 + (mode === 'melee' ? mod.melee : mod.fire));
       if (mode === 'closing') rate = rate * closing * share;
       if (this.unit(target).morale.broken) {
         // a broken unit scatters: harder to hit by fire, and by pursuit
@@ -473,14 +518,19 @@ export class Battle {
   }
 
   /**
-   * Preview the arrows and their current casualty rates for these orders at the start of a round (no dice
-   * rolled): melee along existing contacts, closing fire on new charges, ranged fire.
+   * Preview the arrows and their current casualty rates for these orders (and admin modifiers) at the start of a
+   * round (no dice rolled): melee along existing contacts, closing fire on new charges, ranged fire.
    */
-  engagements(orders: Record<string, OrderInput | null>): Engagement[] {
+  engagements(orders: Record<string, OrderInput | null>, modifiers: Record<string, ModifierInput> = {}): Engagement[] {
     const valid = this.validateOrders(orders);
-    const contacts = this.roundContacts(valid);
-    const [pending] = this.newCharges(valid, contacts, this.time, Infinity);
-    return this.rates(...this.plan(valid, new Set(), contacts, pending)).map(engagement);
+    this.modifiers = validateModifiers(modifiers, this.units);
+    try {
+      const contacts = this.roundContacts(valid);
+      const [pending] = this.newCharges(valid, contacts, this.time, Infinity);
+      return this.rates(...this.plan(valid, new Set(), contacts, pending)).map(engagement);
+    } finally {
+      this.modifiers = {};
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -568,12 +618,27 @@ export class Battle {
 
   /**
    * Fight one round of `duration` game minutes under `orders` and return its report. Units left out of `orders`
-   * are idle. See the Python engine for the rules; this follows it step for step.
+   * are idle. See the Python engine for the rules; this follows it step for step. `modifiers` are the admin's
+   * for this round only, recorded in the report.
    */
-  resolveRound(duration: number, orders: Record<string, OrderInput | null>, recordEvents = false): RoundReport {
+  resolveRound(duration: number, orders: Record<string, OrderInput | null>, recordEvents = false,
+    modifiers: Record<string, ModifierInput> = {}): RoundReport {
     if (this.finished) throw new RuntimeError('This battle is finished.');
     if (!(duration > 0)) throw new ValueError(`duration must be > 0, got ${duration}.`);
     const valid = this.validateOrders(orders);
+    const checked = validateModifiers(modifiers, this.units);
+    this.modifiers = checked;
+    for (const [uid, mod] of Object.entries(checked)) this.unit(uid).morale.spendFactor = 1 - mod.morale;
+    try {
+      return this.fightRound(duration, valid, recordEvents, checked);
+    } finally {
+      this.modifiers = {};
+      for (const uid of Object.keys(checked)) this.unit(uid).morale.spendFactor = 1;
+    }
+  }
+
+  private fightRound(duration: number, valid: Map<string, Order>, recordEvents: boolean,
+    checked: Record<string, Modifier>): RoundReport {
     const live = new Map(valid); // orders as they stand: a retarget changes the target here, not in valid
 
     this.round += 1;
@@ -772,6 +837,7 @@ export class Battle {
       charges,
       retargets,
       positions: placed,
+      modifiers: checked,
     };
     this.history.push(report);
     return report;

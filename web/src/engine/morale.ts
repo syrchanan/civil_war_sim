@@ -64,6 +64,9 @@ export class MoraleState {
    * @param params model constants (defaults to config)
    * @param scale multiplier on this unit's break point (drawn per unit at battle start; see breakScale)
    */
+  /** An admin's morale modifier for the current round scales everything spent (1 - modifier); 1 otherwise. */
+  spendFactor = 1.0;
+
   constructor(size: number, xp: number, moraleStat: number, params?: MoraleParams, scale = 1.0) {
     if (size <= 0) throw new ValueError(`size must be positive, got ${size}.`);
     this.params = params ?? BattleParams.defaults().morale;
@@ -121,7 +124,7 @@ export class MoraleState {
   }
 
   private spend(amount: number): void {
-    this.resolve -= amount;
+    this.resolve -= amount * this.spendFactor;
     if (this.resolve <= BREAK_EPSILON) {
       this.resolve = 0.0;
       this.broken = true;

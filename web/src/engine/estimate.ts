@@ -4,7 +4,7 @@
  * always give the same estimate, and two plans are compared on the same dice.
  */
 
-import { Battle, type OrderInput } from './battle';
+import { Battle, type ModifierInput, type OrderInput } from './battle';
 import { Rng } from './rng';
 
 export interface Range {
@@ -41,9 +41,9 @@ export function quantile(values: number[], q: number): number {
 
 const range = (values: number[]): Range => ({ p10: quantile(values, 0.1), p50: quantile(values, 0.5), p90: quantile(values, 0.9) });
 
-/** Fight the next round `runs` times with `orders` and summarise what happened. */
+/** Fight the next round `runs` times with `orders` (and the admin's modifiers) and summarise what happened. */
 export function estimateRound(battle: Battle, orders: Record<string, OrderInput | null>, duration: number,
-  runs = 200): RoundEstimate {
+  runs = 200, modifiers: Record<string, ModifierInput> = {}): RoundEstimate {
   const start = battle.toDict();
   const uids = [...battle.units.keys()];
   const per: Record<string, { losses: number[]; captured: number[]; size: number[]; broken: number }> = {};
@@ -53,7 +53,7 @@ export function estimateRound(battle: Battle, orders: Record<string, OrderInput 
   for (let run = 1; run <= runs; run++) {
     const copy = Battle.fromDict(start);
     copy.rng = new Rng(run);
-    const report = copy.resolveRound(duration, orders);
+    const report = copy.resolveRound(duration, orders, false, modifiers);
     for (const uid of uids) {
       const u = report.units[uid];
       per[uid].losses.push(u.losses);
