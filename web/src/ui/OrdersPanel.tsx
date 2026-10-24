@@ -50,6 +50,7 @@ function OrderRow({ store, unit, expected, admin }:
   { store: Store; unit: BattleUnit; expected: boolean; admin: boolean }) {
   const order = store.effectiveOrders.value[unit.uid];
   const battery = unit.regiment instanceof ArtilleryBattery;
+  const can: string[] = store.actionsFor(unit.uid); // only what the unit can do (its current order stays listed)
   const label = (what: string) => `${unit.name} ${what}`;
   return (
     <tr class={`side-${unit.side}`}>
@@ -57,7 +58,8 @@ function OrderRow({ store, unit, expected, admin }:
       <td>
         <select aria-label={label('action')} value={order.mode}
           onChange={(e) => store.setOrder(unit.uid, { mode: e.currentTarget.value })}>
-          {ACTIONS.map(([word, mode]) => <option value={mode}>{word}</option>)}
+          {ACTIONS.filter(([, mode]) => mode === 'idle' || mode === order.mode || can.includes(mode))
+            .map(([word, mode]) => <option value={mode}>{word}</option>)}
         </select>
       </td>
       <td>
@@ -103,7 +105,7 @@ function OrdersTable({ store, units, title, expected, admin = false }:
   { store: Store; units: BattleUnit[]; title: string; expected: boolean; admin?: boolean }) {
   return (
     <div class="table-wrap">
-      <table aria-label={title}>
+      <table aria-label={title} class="order-table">
         <thead>
           <tr>
             <th>Unit</th><th>Action</th><th>Target</th><th>Ammo</th><th>If the target breaks</th>
