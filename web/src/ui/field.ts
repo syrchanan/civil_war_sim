@@ -76,3 +76,21 @@ export function clampToField(p: Point): Point {
     y: Math.round(Math.min(FIELD.height, Math.max(0, p.y))),
   };
 }
+
+/** A unit's place on the map: where it stands (yards) and which way its front faces. */
+export interface Place extends Point {
+  facing: number;
+}
+
+/**
+ * Facings are compass degrees, clockwise from the top of the map (towards y = 0), in [0, 360). Each side starts
+ * facing the other: side 0 up the map, side 1 down it.
+ */
+export const defaultFacing = (side: 0 | 1): number => (side === 0 ? 0 : 180);
+
+/** A facing turned by some degrees (negative: anticlockwise), kept within one turn. */
+export const turned = (facing: number, by: number): number => (((facing + by) % 360) + 360) % 360;
+
+/** The facing that points from one point towards another, in whole degrees. */
+export const bearing = (from: Point, to: Point): number =>
+  turned(Math.round((Math.atan2(to.x - from.x, from.y - to.y) * 180) / Math.PI), 0);

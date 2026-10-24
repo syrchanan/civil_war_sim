@@ -21,7 +21,7 @@ describe('map', () => {
   it('draws every unit as a block, labelled with its men', () => {
     setup();
     expect(document.querySelectorAll('.map-unit')).toHaveLength(7);
-    expect(unit('1st Minnesota').getAttribute('aria-label')).toMatch(/^1st Minnesota, 900 men, at \d+, 900 yd$/);
+    expect(unit('1st Minnesota').getAttribute('aria-label')).toMatch(/^1st Minnesota, 900 men, at \d+, 900 yd/);
     expect(unit('1st Minnesota').textContent).toBe('1st Minnesota900');
     // SVG attribute names are case-sensitive: browsers only focus with a lowercase tabindex
     expect(unit('1st Minnesota').getAttribute('tabindex')).toBe('0');
@@ -49,6 +49,37 @@ describe('map', () => {
     fireEvent.keyDown(unit('1st Minnesota'), { key: 'ArrowDown' });
     fireEvent.keyDown(unit('1st Minnesota'), { key: 'Enter' });
     expect(store.mapUnits.value[0]).toMatchObject({ x: start.x, y: start.y - 40 });
+  });
+
+  it('blocks are turned to their facing, front edge marked; labels stay upright', () => {
+    setup();
+    expect(unit('1st Minnesota').getAttribute('aria-label')).toMatch(/at \d+, 900 yd, facing 0°$/);
+    expect(unit('8th Alabama').querySelector('.block')!.getAttribute('transform')).toBe('rotate(180)');
+    expect(unit('8th Alabama').querySelector('.front')).not.toBeNull();
+    expect(unit('8th Alabama').querySelector('text')!.closest('.block')).toBeNull();
+  });
+
+  it('Q and E turn the selected unit: 15°, 45° with Shift', () => {
+    const store = setup();
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'e' });
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'E', shiftKey: true });
+    expect(store.mapUnits.value[0].facing).toBe(60);
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'q' });
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'Q', shiftKey: true });
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'q', shiftKey: true });
+    expect(store.mapUnits.value[0].facing).toBe(315);
+  });
+
+  it('dragging the handle in front of a unit turns it towards the pointer', () => {
+    const store = setup();
+    const start = store.mapUnits.value[0];
+    const handle = unit('1st Minnesota').querySelector('.turn-handle')!;
+    fireEvent.pointerDown(handle, { clientX: start.x / 2, clientY: start.y / 2 - 20, pointerId: 1 });
+    fireEvent.pointerMove(handle, { clientX: start.x / 2 + 50, clientY: start.y / 2, pointerId: 1 });
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+    expect(store.mapUnits.value[0]).toMatchObject({ x: start.x, y: start.y, facing: 90 });
+    fireEvent.pointerMove(handle, { clientX: 0, clientY: start.y / 2, pointerId: 1 });
+    expect(store.mapUnits.value[0].facing).toBe(90);          // let go: no more turning
   });
 
   it('shows orders as arrows: fire dashed, charge solid', () => {
@@ -82,13 +113,15 @@ describe('map', () => {
     });
     expect(unit('8th Alabama').classList.contains('broken')).toBe(true);
     expect(unit('10th Alabama').classList.contains('wiped')).toBe(true);
-    expect(unit('10th Alabama').querySelectorAll('line')).toHaveLength(2);
+    expect(unit('10th Alabama').querySelectorAll('.cross')).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: 'Finish the battle' }));
     const before = store.mapUnits.value[0];
     fireEvent.pointerDown(unit('1st Minnesota'), { clientX: 10, clientY: 10, pointerId: 1 });
     fireEvent.pointerMove(unit('1st Minnesota'), { clientX: 100, clientY: 100, pointerId: 1 });
     fireEvent.keyDown(unit('1st Minnesota'), { key: 'ArrowLeft' });
-    expect(store.mapUnits.value[0]).toMatchObject({ x: before.x, y: before.y });
+    fireEvent.keyDown(unit('1st Minnesota'), { key: 'e' });
+    expect(store.mapUnits.value[0]).toMatchObject({ x: before.x, y: before.y, facing: before.facing });
+    expect(unit('1st Minnesota').querySelector('.turn-handle')).toBeNull();
     expect(unit('1st Minnesota').getAttribute('tabindex')).toBeNull();
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { blockSize, clampToField, defaultLayout, FIELD } from './field';
+import { bearing, blockSize, clampToField, defaultFacing, defaultLayout, FIELD, turned } from './field';
 
 describe('block size (yards)', () => {
   it('infantry: two ranks, about two thirds of a yard per file', () => {
@@ -60,5 +60,27 @@ describe('clamp to the field', () => {
   it('keeps a point on the field', () => {
     expect(clampToField({ x: -50, y: 5000 })).toEqual({ x: 0, y: FIELD.height });
     expect(clampToField({ x: 10.4, y: 20.6 })).toEqual({ x: 10, y: 21 });
+  });
+});
+
+describe('facing (compass degrees, clockwise from the top of the map)', () => {
+  it('each side starts facing the other: side 0 up the map, side 1 down it', () => {
+    expect([defaultFacing(0), defaultFacing(1)]).toEqual([0, 180]);
+  });
+
+  it('turning stays within one turn', () => {
+    expect(turned(350, 20)).toBe(10);
+    expect(turned(10, -20)).toBe(350);
+    expect(turned(90, 360)).toBe(90);
+  });
+
+  it('the bearing from one point to another, in whole degrees', () => {
+    const at = { x: 100, y: 100 };
+    expect(bearing(at, { x: 100, y: 0 })).toBe(0);
+    expect(bearing(at, { x: 200, y: 100 })).toBe(90);
+    expect(bearing(at, { x: 100, y: 200 })).toBe(180);
+    expect(bearing(at, { x: 0, y: 100 })).toBe(270);
+    expect(bearing(at, { x: 102, y: 0 })).toBe(1);
+    expect(bearing(at, { x: 99.9, y: 0 })).toBe(0);           // 359.94 rounds to a full turn: 0
   });
 });

@@ -47,6 +47,8 @@ export interface Position {
   z: number;
   cover: number;
   terrain_type: string;
+  /** Compass degrees clockwise from map north (towards y = 0), in [0, 360); null when not given. Display only. */
+  facing?: number | null;
 }
 
 export interface RegimentOptions {

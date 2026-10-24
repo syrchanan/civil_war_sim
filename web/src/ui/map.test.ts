@@ -20,6 +20,15 @@ describe('store: the map before the battle', () => {
     expect(s.mapUnits.value[0]).toMatchObject({ x: 400, y: 0 });
   });
 
+  it('every unit faces the other side to start with, and can be turned', () => {
+    const s = createStore(1863);
+    expect(s.mapUnits.value.find((u) => u.uid === 'us_1mn')!.facing).toBe(0);
+    expect(s.mapUnits.value.find((u) => u.uid === 'cs_8al')!.facing).toBe(180);
+    s.faceUnit('us_1mn', -45);
+    s.moveUnit('us_1mn', { x: 400, y: 900 });                  // moving keeps the facing
+    expect(s.mapUnits.value[0]).toMatchObject({ x: 400, y: 900, facing: 315 });
+  });
+
   it('new units get a place too', () => {
     const s = createStore(1);
     s.addUnit(1);
@@ -38,8 +47,8 @@ describe('store: the map in battle', () => {
   it('starting the battle keeps the places, saved as positions on open ground', () => {
     const s = started();
     expect(s.battle.value!.units.get('us_1mn')!.regiment.position)
-      .toEqual({ x: 500, y: 700, z: 0, cover: 0, terrain_type: 'open' });
-    expect(s.battle.value!.toDict().units[0].position).toEqual({ x: 500, y: 700, z: 0, cover: 0, terrain_type: 'open' });
+      .toEqual({ x: 500, y: 700, z: 0, cover: 0, terrain_type: 'open', facing: 0 });
+    expect(s.battle.value!.toDict().units[3].position).toMatchObject({ facing: 180 });
     expect(s.mapUnits.value[0]).toMatchObject({ x: 500, y: 700 });
   });
 
@@ -48,6 +57,17 @@ describe('store: the map in battle', () => {
     s.moveUnit('cs_8al', { x: 600, y: 600 });
     expect(s.battle.value!.units.get('cs_8al')!.regiment.position).toMatchObject({ x: 600, y: 600 });
     expect(s.mapUnits.value.find((u) => u.uid === 'cs_8al')).toMatchObject({ x: 600, y: 600 });
+  });
+
+  it('units turn between rounds, and the facing is saved', () => {
+    const s = started();
+    s.faceUnit('cs_8al', 90);
+    expect(s.battle.value!.units.get('cs_8al')!.regiment.position).toMatchObject({ facing: 90 });
+    s.moveUnit('cs_8al', { x: 600, y: 600 });
+    expect(s.mapUnits.value.find((u) => u.uid === 'cs_8al')).toMatchObject({ x: 600, y: 600, facing: 90 });
+    s.finish('auto');
+    s.faceUnit('cs_8al', 0);                                   // not once it is over
+    expect(s.mapUnits.value.find((u) => u.uid === 'cs_8al')!.facing).toBe(90);
   });
 
   it('blocks shrink with losses; broken and wiped-out units are marked', () => {
@@ -85,10 +105,12 @@ describe('store: the map in battle', () => {
     const s = started();
     const data = s.battle.value!.toDict();
     data.units[1].position = null;
+    data.units[3].position!.facing = null;                    // e.g. a Python setup that gave none
     const other = createStore(1);
     other.open(JSON.stringify(data));
     const units = other.mapUnits.value;
-    expect(units[0]).toMatchObject({ x: 500, y: 700 });
+    expect(units[0]).toMatchObject({ x: 500, y: 700, facing: 0 });
     expect(units[1].y).toBe(FIELD.height * 0.75);
+    expect(units[3].facing).toBe(180);                         // facing the other side
   });
 });

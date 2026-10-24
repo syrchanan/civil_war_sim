@@ -109,7 +109,7 @@ describe('orders files', () => {
     expect(Object.keys(plan.orders)).toEqual(['us_1mn', 'us_15ma', 'us_bat']);
     expect(plan.orders.us_1mn).toEqual({ target: 'cs_8al', mode: 'ranged', on_break: 'keep' });
     expect(plan.orders.us_15ma).toEqual({ mode: 'idle' });
-    expect(plan.positions.us_1mn).toEqual({ x: 500, y: 850 });
+    expect(plan.positions.us_1mn).toEqual({ x: 500, y: 850, facing: 0 });
     expect(Object.keys(plan.positions)).toEqual(['us_1mn', 'us_15ma', 'us_bat']);
   });
 
@@ -117,6 +117,7 @@ describe('orders files', () => {
     const union = player(0);
     union.setOrder('us_1mn', { mode: 'ranged', target: 'cs_8al' });
     union.moveUnit('us_1mn', { x: 500, y: 850 });
+    union.faceUnit('us_1mn', 30);
     const confed = player(1);
     confed.setOrder('cs_8al', { mode: 'melee', target: 'us_1mn', on_break: 'pursue' });
     const admin = createStore(1863);
@@ -126,8 +127,19 @@ describe('orders files', () => {
     ])).toEqual([]);
     expect(admin.orders.value.us_1mn).toMatchObject({ mode: 'ranged', target: 'cs_8al' });
     expect(admin.orders.value.cs_8al).toMatchObject({ mode: 'melee', on_break: 'pursue' });
-    expect(admin.mapUnits.value[0]).toMatchObject({ x: 500, y: 850 });
+    expect(admin.mapUnits.value[0]).toMatchObject({ x: 500, y: 850, facing: 30 });
     expect(admin.resolve()).toBeNull();
+  });
+
+  it('a move without a facing (an older orders file) keeps the unit\'s facing', () => {
+    const union = player(0);
+    const plan = JSON.parse(union.planDownload().text);
+    plan.positions = { us_1mn: { x: 450, y: 850 } };
+    const admin = createStore(1863);
+    admin.start();
+    admin.faceUnit('us_1mn', 20);
+    expect(admin.loadPlans([{ name: 'u.json', text: JSON.stringify(plan) }])).toEqual([]);
+    expect(admin.mapUnits.value[0]).toMatchObject({ x: 450, y: 850, facing: 20 });
   });
 
   it('refuses files for another battle, round or side, or not orders at all, naming the file', () => {
@@ -202,6 +214,7 @@ describe('the orders file format is shared with Python', () => {
     s.setOrder('cs_bat', { mode: 'ranged', target: 'us_bat' });
     s.setOrder('cs_bat', { ammo: 'shell' });
     s.moveUnit('cs_8al', { x: 700, y: 520 });
+    s.faceUnit('cs_8al', 200);
     expect(JSON.parse(s.planDownload().text)).toEqual(expected);
   });
 });

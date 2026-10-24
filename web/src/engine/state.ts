@@ -77,7 +77,7 @@ function unitToDict(unit: BattleUnit): UnitData {
     front_size: reg.frontSize,
     raw_morale: reg.rawMorale,
     combat_mode: reg.combatMode,
-    position: reg.position === null ? null : { ...reg.position },
+    position: reg.position === null ? null : { ...reg.position, facing: reg.position.facing ?? null },
     morale: {
       resolve: unit.morale.resolve,
       shock: unit.morale.shock,
@@ -145,7 +145,8 @@ function restoreUnit(unit: BattleUnit, data: UnitData, params: BattleParams): vo
   reg.rawMorale = data.raw_morale;
   reg.setFrontSize(data.front_size);
   reg.setCombatMode(data.combat_mode);
-  if (data.position !== null) reg.position = { ...data.position };
+  // facing is absent in files saved before it existed
+  if (data.position !== null) reg.position = { ...data.position, facing: data.position.facing ?? null };
   const morale = unit.morale;
   morale.resolve = data.morale.resolve;
   morale.shock = data.morale.shock;

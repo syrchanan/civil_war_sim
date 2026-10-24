@@ -13,7 +13,7 @@ import {
   InfantryRegiment, makeOrder, ON_BREAK, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, sideSummary, type SideSummary, type UnitSpec,
 } from '../engine';
-import { blockSize, clampToField, defaultLayout, type Point } from './field';
+import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
 
 export type UnitType = 'inf' | 'cav' | 'art';
 
@@ -56,7 +56,7 @@ function buildRegiment(u: UnitDraft): Regiment {
   return new Regiment(u.size, u.stats);
 }
 
-/** A unit as drawn on the map: where it stands (yards), how big its block is, and how it fares. */
+/** A unit as drawn on the map: where it stands (yards), which way it faces, how big its block is, how it fares. */
 export interface MapUnit {
   uid: string;
   name: string;
@@ -65,6 +65,7 @@ export interface MapUnit {
   men: number;
   x: number;
   y: number;
+  facing: number;
   width: number;
   depth: number;
   broken: boolean;
@@ -79,7 +80,10 @@ export interface OrderArrow {
 }
 
 const finite = (n: number | null): number => (Number.isFinite(n) ? (n as number) : 0);
-const onOpenGround = (p: Point) => ({ x: p.x, y: p.y, z: 0, cover: 0, terrain_type: 'open' });
+const onOpenGround = (p: Place) => ({ x: p.x, y: p.y, z: 0, cover: 0, terrain_type: 'open', facing: p.facing });
+
+/** Which way a unit in battle faces: as saved, or (none saved) towards the other side. */
+const facingOf = (u: BattleUnit): number => u.regiment.position?.facing ?? defaultFacing(u.side as 0 | 1);
 
 const IDLE: Order = { mode: 'idle', target: null, ammo: null, on_break: null };
 
@@ -179,7 +183,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return battle.value === null ? null : orderOfBattle(battle.value.toDict());
   });
 
-  const positions = signal<Record<string, Point>>({}); // places given before the battle starts
+  const positions = signal<Record<string, Place>>({}); // places given before the battle starts
 
   /** Every unit on the map; any without a place yet stands where the default layout puts it. */
   const mapUnits = computed<MapUnit[]>(() => {
@@ -193,13 +197,14 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       : [...b.units.values()].map((u) => ({
         uid: u.uid, name: u.name, side: u.side as 0 | 1, type: u.regiment.unitType, men: u.size, front: u.front,
         guns: u.regiment instanceof ArtilleryBattery ? u.regiment.guns : null, broken: u.morale.broken,
-        wiped: u.size === 0, place: u.regiment.position ?? undefined,
+        wiped: u.size === 0,
+        place: u.regiment.position === null ? undefined : { x: u.regiment.position.x, y: u.regiment.position.y, facing: facingOf(u) },
       }));
     const sized = shown.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
     const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
     return sized.map(({ front: _front, guns: _guns, place, ...u }) => {
-      const { x, y } = place ?? layout[u.uid];
-      return { ...u, x, y };
+      const { x, y, facing } = place ?? { ...layout[u.uid], facing: defaultFacing(u.side) };
+      return { ...u, x, y, facing };
     });
   });
 
@@ -403,8 +408,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const side = playerSide.value;
     const own = [...b.units.values()].filter((u) => u.side === side);
     const place = (uid: string) => {
-      const { x, y } = mapUnits.value.find((m) => m.uid === uid)!;
-      return { x, y };
+      const { x, y, facing } = mapUnits.value.find((m) => m.uid === uid)!;
+      return { x, y, facing };
     };
     const plan = {
       format: PLAN_FORMAT, version: PLAN_VERSION, battle: { seed: b.seed, round: b.round + 1, time: b.time },
@@ -456,8 +461,10 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         merged[uid] = makeOrder(order);
         taken.add(uid);
       }
-      for (const [uid, place] of Object.entries((plan.positions ?? {}) as Record<string, Point>)) {
-        battle.value!.units.get(uid)!.regiment.position = onOpenGround(clampToField(place));
+      // a move without a facing (from an older orders file) keeps the unit's facing
+      for (const [uid, place] of Object.entries((plan.positions ?? {}) as Record<string, Point & { facing?: number }>)) {
+        const unit = battle.value!.units.get(uid)!;
+        unit.regiment.position = onOpenGround({ ...clampToField(place), facing: place.facing ?? facingOf(unit) });
       }
     }
     orders.value = merged;
@@ -465,9 +472,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return problems;
   }
 
-  /** Move a unit on the map (kept on the field): before the battle, or between rounds; not once it is over. */
-  function moveUnit(uid: string, point: Point): void {
-    const place = clampToField(point);
+  /** Put a unit in a new place: before the battle, or between rounds; not once it is over. */
+  function placeUnit(uid: string, place: Place): void {
     const b = battle.value;
     if (b === null) {
       positions.value = { ...positions.value, [uid]: place };
@@ -475,6 +481,19 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       b.units.get(uid)!.regiment.position = onOpenGround(place);
       touch();
     }
+  }
+
+  const mapUnit = (uid: string) => mapUnits.value.find((u) => u.uid === uid)!;
+
+  /** Move a unit on the map (kept on the field), facing the same way. */
+  function moveUnit(uid: string, point: Point): void {
+    placeUnit(uid, { ...clampToField(point), facing: mapUnit(uid).facing });
+  }
+
+  /** Turn a unit to face a compass bearing (degrees clockwise from the top of the map), where it stands. */
+  function faceUnit(uid: string, facing: number): void {
+    const { x, y } = mapUnit(uid);
+    placeUnit(uid, { x, y, facing: turned(facing, 0) });
   }
 
   /** End the battle: settle killed, wounded and prisoners; `holder` 'auto' lets the engine decide the field. */
@@ -492,7 +511,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   return {
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
-    mapUnits, orderArrows, moveUnit, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
+    mapUnits, orderArrows, moveUnit, faceUnit, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans,
     addUnit, updateUnit, removeUnit, clearUnits, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };

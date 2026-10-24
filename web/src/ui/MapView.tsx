@@ -1,17 +1,20 @@
 /**
- * The battlefield seen from above: a plain field in yards, each unit a block in its side's color, orders drawn as
- * arrows (fire dashed, charge solid). Drag a unit, or select it and use the arrow keys, to place it before the
- * battle or move it between rounds. Display only: the engine ignores positions.
+ * The battlefield seen from above: a plain field in yards, each unit a block in its side's color turned to its
+ * facing (front edge marked), orders drawn as arrows (fire dashed, charge solid). Drag a unit, or select it and use
+ * the arrow keys, to place it before the battle or move it between rounds; drag the handle in front of it, or use
+ * Q and E, to turn it. Display only: the engine ignores positions and facings.
  */
 
 import { useRef } from 'preact/hooks';
 
-import { FIELD, type Point } from './field';
+import { bearing, FIELD, type Point, turned } from './field';
 import type { MapUnit, Store } from './store';
 
 const GRID = 100; // yards between grid lines
 const SCALE_BAR = 500; // yards
 const ARROW_OFFSET = 12; // yards
+const HANDLE_GAP = 18; // yards from a block's front edge to its turn handle
+const TURNS: Record<string, number> = { q: -15, e: 15 }; // degrees; three times as much with Shift
 
 function toYards(svg: SVGSVGElement, clientX: number, clientY: number): Point {
   const r = svg.getBoundingClientRect();
@@ -39,8 +42,9 @@ function Arrow({ from, to, mode, side }: { from: MapUnit; to: MapUnit; mode: str
 
 function Block({ store, unit, movable }: { store: Store; unit: MapUnit; movable: boolean }) {
   const grab = useRef<Point | null>(null);
+  const turning = useRef(false);
   const svgOf = (el: Element) => el.closest('svg') as SVGSVGElement;
-  const label = `${unit.name}, ${unit.men.toLocaleString('en-US')} men, at ${unit.x}, ${unit.y} yd`;
+  const label = `${unit.name}, ${unit.men.toLocaleString('en-US')} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°`;
   // two text lines (name, men): below the block for side 0, above it for side 1
   const labelY = unit.side === 0 ? unit.depth / 2 + 30 : -unit.depth / 2 - 36;
   return (
@@ -64,17 +68,35 @@ function Block({ store, unit, movable }: { store: Store; unit: MapUnit; movable:
           ArrowLeft: { x: -step, y: 0 }, ArrowRight: { x: step, y: 0 }, ArrowUp: { x: 0, y: -step }, ArrowDown: { x: 0, y: step },
         };
         const m = moves[e.key];
-        if (!movable || m === undefined) return;
+        const turn = TURNS[e.key.toLowerCase()];
+        if (!movable || (m === undefined && turn === undefined)) return;
         e.preventDefault();
-        store.moveUnit(unit.uid, { x: unit.x + m.x, y: unit.y + m.y });
+        if (m !== undefined) store.moveUnit(unit.uid, { x: unit.x + m.x, y: unit.y + m.y });
+        else store.faceUnit(unit.uid, turned(unit.facing, e.shiftKey ? 3 * turn : turn));
       }}>
-      <rect x={-unit.width / 2} y={-unit.depth / 2} width={unit.width} height={unit.depth} rx="3" />
-      {unit.wiped && (
-        <>
-          <line x1={-unit.width / 2} y1={-unit.depth / 2} x2={unit.width / 2} y2={unit.depth / 2} />
-          <line x1={-unit.width / 2} y1={unit.depth / 2} x2={unit.width / 2} y2={-unit.depth / 2} />
-        </>
-      )}
+      <g class="block" transform={`rotate(${unit.facing})`}>
+        <rect x={-unit.width / 2} y={-unit.depth / 2} width={unit.width} height={unit.depth} rx="3" />
+        <line class="front" x1={-unit.width / 2} y1={-unit.depth / 2} x2={unit.width / 2} y2={-unit.depth / 2} />
+        {unit.wiped && (
+          <>
+            <line class="cross" x1={-unit.width / 2} y1={-unit.depth / 2} x2={unit.width / 2} y2={unit.depth / 2} />
+            <line class="cross" x1={-unit.width / 2} y1={unit.depth / 2} x2={unit.width / 2} y2={-unit.depth / 2} />
+          </>
+        )}
+        {movable && (
+          <circle class="turn-handle" cx="0" cy={-unit.depth / 2 - HANDLE_GAP} r="8"
+            onPointerDown={(e) => {
+              e.stopPropagation(); // turning, not moving
+              turning.current = true;
+              e.currentTarget.setPointerCapture?.(e.pointerId);
+            }}
+            onPointerMove={(e) => {
+              if (!turning.current) return;
+              store.faceUnit(unit.uid, bearing(unit, toYards(svgOf(e.currentTarget), e.clientX, e.clientY)));
+            }}
+            onPointerUp={() => { turning.current = false; }} />
+        )}
+      </g>
       <text y={labelY} text-anchor="middle">
         <tspan class="unit-name">{unit.name}</tspan>
         <tspan class="unit-men" x="0" dy="1.1em">{unit.men.toLocaleString('en-US')}</tspan>
@@ -117,9 +139,10 @@ export function MapView({ store }: { store: Store }) {
       </svg>
       <p class="note">
         {movable
-          ? 'Drag a unit, or select it and use the arrow keys (Shift for bigger steps), to place it. '
+          ? 'Drag a unit, or select it and use the arrow keys, to place it; drag the handle in front of it, or use '
+            + 'Q and E, to turn it (Shift for bigger steps). '
           : ''}
-        Positions are for the picture only: the engine doesn't use distance, cover or elevation yet.
+        Positions are for the picture only: the engine doesn't use distance, facing, cover or elevation yet.
       </p>
     </div>
   );
