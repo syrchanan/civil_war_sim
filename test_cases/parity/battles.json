@@ -36351,6 +36351,4602 @@
       }
     },
     {
+      "name": "ranges",
+      "seed": 1,
+      "start": {
+        "format": "imperial-generals-battle",
+        "version": 2,
+        "meta": {},
+        "seed": 1,
+        "rng_state": [
+          3082438154,
+          2150429045,
+          1692266882,
+          1339201454
+        ],
+        "params": {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.6,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
+          }
+        },
+        "time": 0.0,
+        "round": 0,
+        "finished": false,
+        "prisoners": {
+          "0": 0,
+          "1": 0
+        },
+        "guns_captured": {
+          "0": 0,
+          "1": 0
+        },
+        "side_modifiers": {},
+        "units": [
+          {
+            "id": "p_line",
+            "name": "p_line",
+            "side": 0,
+            "type": "inf",
+            "subtype": "line",
+            "size": 900,
+            "initial_size": 900,
+            "stats": "6/6/0/0",
+            "initial_stats": "6/6/0/0",
+            "front_size": 900,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 400,
+              "y": 900,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 0
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.759303000733753
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_rifle",
+            "name": "p_rifle",
+            "side": 0,
+            "type": "inf",
+            "subtype": "light",
+            "size": 500,
+            "initial_size": 500,
+            "stats": "6/6/1/0",
+            "initial_stats": "6/6/1/0",
+            "front_size": 500,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 700,
+              "y": 880,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.2823438828419877
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_cav",
+            "name": "p_cav",
+            "side": 0,
+            "type": "cav",
+            "subtype": "heavy",
+            "size": 350,
+            "initial_size": 350,
+            "stats": "6/6/0/1",
+            "initial_stats": "6/6/0/1",
+            "front_size": 350,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1000,
+              "y": 1000,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 10
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.9687642680107383
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_line",
+            "name": "q_line",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 1000,
+            "initial_size": 1000,
+            "stats": "5/5/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 1000,
+            "raw_morale": 50.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 420,
+              "y": 700,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.1385793444836028
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_bat",
+            "name": "q_bat",
+            "side": 1,
+            "type": "art",
+            "subtype": "battery",
+            "size": 72,
+            "initial_size": 72,
+            "stats": "5/5/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 72,
+            "raw_morale": 50.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 900,
+              "y": 300,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.7961760722793094
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {},
+            "guns": 8
+          },
+          {
+            "id": "q_far",
+            "name": "q_far",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 600,
+            "initial_size": 600,
+            "stats": "4/4/0/0",
+            "initial_stats": "4/4/0/0",
+            "front_size": 600,
+            "raw_morale": 40.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1900,
+              "y": 150,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.3900374229227568
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          }
+        ],
+        "contacts": [],
+        "history": [],
+        "result": null
+      },
+      "rounds": [
+        {
+          "duration": 40,
+          "orders": {
+            "p_line": {
+              "target": "q_line",
+              "mode": "ranged"
+            },
+            "p_rifle": {
+              "target": "q_line",
+              "mode": "ranged"
+            },
+            "p_cav": {
+              "target": "q_bat",
+              "mode": "melee"
+            },
+            "q_line": {
+              "target": "p_line",
+              "mode": "ranged"
+            },
+            "q_bat": {
+              "target": "p_rifle",
+              "mode": "ranged",
+              "ammo": "shell"
+            },
+            "q_far": {
+              "target": "p_cav",
+              "mode": "ranged"
+            }
+          },
+          "record_events": false,
+          "modifiers": {}
+        },
+        {
+          "duration": 40,
+          "orders": {
+            "p_line": {
+              "target": "q_line",
+              "mode": "melee"
+            },
+            "q_line": {
+              "target": "p_line",
+              "mode": "melee"
+            },
+            "p_rifle": {
+              "target": "q_bat",
+              "mode": "ranged"
+            },
+            "q_far": {
+              "target": "p_rifle",
+              "mode": "ranged"
+            }
+          },
+          "record_events": false,
+          "modifiers": {},
+          "positions": {
+            "q_line": {
+              "x": 430,
+              "y": 820,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "p_rifle": {
+              "x": 650,
+              "y": 760,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 350
+            }
+          }
+        }
+      ],
+      "finished": true,
+      "field_held_by": "auto",
+      "final": {
+        "format": "imperial-generals-battle",
+        "version": 2,
+        "meta": {},
+        "seed": 1,
+        "rng_state": [
+          541645978,
+          3964371726,
+          1082856696,
+          2703765263
+        ],
+        "params": {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.6,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
+          }
+        },
+        "time": 80.0,
+        "round": 2,
+        "finished": true,
+        "prisoners": {
+          "0": 9,
+          "1": 0
+        },
+        "guns_captured": {
+          "0": 2,
+          "1": 0
+        },
+        "side_modifiers": {},
+        "units": [
+          {
+            "id": "p_line",
+            "name": "p_line",
+            "side": 0,
+            "type": "inf",
+            "subtype": "line",
+            "size": 849,
+            "initial_size": 900,
+            "stats": "6/4/0/0",
+            "initial_stats": "6/6/0/0",
+            "front_size": 900,
+            "raw_morale": 40.920110766652556,
+            "combat_mode": "idle",
+            "position": {
+              "x": 400,
+              "y": 900,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 0
+            },
+            "morale": {
+              "resolve": 0.6820018461108759,
+              "shock": 0.04248561408486068,
+              "lost": 84,
+              "broken": false,
+              "break_scale": 0.759303000733753
+            },
+            "losses": 84,
+            "inflicted": 106,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_rifle",
+            "name": "p_rifle",
+            "side": 0,
+            "type": "inf",
+            "subtype": "light",
+            "size": 500,
+            "initial_size": 500,
+            "stats": "6/6/1/0",
+            "initial_stats": "6/6/1/0",
+            "front_size": 500,
+            "raw_morale": 58.44999999999998,
+            "combat_mode": "idle",
+            "position": {
+              "x": 650,
+              "y": 760,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 350
+            },
+            "morale": {
+              "resolve": 0.9741666666666664,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.2823438828419877
+            },
+            "losses": 0,
+            "inflicted": 15,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_cav",
+            "name": "p_cav",
+            "side": 0,
+            "type": "cav",
+            "subtype": "heavy",
+            "size": 344,
+            "initial_size": 350,
+            "stats": "6/6/0/1",
+            "initial_stats": "6/6/0/1",
+            "front_size": 350,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1000,
+              "y": 1000,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 10
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0005975769750732673,
+              "lost": 8,
+              "broken": false,
+              "break_scale": 0.9687642680107383
+            },
+            "losses": 8,
+            "inflicted": 15,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_line",
+            "name": "q_line",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 920,
+            "initial_size": 1000,
+            "stats": "5/3/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 1000,
+            "raw_morale": 33.017720451001416,
+            "combat_mode": "idle",
+            "position": {
+              "x": 430,
+              "y": 820,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "morale": {
+              "resolve": 0.6603544090200283,
+              "shock": 0.04821016552950973,
+              "lost": 121,
+              "broken": false,
+              "break_scale": 1.1385793444836028
+            },
+            "losses": 121,
+            "inflicted": 84,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_bat",
+            "name": "q_bat",
+            "side": 1,
+            "type": "art",
+            "subtype": "battery",
+            "size": 52,
+            "initial_size": 72,
+            "stats": "5/1/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 72,
+            "raw_morale": 0.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 900,
+              "y": 300,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 0.0,
+              "shock": 0.010077512343430399,
+              "lost": 15,
+              "broken": true,
+              "break_scale": 0.7961760722793094
+            },
+            "losses": 15,
+            "inflicted": 8,
+            "captured": 9,
+            "guns_lost": 2,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {},
+            "guns": 6
+          },
+          {
+            "id": "q_far",
+            "name": "q_far",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 600,
+            "initial_size": 600,
+            "stats": "4/4/0/0",
+            "initial_stats": "4/4/0/0",
+            "front_size": 600,
+            "raw_morale": 40.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1900,
+              "y": 150,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.3900374229227568
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          }
+        ],
+        "contacts": [
+          [
+            "p_line",
+            "q_line"
+          ]
+        ],
+        "history": [
+          {
+            "round": 1,
+            "start": 0.0,
+            "end": 40.0,
+            "orders": {
+              "p_line": {
+                "target": "q_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "p_rifle": {
+                "target": "q_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "p_cav": {
+                "target": "q_bat",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "q_line": {
+                "target": "p_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "q_bat": {
+                "target": "p_rifle",
+                "mode": "ranged",
+                "ammo": "shell",
+                "on_break": "keep"
+              },
+              "q_far": {
+                "target": "p_cav",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              }
+            },
+            "engagements": [
+              {
+                "attacker": "q_line",
+                "target": "p_line",
+                "mode": "ranged",
+                "rate": 0.17035826628270792
+              },
+              {
+                "attacker": "q_bat",
+                "target": "p_cav",
+                "mode": "closing",
+                "rate": 4.041083076923076
+              },
+              {
+                "attacker": "p_line",
+                "target": "q_line",
+                "mode": "ranged",
+                "rate": 0.16575398881560774
+              },
+              {
+                "attacker": "p_rifle",
+                "target": "q_line",
+                "mode": "ranged",
+                "rate": 0.3097743268030225
+              }
+            ],
+            "units": {
+              "p_line": {
+                "losses": 8,
+                "inflicted": 7,
+                "size": 892,
+                "morale": 56.659097858302886,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_rifle": {
+                "losses": 0,
+                "inflicted": 15,
+                "size": 500,
+                "morale": 58.44999999999998,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_cav": {
+                "losses": 8,
+                "inflicted": 15,
+                "size": 342,
+                "morale": 60.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_line": {
+                "losses": 22,
+                "inflicted": 8,
+                "size": 978,
+                "morale": 45.97767592954249,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_bat": {
+                "losses": 15,
+                "inflicted": 8,
+                "size": 48,
+                "morale": 0.0,
+                "broken": true,
+                "broke_at": 19.924052472804213,
+                "captured": 9,
+                "guns_lost": 2
+              },
+              "q_far": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 600,
+                "morale": 40.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              }
+            },
+            "events": [],
+            "prisoners": {
+              "0": 9,
+              "1": 0
+            },
+            "guns_captured": {
+              "0": 2,
+              "1": 0
+            },
+            "charges": [
+              {
+                "charger": "p_cav",
+                "target": "q_bat",
+                "start": 0.0,
+                "resolved_at": 2.0203050891044216,
+                "outcome": "home",
+                "p_defender_breaks": 0.9476684984375481,
+                "p_falter": 0.0027417694651023046,
+                "p_home": 0.04958973209734962
+              }
+            ],
+            "retargets": [],
+            "positions": {
+              "p_line": {
+                "x": 400,
+                "y": 900,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 0
+              },
+              "p_rifle": {
+                "x": 700,
+                "y": 880,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "p_cav": {
+                "x": 1000,
+                "y": 1000,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 10
+              },
+              "q_line": {
+                "x": 420,
+                "y": 700,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 180
+              },
+              "q_bat": {
+                "x": 900,
+                "y": 300,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "q_far": {
+                "x": 1900,
+                "y": 150,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              }
+            },
+            "modifiers": {},
+            "side_modifiers": {},
+            "rallies": []
+          },
+          {
+            "round": 2,
+            "start": 40.0,
+            "end": 80.0,
+            "orders": {
+              "p_line": {
+                "target": "q_line",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "q_line": {
+                "target": "p_line",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "p_rifle": {
+                "target": "q_bat",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "q_far": {
+                "target": "p_rifle",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              }
+            },
+            "engagements": [],
+            "units": {
+              "p_line": {
+                "losses": 76,
+                "inflicted": 99,
+                "size": 816,
+                "morale": 40.920110766652556,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_rifle": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 500,
+                "morale": 58.44999999999998,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_cav": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 342,
+                "morale": 60.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_line": {
+                "losses": 99,
+                "inflicted": 76,
+                "size": 879,
+                "morale": 33.017720451001416,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_bat": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 48,
+                "morale": 0.0,
+                "broken": true,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_far": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 600,
+                "morale": 40.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              }
+            },
+            "events": [],
+            "prisoners": {
+              "0": 0,
+              "1": 0
+            },
+            "guns_captured": {
+              "0": 0,
+              "1": 0
+            },
+            "charges": [
+              {
+                "charger": "p_line",
+                "target": "q_line",
+                "start": 40.0,
+                "resolved_at": 45.0,
+                "outcome": "meeting",
+                "p_defender_breaks": null,
+                "p_falter": null,
+                "p_home": null
+              }
+            ],
+            "retargets": [],
+            "positions": {
+              "p_line": {
+                "x": 400,
+                "y": 900,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 0
+              },
+              "p_rifle": {
+                "x": 650,
+                "y": 760,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 350
+              },
+              "p_cav": {
+                "x": 1000,
+                "y": 1000,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 10
+              },
+              "q_line": {
+                "x": 430,
+                "y": 820,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 180
+              },
+              "q_bat": {
+                "x": 900,
+                "y": 300,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "q_far": {
+                "x": 1900,
+                "y": 150,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              }
+            },
+            "modifiers": {},
+            "side_modifiers": {},
+            "rallies": []
+          }
+        ],
+        "result": {
+          "field_held_by": null,
+          "units": {
+            "p_line": {
+              "hits": 84,
+              "killed": 17,
+              "wounded": 67,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 33,
+              "captured_in_rout": 0,
+              "final_size": 849,
+              "guns_lost": 0
+            },
+            "p_rifle": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 0,
+              "final_size": 500,
+              "guns_lost": 0
+            },
+            "p_cav": {
+              "hits": 8,
+              "killed": 2,
+              "wounded": 6,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 2,
+              "captured_in_rout": 0,
+              "final_size": 344,
+              "guns_lost": 0
+            },
+            "q_line": {
+              "hits": 121,
+              "killed": 21,
+              "wounded": 100,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 41,
+              "captured_in_rout": 0,
+              "final_size": 920,
+              "guns_lost": 0
+            },
+            "q_bat": {
+              "hits": 15,
+              "killed": 3,
+              "wounded": 12,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 4,
+              "captured_in_rout": 9,
+              "final_size": 52,
+              "guns_lost": 2
+            },
+            "q_far": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 0,
+              "final_size": 600,
+              "guns_lost": 0
+            }
+          },
+          "prisoners": {
+            "0": 9,
+            "1": 0
+          },
+          "guns_captured": {
+            "0": 2,
+            "1": 0
+          },
+          "field_decided_by": "votes",
+          "field_votes": {
+            "exchange": null,
+            "routs": null,
+            "standing": null
+          }
+        }
+      }
+    },
+    {
+      "name": "ranges",
+      "seed": 2,
+      "start": {
+        "format": "imperial-generals-battle",
+        "version": 2,
+        "meta": {},
+        "seed": 2,
+        "rng_state": [
+          3907350495,
+          2118005855,
+          1649262776,
+          172821263
+        ],
+        "params": {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.6,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
+          }
+        },
+        "time": 0.0,
+        "round": 0,
+        "finished": false,
+        "prisoners": {
+          "0": 0,
+          "1": 0
+        },
+        "guns_captured": {
+          "0": 0,
+          "1": 0
+        },
+        "side_modifiers": {},
+        "units": [
+          {
+            "id": "p_line",
+            "name": "p_line",
+            "side": 0,
+            "type": "inf",
+            "subtype": "line",
+            "size": 900,
+            "initial_size": 900,
+            "stats": "6/6/0/0",
+            "initial_stats": "6/6/0/0",
+            "front_size": 900,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 400,
+              "y": 900,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 0
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.682797947426395
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_rifle",
+            "name": "p_rifle",
+            "side": 0,
+            "type": "inf",
+            "subtype": "light",
+            "size": 500,
+            "initial_size": 500,
+            "stats": "6/6/1/0",
+            "initial_stats": "6/6/1/0",
+            "front_size": 500,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 700,
+              "y": 880,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.906125969742664
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_cav",
+            "name": "p_cav",
+            "side": 0,
+            "type": "cav",
+            "subtype": "heavy",
+            "size": 350,
+            "initial_size": 350,
+            "stats": "6/6/0/1",
+            "initial_stats": "6/6/0/1",
+            "front_size": 350,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1000,
+              "y": 1000,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 10
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.9532504313308675
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_line",
+            "name": "q_line",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 1000,
+            "initial_size": 1000,
+            "stats": "5/5/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 1000,
+            "raw_morale": 50.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 420,
+              "y": 700,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.8767831588762557
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_bat",
+            "name": "q_bat",
+            "side": 1,
+            "type": "art",
+            "subtype": "battery",
+            "size": 72,
+            "initial_size": 72,
+            "stats": "5/5/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 72,
+            "raw_morale": 50.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 900,
+              "y": 300,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.9410215060486755
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {},
+            "guns": 8
+          },
+          {
+            "id": "q_far",
+            "name": "q_far",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 600,
+            "initial_size": 600,
+            "stats": "4/4/0/0",
+            "initial_stats": "4/4/0/0",
+            "front_size": 600,
+            "raw_morale": 40.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1900,
+              "y": 150,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.722798092384682
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          }
+        ],
+        "contacts": [],
+        "history": [],
+        "result": null
+      },
+      "rounds": [
+        {
+          "duration": 40,
+          "orders": {
+            "p_line": {
+              "target": "q_line",
+              "mode": "ranged"
+            },
+            "p_rifle": {
+              "target": "q_line",
+              "mode": "ranged"
+            },
+            "p_cav": {
+              "target": "q_bat",
+              "mode": "melee"
+            },
+            "q_line": {
+              "target": "p_line",
+              "mode": "ranged"
+            },
+            "q_bat": {
+              "target": "p_rifle",
+              "mode": "ranged",
+              "ammo": "shell"
+            },
+            "q_far": {
+              "target": "p_cav",
+              "mode": "ranged"
+            }
+          },
+          "record_events": false,
+          "modifiers": {}
+        },
+        {
+          "duration": 40,
+          "orders": {
+            "p_line": {
+              "target": "q_line",
+              "mode": "melee"
+            },
+            "q_line": {
+              "target": "p_line",
+              "mode": "melee"
+            },
+            "p_rifle": {
+              "target": "q_bat",
+              "mode": "ranged"
+            },
+            "q_far": {
+              "target": "p_rifle",
+              "mode": "ranged"
+            }
+          },
+          "record_events": false,
+          "modifiers": {},
+          "positions": {
+            "q_line": {
+              "x": 430,
+              "y": 820,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "p_rifle": {
+              "x": 650,
+              "y": 760,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 350
+            }
+          }
+        }
+      ],
+      "finished": true,
+      "field_held_by": "auto",
+      "final": {
+        "format": "imperial-generals-battle",
+        "version": 2,
+        "meta": {},
+        "seed": 2,
+        "rng_state": [
+          3462184043,
+          808851444,
+          4271420979,
+          2485246259
+        ],
+        "params": {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.6,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
+          }
+        },
+        "time": 80.0,
+        "round": 2,
+        "finished": true,
+        "prisoners": {
+          "0": 17,
+          "1": 0
+        },
+        "guns_captured": {
+          "0": 8,
+          "1": 0
+        },
+        "side_modifiers": {},
+        "units": [
+          {
+            "id": "p_line",
+            "name": "p_line",
+            "side": 0,
+            "type": "inf",
+            "subtype": "line",
+            "size": 841,
+            "initial_size": 900,
+            "stats": "6/5/0/0",
+            "initial_stats": "6/6/0/0",
+            "front_size": 900,
+            "raw_morale": 51.656196203320654,
+            "combat_mode": "idle",
+            "position": {
+              "x": 400,
+              "y": 900,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 0
+            },
+            "morale": {
+              "resolve": 0.8609366033886776,
+              "shock": 0.045751611761660704,
+              "lost": 88,
+              "broken": false,
+              "break_scale": 1.682797947426395
+            },
+            "losses": 88,
+            "inflicted": 101,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_rifle",
+            "name": "p_rifle",
+            "side": 0,
+            "type": "inf",
+            "subtype": "light",
+            "size": 500,
+            "initial_size": 500,
+            "stats": "6/6/1/0",
+            "initial_stats": "6/6/1/0",
+            "front_size": 500,
+            "raw_morale": 58.456716572109904,
+            "combat_mode": "idle",
+            "position": {
+              "x": 650,
+              "y": 760,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 350
+            },
+            "morale": {
+              "resolve": 0.9742786095351651,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.906125969742664
+            },
+            "losses": 0,
+            "inflicted": 16,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_cav",
+            "name": "p_cav",
+            "side": 0,
+            "type": "cav",
+            "subtype": "heavy",
+            "size": 345,
+            "initial_size": 350,
+            "stats": "6/6/0/1",
+            "initial_stats": "6/6/0/1",
+            "front_size": 350,
+            "raw_morale": 55.743364174487375,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1000,
+              "y": 1000,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 10
+            },
+            "morale": {
+              "resolve": 0.9290560695747896,
+              "shock": 0.0005165560212304523,
+              "lost": 7,
+              "broken": false,
+              "break_scale": 0.9532504313308675
+            },
+            "losses": 7,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_line",
+            "name": "q_line",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 920,
+            "initial_size": 1000,
+            "stats": "5/3/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 1000,
+            "raw_morale": 28.304541483539598,
+            "combat_mode": "idle",
+            "position": {
+              "x": 430,
+              "y": 820,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "morale": {
+              "resolve": 0.5660908296707919,
+              "shock": 0.04789031397134697,
+              "lost": 117,
+              "broken": false,
+              "break_scale": 0.8767831588762557
+            },
+            "losses": 117,
+            "inflicted": 88,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_bat",
+            "name": "q_bat",
+            "side": 1,
+            "type": "art",
+            "subtype": "battery",
+            "size": 55,
+            "initial_size": 72,
+            "stats": "5/1/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 72,
+            "raw_morale": 0.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 900,
+              "y": 300,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 0.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": true,
+              "break_scale": 0.9410215060486755
+            },
+            "losses": 0,
+            "inflicted": 7,
+            "captured": 17,
+            "guns_lost": 8,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {},
+            "guns": 0
+          },
+          {
+            "id": "q_far",
+            "name": "q_far",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 600,
+            "initial_size": 600,
+            "stats": "4/4/0/0",
+            "initial_stats": "4/4/0/0",
+            "front_size": 600,
+            "raw_morale": 40.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1900,
+              "y": 150,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.722798092384682
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          }
+        ],
+        "contacts": [
+          [
+            "p_line",
+            "q_line"
+          ]
+        ],
+        "history": [
+          {
+            "round": 1,
+            "start": 0.0,
+            "end": 40.0,
+            "orders": {
+              "p_line": {
+                "target": "q_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "p_rifle": {
+                "target": "q_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "p_cav": {
+                "target": "q_bat",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "q_line": {
+                "target": "p_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "q_bat": {
+                "target": "p_rifle",
+                "mode": "ranged",
+                "ammo": "shell",
+                "on_break": "keep"
+              },
+              "q_far": {
+                "target": "p_cav",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              }
+            },
+            "engagements": [
+              {
+                "attacker": "q_line",
+                "target": "p_line",
+                "mode": "ranged",
+                "rate": 0.17035826628270792
+              },
+              {
+                "attacker": "q_bat",
+                "target": "p_cav",
+                "mode": "closing",
+                "rate": 4.041083076923076
+              },
+              {
+                "attacker": "p_line",
+                "target": "q_line",
+                "mode": "ranged",
+                "rate": 0.16575398881560774
+              },
+              {
+                "attacker": "p_rifle",
+                "target": "q_line",
+                "mode": "ranged",
+                "rate": 0.3097743268030225
+              }
+            ],
+            "units": {
+              "p_line": {
+                "losses": 6,
+                "inflicted": 7,
+                "size": 894,
+                "morale": 57.75868873249871,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_rifle": {
+                "losses": 0,
+                "inflicted": 16,
+                "size": 500,
+                "morale": 58.456716572109904,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_cav": {
+                "losses": 7,
+                "inflicted": 0,
+                "size": 343,
+                "morale": 55.743364174487375,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_line": {
+                "losses": 23,
+                "inflicted": 6,
+                "size": 977,
+                "morale": 44.86563222369141,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_bat": {
+                "losses": 0,
+                "inflicted": 7,
+                "size": 55,
+                "morale": 0.0,
+                "broken": true,
+                "broke_at": 2.0203050891044216,
+                "captured": 17,
+                "guns_lost": 8
+              },
+              "q_far": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 600,
+                "morale": 40.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              }
+            },
+            "events": [],
+            "prisoners": {
+              "0": 17,
+              "1": 0
+            },
+            "guns_captured": {
+              "0": 8,
+              "1": 0
+            },
+            "charges": [
+              {
+                "charger": "p_cav",
+                "target": "q_bat",
+                "start": 0.0,
+                "resolved_at": 2.0203050891044216,
+                "outcome": "defender_broke",
+                "p_defender_breaks": 0.9510213908376833,
+                "p_falter": 0.0025575290401560853,
+                "p_home": 0.046421080122160584
+              }
+            ],
+            "retargets": [],
+            "positions": {
+              "p_line": {
+                "x": 400,
+                "y": 900,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 0
+              },
+              "p_rifle": {
+                "x": 700,
+                "y": 880,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "p_cav": {
+                "x": 1000,
+                "y": 1000,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 10
+              },
+              "q_line": {
+                "x": 420,
+                "y": 700,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 180
+              },
+              "q_bat": {
+                "x": 900,
+                "y": 300,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "q_far": {
+                "x": 1900,
+                "y": 150,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              }
+            },
+            "modifiers": {},
+            "side_modifiers": {},
+            "rallies": []
+          },
+          {
+            "round": 2,
+            "start": 40.0,
+            "end": 80.0,
+            "orders": {
+              "p_line": {
+                "target": "q_line",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "q_line": {
+                "target": "p_line",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "p_rifle": {
+                "target": "q_bat",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "q_far": {
+                "target": "p_rifle",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              }
+            },
+            "engagements": [],
+            "units": {
+              "p_line": {
+                "losses": 82,
+                "inflicted": 94,
+                "size": 812,
+                "morale": 51.656196203320654,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_rifle": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 500,
+                "morale": 58.456716572109904,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_cav": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 343,
+                "morale": 55.743364174487375,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_line": {
+                "losses": 94,
+                "inflicted": 82,
+                "size": 883,
+                "morale": 28.304541483539598,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_bat": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 55,
+                "morale": 0.0,
+                "broken": true,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_far": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 600,
+                "morale": 40.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              }
+            },
+            "events": [],
+            "prisoners": {
+              "0": 0,
+              "1": 0
+            },
+            "guns_captured": {
+              "0": 0,
+              "1": 0
+            },
+            "charges": [
+              {
+                "charger": "p_line",
+                "target": "q_line",
+                "start": 40.0,
+                "resolved_at": 45.0,
+                "outcome": "meeting",
+                "p_defender_breaks": null,
+                "p_falter": null,
+                "p_home": null
+              }
+            ],
+            "retargets": [],
+            "positions": {
+              "p_line": {
+                "x": 400,
+                "y": 900,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 0
+              },
+              "p_rifle": {
+                "x": 650,
+                "y": 760,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 350
+              },
+              "p_cav": {
+                "x": 1000,
+                "y": 1000,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 10
+              },
+              "q_line": {
+                "x": 430,
+                "y": 820,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 180
+              },
+              "q_bat": {
+                "x": 900,
+                "y": 300,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "q_far": {
+                "x": 1900,
+                "y": 150,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              }
+            },
+            "modifiers": {},
+            "side_modifiers": {},
+            "rallies": []
+          }
+        ],
+        "result": {
+          "field_held_by": null,
+          "units": {
+            "p_line": {
+              "hits": 88,
+              "killed": 15,
+              "wounded": 73,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 29,
+              "captured_in_rout": 0,
+              "final_size": 841,
+              "guns_lost": 0
+            },
+            "p_rifle": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 0,
+              "final_size": 500,
+              "guns_lost": 0
+            },
+            "p_cav": {
+              "hits": 7,
+              "killed": 2,
+              "wounded": 5,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 2,
+              "captured_in_rout": 0,
+              "final_size": 345,
+              "guns_lost": 0
+            },
+            "q_line": {
+              "hits": 117,
+              "killed": 20,
+              "wounded": 97,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 37,
+              "captured_in_rout": 0,
+              "final_size": 920,
+              "guns_lost": 0
+            },
+            "q_bat": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 17,
+              "final_size": 55,
+              "guns_lost": 8
+            },
+            "q_far": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 0,
+              "final_size": 600,
+              "guns_lost": 0
+            }
+          },
+          "prisoners": {
+            "0": 17,
+            "1": 0
+          },
+          "guns_captured": {
+            "0": 8,
+            "1": 0
+          },
+          "field_decided_by": "votes",
+          "field_votes": {
+            "exchange": null,
+            "routs": null,
+            "standing": null
+          }
+        }
+      }
+    },
+    {
+      "name": "ranges",
+      "seed": 3,
+      "start": {
+        "format": "imperial-generals-battle",
+        "version": 2,
+        "meta": {},
+        "seed": 3,
+        "rng_state": [
+          2026570202,
+          4119504409,
+          3143864878,
+          1436282397
+        ],
+        "params": {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.6,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
+          }
+        },
+        "time": 0.0,
+        "round": 0,
+        "finished": false,
+        "prisoners": {
+          "0": 0,
+          "1": 0
+        },
+        "guns_captured": {
+          "0": 0,
+          "1": 0
+        },
+        "side_modifiers": {},
+        "units": [
+          {
+            "id": "p_line",
+            "name": "p_line",
+            "side": 0,
+            "type": "inf",
+            "subtype": "line",
+            "size": 900,
+            "initial_size": 900,
+            "stats": "6/6/0/0",
+            "initial_stats": "6/6/0/0",
+            "front_size": 900,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 400,
+              "y": 900,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 0
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.9714524218042124
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_rifle",
+            "name": "p_rifle",
+            "side": 0,
+            "type": "inf",
+            "subtype": "light",
+            "size": 500,
+            "initial_size": 500,
+            "stats": "6/6/1/0",
+            "initial_stats": "6/6/1/0",
+            "front_size": 500,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 700,
+              "y": 880,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.9789357744694057
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_cav",
+            "name": "p_cav",
+            "side": 0,
+            "type": "cav",
+            "subtype": "heavy",
+            "size": 350,
+            "initial_size": 350,
+            "stats": "6/6/0/1",
+            "initial_stats": "6/6/0/1",
+            "front_size": 350,
+            "raw_morale": 60.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1000,
+              "y": 1000,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 10
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.0069858884571212
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_line",
+            "name": "q_line",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 1000,
+            "initial_size": 1000,
+            "stats": "5/5/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 1000,
+            "raw_morale": 50.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 420,
+              "y": 700,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.0412060156953316
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_bat",
+            "name": "q_bat",
+            "side": 1,
+            "type": "art",
+            "subtype": "battery",
+            "size": 72,
+            "initial_size": 72,
+            "stats": "5/5/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 72,
+            "raw_morale": 50.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 900,
+              "y": 300,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 1.2485799061380043
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {},
+            "guns": 8
+          },
+          {
+            "id": "q_far",
+            "name": "q_far",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 600,
+            "initial_size": 600,
+            "stats": "4/4/0/0",
+            "initial_stats": "4/4/0/0",
+            "front_size": 600,
+            "raw_morale": 40.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1900,
+              "y": 150,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.7990575534105598
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          }
+        ],
+        "contacts": [],
+        "history": [],
+        "result": null
+      },
+      "rounds": [
+        {
+          "duration": 40,
+          "orders": {
+            "p_line": {
+              "target": "q_line",
+              "mode": "ranged"
+            },
+            "p_rifle": {
+              "target": "q_line",
+              "mode": "ranged"
+            },
+            "p_cav": {
+              "target": "q_bat",
+              "mode": "melee"
+            },
+            "q_line": {
+              "target": "p_line",
+              "mode": "ranged"
+            },
+            "q_bat": {
+              "target": "p_rifle",
+              "mode": "ranged",
+              "ammo": "shell"
+            },
+            "q_far": {
+              "target": "p_cav",
+              "mode": "ranged"
+            }
+          },
+          "record_events": false,
+          "modifiers": {}
+        },
+        {
+          "duration": 40,
+          "orders": {
+            "p_line": {
+              "target": "q_line",
+              "mode": "melee"
+            },
+            "q_line": {
+              "target": "p_line",
+              "mode": "melee"
+            },
+            "p_rifle": {
+              "target": "q_bat",
+              "mode": "ranged"
+            },
+            "q_far": {
+              "target": "p_rifle",
+              "mode": "ranged"
+            }
+          },
+          "record_events": false,
+          "modifiers": {},
+          "positions": {
+            "q_line": {
+              "x": 430,
+              "y": 820,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "p_rifle": {
+              "x": 650,
+              "y": 760,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 350
+            }
+          }
+        }
+      ],
+      "finished": true,
+      "field_held_by": "auto",
+      "final": {
+        "format": "imperial-generals-battle",
+        "version": 2,
+        "meta": {},
+        "seed": 3,
+        "rng_state": [
+          3300145881,
+          4232629824,
+          979130514,
+          1811065274
+        ],
+        "params": {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.6,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
+          }
+        },
+        "time": 80.0,
+        "round": 2,
+        "finished": true,
+        "prisoners": {
+          "0": 13,
+          "1": 0
+        },
+        "guns_captured": {
+          "0": 8,
+          "1": 0
+        },
+        "side_modifiers": {},
+        "units": [
+          {
+            "id": "p_line",
+            "name": "p_line",
+            "side": 0,
+            "type": "inf",
+            "subtype": "line",
+            "size": 844,
+            "initial_size": 900,
+            "stats": "6/4/0/0",
+            "initial_stats": "6/6/0/0",
+            "front_size": 900,
+            "raw_morale": 44.588027257574666,
+            "combat_mode": "idle",
+            "position": {
+              "x": 400,
+              "y": 900,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 0
+            },
+            "morale": {
+              "resolve": 0.7431337876262445,
+              "shock": 0.04456899741663323,
+              "lost": 87,
+              "broken": false,
+              "break_scale": 0.9714524218042124
+            },
+            "losses": 87,
+            "inflicted": 101,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_rifle",
+            "name": "p_rifle",
+            "side": 0,
+            "type": "inf",
+            "subtype": "light",
+            "size": 500,
+            "initial_size": 500,
+            "stats": "6/6/1/0",
+            "initial_stats": "6/6/1/0",
+            "front_size": 500,
+            "raw_morale": 58.41999999999995,
+            "combat_mode": "idle",
+            "position": {
+              "x": 650,
+              "y": 760,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 350
+            },
+            "morale": {
+              "resolve": 0.9736666666666659,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.9789357744694057
+            },
+            "losses": 0,
+            "inflicted": 14,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "p_cav",
+            "name": "p_cav",
+            "side": 0,
+            "type": "cav",
+            "subtype": "heavy",
+            "size": 344,
+            "initial_size": 350,
+            "stats": "6/5/0/1",
+            "initial_stats": "6/6/0/1",
+            "front_size": 350,
+            "raw_morale": 54.81767734222805,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1000,
+              "y": 1000,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 10
+            },
+            "morale": {
+              "resolve": 0.9136279557038008,
+              "shock": 0.0006694147677509047,
+              "lost": 9,
+              "broken": false,
+              "break_scale": 1.0069858884571212
+            },
+            "losses": 9,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_line",
+            "name": "q_line",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 916,
+            "initial_size": 1000,
+            "stats": "5/3/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 1000,
+            "raw_morale": 32.219944952506744,
+            "combat_mode": "idle",
+            "position": {
+              "x": 430,
+              "y": 820,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": 180
+            },
+            "morale": {
+              "resolve": 0.6443988990501348,
+              "shock": 0.0489313212153523,
+              "lost": 115,
+              "broken": false,
+              "break_scale": 1.0412060156953316
+            },
+            "losses": 115,
+            "inflicted": 87,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          },
+          {
+            "id": "q_bat",
+            "name": "q_bat",
+            "side": 1,
+            "type": "art",
+            "subtype": "battery",
+            "size": 59,
+            "initial_size": 72,
+            "stats": "5/1/0/0",
+            "initial_stats": "5/5/0/0",
+            "front_size": 72,
+            "raw_morale": 0.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 900,
+              "y": 300,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 0.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": true,
+              "break_scale": 1.2485799061380043
+            },
+            "losses": 0,
+            "inflicted": 9,
+            "captured": 13,
+            "guns_lost": 8,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {},
+            "guns": 0
+          },
+          {
+            "id": "q_far",
+            "name": "q_far",
+            "side": 1,
+            "type": "inf",
+            "subtype": "line",
+            "size": 600,
+            "initial_size": 600,
+            "stats": "4/4/0/0",
+            "initial_stats": "4/4/0/0",
+            "front_size": 600,
+            "raw_morale": 40.0,
+            "combat_mode": "idle",
+            "position": {
+              "x": 1900,
+              "y": 150,
+              "z": 0,
+              "cover": 0,
+              "terrain_type": "open",
+              "facing": null
+            },
+            "morale": {
+              "resolve": 1.0,
+              "shock": 0.0,
+              "lost": 0,
+              "broken": false,
+              "break_scale": 0.7990575534105598
+            },
+            "losses": 0,
+            "inflicted": 0,
+            "captured": 0,
+            "guns_lost": 0,
+            "rally": {
+              "attempts": 0,
+              "rallied": false
+            },
+            "meta": {}
+          }
+        ],
+        "contacts": [
+          [
+            "p_line",
+            "q_line"
+          ]
+        ],
+        "history": [
+          {
+            "round": 1,
+            "start": 0.0,
+            "end": 40.0,
+            "orders": {
+              "p_line": {
+                "target": "q_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "p_rifle": {
+                "target": "q_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "p_cav": {
+                "target": "q_bat",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "q_line": {
+                "target": "p_line",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "q_bat": {
+                "target": "p_rifle",
+                "mode": "ranged",
+                "ammo": "shell",
+                "on_break": "keep"
+              },
+              "q_far": {
+                "target": "p_cav",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              }
+            },
+            "engagements": [
+              {
+                "attacker": "q_line",
+                "target": "p_line",
+                "mode": "ranged",
+                "rate": 0.17035826628270792
+              },
+              {
+                "attacker": "q_bat",
+                "target": "p_cav",
+                "mode": "closing",
+                "rate": 4.041083076923076
+              },
+              {
+                "attacker": "p_line",
+                "target": "q_line",
+                "mode": "ranged",
+                "rate": 0.16575398881560774
+              },
+              {
+                "attacker": "p_rifle",
+                "target": "q_line",
+                "mode": "ranged",
+                "rate": 0.3097743268030225
+              }
+            ],
+            "units": {
+              "p_line": {
+                "losses": 4,
+                "inflicted": 2,
+                "size": 896,
+                "morale": 57.47950336352976,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_rifle": {
+                "losses": 0,
+                "inflicted": 14,
+                "size": 500,
+                "morale": 58.41999999999995,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_cav": {
+                "losses": 9,
+                "inflicted": 0,
+                "size": 341,
+                "morale": 54.81767734222805,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_line": {
+                "losses": 16,
+                "inflicted": 4,
+                "size": 984,
+                "morale": 46.388181780987345,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_bat": {
+                "losses": 0,
+                "inflicted": 9,
+                "size": 59,
+                "morale": 0.0,
+                "broken": true,
+                "broke_at": 2.0203050891044216,
+                "captured": 13,
+                "guns_lost": 8
+              },
+              "q_far": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 600,
+                "morale": 40.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              }
+            },
+            "events": [],
+            "prisoners": {
+              "0": 13,
+              "1": 0
+            },
+            "guns_captured": {
+              "0": 8,
+              "1": 0
+            },
+            "charges": [
+              {
+                "charger": "p_cav",
+                "target": "q_bat",
+                "start": 0.0,
+                "resolved_at": 2.0203050891044216,
+                "outcome": "defender_broke",
+                "p_defender_breaks": 0.9448672185626241,
+                "p_falter": 0.002896648856891898,
+                "p_home": 0.05223613258048398
+              }
+            ],
+            "retargets": [],
+            "positions": {
+              "p_line": {
+                "x": 400,
+                "y": 900,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 0
+              },
+              "p_rifle": {
+                "x": 700,
+                "y": 880,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "p_cav": {
+                "x": 1000,
+                "y": 1000,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 10
+              },
+              "q_line": {
+                "x": 420,
+                "y": 700,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 180
+              },
+              "q_bat": {
+                "x": 900,
+                "y": 300,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "q_far": {
+                "x": 1900,
+                "y": 150,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              }
+            },
+            "modifiers": {},
+            "side_modifiers": {},
+            "rallies": []
+          },
+          {
+            "round": 2,
+            "start": 40.0,
+            "end": 80.0,
+            "orders": {
+              "p_line": {
+                "target": "q_line",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "q_line": {
+                "target": "p_line",
+                "mode": "melee",
+                "ammo": null,
+                "on_break": "fall_back"
+              },
+              "p_rifle": {
+                "target": "q_bat",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              },
+              "q_far": {
+                "target": "p_rifle",
+                "mode": "ranged",
+                "ammo": null,
+                "on_break": "keep"
+              }
+            },
+            "engagements": [],
+            "units": {
+              "p_line": {
+                "losses": 83,
+                "inflicted": 99,
+                "size": 813,
+                "morale": 44.588027257574666,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_rifle": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 500,
+                "morale": 58.41999999999995,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "p_cav": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 341,
+                "morale": 54.81767734222805,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_line": {
+                "losses": 99,
+                "inflicted": 83,
+                "size": 885,
+                "morale": 32.219944952506744,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_bat": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 59,
+                "morale": 0.0,
+                "broken": true,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              },
+              "q_far": {
+                "losses": 0,
+                "inflicted": 0,
+                "size": 600,
+                "morale": 40.0,
+                "broken": false,
+                "broke_at": null,
+                "captured": 0,
+                "guns_lost": 0
+              }
+            },
+            "events": [],
+            "prisoners": {
+              "0": 0,
+              "1": 0
+            },
+            "guns_captured": {
+              "0": 0,
+              "1": 0
+            },
+            "charges": [
+              {
+                "charger": "p_line",
+                "target": "q_line",
+                "start": 40.0,
+                "resolved_at": 45.0,
+                "outcome": "meeting",
+                "p_defender_breaks": null,
+                "p_falter": null,
+                "p_home": null
+              }
+            ],
+            "retargets": [],
+            "positions": {
+              "p_line": {
+                "x": 400,
+                "y": 900,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 0
+              },
+              "p_rifle": {
+                "x": 650,
+                "y": 760,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 350
+              },
+              "p_cav": {
+                "x": 1000,
+                "y": 1000,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 10
+              },
+              "q_line": {
+                "x": 430,
+                "y": 820,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": 180
+              },
+              "q_bat": {
+                "x": 900,
+                "y": 300,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              },
+              "q_far": {
+                "x": 1900,
+                "y": 150,
+                "z": 0,
+                "cover": 0,
+                "terrain_type": "open",
+                "facing": null
+              }
+            },
+            "modifiers": {},
+            "side_modifiers": {},
+            "rallies": []
+          }
+        ],
+        "result": {
+          "field_held_by": null,
+          "units": {
+            "p_line": {
+              "hits": 87,
+              "killed": 23,
+              "wounded": 64,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 31,
+              "captured_in_rout": 0,
+              "final_size": 844,
+              "guns_lost": 0
+            },
+            "p_rifle": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 0,
+              "final_size": 500,
+              "guns_lost": 0
+            },
+            "p_cav": {
+              "hits": 9,
+              "killed": 2,
+              "wounded": 7,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 3,
+              "captured_in_rout": 0,
+              "final_size": 344,
+              "guns_lost": 0
+            },
+            "q_line": {
+              "hits": 115,
+              "killed": 26,
+              "wounded": 89,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 31,
+              "captured_in_rout": 0,
+              "final_size": 916,
+              "guns_lost": 0
+            },
+            "q_bat": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 13,
+              "final_size": 59,
+              "guns_lost": 8
+            },
+            "q_far": {
+              "hits": 0,
+              "killed": 0,
+              "wounded": 0,
+              "walking_wounded": 0,
+              "wounded_captured": 0,
+              "wounded_returned": 0,
+              "captured_in_rout": 0,
+              "final_size": 600,
+              "guns_lost": 0
+            }
+          },
+          "prisoners": {
+            "0": 13,
+            "1": 0
+          },
+          "guns_captured": {
+            "0": 8,
+            "1": 0
+          },
+          "field_decided_by": "votes",
+          "field_votes": {
+            "exchange": null,
+            "routs": null,
+            "standing": null
+          }
+        }
+      }
+    },
+    {
       "name": "broken_on_approach",
       "seed": 1,
       "start": {
