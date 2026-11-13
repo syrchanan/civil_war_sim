@@ -30,10 +30,10 @@ import copy
 from dataclasses import asdict
 
 from imperial_generals.battles.battle import Battle
-from imperial_generals.battles.setup import SetupError, battle_from_setup
+from imperial_generals.battles.setup import SetupError, battle_from_setup, side_modifiers_by_number
 from imperial_generals.battles.state import report_to_dict, result_to_dict
 
-ROUND_KEYS = ('duration', 'orders', 'modifiers')
+ROUND_KEYS = ('duration', 'orders', 'modifiers', 'side_modifiers')
 
 
 def new_battle(setup: dict, seed: int | None = None) -> dict:
@@ -50,6 +50,26 @@ def step(state: dict, duration: float, orders: dict | None = None, record_events
     battle = Battle.from_dict(state)
     report = battle.resolve_round(duration, orders or {}, record_events=record_events, modifiers=modifiers)
     return battle.to_dict(), report_to_dict(report)
+
+
+def set_side_modifiers(state: dict, modifiers: dict) -> dict:
+    """
+    A new state with the side modifiers replaced (``{side: {'fire', 'melee', 'morale', 'note'}}``, side 0, 1 or a
+    side name; ``{}`` clears them). They apply from the next round until changed.
+
+    Raises
+    ------
+    ValueError
+        For an unknown side or a bad modifier.
+    """
+    sides = state['meta'].get('sides')
+    sides = sides if isinstance(sides, list) else None
+    for key in modifiers:
+        if key not in (0, 1, '0', '1') and not (sides is not None and key in sides):
+            raise ValueError(f'unknown side "{key}"; use 0, 1{" or a side name" if sides else ""}.')
+    battle = Battle.from_dict(state)
+    battle.set_side_modifiers(side_modifiers_by_number(modifiers, sides))
+    return battle.to_dict()
 
 
 def preview(state: dict, orders: dict, modifiers: dict | None = None) -> list[dict]:
@@ -109,6 +129,8 @@ def _check_script(scenario: dict) -> list[str]:
             errors.append(f'Round {n}: "orders" must be a mapping of unit id to order.')
         if not isinstance(rnd.get('modifiers', {}), dict):
             errors.append(f'Round {n}: "modifiers" must be a mapping of unit id to modifiers.')
+        if not isinstance(rnd.get('side_modifiers', {}), dict):
+            errors.append(f'Round {n}: "side_modifiers" must be a mapping of side to modifiers.')
     return errors
 
 
@@ -151,6 +173,8 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
     for n, rnd in enumerate(scenario.get('rounds', []), start=1):
         orders, skipped = _playable(battle, rnd.get('orders', {}))
         try:
+            if 'side_modifiers' in rnd:
+                battle.set_side_modifiers(side_modifiers_by_number(rnd['side_modifiers'], _sides(scenario)))
             report = battle.resolve_round(rnd['duration'], orders, record_events=record_events,
                                           modifiers=rnd.get('modifiers'))
         except (ValueError, TypeError) as exc:
@@ -256,12 +280,19 @@ def scenario_from_state(state: dict) -> dict:
         if u['meta']:
             unit['meta'] = u['meta']
         units.append(unit)
+    # side modifiers: those of the first round (or now) at the start; a round sets them when they changed
+    first = state['history'][0].get('side_modifiers', {}) if state['history'] else state.get('side_modifiers', {})
+    in_force = first
     rounds = []
     for r in state['history']:
         orders = {uid: {k: v for k, v in o.items() if v is not None} for uid, o in r['orders'].items()}
         rnd = {'duration': r['end'] - r['start'], 'orders': orders}
         if r.get('modifiers'):
             rnd['modifiers'] = r['modifiers']
+        side_mods = r.get('side_modifiers', {})
+        if rounds and side_mods != in_force:
+            rnd['side_modifiers'] = side_mods
+        in_force = side_mods
         rounds.append(rnd)
     result = state['result']
     if result is None:
@@ -273,6 +304,8 @@ def scenario_from_state(state: dict) -> dict:
     scenario = {'meta': meta}
     if sides is not None:
         scenario['sides'] = sides
+    if first:
+        scenario['side_modifiers'] = first
     scenario.update({'seed': state['seed'], 'params': state['params'], 'units': units, 'rounds': rounds,
                      'finish': finish})
     return scenario

@@ -201,6 +201,7 @@
     "0": 0,
     "1": 2
   },
+  "side_modifiers": {},
   "units": [
     {
       "id": "us_1mn",
@@ -424,7 +425,8 @@
       "charges": [],
       "retargets": [],
       "positions": {},
-      "modifiers": {}
+      "modifiers": {},
+      "side_modifiers": {}
     }
   ],
   "result": null

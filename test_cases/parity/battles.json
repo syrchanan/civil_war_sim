@@ -211,6 +211,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -716,6 +717,7 @@
           "0": 0,
           "1": 2
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -1080,7 +1082,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -1251,7 +1254,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -1436,7 +1440,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -1747,6 +1752,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -2248,6 +2254,7 @@
           "0": 0,
           "1": 2
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -2607,7 +2614,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -2778,7 +2786,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -2947,7 +2956,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -3258,6 +3268,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -3763,6 +3774,7 @@
           "0": 0,
           "1": 2
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -4122,7 +4134,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -4293,7 +4306,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -4474,7 +4488,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -4784,6 +4799,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "n1",
@@ -5391,6 +5407,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "n1",
@@ -5811,7 +5828,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -6011,7 +6029,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -6211,7 +6230,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 4,
@@ -6363,7 +6383,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 5,
@@ -6515,7 +6536,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -6836,6 +6858,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "n1",
@@ -7435,6 +7458,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "n1",
@@ -7855,7 +7879,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -8055,7 +8080,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -8231,7 +8257,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 4,
@@ -8383,7 +8410,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 5,
@@ -8535,7 +8563,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -8856,6 +8885,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "n1",
@@ -9455,6 +9485,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "n1",
@@ -9875,7 +9906,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -10075,7 +10107,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -10251,7 +10284,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 4,
@@ -10415,7 +10449,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 5,
@@ -10555,7 +10590,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -10875,6 +10911,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a1",
@@ -11515,6 +11552,7 @@
           "0": 8,
           "1": 1
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a1",
@@ -11998,7 +12036,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -12243,7 +12282,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -12478,7 +12518,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 4,
@@ -12693,7 +12734,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -13035,6 +13077,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a1",
@@ -13671,6 +13714,7 @@
           "0": 8,
           "1": 2
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a1",
@@ -14154,7 +14198,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -14399,7 +14444,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -14622,7 +14668,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 4,
@@ -14837,7 +14884,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -15179,6 +15227,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a1",
@@ -15819,6 +15868,7 @@
           "0": 8,
           "1": 2
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a1",
@@ -16302,7 +16352,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -16547,7 +16598,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -16782,7 +16834,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 4,
@@ -16997,7 +17050,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -17333,6 +17387,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a_line",
@@ -17877,6 +17932,7 @@
           "0": 8,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a_line",
@@ -18318,7 +18374,8 @@
                 "morale": -0.4,
                 "note": "surprised"
               }
-            }
+            },
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -18532,7 +18589,8 @@
                 "morale": 0.0,
                 "note": ""
               }
-            }
+            },
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -18703,7 +18761,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -19017,6 +19076,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a_line",
@@ -19561,6 +19621,7 @@
           "0": 8,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a_line",
@@ -20002,7 +20063,8 @@
                 "morale": -0.4,
                 "note": "surprised"
               }
-            }
+            },
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -20216,7 +20278,8 @@
                 "morale": 0.0,
                 "note": ""
               }
-            }
+            },
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -20387,7 +20450,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -20701,6 +20765,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a_line",
@@ -21246,6 +21311,7 @@
           "0": 3,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "a_line",
@@ -21687,7 +21753,8 @@
                 "morale": -0.4,
                 "note": "surprised"
               }
-            }
+            },
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -21889,7 +21956,8 @@
                 "morale": 0.0,
                 "note": ""
               }
-            }
+            },
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -22062,7 +22130,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -22376,6 +22445,20 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {
+          "0": {
+            "fire": 0.2,
+            "melee": -0.1,
+            "morale": -0.3,
+            "note": ""
+          },
+          "1": {
+            "fire": -0.15,
+            "melee": 0.0,
+            "morale": 0.0,
+            "note": "rain"
+          }
+        },
         "units": [
           {
             "id": "a_inf",
@@ -22567,7 +22650,15 @@
             }
           },
           "record_events": false,
-          "modifiers": {}
+          "modifiers": {},
+          "side_modifiers": {
+            "1": {
+              "fire": 0.0,
+              "melee": 0.4,
+              "morale": 0.25,
+              "note": ""
+            }
+          }
         }
       ],
       "finished": true,
@@ -22578,10 +22669,10 @@
         "meta": {},
         "seed": 1,
         "rng_state": [
-          632100701,
-          1622397965,
-          644948398,
-          1304527537
+          686078966,
+          1371010660,
+          1864456675,
+          2234847508
         ],
         "params": {
           "combat": {
@@ -22765,11 +22856,19 @@
         "finished": true,
         "prisoners": {
           "0": 0,
-          "1": 38
+          "1": 52
         },
         "guns_captured": {
           "0": 0,
           "1": 0
+        },
+        "side_modifiers": {
+          "1": {
+            "fire": 0.0,
+            "melee": 0.4,
+            "morale": 0.25,
+            "note": ""
+          }
         },
         "units": [
           {
@@ -22778,7 +22877,7 @@
             "side": 0,
             "type": "inf",
             "subtype": "light",
-            "size": 195,
+            "size": 188,
             "initial_size": 300,
             "stats": "2/1/0/0",
             "initial_stats": "2/2/0/0",
@@ -22788,14 +22887,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.08423688871066798,
-              "lost": 126,
+              "shock": 0.10246854588148914,
+              "lost": 121,
               "broken": true,
               "break_scale": 0.759303000733753
             },
-            "losses": 126,
+            "losses": 121,
             "inflicted": 0,
-            "captured": 23,
+            "captured": 35,
             "guns_lost": 0,
             "meta": {}
           },
@@ -22805,7 +22904,7 @@
             "side": 0,
             "type": "cav",
             "subtype": "light",
-            "size": 54,
+            "size": 78,
             "initial_size": 200,
             "stats": "3/1/0/1",
             "initial_stats": "3/3/0/1",
@@ -22815,14 +22914,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.10764084643843677,
-              "lost": 175,
+              "shock": 0.11595144801096119,
+              "lost": 167,
               "broken": true,
               "break_scale": 1.2823438828419877
             },
-            "losses": 175,
-            "inflicted": 0,
-            "captured": 15,
+            "losses": 167,
+            "inflicted": 1,
+            "captured": 17,
             "guns_lost": 0,
             "meta": {}
           },
@@ -22837,18 +22936,18 @@
             "stats": "8/8/1/0",
             "initial_stats": "8/8/1/0",
             "front_size": 1200,
-            "raw_morale": 79.9863476519011,
+            "raw_morale": 79.94510268525326,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9998293456487637,
+              "resolve": 0.9993137835656657,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 0.9687642680107383
             },
             "losses": 0,
-            "inflicted": 205,
+            "inflicted": 198,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -22864,18 +22963,18 @@
             "stats": "6/6/0/0",
             "initial_stats": "6/6/0/0",
             "front_size": 54,
-            "raw_morale": 59.84988705108263,
+            "raw_morale": 59.9947808364312,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9974981175180438,
+              "resolve": 0.9999130139405199,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 1.1385793444836028
             },
             "losses": 0,
-            "inflicted": 47,
+            "inflicted": 45,
             "captured": 0,
             "guns_lost": 0,
             "meta": {},
@@ -22887,23 +22986,23 @@
             "side": 1,
             "type": "inf",
             "subtype": "light",
-            "size": 400,
+            "size": 399,
             "initial_size": 400,
             "stats": "6/6/1/0",
             "initial_stats": "6/6/1/0",
             "front_size": 400,
-            "raw_morale": 58.426415785832326,
+            "raw_morale": 59.42231753800266,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9737735964305387,
-              "shock": 0.0,
-              "lost": 0,
+              "resolve": 0.9903719589667109,
+              "shock": 1.1253544683454573e-05,
+              "lost": 1,
               "broken": false,
               "break_scale": 0.7961760722793094
             },
-            "losses": 0,
-            "inflicted": 49,
+            "losses": 1,
+            "inflicted": 45,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -22952,47 +23051,47 @@
                 "attacker": "x_inf",
                 "target": "a_inf",
                 "mode": "closing",
-                "rate": 8.36916923076923
+                "rate": 7.113793846153847
               },
               {
                 "attacker": "x_bat",
                 "target": "a_inf",
                 "mode": "ranged",
-                "rate": 0.30276923076923073
+                "rate": 0.2573538461538461
               },
               {
                 "attacker": "x_rifle",
                 "target": "a_cav",
                 "mode": "closing",
-                "rate": 2.9110153846153843
+                "rate": 2.4743630769230767
               }
             ],
             "units": {
               "a_inf": {
-                "losses": 49,
+                "losses": 37,
                 "inflicted": 0,
                 "size": 228,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 3.5110043401696727,
-                "captured": 23,
+                "broke_at": 3.120720015691618,
+                "captured": 35,
                 "guns_lost": 0
               },
               "a_cav": {
-                "losses": 117,
-                "inflicted": 0,
-                "size": 68,
+                "losses": 106,
+                "inflicted": 1,
+                "size": 77,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 9.484785089098592,
-                "captured": 15,
+                "broke_at": 8.898316518648288,
+                "captured": 17,
                 "guns_lost": 0
               },
               "x_inf": {
                 "losses": 0,
-                "inflicted": 128,
+                "inflicted": 114,
                 "size": 1200,
-                "morale": 79.92631626417004,
+                "morale": 79.88776740320561,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -23002,17 +23101,17 @@
                 "losses": 0,
                 "inflicted": 4,
                 "size": 54,
-                "morale": 57.399999999999984,
+                "morale": 57.400000000000006,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_rifle": {
-                "losses": 0,
-                "inflicted": 34,
-                "size": 400,
-                "morale": 59.1764157858324,
+                "losses": 1,
+                "inflicted": 25,
+                "size": 399,
+                "morale": 58.672317538002716,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -23022,7 +23121,7 @@
             "events": [],
             "prisoners": {
               "0": 0,
-              "1": 38
+              "1": 52
             },
             "guns_captured": {
               "0": 0,
@@ -23035,15 +23134,15 @@
                 "start": 0.0,
                 "resolved_at": 2.0,
                 "outcome": "home",
-                "p_defender_breaks": 0.0003169756480452708,
-                "p_falter": 0.8865895484184988,
-                "p_home": 0.11309347593345598
+                "p_defender_breaks": 0.00044952031180743005,
+                "p_falter": 0.8464311543479957,
+                "p_home": 0.1531193253401969
               },
               {
                 "charger": "a_inf",
                 "target": "x_inf",
                 "start": 0.0,
-                "resolved_at": 3.5110043401696727,
+                "resolved_at": 3.120720015691618,
                 "outcome": "charger_broke",
                 "p_defender_breaks": null,
                 "p_falter": null,
@@ -23052,7 +23151,21 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {
+              "0": {
+                "fire": 0.2,
+                "melee": -0.1,
+                "morale": -0.3,
+                "note": ""
+              },
+              "1": {
+                "fire": -0.15,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": "rain"
+              }
+            }
           },
           {
             "round": 2,
@@ -23095,14 +23208,14 @@
                 "attacker": "x_rifle",
                 "target": "a_cav",
                 "mode": "ranged",
-                "rate": 0.48516923076923074
+                "rate": 0.48395630769230763
               }
             ],
             "units": {
               "a_inf": {
-                "losses": 77,
+                "losses": 84,
                 "inflicted": 0,
-                "size": 151,
+                "size": 144,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -23110,9 +23223,9 @@
                 "guns_lost": 0
               },
               "a_cav": {
-                "losses": 58,
+                "losses": 61,
                 "inflicted": 0,
-                "size": 10,
+                "size": 16,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -23121,9 +23234,9 @@
               },
               "x_inf": {
                 "losses": 0,
-                "inflicted": 77,
+                "inflicted": 84,
                 "size": 1200,
-                "morale": 79.9863476519011,
+                "morale": 79.94510268525326,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -23131,9 +23244,9 @@
               },
               "x_bat": {
                 "losses": 0,
-                "inflicted": 43,
+                "inflicted": 41,
                 "size": 54,
-                "morale": 59.84988705108263,
+                "morale": 59.9947808364312,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -23141,9 +23254,9 @@
               },
               "x_rifle": {
                 "losses": 0,
-                "inflicted": 15,
-                "size": 400,
-                "morale": 58.426415785832326,
+                "inflicted": 20,
+                "size": 399,
+                "morale": 59.42231753800266,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -23162,32 +23275,40 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {
+              "1": {
+                "fire": 0.0,
+                "melee": 0.4,
+                "morale": 0.25,
+                "note": ""
+              }
+            }
           }
         ],
         "result": {
           "field_held_by": null,
           "units": {
             "a_inf": {
-              "hits": 126,
-              "killed": 26,
-              "wounded": 100,
+              "hits": 121,
+              "killed": 30,
+              "wounded": 91,
               "walking_wounded": 0,
               "wounded_captured": 0,
               "wounded_returned": 44,
-              "captured_in_rout": 23,
-              "final_size": 195,
+              "captured_in_rout": 35,
+              "final_size": 188,
               "guns_lost": 0
             },
             "a_cav": {
-              "hits": 175,
-              "killed": 47,
-              "wounded": 128,
+              "hits": 167,
+              "killed": 42,
+              "wounded": 125,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 44,
-              "captured_in_rout": 15,
-              "final_size": 54,
+              "wounded_returned": 62,
+              "captured_in_rout": 17,
+              "final_size": 78,
               "guns_lost": 0
             },
             "x_inf": {
@@ -23213,20 +23334,20 @@
               "guns_lost": 0
             },
             "x_rifle": {
-              "hits": 0,
+              "hits": 1,
               "killed": 0,
-              "wounded": 0,
+              "wounded": 1,
               "walking_wounded": 0,
               "wounded_captured": 0,
               "wounded_returned": 0,
               "captured_in_rout": 0,
-              "final_size": 400,
+              "final_size": 399,
               "guns_lost": 0
             }
           },
           "prisoners": {
             "0": 0,
-            "1": 38
+            "1": 52
           },
           "guns_captured": {
             "0": 0,
@@ -23443,6 +23564,20 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {
+          "0": {
+            "fire": 0.2,
+            "melee": -0.1,
+            "morale": -0.3,
+            "note": ""
+          },
+          "1": {
+            "fire": -0.15,
+            "melee": 0.0,
+            "morale": 0.0,
+            "note": "rain"
+          }
+        },
         "units": [
           {
             "id": "a_inf",
@@ -23638,7 +23773,15 @@
             }
           },
           "record_events": false,
-          "modifiers": {}
+          "modifiers": {},
+          "side_modifiers": {
+            "1": {
+              "fire": 0.0,
+              "melee": 0.4,
+              "morale": 0.25,
+              "note": ""
+            }
+          }
         }
       ],
       "finished": true,
@@ -23649,10 +23792,10 @@
         "meta": {},
         "seed": 2,
         "rng_state": [
-          3789715755,
-          3506544046,
-          272238254,
-          3946534976
+          1510586555,
+          2067382261,
+          1767490612,
+          1406492501
         ],
         "params": {
           "combat": {
@@ -23836,11 +23979,19 @@
         "finished": true,
         "prisoners": {
           "0": 0,
-          "1": 43
+          "1": 50
         },
         "guns_captured": {
           "0": 0,
           "1": 0
+        },
+        "side_modifiers": {
+          "1": {
+            "fire": 0.0,
+            "melee": 0.4,
+            "morale": 0.25,
+            "note": ""
+          }
         },
         "units": [
           {
@@ -23849,7 +24000,7 @@
             "side": 0,
             "type": "inf",
             "subtype": "light",
-            "size": 191,
+            "size": 174,
             "initial_size": 300,
             "stats": "2/1/0/0",
             "initial_stats": "2/2/0/0",
@@ -23859,14 +24010,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.1036637948429844,
-              "lost": 135,
+              "shock": 0.09315681218778095,
+              "lost": 131,
               "broken": true,
               "break_scale": 1.682797947426395
             },
-            "losses": 135,
+            "losses": 131,
             "inflicted": 0,
-            "captured": 26,
+            "captured": 29,
             "guns_lost": 0,
             "meta": {}
           },
@@ -23876,7 +24027,7 @@
             "side": 0,
             "type": "cav",
             "subtype": "light",
-            "size": 154,
+            "size": 127,
             "initial_size": 200,
             "stats": "3/1/0/1",
             "initial_stats": "3/3/0/1",
@@ -23886,14 +24037,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.03983444307247373,
-              "lost": 42,
+              "shock": 0.09532152574802462,
+              "lost": 78,
               "broken": true,
               "break_scale": 0.906125969742664
             },
-            "losses": 42,
+            "losses": 78,
             "inflicted": 0,
-            "captured": 17,
+            "captured": 21,
             "guns_lost": 0,
             "meta": {}
           },
@@ -23908,18 +24059,18 @@
             "stats": "8/8/1/0",
             "initial_stats": "8/8/1/0",
             "front_size": 1200,
-            "raw_morale": 79.99418591981379,
+            "raw_morale": 79.99299543328651,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9999273239976723,
+              "resolve": 0.9999124429160814,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 0.9532504313308675
             },
             "losses": 0,
-            "inflicted": 119,
+            "inflicted": 109,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -23935,18 +24086,18 @@
             "stats": "6/6/0/0",
             "initial_stats": "6/6/0/0",
             "front_size": 54,
-            "raw_morale": 59.67836870560706,
+            "raw_morale": 59.87259979341479,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9946394784267844,
+              "resolve": 0.9978766632235799,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 0.8767831588762557
             },
             "losses": 0,
-            "inflicted": 47,
+            "inflicted": 61,
             "captured": 0,
             "guns_lost": 0,
             "meta": {},
@@ -23963,18 +24114,18 @@
             "stats": "6/6/1/0",
             "initial_stats": "6/6/1/0",
             "front_size": 400,
-            "raw_morale": 59.9270412550496,
+            "raw_morale": 59.13397188769105,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9987840209174934,
+              "resolve": 0.9855661981281841,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 0.9410215060486755
             },
             "losses": 0,
-            "inflicted": 11,
+            "inflicted": 39,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -24023,37 +24174,37 @@
                 "attacker": "x_inf",
                 "target": "a_inf",
                 "mode": "closing",
-                "rate": 8.36916923076923
+                "rate": 7.113793846153847
               },
               {
                 "attacker": "x_bat",
                 "target": "a_inf",
                 "mode": "ranged",
-                "rate": 0.30276923076923073
+                "rate": 0.2573538461538461
               },
               {
                 "attacker": "x_rifle",
                 "target": "a_cav",
                 "mode": "closing",
-                "rate": 2.9110153846153843
+                "rate": 2.4743630769230767
               }
             ],
             "units": {
               "a_inf": {
-                "losses": 53,
+                "losses": 56,
                 "inflicted": 0,
-                "size": 221,
+                "size": 215,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 5.0,
-                "captured": 26,
+                "broke_at": 4.687135464035886,
+                "captured": 29,
                 "guns_lost": 0
               },
               "a_cav": {
                 "losses": 6,
                 "inflicted": 0,
                 "size": 194,
-                "morale": 18.653390108218556,
+                "morale": 15.25138265930756,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24061,9 +24212,9 @@
               },
               "x_inf": {
                 "losses": 0,
-                "inflicted": 37,
+                "inflicted": 34,
                 "size": 1200,
-                "morale": 79.9998665737082,
+                "morale": 80.0,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24071,9 +24222,9 @@
               },
               "x_bat": {
                 "losses": 0,
-                "inflicted": 12,
+                "inflicted": 11,
                 "size": 54,
-                "morale": 58.043631053149085,
+                "morale": 57.95479357529479,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24081,9 +24232,9 @@
               },
               "x_rifle": {
                 "losses": 0,
-                "inflicted": 10,
+                "inflicted": 17,
                 "size": 400,
-                "morale": 59.99197519704117,
+                "morale": 58.08397188769114,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24093,7 +24244,7 @@
             "events": [],
             "prisoners": {
               "0": 0,
-              "1": 26
+              "1": 29
             },
             "guns_captured": {
               "0": 0,
@@ -24106,24 +24257,38 @@
                 "start": 0.0,
                 "resolved_at": 2.0,
                 "outcome": "faltered",
-                "p_defender_breaks": 0.00021703243926763407,
-                "p_falter": 0.9194758522136176,
-                "p_home": 0.08030711534711477
+                "p_defender_breaks": 0.00017084675492910672,
+                "p_falter": 0.9355094600236706,
+                "p_home": 0.0643196932214003
               },
               {
                 "charger": "a_inf",
                 "target": "x_inf",
                 "start": 0.0,
-                "resolved_at": 5.0,
-                "outcome": "faltered",
-                "p_defender_breaks": 6.905095060466592e-07,
-                "p_falter": 0.9997215059712539,
-                "p_home": 0.00027780351924011626
+                "resolved_at": 4.687135464035886,
+                "outcome": "charger_broke",
+                "p_defender_breaks": null,
+                "p_falter": null,
+                "p_home": null
               }
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {
+              "0": {
+                "fire": 0.2,
+                "melee": -0.1,
+                "morale": -0.3,
+                "note": ""
+              },
+              "1": {
+                "fire": -0.15,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": "rain"
+              }
+            }
           },
           {
             "round": 2,
@@ -24177,9 +24342,9 @@
             ],
             "units": {
               "a_inf": {
-                "losses": 82,
+                "losses": 75,
                 "inflicted": 0,
-                "size": 139,
+                "size": 140,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -24187,20 +24352,20 @@
                 "guns_lost": 0
               },
               "a_cav": {
-                "losses": 36,
+                "losses": 72,
                 "inflicted": 0,
-                "size": 141,
+                "size": 101,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 62.0,
-                "captured": 17,
+                "broke_at": 61.867479114915895,
+                "captured": 21,
                 "guns_lost": 0
               },
               "x_inf": {
                 "losses": 0,
-                "inflicted": 82,
+                "inflicted": 75,
                 "size": 1200,
-                "morale": 79.99418591981379,
+                "morale": 79.99299543328651,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24208,9 +24373,9 @@
               },
               "x_bat": {
                 "losses": 0,
-                "inflicted": 35,
+                "inflicted": 50,
                 "size": 54,
-                "morale": 59.67836870560706,
+                "morale": 59.87259979341479,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24218,9 +24383,9 @@
               },
               "x_rifle": {
                 "losses": 0,
-                "inflicted": 1,
+                "inflicted": 22,
                 "size": 400,
-                "morale": 59.9270412550496,
+                "morale": 59.13397188769105,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -24230,7 +24395,7 @@
             "events": [],
             "prisoners": {
               "0": 0,
-              "1": 17
+              "1": 21
             },
             "guns_captured": {
               "0": 0,
@@ -24241,41 +24406,49 @@
                 "charger": "a_cav",
                 "target": "x_bat",
                 "start": 60.0,
-                "resolved_at": 62.0,
-                "outcome": "faltered",
-                "p_defender_breaks": 0.0029530215678343578,
-                "p_falter": 0.45560943041444507,
-                "p_home": 0.5414375480177205
+                "resolved_at": 61.867479114915895,
+                "outcome": "charger_broke",
+                "p_defender_breaks": null,
+                "p_falter": null,
+                "p_home": null
               }
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {
+              "1": {
+                "fire": 0.0,
+                "melee": 0.4,
+                "morale": 0.25,
+                "note": ""
+              }
+            }
           }
         ],
         "result": {
           "field_held_by": null,
           "units": {
             "a_inf": {
-              "hits": 135,
+              "hits": 131,
               "killed": 23,
-              "wounded": 112,
+              "wounded": 108,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 52,
-              "captured_in_rout": 26,
-              "final_size": 191,
+              "wounded_returned": 34,
+              "captured_in_rout": 29,
+              "final_size": 174,
               "guns_lost": 0
             },
             "a_cav": {
-              "hits": 42,
-              "killed": 8,
-              "wounded": 34,
+              "hits": 78,
+              "killed": 18,
+              "wounded": 60,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 13,
-              "captured_in_rout": 17,
-              "final_size": 154,
+              "wounded_returned": 26,
+              "captured_in_rout": 21,
+              "final_size": 127,
               "guns_lost": 0
             },
             "x_inf": {
@@ -24314,7 +24487,7 @@
           },
           "prisoners": {
             "0": 0,
-            "1": 43
+            "1": 50
           },
           "guns_captured": {
             "0": 0,
@@ -24531,6 +24704,20 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {
+          "0": {
+            "fire": 0.2,
+            "melee": -0.1,
+            "morale": -0.3,
+            "note": ""
+          },
+          "1": {
+            "fire": -0.15,
+            "melee": 0.0,
+            "morale": 0.0,
+            "note": "rain"
+          }
+        },
         "units": [
           {
             "id": "a_inf",
@@ -24726,7 +24913,15 @@
             }
           },
           "record_events": false,
-          "modifiers": {}
+          "modifiers": {},
+          "side_modifiers": {
+            "1": {
+              "fire": 0.0,
+              "melee": 0.4,
+              "morale": 0.25,
+              "note": ""
+            }
+          }
         }
       ],
       "finished": true,
@@ -24737,10 +24932,10 @@
         "meta": {},
         "seed": 3,
         "rng_state": [
-          3986659837,
-          3620286617,
-          1645218180,
-          2656867624
+          1076408540,
+          56296118,
+          3108703500,
+          1276106563
         ],
         "params": {
           "combat": {
@@ -24924,11 +25119,19 @@
         "finished": true,
         "prisoners": {
           "0": 0,
-          "1": 43
+          "1": 51
         },
         "guns_captured": {
           "0": 0,
           "1": 0
+        },
+        "side_modifiers": {
+          "1": {
+            "fire": 0.0,
+            "melee": 0.4,
+            "morale": 0.25,
+            "note": ""
+          }
         },
         "units": [
           {
@@ -24937,7 +25140,7 @@
             "side": 0,
             "type": "inf",
             "subtype": "light",
-            "size": 184,
+            "size": 172,
             "initial_size": 300,
             "stats": "2/1/0/0",
             "initial_stats": "2/2/0/0",
@@ -24947,14 +25150,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.10843824996067804,
-              "lost": 147,
+              "shock": 0.0983924819956632,
+              "lost": 130,
               "broken": true,
               "break_scale": 0.9714524218042124
             },
-            "losses": 147,
+            "losses": 130,
             "inflicted": 0,
-            "captured": 23,
+            "captured": 30,
             "guns_lost": 0,
             "meta": {}
           },
@@ -24964,7 +25167,7 @@
             "side": 0,
             "type": "cav",
             "subtype": "light",
-            "size": 147,
+            "size": 135,
             "initial_size": 200,
             "stats": "3/1/0/1",
             "initial_stats": "3/3/0/1",
@@ -24974,14 +25177,14 @@
             "position": null,
             "morale": {
               "resolve": 0.0,
-              "shock": 0.0786511553858751,
-              "lost": 54,
+              "shock": 0.10456278916786184,
+              "lost": 70,
               "broken": true,
               "break_scale": 0.9789357744694057
             },
-            "losses": 54,
-            "inflicted": 0,
-            "captured": 20,
+            "losses": 70,
+            "inflicted": 4,
+            "captured": 21,
             "guns_lost": 0,
             "meta": {}
           },
@@ -24996,18 +25199,18 @@
             "stats": "8/8/1/0",
             "initial_stats": "8/8/1/0",
             "front_size": 1200,
-            "raw_morale": 79.94997732869726,
+            "raw_morale": 79.94753563413306,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9993747166087158,
+              "resolve": 0.9993441954266632,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 1.0069858884571212
             },
             "losses": 0,
-            "inflicted": 112,
+            "inflicted": 110,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -25018,23 +25221,23 @@
             "side": 1,
             "type": "art",
             "subtype": "horse battery",
-            "size": 54,
+            "size": 51,
             "initial_size": 54,
-            "stats": "6/6/0/0",
+            "stats": "6/5/0/0",
             "initial_stats": "6/6/0/0",
             "front_size": 54,
-            "raw_morale": 59.98715672747168,
+            "raw_morale": 51.83617638850988,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9997859454578613,
-              "shock": 0.0,
-              "lost": 0,
+              "resolve": 0.8639362731418313,
+              "shock": 0.00621969964678386,
+              "lost": 4,
               "broken": false,
               "break_scale": 1.0412060156953316
             },
-            "losses": 0,
-            "inflicted": 55,
+            "losses": 4,
+            "inflicted": 33,
             "captured": 0,
             "guns_lost": 0,
             "meta": {},
@@ -25051,18 +25254,18 @@
             "stats": "6/6/1/0",
             "initial_stats": "6/6/1/0",
             "front_size": 400,
-            "raw_morale": 59.91859408755284,
+            "raw_morale": 59.84920454705987,
             "combat_mode": "idle",
             "position": null,
             "morale": {
-              "resolve": 0.9986432347925474,
+              "resolve": 0.9974867424509979,
               "shock": 0.0,
               "lost": 0,
               "broken": false,
               "break_scale": 1.2485799061380043
             },
             "losses": 0,
-            "inflicted": 34,
+            "inflicted": 57,
             "captured": 0,
             "guns_lost": 0,
             "meta": {}
@@ -25111,37 +25314,37 @@
                 "attacker": "x_inf",
                 "target": "a_inf",
                 "mode": "closing",
-                "rate": 8.36916923076923
+                "rate": 7.113793846153847
               },
               {
                 "attacker": "x_bat",
                 "target": "a_inf",
                 "mode": "ranged",
-                "rate": 0.30276923076923073
+                "rate": 0.2573538461538461
               },
               {
                 "attacker": "x_rifle",
                 "target": "a_cav",
                 "mode": "closing",
-                "rate": 2.9110153846153843
+                "rate": 2.4743630769230767
               }
             ],
             "units": {
               "a_inf": {
-                "losses": 62,
+                "losses": 42,
                 "inflicted": 0,
-                "size": 215,
+                "size": 228,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 3.3954277367723433,
-                "captured": 23,
+                "broke_at": 2.5078681974964905,
+                "captured": 30,
                 "guns_lost": 0
               },
               "a_cav": {
-                "losses": 6,
+                "losses": 5,
                 "inflicted": 0,
-                "size": 194,
-                "morale": 19.20456589675169,
+                "size": 195,
+                "morale": 17.395431825482195,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -25149,9 +25352,9 @@
               },
               "x_inf": {
                 "losses": 0,
-                "inflicted": 27,
+                "inflicted": 22,
                 "size": 1200,
-                "morale": 79.98123884713145,
+                "morale": 80.0,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -25159,9 +25362,9 @@
               },
               "x_bat": {
                 "losses": 0,
-                "inflicted": 11,
+                "inflicted": 4,
                 "size": 54,
-                "morale": 58.03977102444561,
+                "morale": 57.34678944052424,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -25169,9 +25372,9 @@
               },
               "x_rifle": {
                 "losses": 0,
-                "inflicted": 30,
+                "inflicted": 21,
                 "size": 400,
-                "morale": 59.418594087552854,
+                "morale": 58.603495469808855,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -25181,7 +25384,7 @@
             "events": [],
             "prisoners": {
               "0": 0,
-              "1": 23
+              "1": 30
             },
             "guns_captured": {
               "0": 0,
@@ -25194,15 +25397,15 @@
                 "start": 0.0,
                 "resolved_at": 2.0,
                 "outcome": "faltered",
-                "p_defender_breaks": 0.00023127614716707124,
-                "p_falter": 0.9146410834999384,
-                "p_home": 0.08512764035289444
+                "p_defender_breaks": 0.0002279949717428788,
+                "p_falter": 0.9157503186075849,
+                "p_home": 0.0840216864206722
               },
               {
                 "charger": "a_inf",
                 "target": "x_inf",
                 "start": 0.0,
-                "resolved_at": 3.3954277367723433,
+                "resolved_at": 2.5078681974964905,
                 "outcome": "charger_broke",
                 "p_defender_breaks": null,
                 "p_falter": null,
@@ -25211,7 +25414,21 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {
+              "0": {
+                "fire": 0.2,
+                "melee": -0.1,
+                "morale": -0.3,
+                "note": ""
+              },
+              "1": {
+                "fire": -0.15,
+                "melee": 0.0,
+                "morale": 0.0,
+                "note": "rain"
+              }
+            }
           },
           {
             "round": 2,
@@ -25265,9 +25482,9 @@
             ],
             "units": {
               "a_inf": {
-                "losses": 85,
+                "losses": 88,
                 "inflicted": 0,
-                "size": 130,
+                "size": 140,
                 "morale": 0.0,
                 "broken": true,
                 "broke_at": null,
@@ -25275,30 +25492,30 @@
                 "guns_lost": 0
               },
               "a_cav": {
-                "losses": 48,
-                "inflicted": 0,
-                "size": 126,
+                "losses": 65,
+                "inflicted": 4,
+                "size": 109,
                 "morale": 0.0,
                 "broken": true,
-                "broke_at": 65.997565781569,
-                "captured": 20,
+                "broke_at": 71.44428465451587,
+                "captured": 21,
                 "guns_lost": 0
               },
               "x_inf": {
                 "losses": 0,
-                "inflicted": 85,
+                "inflicted": 88,
                 "size": 1200,
-                "morale": 79.94997732869726,
+                "morale": 79.94753563413306,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
                 "guns_lost": 0
               },
               "x_bat": {
-                "losses": 0,
-                "inflicted": 44,
-                "size": 54,
-                "morale": 59.98715672747168,
+                "losses": 4,
+                "inflicted": 29,
+                "size": 50,
+                "morale": 51.83617638850988,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -25306,9 +25523,9 @@
               },
               "x_rifle": {
                 "losses": 0,
-                "inflicted": 4,
+                "inflicted": 36,
                 "size": 400,
-                "morale": 59.91859408755284,
+                "morale": 59.84920454705987,
                 "broken": false,
                 "broke_at": null,
                 "captured": 0,
@@ -25318,7 +25535,7 @@
             "events": [],
             "prisoners": {
               "0": 0,
-              "1": 20
+              "1": 21
             },
             "guns_captured": {
               "0": 0,
@@ -25330,40 +25547,48 @@
                 "target": "x_bat",
                 "start": 60.0,
                 "resolved_at": 62.0,
-                "outcome": "faltered",
-                "p_defender_breaks": 0.005220342410953911,
-                "p_falter": 0.3208122075384278,
-                "p_home": 0.6739674500506183
+                "outcome": "home",
+                "p_defender_breaks": 0.0037363718740738437,
+                "p_falter": 0.39792867348306243,
+                "p_home": 0.5983349546428638
               }
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {
+              "1": {
+                "fire": 0.0,
+                "melee": 0.4,
+                "morale": 0.25,
+                "note": ""
+              }
+            }
           }
         ],
         "result": {
           "field_held_by": null,
           "units": {
             "a_inf": {
-              "hits": 147,
-              "killed": 35,
-              "wounded": 112,
+              "hits": 130,
+              "killed": 34,
+              "wounded": 96,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 54,
-              "captured_in_rout": 23,
-              "final_size": 184,
+              "wounded_returned": 32,
+              "captured_in_rout": 30,
+              "final_size": 172,
               "guns_lost": 0
             },
             "a_cav": {
-              "hits": 54,
-              "killed": 12,
-              "wounded": 42,
+              "hits": 70,
+              "killed": 13,
+              "wounded": 57,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 21,
-              "captured_in_rout": 20,
-              "final_size": 147,
+              "wounded_returned": 26,
+              "captured_in_rout": 21,
+              "final_size": 135,
               "guns_lost": 0
             },
             "x_inf": {
@@ -25378,14 +25603,14 @@
               "guns_lost": 0
             },
             "x_bat": {
-              "hits": 0,
-              "killed": 0,
-              "wounded": 0,
+              "hits": 4,
+              "killed": 1,
+              "wounded": 3,
               "walking_wounded": 0,
               "wounded_captured": 0,
-              "wounded_returned": 0,
+              "wounded_returned": 1,
               "captured_in_rout": 0,
-              "final_size": 54,
+              "final_size": 51,
               "guns_lost": 0
             },
             "x_rifle": {
@@ -25402,7 +25627,7 @@
           },
           "prisoners": {
             "0": 0,
-            "1": 43
+            "1": 51
           },
           "guns_captured": {
             "0": 0,
@@ -25619,6 +25844,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "big",
@@ -26003,6 +26229,7 @@
           "0": 3,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "big",
@@ -26270,7 +26497,8 @@
               }
             ],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -26379,7 +26607,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -26660,6 +26889,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "big",
@@ -27044,6 +27274,7 @@
           "0": 3,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "big",
@@ -27311,7 +27542,8 @@
               }
             ],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -27420,7 +27652,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -27701,6 +27934,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "big",
@@ -28085,6 +28319,7 @@
           "0": 3,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "big",
@@ -28352,7 +28587,8 @@
               }
             ],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -28461,7 +28697,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -28742,6 +28979,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "s1",
@@ -29126,6 +29364,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "s1",
@@ -29403,7 +29642,8 @@
               }
             ],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -29512,7 +29752,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -29793,6 +30034,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "s1",
@@ -30177,6 +30419,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "s1",
@@ -30454,7 +30697,8 @@
               }
             ],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -30563,7 +30807,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -30844,6 +31089,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "s1",
@@ -31232,6 +31478,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "s1",
@@ -31509,7 +31756,8 @@
               }
             ],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -31634,7 +31882,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {
@@ -31923,6 +32172,7 @@
           "0": 0,
           "1": 0
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -32433,6 +32683,7 @@
           "0": 0,
           "1": 1
         },
+        "side_modifiers": {},
         "units": [
           {
             "id": "us_1mn",
@@ -34628,7 +34879,8 @@
             "charges": [],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 2,
@@ -35967,7 +36219,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           },
           {
             "round": 3,
@@ -36528,7 +36781,8 @@
             ],
             "retargets": [],
             "positions": {},
-            "modifiers": {}
+            "modifiers": {},
+            "side_modifiers": {}
           }
         ],
         "result": {

@@ -231,6 +231,8 @@ SYNTHETIC = {
     },
     'falter_and_fire': {
         'params': {'charge': {'falter_threshold': 0.0, 'break_threshold': 3.0}},
+        # side modifiers: set at the start, changed before round 2
+        'side_modifiers': {0: {'fire': 0.2, 'melee': -0.1, 'morale': -0.3}, 1: {'fire': -0.15, 'note': 'rain'}},
         'units': [_u('a_inf', 0, 'inf', 'light', 300, '2/2/0/0'), _u('a_cav', 0, 'cav', 'light', 200, '3/3/0/1'),
                   _u('x_inf', 1, 'inf', 'line', 1200, '8/8/1/0'), _u('x_bat', 1, 'art', 'horse battery', 54, '6/6/0/0', guns=6),
                   _u('x_rifle', 1, 'inf', 'light', 400, '6/6/1/0')],
@@ -238,7 +240,8 @@ SYNTHETIC = {
             {'duration': 60, 'orders': {'a_inf': _melee('x_inf'), 'a_cav': _melee('x_rifle'),
                                         'x_bat': _fire('a_inf', ammo='round_shot'), 'x_rifle': _fire('a_inf'),
                                         'x_inf': _fire('a_cav')}},
-            {'duration': 60, 'orders': {'a_inf': _fire('x_inf'), 'a_cav': _melee('x_bat'),
+            {'duration': 60, 'side_modifiers': {1: {'melee': 0.4, 'morale': 0.25}},
+             'orders': {'a_inf': _fire('x_inf'), 'a_cav': _melee('x_bat'),
                                         'x_bat': _fire('a_cav', ammo='canister'), 'x_inf': _fire('a_inf', on_break='weakest'),
                                         'x_rifle': _fire('a_cav', on_break='strongest')}},
         ],
@@ -282,9 +285,12 @@ def _battle_case(name: str, scenario: dict, seed: int, record_events: bool = Fal
     for rnd in scenario.get('rounds', []):
         orders, _ = api._playable(battle, rnd.get('orders', {}))
         modifiers = rnd.get('modifiers', {})
+        entry = {'duration': rnd['duration'], 'orders': orders, 'record_events': record_events, 'modifiers': modifiers}
+        if 'side_modifiers' in rnd:
+            battle.set_side_modifiers(rnd['side_modifiers'])
+            entry['side_modifiers'] = battle.to_dict()['side_modifiers']
         battle.resolve_round(rnd['duration'], orders, record_events=record_events, modifiers=modifiers)
-        rounds.append({'duration': rnd['duration'], 'orders': orders, 'record_events': record_events,
-                       'modifiers': modifiers})
+        rounds.append(entry)
     finish = scenario.get('finish', False)
     holder = None if finish is False else api._field_holder(finish, api._sides(scenario))
     if finish is not False:

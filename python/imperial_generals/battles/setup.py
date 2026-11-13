@@ -8,6 +8,8 @@ with where it is ("Unit 3 (cs_cav): ...").
     meta: {name: Test Ridge, date: 1863-07-02}     # free-form, kept in the state file
     seed: 1863                                     # optional; picked at random (and recorded) if left out
     sides: [Union, Confederate]                    # optional names; units can then use them as their side
+    side_modifiers:                                # optional, whole battle (commander, supply, events)
+      Confederate: {fire: -0.1, note: poor supply}   # side 0, 1 or a name; fire / melee / morale fractions
     params: {combat: {ranged_kill_rate: 0.005}}    # optional overrides on the defaults
     units:
       - id: us_1mn                                 # id and name default to each other
@@ -31,14 +33,14 @@ from pathlib import Path
 
 import yaml
 
-from imperial_generals.battles.battle import Battle
+from imperial_generals.battles.battle import Battle, validate_side_modifiers
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
 from imperial_generals.units.Regiment import _parse_stats
 from imperial_generals.utils import Rng
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
-TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'sides', 'units')
+TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'side_modifiers', 'sides', 'units')
 UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'side', 'size', 'stats', 'subtype', 'type')
 MAX_SEED = 2 ** 32 - 1
 
@@ -235,6 +237,8 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
         except ValueError as exc:
             errors.append(f'overrides: {exc}')
 
+    side_modifiers = _side_modifiers(data.get('side_modifiers', {}), sides, errors)
+
     if not errors:
         for side in (0, 1):
             if not any(u['side'] == side for u in units.values()):
@@ -249,7 +253,28 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
     meta = dict(data.get('meta', {}))
     if sides is not None:
         meta['sides'] = list(sides)
-    return Battle(units, rng=Rng(seed), params=params, meta=meta)
+    return Battle(units, rng=Rng(seed), params=params, meta=meta, side_modifiers=side_modifiers)
+
+
+def side_modifiers_by_number(mods, sides: list | None) -> dict:
+    """Side modifiers with side names (from ``sides``) turned into numbers; anything else is left as it is."""
+    return {sides.index(k) if sides is not None and k in sides else k: v for k, v in mods.items()}
+
+
+def _side_modifiers(mods, sides: list | None, errors: list[str]) -> dict:
+    """The setup's side modifiers keyed by side number, or {} after recording what is wrong."""
+    if not isinstance(mods, dict):
+        errors.append('"side_modifiers" must be a mapping of side (0, 1 or a name) to modifiers.')
+        return {}
+    for key in mods:
+        if _side(key, sides) is None and key not in ('0', '1'):
+            errors.append(f'side_modifiers: unknown side "{key}".')
+            return {}
+    try:
+        return validate_side_modifiers(side_modifiers_by_number(mods, sides))
+    except ValueError as exc:
+        errors.append(f'side_modifiers: {exc}')
+        return {}
 
 
 def load_setup_file(path) -> dict:
