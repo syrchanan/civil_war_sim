@@ -27,7 +27,7 @@ from pathlib import Path
 
 import yaml
 
-from imperial_generals import api, sheets, tuning, validation
+from imperial_generals import api, commanders, sheets, tuning, validation
 from imperial_generals.battles.setup import SetupError, load_setup_file
 from imperial_generals.battles.state import FORMAT
 from imperial_generals.config import get_config
@@ -232,12 +232,14 @@ def _print_order_of_battle(state: dict) -> None:
 
 def _print_side_summary(state: dict) -> None:
     sides = api.side_summary(state)
+    rated = commanders.ratings(state)
 
     def row(label: str, key: str, fmt=lambda v: f'{v:,}') -> list:
         return [label] + [fmt(s[key]) for s in sides]
 
     rows = [
         row('Result', 'outcome', str),
+        row('Verdict', 'verdict', str),
         row('Started', 'started'),
         row('Killed', 'killed'),
         row('Wounded', 'wounded'),
@@ -252,6 +254,8 @@ def _print_side_summary(state: dict) -> None:
         row('Guns lost', 'guns_lost'),
         row('Guns taken', 'guns_taken'),
         ['Units broken or wiped out'] + [f"{s['units_out']} of {s['units']}" for s in sides],
+        ['Expected share / result'] + [f"{r['expected']:.0%} / {r['result']:.0%}" for r in rated],
+        ['Commander rated as'] + [f"{r['general']['name']} ({r['general']['battle']})" for r in rated],
     ]
     print()
     print(_table(['Side summary'] + [s['name'] for s in sides], rows, left=1, notes=False))

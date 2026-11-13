@@ -1,0 +1,44 @@
+# =============================================================================
+# COMMANDER RATING (roadmap Phase C)
+# After a battle, each side's commander is rated as a historical general: by how the result compares with what
+# the armies' strength led to expect. Holding even against a stronger army rates higher than winning with the
+# bigger battalions. Ancient world up to the American Civil War; nobody later. First guesses, untuned.
+#
+#   power of a unit  = hit rate × staying power, as the battle began
+#     hit rate:      casualties per minute at full strength (the engine's own formulas, against infantry):
+#                    firearms: coef × men × ranged_kill_rate; artillery: coef × manned guns × default ammo rate;
+#                    melee-only: melee_kill_rate × melee efficiency × front
+#     staying power: the share of its men it can lose before breaking (the designed break point)
+#   expected share   = P^k / (P^k + Q^k), P and Q the two sides' summed power, k = power_exponent
+#   result share     = weights · (enemy casualties share, field, enemy routs share), summing to 1 over both sides
+#     casualties:    enemy casualties (killed + wounded + prisoners) plus gun_value men per gun taken, as a share
+#                    of both sides' total
+#     field:         1 held, 0.5 draw, 0 lost
+#     routs:         r = men in a side's broken or wiped-out units / its starting men; share = r_enemy / (r_own +
+#                    r_enemy), 0.5 if neither side had a unit routed
+#   score            = result share − expected share (−1 to 1; 0 = as expected), read on the ladder below
+# The two sides' scores mirror each other.
+# =============================================================================
+commanders:
+
+  power_exponent: 1.5
+  gun_value: 20
+  weights: {casualties: 0.5, field: 0.3, routs: 0.2}
+
+  # From disasters to masterpieces: a score gets the last general whose 'from' it reaches. The first starts at -1.
+  ladder:
+    - {name: Varro, battle: Cannae (216 BC), from: -1}
+    - {name: Crassus, battle: Carrhae (53 BC), from: -0.45}
+    - {name: Mack, battle: Ulm (1805), from: -0.35}
+    - {name: Burnside, battle: Fredericksburg (1862), from: -0.26}
+    - {name: Hooker, battle: Chancellorsville (1863), from: -0.18}
+    - {name: McClellan, battle: the Seven Days (1862), from: -0.10}
+    - {name: Meade, battle: Gettysburg (1863), from: -0.03}
+    - {name: Wellington, battle: Waterloo (1815), from: 0.03}
+    - {name: Marlborough, battle: Blenheim (1704), from: 0.10}
+    - {name: Scipio Africanus, battle: Zama (202 BC), from: 0.18}
+    - {name: Khalid ibn al-Walid, battle: Yarmouk (636), from: 0.26}
+    - {name: Subutai, battle: Mohi (1241), from: 0.33}
+    - {name: Alexander, battle: Gaugamela (331 BC), from: 0.40}
+    - {name: Napoleon, battle: Austerlitz (1805), from: 0.46}
+    - {name: Hannibal, battle: Cannae (216 BC), from: 0.52}

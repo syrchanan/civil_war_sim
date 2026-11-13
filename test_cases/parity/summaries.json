@@ -1,5 +1,5 @@
 {
-  "description": "api.order_of_battle and api.side_summary (finished battles only) of each battle in battles.json, from its 'final' state.",
+  "description": "api.order_of_battle, api.side_summary and commanders.ratings (finished battles only) of each battle in battles.json, from its 'final' state.",
   "cases": [
     {
       "name": "example_ridge",
@@ -88,6 +88,32 @@
           "guns_lost": 0,
           "guns_taken": 2,
           "verdict": "draw"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Union",
+          "power": 1.276378160716453,
+          "expected": 0.5837744522470522,
+          "result": 0.6073638800115363,
+          "score": 0.02358942776448414,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Confederate",
+          "power": 1.0186737857958332,
+          "expected": 0.4162255477529479,
+          "result": 0.3926361199884637,
+          "score": -0.023589427764484194,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
         }
       ]
     },
@@ -179,6 +205,32 @@
           "guns_taken": 2,
           "verdict": "defeat"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Union",
+          "power": 1.276378160716453,
+          "expected": 0.5837744522470522,
+          "result": 0.7899225890186895,
+          "score": 0.20614813677163735,
+          "general": {
+            "name": "Scipio Africanus",
+            "battle": "Zama (202 BC)",
+            "from": 0.18
+          }
+        },
+        {
+          "name": "Confederate",
+          "power": 1.0186737857958332,
+          "expected": 0.4162255477529479,
+          "result": 0.21007741098131047,
+          "score": -0.20614813677163743,
+          "general": {
+            "name": "Burnside",
+            "battle": "Fredericksburg (1862)",
+            "from": -0.26
+          }
+        }
       ]
     },
     {
@@ -268,6 +320,32 @@
           "guns_lost": 0,
           "guns_taken": 2,
           "verdict": "draw"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Union",
+          "power": 1.276378160716453,
+          "expected": 0.5837744522470522,
+          "result": 0.6210964843231651,
+          "score": 0.037322032076112954,
+          "general": {
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
+          }
+        },
+        {
+          "name": "Confederate",
+          "power": 1.0186737857958332,
+          "expected": 0.4162255477529479,
+          "result": 0.3789035156768349,
+          "score": -0.03732203207611301,
+          "general": {
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
+          }
         }
       ]
     },
@@ -359,6 +437,32 @@
           "guns_taken": 0,
           "verdict": "victory"
         }
+      ],
+      "commanders": [
+        {
+          "name": "North",
+          "power": 1.1030680341880341,
+          "expected": 0.5,
+          "result": 0.3266110531803963,
+          "score": -0.1733889468196037,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
+        },
+        {
+          "name": "South",
+          "power": 1.1030680341880341,
+          "expected": 0.5,
+          "result": 0.6733889468196038,
+          "score": 0.17338894681960382,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        }
       ]
     },
     {
@@ -448,6 +552,32 @@
           "guns_lost": 0,
           "guns_taken": 0,
           "verdict": "defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "North",
+          "power": 1.1030680341880341,
+          "expected": 0.5,
+          "result": 0.6888679245283019,
+          "score": 0.18886792452830192,
+          "general": {
+            "name": "Scipio Africanus",
+            "battle": "Zama (202 BC)",
+            "from": 0.18
+          }
+        },
+        {
+          "name": "South",
+          "power": 1.1030680341880341,
+          "expected": 0.5,
+          "result": 0.31113207547169813,
+          "score": -0.18886792452830187,
+          "general": {
+            "name": "Burnside",
+            "battle": "Fredericksburg (1862)",
+            "from": -0.26
+          }
         }
       ]
     },
@@ -539,6 +669,32 @@
           "guns_taken": 0,
           "verdict": "victory"
         }
+      ],
+      "commanders": [
+        {
+          "name": "North",
+          "power": 1.1030680341880341,
+          "expected": 0.5,
+          "result": 0.31021001615508886,
+          "score": -0.18978998384491114,
+          "general": {
+            "name": "Burnside",
+            "battle": "Fredericksburg (1862)",
+            "from": -0.26
+          }
+        },
+        {
+          "name": "South",
+          "power": 1.1030680341880341,
+          "expected": 0.5,
+          "result": 0.6897899838449112,
+          "score": 0.1897899838449112,
+          "general": {
+            "name": "Scipio Africanus",
+            "battle": "Zama (202 BC)",
+            "from": 0.18
+          }
+        }
       ]
     },
     {
@@ -628,6 +784,32 @@
           "guns_lost": 8,
           "guns_taken": 1,
           "verdict": "defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Attack",
+          "power": 1.7158006837606832,
+          "expected": 0.6598614007897544,
+          "result": 0.764645010952493,
+          "score": 0.10478361016273863,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        },
+        {
+          "name": "Defence",
+          "power": 1.1030680341880341,
+          "expected": 0.34013859921024564,
+          "result": 0.2353549890475069,
+          "score": -0.10478361016273874,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
         }
       ]
     },
@@ -719,6 +901,32 @@
           "guns_taken": 2,
           "verdict": "defeat"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Attack",
+          "power": 1.7158006837606832,
+          "expected": 0.6598614007897544,
+          "result": 0.761557711489509,
+          "score": 0.1016963106997546,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        },
+        {
+          "name": "Defence",
+          "power": 1.1030680341880341,
+          "expected": 0.34013859921024564,
+          "result": 0.23844228851049093,
+          "score": -0.10169631069975471,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
+        }
       ]
     },
     {
@@ -808,6 +1016,32 @@
           "guns_lost": 8,
           "guns_taken": 2,
           "verdict": "decisive defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Attack",
+          "power": 1.7158006837606832,
+          "expected": 0.6598614007897544,
+          "result": 0.7722590181110612,
+          "score": 0.11239761732130682,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        },
+        {
+          "name": "Defence",
+          "power": 1.1030680341880341,
+          "expected": 0.34013859921024564,
+          "result": 0.2277409818889388,
+          "score": -0.11239761732130685,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
         }
       ]
     },
@@ -902,6 +1136,32 @@
           "guns_taken": 0,
           "verdict": "decisive defeat"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 3.3135035438414744,
+          "expected": 0.878617181321149,
+          "result": 0.908265213442325,
+          "score": 0.02964803212117606,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.8855079347753816,
+          "expected": 0.12138281867885106,
+          "result": 0.09173478655767484,
+          "score": -0.029648032121176227,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        }
       ]
     },
     {
@@ -994,6 +1254,32 @@
           "guns_lost": 8,
           "guns_taken": 0,
           "verdict": "decisive defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 3.3135035438414744,
+          "expected": 0.878617181321149,
+          "result": 0.8886500429922615,
+          "score": 0.010032861671112503,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.8855079347753816,
+          "expected": 0.12138281867885106,
+          "result": 0.1113499570077386,
+          "score": -0.010032861671112461,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
         }
       ]
     },
@@ -1088,6 +1374,32 @@
           "guns_taken": 0,
           "verdict": "decisive defeat"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 3.3135035438414744,
+          "expected": 0.878617181321149,
+          "result": 0.8910614525139664,
+          "score": 0.012444271192817435,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.8855079347753816,
+          "expected": 0.12138281867885106,
+          "result": 0.10893854748603352,
+          "score": -0.012444271192817546,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        }
       ]
     },
     {
@@ -1176,6 +1488,32 @@
           "guns_lost": 0,
           "guns_taken": 0,
           "verdict": "draw"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 0.20751092674057925,
+          "expected": 0.03211977245288162,
+          "result": 0.15146627565982404,
+          "score": 0.11934650320694243,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 2.0094339797055296,
+          "expected": 0.9678802275471184,
+          "result": 0.848533724340176,
+          "score": -0.1193465032069424,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
         }
       ]
     },
@@ -1266,6 +1604,32 @@
           "guns_taken": 0,
           "verdict": "draw"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 0.20751092674057925,
+          "expected": 0.03211977245288162,
+          "result": 0.15,
+          "score": 0.11788022754711838,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 2.0094339797055296,
+          "expected": 0.9678802275471184,
+          "result": 0.8500000000000001,
+          "score": -0.11788022754711835,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
+        }
       ]
     },
     {
@@ -1355,6 +1719,32 @@
           "guns_taken": 0,
           "verdict": "draw"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 0.20751092674057925,
+          "expected": 0.03211977245288162,
+          "result": 0.15784313725490196,
+          "score": 0.12572336480202034,
+          "general": {
+            "name": "Marlborough",
+            "battle": "Blenheim (1704)",
+            "from": 0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 2.0094339797055296,
+          "expected": 0.9678802275471184,
+          "result": 0.8421568627450979,
+          "score": -0.1257233648020205,
+          "general": {
+            "name": "Hooker",
+            "battle": "Chancellorsville (1863)",
+            "from": -0.18
+          }
+        }
       ]
     },
     {
@@ -1439,6 +1829,32 @@
           "guns_lost": 3,
           "guns_taken": 0,
           "verdict": "decisive defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 8.328476969364381,
+          "expected": 0.9978532319770388,
+          "result": 0.9271978021978022,
+          "score": -0.07065542977923656,
+          "general": {
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.13879629991798426,
+          "expected": 0.0021467680229611615,
+          "result": 0.07280219780219781,
+          "score": 0.07065542977923664,
+          "general": {
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
+          }
         }
       ]
     },
@@ -1525,6 +1941,32 @@
           "guns_taken": 0,
           "verdict": "decisive defeat"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 8.328476969364381,
+          "expected": 0.9978532319770388,
+          "result": 0.9246728462377318,
+          "score": -0.07318038573930696,
+          "general": {
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.13879629991798426,
+          "expected": 0.0021467680229611615,
+          "result": 0.07532715376226827,
+          "score": 0.0731803857393071,
+          "general": {
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
+          }
+        }
       ]
     },
     {
@@ -1609,6 +2051,32 @@
           "guns_lost": 3,
           "guns_taken": 0,
           "verdict": "decisive defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 8.328476969364381,
+          "expected": 0.9978532319770388,
+          "result": 0.907775434897206,
+          "score": -0.09007779707983277,
+          "general": {
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.13879629991798426,
+          "expected": 0.0021467680229611615,
+          "result": 0.09222456510279388,
+          "score": 0.09007779707983271,
+          "general": {
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
+          }
         }
       ]
     },
@@ -1699,6 +2167,32 @@
           "guns_taken": 0,
           "verdict": "decisive victory"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 0.6931957678491074,
+          "expected": 0.11116082558453995,
+          "result": 0.1236266475555417,
+          "score": 0.012465821971001753,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 2.771852939233352,
+          "expected": 0.88883917441546,
+          "result": 0.8763733524444584,
+          "score": -0.012465821971001656,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        }
       ]
     },
     {
@@ -1787,6 +2281,32 @@
           "guns_lost": 8,
           "guns_taken": 0,
           "verdict": "decisive victory"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 0.6931957678491074,
+          "expected": 0.11116082558453995,
+          "result": 0.11840843311957323,
+          "score": 0.007247607535033285,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 2.771852939233352,
+          "expected": 0.88883917441546,
+          "result": 0.8815915668804268,
+          "score": -0.007247607535033174,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
         }
       ]
     },
@@ -1877,6 +2397,32 @@
           "guns_taken": 0,
           "verdict": "decisive victory"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 0.6931957678491074,
+          "expected": 0.11116082558453995,
+          "result": 0.11369529761660019,
+          "score": 0.0025344720320602393,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 2.771852939233352,
+          "expected": 0.88883917441546,
+          "result": 0.8863047023833999,
+          "score": -0.002534472032060142,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        }
       ]
     },
     {
@@ -1956,6 +2502,32 @@
           "guns_lost": 0,
           "guns_taken": 0,
           "verdict": "Pyrrhic victory"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 16.370924964369788,
+          "expected": 0.9964706742448836,
+          "result": 0.6869281045751634,
+          "score": -0.30954256966972016,
+          "general": {
+            "name": "Mack",
+            "battle": "Ulm (1805)",
+            "from": -0.35
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.38038615384615376,
+          "expected": 0.0035293257551165143,
+          "result": 0.3130718954248366,
+          "score": 0.3095425696697201,
+          "general": {
+            "name": "Khalid ibn al-Walid",
+            "battle": "Yarmouk (636)",
+            "from": 0.26
+          }
         }
       ]
     },
@@ -2037,6 +2609,32 @@
           "guns_taken": 0,
           "verdict": "Pyrrhic victory"
         }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 16.370924964369788,
+          "expected": 0.9964706742448836,
+          "result": 0.6907120743034056,
+          "score": -0.3057585999414779,
+          "general": {
+            "name": "Mack",
+            "battle": "Ulm (1805)",
+            "from": -0.35
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.38038615384615376,
+          "expected": 0.0035293257551165143,
+          "result": 0.3092879256965944,
+          "score": 0.3057585999414779,
+          "general": {
+            "name": "Khalid ibn al-Walid",
+            "battle": "Yarmouk (636)",
+            "from": 0.26
+          }
+        }
       ]
     },
     {
@@ -2116,6 +2714,32 @@
           "guns_lost": 0,
           "guns_taken": 0,
           "verdict": "Pyrrhic victory"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 16.370924964369788,
+          "expected": 0.9964706742448836,
+          "result": 0.6843517138599107,
+          "score": -0.3121189603849729,
+          "general": {
+            "name": "Mack",
+            "battle": "Ulm (1805)",
+            "from": -0.35
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 0.38038615384615376,
+          "expected": 0.0035293257551165143,
+          "result": 0.3156482861400894,
+          "score": 0.3121189603849729,
+          "general": {
+            "name": "Khalid ibn al-Walid",
+            "battle": "Yarmouk (636)",
+            "from": 0.26
+          }
         }
       ]
     },
@@ -2206,6 +2830,32 @@
           "guns_lost": 0,
           "guns_taken": 1,
           "verdict": "defeat"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Union",
+          "power": 1.276378160716453,
+          "expected": 0.5837744522470522,
+          "result": 0.8054672463332768,
+          "score": 0.22169279408622466,
+          "general": {
+            "name": "Scipio Africanus",
+            "battle": "Zama (202 BC)",
+            "from": 0.18
+          }
+        },
+        {
+          "name": "Confederate",
+          "power": 1.0186737857958332,
+          "expected": 0.4162255477529479,
+          "result": 0.1945327536667231,
+          "score": -0.2216927940862248,
+          "general": {
+            "name": "Burnside",
+            "battle": "Fredericksburg (1862)",
+            "from": -0.26
+          }
         }
       ]
     }
