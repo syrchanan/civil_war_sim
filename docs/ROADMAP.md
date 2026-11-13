@@ -71,7 +71,8 @@ parity, then the client. Tuning waits until the pass is done.
 | P2 | Facing and flanks: fire only within the front arc; flank and rear attacks hit harder | ✓ (2026-11-13) |
 | P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ✓ (2026-11-13) |
 | P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ✓ (2026-11-13) |
-| P5 | Elevation and line of sight from the terrain | ► next |
+| P5 | Elevation and line of sight from the terrain | ✓ (2026-11-13) |
+| Then | Tuning pass (A13), now that the engine has settled | ► next |
 
 ### Phase C — Later
 | Item | Status |
@@ -973,6 +974,22 @@ Built 2026-11-13 (`battles/terrain.py`, `engine/terrain.ts`, `ui/terrainGen.ts`,
 - **Client**: a "Ground" choice before the battle (open field or a preset, generated from the battle's seed); two map
   layers, Relief (eight height bands) and Woods and rough ground; a unit's label says its height and ground.
 - The engine doesn't use the terrain yet: P5 brings elevation and line of sight; cover stays held.
+
+### P5. Elevation and line of sight ✓
+Built 2026-11-13 (`config/sight.yaml`, `SightParams`, `Battle.line_of_sight` / `Battle.elevation_bonus`).
+- **Line of sight**: a straight line from `eye_height` above the firer's ground (2 yd on foot, 3 mounted) to the
+  same above the target's, checked every `sample_step` (10) yards; ground, or woods `forest_height` (12) yards
+  tall, rising above it blocks fire. The first and last `edge_clear` (30) yards aren't checked, so a unit at a
+  wood's edge sees out and can be seen; deeper in, the trees hide it. Blocks fire, artillery included; closing fire
+  on a charge and melee don't need it.
+- **Elevation**: fire and closing fire × (1 + clamp(rise / `elevation_scale` (100 yd), ±`elevation_max` (15%))).
+- Without terrain (an open field) neither applies. Sampling uses only + − × ÷ and floor, so both engines agree.
+- Client: the orders table says "no line of sight" and the height advantage; order arrows for fire that can't
+  tell (out of range, outside the front arc, no line of sight) are drawn faded.
+- Not yet: charging uphill being harder (melee isn't affected by height); cover (held).
+- Later (user, 2026-11-13): **mortars and other high-angle artillery ignore line of sight** (they lob shells over
+  ridges and woods). Needs a way to tell them apart: a battery subtype or weapon code, keyed off stats or types, not
+  a named unit (see the generic-rules rule), plus their own ranges and ammo.
 
 ## Phase C — Later / parked
 
