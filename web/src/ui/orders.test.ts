@@ -52,14 +52,14 @@ describe('store: orders', () => {
     expect(s.preview.value.arrows).toEqual([]);
   });
 
-  it('targets: enemies not wiped out, broken ones included', () => {
+  it('targets: enemies not wiped out, broken ones included; a broken unit can still act (rally)', () => {
     const s = started();
     const battle = s.battle.value!;
     battle.units.get('cs_8al')!.morale.forceBreak();
     battle.units.get('cs_10al')!.regiment.updateSize(0);
     s.touch();
     expect(s.targetsFor('us_1mn').map((u) => u.uid)).toEqual(['cs_8al', 'cs_11al', 'cs_bat']);
-    expect(s.actingUnits.value.map((u) => u.uid)).toEqual(['us_1mn', 'us_15ma', 'us_bat', 'cs_11al', 'cs_bat']);
+    expect(s.actingUnits.value.map((u) => u.uid)).toEqual(['us_1mn', 'us_15ma', 'us_bat', 'cs_8al', 'cs_11al', 'cs_bat']);
   });
 
   it('sets the round length and the events toggle', () => {

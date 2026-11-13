@@ -1,6 +1,6 @@
 /** How the client words a battle: the same phrases as the Python CLI (python/imperial_generals/cli.py). */
 
-import type { BattleResult, Charge, Modifier } from '../engine';
+import type { BattleResult, Charge, Modifier, Rally } from '../engine';
 
 export const CHARGE_OUTCOMES: Record<string, string> = {
   home: 'went home', faltered: 'faltered', defender_broke: 'broke the defender before contact',
@@ -37,6 +37,11 @@ export function fieldText(result: Pick<BattleResult, 'field_held_by' | 'field_de
 }
 
 const pct = (x: number): string => `${Math.round(x * 100)}%`;
+
+/** '8th Alabama rallied (29% chance)' / '8th Alabama failed to rally (30% chance)'. */
+export function rallyText(r: Rally, name: (uid: string) => string): string {
+  return `${name(r.unit)} ${r.rallied ? 'rallied' : 'failed to rally'} (${pct(r.chance)} chance)`;
+}
 
 /** 'wiped out', 'broke at 34 min', 'broken', plus guns lost. */
 export function status(size: number, broken: boolean, brokeAt: number | null, gunsLost = 0): string {

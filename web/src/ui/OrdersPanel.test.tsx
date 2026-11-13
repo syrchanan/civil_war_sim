@@ -40,15 +40,19 @@ describe('orders panel', () => {
     expect(rows.some((r) => r!.startsWith("Battery B11th Alabamafire"))).toBe(true);
   });
 
-  it('marks broken targets and drops units that can no longer act', () => {
+  it('marks broken targets, offers a broken unit only hold or rally, and drops units wiped out', () => {
     const store = started();
     act(() => {
       store.battle.value!.units.get('cs_8al')!.morale.forceBreak();
+      store.battle.value!.units.get('cs_10al')!.regiment.updateSize(0);
+      store.battle.value!.units.get('cs_10al')!.morale.forceBreak();
       store.touch();
     });
     fireEvent.change(screen.getByLabelText('1st Minnesota action'), { target: { value: 'ranged' } });
     expect(screen.getByLabelText('1st Minnesota target').textContent).toContain('8th Alabama (broken)');
-    expect(screen.queryByLabelText('8th Alabama action')).toBeNull();
+    const actions = screen.getByLabelText('8th Alabama action') as HTMLSelectElement;
+    expect([...actions.options].map((o) => o.text)).toEqual(['hold', 'rally']);
+    expect(screen.queryByLabelText('10th Alabama action')).toBeNull();
   });
 
   it('shows why orders can not be carried out', () => {
