@@ -20,6 +20,12 @@ Design decisions and status live in `docs/ROADMAP.md`.
 - Terrain (positions pass P4): a battle can be fought on generated ground (flat, hills, forest, badlands,
   mountains; `config/terrain.yaml`), saved in the state file as a height and ground grid both engines read; drawn as
   relief and woods layers on the map.
+- Elevation and line of sight (positions pass P5): on terrain, fire needs a clear line (ridges and woods block it;
+  units at a wood's edge see out) and fire from higher ground tells more, up to ±15% (`config/sight.yaml`). The
+  orders table says so, and fire that can't tell is drawn faded on the map.
+
+### Fixed
+- Replaying a round with a rally order on the map no longer fails.
 
 ## [0.1.0-alpha] - 2026-11-13
 
