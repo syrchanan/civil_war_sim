@@ -33,6 +33,7 @@ from dataclasses import asdict
 from imperial_generals.battles.battle import Battle
 from imperial_generals.battles.setup import SetupError, battle_from_setup, side_modifiers_by_number
 from imperial_generals.battles.state import report_to_dict, result_to_dict
+from imperial_generals.params import BattleParams
 
 ROUND_KEYS = ('duration', 'orders', 'modifiers', 'side_modifiers')
 
@@ -353,6 +354,26 @@ def order_of_battle(state: dict) -> list[dict]:
     return sides
 
 
+def verdicts(holder: int | None, decided_by: str, casualties: list, started: list, params) -> list[str]:
+    """
+    How the result reads for each side: 'draw' when nobody held the field; otherwise the winner's 'Pyrrhic
+    victory', 'decisive victory' or 'victory', and the loser's 'decisive defeat' or 'defeat'. ``casualties`` and
+    ``started`` are per side; ``params`` are the battle's ``AftermathParams`` (see config/aftermath.yaml).
+    """
+    if holder is None:
+        return ['draw', 'draw']
+    w, l = holder, 1 - holder
+    out = [''] * 2
+    if casualties[w] >= params.pyrrhic_share * started[w] and casualties[w] >= params.pyrrhic_ratio * casualties[l]:
+        out[w], out[l] = 'Pyrrhic victory', 'defeat'
+    elif decided_by == 'army_out' or (casualties[l] >= params.decisive_share * started[l]
+                                      and casualties[l] >= params.decisive_ratio * casualties[w]):
+        out[w], out[l] = 'decisive victory', 'decisive defeat'
+    else:
+        out[w], out[l] = 'victory', 'defeat'
+    return out
+
+
 def side_summary(state: dict) -> list[dict]:
     """
     Each side's performance over a finished battle.
@@ -363,6 +384,7 @@ def side_summary(state: dict) -> list[dict]:
     men hit per own man hit (None if the side was never hit). ``loss_share`` is the share of starting strength
     not in the ranks at the end. ``outcome`` reads the field as the result, as it was read at the time: 'won' (held
     the field), 'lost' (the other side held it) or 'drawn' (nobody did; the fight can go on the next day).
+    ``verdict`` reads it finer: decisive / Pyrrhic / plain victory, decisive defeat / defeat, or draw (``verdicts``).
 
     Raises
     ------
@@ -407,4 +429,8 @@ def side_summary(state: dict) -> list[dict]:
             'guns_lost': sum(o['guns_lost'] for o in outcomes),
             'guns_taken': result['guns_captured'][str(side)],
         })
+    params = BattleParams.from_dict(state['params']).aftermath
+    for side, verdict in zip(sides, verdicts(holder, result.get('field_decided_by', 'admin'),
+                                             [s['casualties'] for s in sides], [s['started'] for s in sides], params)):
+        side['verdict'] = verdict
     return sides

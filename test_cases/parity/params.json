@@ -10694,7 +10694,11 @@
             "field_exchange_ratio": 1.5,
             "field_rout_gap": 0.25,
             "field_standing_ratio": 1.5,
-            "field_votes_needed": 2
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
           },
           "matchups": {
             "ranged": {
@@ -10891,7 +10895,11 @@
             "field_exchange_ratio": 1.5,
             "field_rout_gap": 0.25,
             "field_standing_ratio": 1.5,
-            "field_votes_needed": 2
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
           },
           "matchups": {
             "ranged": {
@@ -11086,7 +11094,11 @@
             "field_exchange_ratio": 1.5,
             "field_rout_gap": 0.25,
             "field_standing_ratio": 1.5,
-            "field_votes_needed": 2
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
           },
           "matchups": {
             "ranged": {
@@ -11280,7 +11292,11 @@
             "field_exchange_ratio": 1.5,
             "field_rout_gap": 0.25,
             "field_standing_ratio": 1.5,
-            "field_votes_needed": 3
+            "field_votes_needed": 3,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
           },
           "matchups": {
             "ranged": {
@@ -11489,7 +11505,11 @@
             "field_exchange_ratio": 1.5,
             "field_rout_gap": 0.25,
             "field_standing_ratio": 1.5,
-            "field_votes_needed": 2
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
           },
           "matchups": {
             "ranged": {
@@ -11674,7 +11694,11 @@
             "field_exchange_ratio": 1.5,
             "field_rout_gap": 0.25,
             "field_standing_ratio": 1.5,
-            "field_votes_needed": 2
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.25,
+            "pyrrhic_ratio": 1.0
           },
           "matchups": {
             "ranged": {
