@@ -43,6 +43,12 @@ export function rallyText(r: Rally, name: (uid: string) => string): string {
   return `${name(r.unit)} ${r.rallied ? 'rallied' : 'failed to rally'} (${pct(r.chance)} chance)`;
 }
 
+/** '612 yd, out of range' / '160 yd, 46% effect' / '60 yd, full effect': how far a target is, how much fire tells. */
+export function rangeText(r: { distance: number; reach: number }): string {
+  const effect = r.reach === 0 ? 'out of range' : r.reach === 1 ? 'full effect' : `${pct(r.reach)} effect`;
+  return `${Math.round(r.distance)} yd, ${effect}`;
+}
+
 /** 'wiped out', 'broke at 34 min', 'broken', plus guns lost. */
 export function status(size: number, broken: boolean, brokeAt: number | null, gunsLost = 0): string {
   const notes: string[] = [];

@@ -411,6 +411,7 @@ export interface ChargeData {
   spread: number;
   falter_cost: number;
   shock_bonus: ShockBonus[];
+  speed: Record<string, number>;
 }
 
 const sigmoid = (z: number): number => 1.0 / (1.0 + exp(-z));
@@ -429,13 +430,15 @@ export class ChargeParams implements ChargeData {
   readonly spread: number;
   readonly falter_cost: number;
   readonly shock_bonus: ShockBonus[];
+  readonly speed: Record<string, number>;
 
   constructor(data: ChargeData) {
-    if (!isObject(data.approach_minutes) || !sameKeys(data.approach_minutes, UNIT_TYPES)) {
-      throw new ValueError(`approach_minutes needs exactly ${UNIT_TYPES.join(', ')}.`);
-    }
-    if (Object.values(data.approach_minutes).some((v) => !(v > 0))) {
-      throw new ValueError('approach_minutes must be > 0.');
+    for (const name of ['approach_minutes', 'speed'] as const) {
+      const table = data[name];
+      if (!isObject(table) || !sameKeys(table, UNIT_TYPES)) {
+        throw new ValueError(`${name} needs exactly ${UNIT_TYPES.join(', ')}.`);
+      }
+      if (Object.values(table).some((v) => !(v > 0))) throw new ValueError(`${name} must be > 0.`);
     }
     for (const name of ['closing_fire_multiplier', 'numbers_weight', 'steadiness_weight', 'shock_weight',
       'break_threshold', 'falter_threshold'] as const) {
@@ -465,6 +468,7 @@ export class ChargeParams implements ChargeData {
     this.spread = data.spread;
     this.falter_cost = data.falter_cost;
     this.shock_bonus = structuredClone(data.shock_bonus);
+    this.speed = { ...data.speed };
     Object.freeze(this);
   }
 
@@ -499,7 +503,76 @@ export class ChargeParams implements ChargeData {
   }
 
   toDict(): ChargeData {
-    return { ...this, approach_minutes: { ...this.approach_minutes }, shock_bonus: structuredClone(this.shock_bonus) };
+    return {
+      ...this, approach_minutes: { ...this.approach_minutes }, shock_bonus: structuredClone(this.shock_bonus),
+      speed: { ...this.speed },
+    };
+  }
+}
+
+// =============================================================================
+// Range
+// =============================================================================
+
+export interface RangeBand {
+  close: number;
+  max: number;
+}
+
+export interface RangeData {
+  falloff_exponent: number;
+  small_arms: Record<string, RangeBand>;
+  artillery: Record<string, RangeBand>;
+}
+
+function checkRanges(name: string, table: unknown, keys: readonly string[] | null, what: string): void {
+  if (!isObject(table)) throw new ValueError(`${name} must be a mapping of ${what} to {close, max}.`);
+  for (const [key, r] of Object.entries(table)) {
+    if (keys !== null && !keys.includes(key)) {
+      throw new ValueError(`${name}: unknown ${what} ${key}; one of ${[...keys].sort().join(', ')}.`);
+    }
+    if (!isObject(r) || !sameKeys(r, ['close', 'max'])) {
+      throw new ValueError(`${name} ${key}: needs exactly close and max (yards).`);
+    }
+    const band = r as unknown as RangeBand;
+    if (!(band.close >= 0 && band.close < band.max)) {
+      throw new ValueError(`${name} ${key}: close must be >= 0 and below max.`);
+    }
+  }
+}
+
+/** Fire falling off with distance in yards (config/range.yaml). */
+export class RangeParams {
+  readonly falloff_exponent: number;
+  readonly small_arms: Record<string, RangeBand>;
+  readonly artillery: Record<string, RangeBand>;
+
+  constructor(data: RangeData) {
+    if (!(data.falloff_exponent > 0)) throw new ValueError('falloff_exponent must be > 0.');
+    checkRanges('small_arms', data.small_arms, WEAPON_CODES, 'weapon code');
+    if (!sameKeys(data.small_arms, WEAPON_CODES)) {
+      throw new ValueError(`small_arms needs every weapon code ${WEAPON_CODES.join(', ')}.`);
+    }
+    checkRanges('artillery', data.artillery, null, 'ammo');
+    this.falloff_exponent = data.falloff_exponent;
+    this.small_arms = structuredClone(data.small_arms);
+    this.artillery = structuredClone(data.artillery);
+    Object.freeze(this);
+  }
+
+  /** Share of full effect at `distance`: 1 up to `close`, falling to 0 at `far`. */
+  reach(distance: number, close: number, far: number): number {
+    if (distance <= close) return 1.0;
+    if (distance >= far) return 0.0;
+    const left = 1 - (distance - close) / (far - close);
+    return this.falloff_exponent === 1 ? left : exp(this.falloff_exponent * log(left));
+  }
+
+  toDict(): RangeData {
+    return {
+      falloff_exponent: this.falloff_exponent, small_arms: structuredClone(this.small_arms),
+      artillery: structuredClone(this.artillery),
+    };
   }
 }
 
@@ -567,12 +640,13 @@ export interface ParamsData {
   matchups: MatchupData;
   charge: ChargeData;
   rally: RallyData;
+  range: RangeData;
 }
 
 /** Nested partial params, e.g. `{ combat: { ranged_kill_rate: 0.005 } }`. */
 export type Overrides = Record<string, Record<string, unknown>>;
 
-const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally'] as const;
+const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range'] as const;
 
 function deepMerge(base: Record<string, unknown>, changes: Record<string, unknown>): Record<string, unknown> {
   const merged = { ...base };
@@ -615,6 +689,7 @@ export class BattleParams {
   readonly matchups: MatchupParams;
   readonly charge: ChargeParams;
   readonly rally: RallyParams;
+  readonly range: RangeParams;
   private static cached: BattleParams | null = null;
 
   constructor(data: ParamsData) {
@@ -624,6 +699,10 @@ export class BattleParams {
     this.matchups = new MatchupParams(data.matchups);
     this.charge = new ChargeParams(data.charge);
     this.rally = new RallyParams(data.rally);
+    this.range = new RangeParams(data.range);
+    if (!sameKeys(this.range.artillery, Object.keys(this.combat.artillery_ammo))) {
+      throw new ValueError(`range.artillery needs every ammo: ${Object.keys(this.combat.artillery_ammo).sort().join(', ')}.`);
+    }
     if (!(this.charge.battery_closing_ammo in this.combat.artillery_ammo)) {
       throw new ValueError(`charge.battery_closing_ammo must be one of ${Object.keys(this.combat.artillery_ammo)
         .sort().join(', ')}.`);
@@ -660,6 +739,7 @@ export class BattleParams {
       matchups: this.matchups.toDict(),
       charge: this.charge.toDict(),
       rally: this.rally.toDict(),
+      range: this.range.toDict(),
     };
   }
 

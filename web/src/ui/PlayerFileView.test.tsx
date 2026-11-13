@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from './App';
 import { createStore } from './store';
+import { closeRanks } from './testing';
 
 afterEach(() => {
   cleanup();
@@ -13,6 +14,7 @@ afterEach(() => {
 /** The admin's battle a round in; the player's view of one side, opened from the admin's player file. */
 const setup = (side: 0 | 1 = 0) => {
   const admin = createStore(1863);
+  closeRanks(admin);
   admin.start();
   admin.setOrder('us_1mn', { mode: 'ranged', target: 'cs_8al' });
   admin.setOrder('cs_8al', { mode: 'ranged', target: 'us_1mn' });
@@ -35,6 +37,7 @@ describe('admin: downloading player files', () => {
     render(<App store={store} />);
     const button = (side: string) => screen.getByRole('button', { name: `Player file: ${side}` }) as HTMLButtonElement;
     expect(button('Union').disabled).toBe(true);                       // no battle yet
+    closeRanks(store);
     fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
     fireEvent.click(button('Union'));
     fireEvent.click(button('Confederate'));

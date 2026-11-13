@@ -315,7 +315,8 @@ interface Pending {
   meeting: boolean;
 }
 
-type Slot = [attacker: string, target: string, mode: string, matchup: number, share: number, gunRate: number | null];
+type Slot = [attacker: string, target: string, mode: string, matchup: number, share: number, gunRate: number | null,
+  reach: number];
 type Arrow = [attacker: string, target: string, mode: string, rate: number];
 
 const bySide = (): BySide => ({ 0: 0, 1: 0 });
@@ -457,6 +458,32 @@ export class Battle {
     return rallies;
   }
 
+  /** Yards between two units' centres on the flat, or null unless both are placed. */
+  distance(a: string, b: string): number | null {
+    const pa = this.unit(a).regiment.position;
+    const pb = this.unit(b).regiment.position;
+    if (pa === null || pb === null) return null;
+    const dx = pa.x - pb.x;
+    const dy = pa.y - pb.y;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  /**
+   * Share of full effect the attacker's fire has on the target at their distance (1 within close range, 0 beyond
+   * maximum range), or null unless both are placed. Artillery by its ammo (the default if not given), small arms
+   * by the weapon code.
+   */
+  reach(attacker: string, target: string, ammo: string | null = null): number | null {
+    const d = this.distance(attacker, target);
+    if (d === null) return null;
+    const r = this.params.range;
+    const regiment = this.unit(attacker).regiment;
+    const band = regiment instanceof ArtilleryBattery
+      ? r.artillery[ammo ?? this.params.combat.artillery_default_ammo]
+      : r.small_arms[String(Math.max(-2, Math.min(2, regiment.stats[2])))];
+    return r.reach(d, band.close, band.max);
+  }
+
   /** Has firearms (the stats melee-only flag decides, not the subtype). */
   private canFire(unit: BattleUnit): boolean {
     return this.params.combat.unitCoef(unit.regiment.stats, 'ranged') > 0;
@@ -493,6 +520,13 @@ export class Battle {
       const meeting = reply !== undefined && reply.mode === 'melee' && reply.target === uid;
       let minutes = approach[this.unit(uid).key[0]];
       if (meeting) minutes = Math.min(minutes, approach[target.key[0]]);
+      const d = this.distance(uid, order.target!);
+      if (d !== null) {
+        // covering the distance takes at least the approach; charging each other, both close the gap
+        const speed = this.params.charge.speed;
+        const pace = speed[this.unit(uid).key[0]] + (meeting ? speed[target.key[0]] : 0.0);
+        minutes = Math.max(minutes, d / pace);
+      }
       pending.push({ charger: uid, target: order.target!, end: start + Math.min(minutes, duration), meeting });
     }
     return [pending, immediate];
@@ -521,7 +555,9 @@ export class Battle {
     for (const [uid, ps] of partners) {
       const unit = this.unit(uid);
       if (unit.active && unit.meleeRating > 0) {
-        for (const p of ps) slots.push([uid, p, 'melee', matchups.multiplier(unit.key, this.unit(p).key, 'melee'), 1.0, null]);
+        for (const p of ps) {
+          slots.push([uid, p, 'melee', matchups.multiplier(unit.key, this.unit(p).key, 'melee'), 1.0, null, 1.0]);
+        }
       }
     }
 
@@ -540,7 +576,7 @@ export class Battle {
           ? combat.artillery_ammo[this.params.charge.battery_closing_ammo] : null;
         for (const charger of chargers) {
           slots.push([targetId, charger, 'closing', matchups.multiplier(target.key, this.unit(charger).key, 'ranged'),
-            1.0 / chargers.length, gunRate]);
+            1.0 / chargers.length, gunRate, 1.0]);
         }
       }
     }
@@ -553,8 +589,9 @@ export class Battle {
         // artillery: per-gun rate of the ordered ammo, fixed for the round
         const gunRate = unit.regiment instanceof ArtilleryBattery
           ? combat.artillery_ammo[order.ammo ?? combat.artillery_default_ammo] : null;
+        const reach = this.reach(uid, order.target!, order.ammo);
         slots.push([uid, order.target!, 'ranged', matchups.multiplier(unit.key, this.unit(order.target!).key, 'ranged'),
-          1.0, gunRate]);
+          1.0, gunRate, reach ?? 1.0]);
       }
     }
 
@@ -573,7 +610,7 @@ export class Battle {
       totalFronts.set(uid, total);
     }
     const arrows: Arrow[] = [];
-    for (const [attacker, target, mode, matchup, share, gunRate] of slots) {
+    for (const [attacker, target, mode, matchup, share, gunRate, reach] of slots) {
       const unit = this.unit(attacker);
       const stats = unit.regiment.stats;
       let rate: number;
@@ -594,6 +631,7 @@ export class Battle {
         const c = combat.unitCoef(stats, 'ranged');
         rate = c * unit.size * combat.ranged_kill_rate * matchup;
       }
+      if (reach !== 1.0) rate = rate * reach;
       const mod = this.modifiers[attacker];
       if (mod !== undefined) rate = rate * (1 + (mode === 'melee' ? mod.melee : mod.fire));
       const sideMod = this.sideModifiers[unit.side];

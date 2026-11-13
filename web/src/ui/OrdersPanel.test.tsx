@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
 import { createStore } from './store';
+import { closeRanks } from './testing';
 
 afterEach(cleanup);
 
@@ -11,6 +12,7 @@ const started = () => {
   const store = createStore(1863);
   render(<App store={store} />);
   expect(screen.getByText('Start the battle to give orders.')).toBeTruthy();
+  closeRanks(store);
   fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
   return store;
 };

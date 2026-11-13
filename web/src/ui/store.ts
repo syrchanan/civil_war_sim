@@ -418,6 +418,16 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return null;
   }
 
+  /** How far a firing unit's target is and how much of its fire tells there; null unless firing at a placed unit. */
+  function rangeOf(uid: string): { distance: number; reach: number } | null {
+    revision.value;
+    const o = effectiveOrders.value[uid];
+    if (o.mode !== 'ranged') return null;
+    const b = battle.value!;
+    const distance = b.distance(uid, o.target!);
+    return distance === null ? null : { distance, reach: b.reach(uid, o.target!, o.ammo)! };
+  }
+
   /** Admin: standing units that have no orders yet, from a file or the admin (they would hold). */
   const withoutOrders = computed<BattleUnit[]>(() => actingUnits.value
     .filter((u) => u.active && !(u.uid in orderSources.value) && orders.value[u.uid].mode === 'idle'));
@@ -764,7 +774,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
-    modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier,
+    modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier, rangeOf,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

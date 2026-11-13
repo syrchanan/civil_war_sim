@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { battleTag, PLAYER_FORMAT, roughly } from '../engine';
 import { createStore } from './store';
+import { closeRanks } from './testing';
 
 /** The admin's battle, a round in, and the player file for one side. */
 const fromAdmin = (side: 0 | 1 = 0) => {
   const admin = createStore(1863);
+  closeRanks(admin);
   admin.start();
   admin.setOrder('us_1mn', { mode: 'ranged', target: 'cs_8al' });
   admin.setOrder('cs_8al', { mode: 'ranged', target: 'us_1mn' });

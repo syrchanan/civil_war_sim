@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import fixture from '../../../test_cases/parity/battles.json';
 import { Battle, type FieldHolder, type ModifierInput, type OrderInput } from './battle';
 import type { StateData } from './state';
+import type { Position } from './units';
 
 interface Case {
   name: string;
@@ -11,6 +12,7 @@ interface Case {
   rounds: {
     duration: number; orders: Record<string, OrderInput>; record_events: boolean;
     modifiers: Record<string, ModifierInput>; side_modifiers?: Record<string, ModifierInput>;
+    positions?: Record<string, Position>;
   }[];
   finished: boolean;
   field_held_by: FieldHolder;
@@ -23,6 +25,7 @@ describe('whole battles replay the Python engine exactly', () => {
     expect(battle.toDict(), 'start state round-trips').toEqual(c.start);
     c.rounds.forEach((r, i) => {
       if (r.side_modifiers !== undefined) battle.setSideModifiers(r.side_modifiers);
+      for (const [uid, place] of Object.entries(r.positions ?? {})) battle.units.get(uid)!.regiment.position = place;
       const report = battle.resolveRound(r.duration, r.orders, r.record_events, r.modifiers);
       expect(report, `round ${i + 1}`).toEqual(c.final.history[i]);
     });
