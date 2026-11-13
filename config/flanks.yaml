@@ -1,0 +1,19 @@
+# =============================================================================
+# FACING AND FLANKS (positions pass P2)
+# Where an attacker stands relative to the way a unit faces (compass degrees, clockwise from map north):
+#   front: within front_arc / 2 of its facing;  rear: within rear_arc / 2 of directly behind;  flank: the rest.
+# - A unit fires only at targets within its own front arc (closing fire on a charge too). Charges and melee may
+#   come from any side: units wheel to meet them.
+# - Casualties a unit takes from its flank or rear (fire, closing fire, melee) are multiplied by `casualties`,
+#   and each loss from there costs `shock` times as much morale.
+# - A charge into a flank or rear adds `charge_bonus` to the contact test's pressure (like a shock bonus).
+# Units without a facing or a position aren't affected. First guesses, untuned.
+# =============================================================================
+flanks:
+
+  front_arc: 120
+  rear_arc: 90
+
+  casualties: {flank: 1.5, rear: 2.0}
+  shock: {flank: 1.5, rear: 2.0}
+  charge_bonus: {flank: 1.0, rear: 2.0}

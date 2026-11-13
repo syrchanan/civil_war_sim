@@ -136,8 +136,11 @@ class MoraleState:
         if engaged and not self.broken:
             self._spend(self.params.drain_per_hour * minutes / 60)
 
-    def take_loss(self, firing_back: bool) -> None:
-        """Record one casualty; ``firing_back`` is False when the unit can't or doesn't reply."""
+    def take_loss(self, firing_back: bool, exposure: float = 1.0) -> None:
+        """
+        Record one casualty; ``firing_back`` is False when the unit can't or doesn't reply. ``exposure`` multiplies
+        what it costs (a loss from the flank or rear shakes a unit more).
+        """
         p = self.params
         fraction_mid = (self.lost + 0.5) / self.initial_size
         cost = (
@@ -146,6 +149,8 @@ class MoraleState:
             * (1 + p.shock_weight * self.shock)
             * (1 + (0.0 if firing_back else p.helpless_weight))
         )
+        if exposure != 1.0:
+            cost = cost * exposure
         self.lost += 1
         self.shock += 1 / self.initial_size
         if not self.broken:

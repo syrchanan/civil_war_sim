@@ -465,6 +465,39 @@ class RangeParams:
 
 
 # =============================================================================
+# Facing and flanks
+# =============================================================================
+
+def _flank_default(key: str):
+    return field(default_factory=lambda: copy.deepcopy(get_config()['flanks'][key]))
+
+
+@dataclass(frozen=True)
+class FlankParams:
+    """Front, flank and rear: arcs (degrees) and what attacks from the flank or rear do; config/flanks.yaml."""
+
+    front_arc: float = _flank_default('front_arc')
+    rear_arc: float = _flank_default('rear_arc')
+    casualties: dict = _flank_default('casualties')
+    shock: dict = _flank_default('shock')
+    charge_bonus: dict = _flank_default('charge_bonus')
+
+    def __post_init__(self) -> None:
+        if not 0 < self.front_arc <= 360:
+            raise ValueError("front_arc must be in (0, 360] degrees.")
+        if not 0 <= self.rear_arc < 360:
+            raise ValueError("rear_arc must be in [0, 360) degrees.")
+        if self.front_arc + self.rear_arc > 360:
+            raise ValueError("front_arc + rear_arc must leave room for the flanks (at most 360 degrees).")
+        for name in ('casualties', 'shock', 'charge_bonus'):
+            table = getattr(self, name)
+            if not isinstance(table, dict) or set(table) != {'flank', 'rear'}:
+                raise ValueError(f"{name} needs exactly flank and rear.")
+            if name != 'charge_bonus' and any(not v >= 0 for v in table.values()):
+                raise ValueError(f"{name} multipliers must be >= 0.")
+
+
+# =============================================================================
 # Rally
 # =============================================================================
 
@@ -553,6 +586,7 @@ class BattleParams:
     charge: ChargeParams = field(default_factory=ChargeParams)
     rally: RallyParams = field(default_factory=RallyParams)
     range: RangeParams = field(default_factory=RangeParams)
+    flanks: FlankParams = field(default_factory=FlankParams)
 
     def __post_init__(self) -> None:
         if set(self.range.artillery) != set(self.combat.artillery_ammo):

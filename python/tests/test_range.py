@@ -182,14 +182,14 @@ def test_scenarios_replay_units_moved_between_rounds():
     state, _ = api.step(state, 30, {'us': {'target': 'cs', 'mode': 'ranged'}})
     moved, _ = api.merge_plans(state, [{'format': 'imperial-generals-orders', 'version': 1, 'side': 1,
                                         'battle': {'seed': 7, 'round': 2},
-                                        'orders': {}, 'positions': {'cs': {'x': 0, 'y': 150, 'facing': 180}}}])
+                                        'orders': {}, 'positions': {'cs': {'x': 0, 'y': 150, 'facing': 0}}}])
     after, report = api.step(moved, 30, {'us': {'target': 'cs', 'mode': 'ranged'},
                                          'cs': {'target': 'us', 'mode': 'ranged'}})
     assert report['units']['cs']['losses'] > 0                # now within range
     scenario = api.scenario_from_state(after)
     assert scenario['units'][1]['position'] == {'x': 0, 'y': 2000, 'facing': None}
     assert 'positions' not in scenario['rounds'][0]
-    assert scenario['rounds'][1]['positions'] == {'cs': {'x': 0, 'y': 150, 'facing': 180}}
+    assert scenario['rounds'][1]['positions'] == {'cs': {'x': 0, 'y': 150, 'facing': 0}}
     replayed, _, _ = api.run_scenario(scenario)
     assert replayed == after
 
@@ -207,13 +207,13 @@ def test_scenario_round_positions_are_checked():
 # --- setup files ---------------------------------------------------------------------------------------------
 
 SETUP = {'seed': 7, 'units': [
-    {'id': 'us', 'side': 0, 'size': 1000, 'stats': '5/5/0/0', 'position': {'x': 0, 'y': 0, 'facing': 0}},
+    {'id': 'us', 'side': 0, 'size': 1000, 'stats': '5/5/0/0', 'position': {'x': 0, 'y': 0, 'facing': 180}},
     {'id': 'cs', 'side': 1, 'size': 1000, 'stats': '5/5/0/0', 'position': {'x': 0, 'y': 2000}}]}
 
 
 def test_setup_places_units_on_open_ground():
     state = api.new_battle(SETUP)
-    assert state['units'][0]['position'] == {'x': 0, 'y': 0, 'z': 0, 'cover': 0, 'terrain_type': 'open', 'facing': 0}
+    assert state['units'][0]['position'] == {'x': 0, 'y': 0, 'z': 0, 'cover': 0, 'terrain_type': 'open', 'facing': 180}
     assert state['units'][1]['position']['facing'] is None
     after, _ = api.step(state, 60, {'us': {'target': 'cs', 'mode': 'ranged'}})
     assert all(u['losses'] == 0 for u in after['units'])     # 2000 yards: out of musket range
