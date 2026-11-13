@@ -1116,8 +1116,9 @@ class Battle:
             retargets=tuple(retargets),
             side_modifiers={side: dict(mod) for side, mod in self.side_modifiers.items()},
             rallies=rallies,
-            flights=tuple(Flight(uid, fled.get(uid, 0.0), tuple(escaped.get(uid, ())))
-                          for uid in sorted(set(fled) | set(escaped), key=lambda u: self.units[u].index)),
+            # a unit only gets away from pursuers in a step it moved, so every one that escaped has fled
+            flights=tuple(Flight(uid, fled[uid], tuple(escaped.get(uid, ())))
+                          for uid in sorted(fled, key=lambda u: self.units[u].index)),
         )
         self.history.append(report)
         return report

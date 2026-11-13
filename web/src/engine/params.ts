@@ -577,6 +577,61 @@ export class RangeParams {
 }
 
 // =============================================================================
+// Flight
+// =============================================================================
+
+const LN2 = 0.6931471805599453;
+
+export interface FlightData {
+  speed: Record<string, number>;
+  half_life: number;
+  step_minutes: number;
+  safe_distance: number;
+  field: { width: number; height: number };
+}
+
+export interface FlightParams extends Readonly<FlightData> {}
+
+/** Broken units fleeing: speeds, how fast they slow, when they stop (config/flight.yaml). */
+export class FlightParams {
+  constructor(data: FlightData) {
+    if (!isObject(data.speed) || !sameKeys(data.speed, UNIT_TYPES)) {
+      throw new ValueError(`speed needs exactly ${UNIT_TYPES.join(', ')}.`);
+    }
+    if (Object.values(data.speed).some((v) => !(v >= 0))) throw new ValueError('speed must be >= 0.');
+    for (const name of ['half_life', 'step_minutes'] as const) {
+      if (!(data[name] > 0)) throw new ValueError(`${name} must be > 0.`);
+    }
+    if (!(data.safe_distance >= 0)) throw new ValueError('safe_distance must be >= 0.');
+    if (!isObject(data.field) || !sameKeys(data.field, ['width', 'height'])
+      || Object.values(data.field).some((v) => !(v > 0))) {
+      throw new ValueError('field needs a width and a height > 0 (yards).');
+    }
+    Object.assign(this, structuredClone(data));
+    Object.freeze(this);
+  }
+
+  private decay(minutes: number): number {
+    return exp(-minutes * LN2 / this.half_life);
+  }
+
+  /** Yards per minute `minutes` after breaking. */
+  speedAt(unitType: string, minutes: number): number {
+    return this.speed[unitType] * this.decay(minutes);
+  }
+
+  /** Yards covered between `since` and `until` minutes after breaking. */
+  fled(unitType: string, since: number, until: number): number {
+    const reach = this.speed[unitType] * this.half_life / LN2;
+    return reach * (this.decay(since) - this.decay(until));
+  }
+
+  toDict(): FlightData {
+    return structuredClone({ ...this });
+  }
+}
+
+// =============================================================================
 // Facing and flanks
 // =============================================================================
 
@@ -682,12 +737,13 @@ export interface ParamsData {
   rally: RallyData;
   range: RangeData;
   flanks: FlankData;
+  flight: FlightData;
 }
 
 /** Nested partial params, e.g. `{ combat: { ranged_kill_rate: 0.005 } }`. */
 export type Overrides = Record<string, Record<string, unknown>>;
 
-const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range', 'flanks'] as const;
+const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range', 'flanks', 'flight'] as const;
 
 function deepMerge(base: Record<string, unknown>, changes: Record<string, unknown>): Record<string, unknown> {
   const merged = { ...base };
@@ -732,6 +788,7 @@ export class BattleParams {
   readonly rally: RallyParams;
   readonly range: RangeParams;
   readonly flanks: FlankParams;
+  readonly flight: FlightParams;
   private static cached: BattleParams | null = null;
 
   constructor(data: ParamsData) {
@@ -743,6 +800,7 @@ export class BattleParams {
     this.rally = new RallyParams(data.rally);
     this.range = new RangeParams(data.range);
     this.flanks = new FlankParams(data.flanks);
+    this.flight = new FlightParams(data.flight);
     if (!sameKeys(this.range.artillery, Object.keys(this.combat.artillery_ammo))) {
       throw new ValueError(`range.artillery needs every ammo: ${Object.keys(this.combat.artillery_ammo).sort().join(', ')}.`);
     }
@@ -784,6 +842,7 @@ export class BattleParams {
       rally: this.rally.toDict(),
       range: this.range.toDict(),
       flanks: this.flanks.toDict(),
+      flight: this.flight.toDict(),
     };
   }
 

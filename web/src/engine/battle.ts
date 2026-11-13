@@ -109,6 +109,13 @@ export interface Charge {
   p_home: number | null;
 }
 
+/** How far a broken unit fled in a round (yards), and the pursuers it got away from. */
+export interface Flight {
+  unit: string;
+  distance: number;
+  escaped_from: string[];
+}
+
 /** A firing unit switched target (on_break 'strongest' / 'weakest') when its target broke or was wiped out. */
 export interface Retarget {
   unit: string;
@@ -163,6 +170,8 @@ export interface RoundReport {
   side_modifiers: Record<string, Modifier>;
   /** Tries to rally this round. */
   rallies: Rally[];
+  /** Broken units that fled this round. */
+  flights: Flight[];
 }
 
 /** An admin's modifiers for one unit and one round: fractions from -1 to 1 (-0.15 is -15%), and a note. */
@@ -268,6 +277,7 @@ export class BattleUnit {
   gunsLost = 0;
   rallyAttempts = 0; // tries to rally so far
   rallied = false; // has rallied (once per battle): fights on less effectively, more exposed
+  brokeTime: number | null = null; // game minute it last broke (it flees from then on); null while standing
 
   constructor(
     readonly uid: string,
@@ -453,6 +463,7 @@ export class Battle {
       const rallied = this.rng.random() < chance;
       if (rallied) {
         unit.rallied = true;
+        unit.brokeTime = null;
         unit.morale.rally(rally.resolve);
         this.sync([uid]);
       }
@@ -525,6 +536,80 @@ export class Battle {
     return z === 'flank' || z === 'rear' ? table[z] : 1.0;
   }
 
+  /** Broken, not wiped out, placed, and its break time known: it flees. */
+  private fleeing(unit: BattleUnit): boolean {
+    return unit.morale.broken && unit.size > 0 && unit.brokeTime !== null && unit.regiment.position !== null;
+  }
+
+  /** Is the fugitive fleeing faster at time `t` than the pursuer can charge? */
+  private outrun(fugitive: BattleUnit, pursuer: BattleUnit, t: number): boolean {
+    if (!this.fleeing(fugitive)) return false;
+    const speed = this.params.flight.speedAt(fugitive.key[0], t - fugitive.brokeTime!);
+    return this.params.charge.speed[pursuer.key[0]] < speed;
+  }
+
+  /**
+   * Move every fleeing unit for the time from `since` to `t` (see the Python engine's _flee): away from the
+   * nearest standing enemy unless it is safe, kept on the field; pursuers fast enough move along, slower ones lose
+   * contact. Returns whether anything moved.
+   */
+  private flee(since: number, t: number, contacts: Set<string>, cancelled: Set<string>, fled: Map<string, number>,
+    escaped: Map<string, string[]>): boolean {
+    const fp = this.params.flight;
+    const { width, height } = fp.field;
+    const inOrder = [...this.units.values()].sort((a, b) => a.index - b.index);
+    let moved = false;
+    const place = (unit: BattleUnit, x: number, y: number) => {
+      const p = unit.regiment.position!;
+      unit.regiment.position = { ...p, x: Math.min(width, Math.max(0.0, x)), y: Math.min(height, Math.max(0.0, y)) };
+    };
+    for (const unit of inOrder) {
+      if (!this.fleeing(unit)) continue;
+      let nearest: BattleUnit | null = null;
+      let best = Infinity;
+      for (const enemy of inOrder) {
+        if (enemy.side !== unit.side && enemy.active && enemy.regiment.position !== null) {
+          const d = this.distance(unit.uid, enemy.uid)!;
+          if (d < best) {
+            nearest = enemy;
+            best = d;
+          }
+        }
+      }
+      if (nearest === null || best > fp.safe_distance) continue;
+      const a = Math.max(since, unit.brokeTime!) - unit.brokeTime!;
+      const b = t - unit.brokeTime!;
+      const p = unit.regiment.position!;
+      const q = nearest.regiment.position!;
+      const [ux, uy] = best === 0 ? [0.0, unit.side === 0 ? 1.0 : -1.0] : [(p.x - q.x) / best, (p.y - q.y) / best];
+      const dist = fp.fled(unit.key[0], a, b);
+      place(unit, p.x + ux * dist, p.y + uy * dist);
+      const n = unit.regiment.position!;
+      const dx = n.x - p.x;
+      const dy = n.y - p.y;
+      const step = Math.sqrt(dx * dx + dy * dy);
+      if (step === 0) continue;
+      moved = true;
+      fled.set(unit.uid, (fled.get(unit.uid) ?? 0.0) + step);
+      const speed = fp.speedAt(unit.key[0], a);
+      const chasers = [...contacts].map(pairOf).filter((pair) => pair.includes(unit.uid))
+        .map((pair) => (pair[0] === unit.uid ? pair[1] : pair[0])).sort(this.byIndex);
+      for (const uid of chasers) {
+        const chaser = this.unit(uid);
+        if (this.params.charge.speed[chaser.key[0]] >= speed) {
+          const c = chaser.regiment.position;
+          if (c !== null) place(chaser, c.x + dx, c.y + dy);
+        } else {
+          contacts.delete(pairKey(unit.uid, uid));
+          cancelled.add(uid);
+          if (!escaped.has(unit.uid)) escaped.set(unit.uid, []);
+          escaped.get(unit.uid)!.push(uid);
+        }
+      }
+    }
+    return moved;
+  }
+
   /** Has firearms (the stats melee-only flag decides, not the subtype). */
   private canFire(unit: BattleUnit): boolean {
     return this.params.combat.unitCoef(unit.regiment.stats, 'ranged') > 0;
@@ -553,6 +638,10 @@ export class Battle {
       seen.add(pair);
       const target = this.unit(order.target!);
       if (!target.active) {
+        if (this.outrun(target, this.unit(uid), start)) {
+          immediate.push(charge(uid, order.target!, start, start, 'escaped'));
+          continue;
+        }
         contacts.add(pair);
         immediate.push(charge(uid, order.target!, start, start, 'pursuit'));
         continue;
@@ -731,6 +820,7 @@ export class Battle {
     for (const uid of candidates) {
       if (!brokeAt.has(uid) && !this.brokenBeforeRound.has(uid) && this.unit(uid).morale.broken) {
         brokeAt.set(uid, t);
+        this.unit(uid).brokeTime = t;
         gone.add(uid);
       }
     }
@@ -851,7 +941,11 @@ export class Battle {
     const retargets: Retarget[] = [];
     let [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
     const opening = this.rates(slots, partners).map(engagement);
-    const exposure = new Map<string, number>(); // victim + attacker -> morale cost multiplier; positions are fixed
+    const exposure = new Map<string, number>(); // victim + attacker -> morale cost multiplier, until anyone moves
+    const fled = new Map<string, number>(); // yards fled this round
+    const escaped = new Map<string, string[]>(); // pursuers each fugitive got away from this round
+    let lastMove = start;
+    const step = this.params.flight.step_minutes;
     const exposed = (victim: string, attacker: string): number => {
       const key = victim + SEP + attacker;
       if (!exposure.has(key)) exposure.set(key, this.flankOf(victim, attacker, this.params.flanks.shock));
@@ -914,8 +1008,10 @@ export class Battle {
         engaged.add(targetId);
       }
 
-      // the next scheduled moment: the round's end, or the end of an approach
-      const horizon = Math.min(end, ...pending.map((c) => c.end));
+      // the next scheduled moment: the round's end, the end of an approach, or a flight step
+      let horizon = Math.min(end, ...pending.map((c) => c.end));
+      const fleeing = [...this.units.values()].some((u) => this.fleeing(u));
+      if (fleeing) horizon = Math.min(horizon, start + step * (Math.floor((t - start) / step) + 1));
       const dt = totalRate > 0 ? this.rng.exponential(totalRate) : null;
       if (dt === null || t + dt >= horizon) {
         this.advance(horizon - t, engaged);
@@ -956,7 +1052,13 @@ export class Battle {
           }
           if (gone.size) standDown(gone, t);
         }
-        if (gone.size || due.length) [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
+        let moved = false;
+        if (fleeing) {
+          moved = this.flee(lastMove, t, contacts, cancelled, fled, escaped);
+          lastMove = t;
+          if (moved) exposure.clear();
+        }
+        if (gone.size || due.length || moved) [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
         continue;
       }
 
@@ -1035,6 +1137,9 @@ export class Battle {
       modifiers: checked,
       side_modifiers: structuredClone(this.sideModifiers),
       rallies,
+      // a unit only gets away from pursuers in a step it moved, so every one that escaped has fled
+      flights: [...fled.keys()].sort(this.byIndex)
+        .map((uid) => ({ unit: uid, distance: fled.get(uid)!, escaped_from: [...(escaped.get(uid) ?? [])] })),
     };
     this.history.push(report);
     return report;

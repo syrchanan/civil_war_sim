@@ -1,11 +1,11 @@
 /** How the client words a battle: the same phrases as the Python CLI (python/imperial_generals/cli.py). */
 
-import type { BattleResult, Charge, Modifier, Rally, Zone } from '../engine';
+import type { BattleResult, Charge, Flight, Modifier, Rally, Zone } from '../engine';
 
 export const CHARGE_OUTCOMES: Record<string, string> = {
   home: 'went home', faltered: 'faltered', defender_broke: 'broke the defender before contact',
   meeting: 'met head on', pursuit: 'pursuit', charger_broke: 'charger broke on the approach',
-  target_broke: 'target broke before contact',
+  target_broke: 'target broke before contact', escaped: 'the target fled too fast to catch',
 };
 
 /** An admin's modifiers in words: 'fire -15%, morale +10% (uphill)'; only what is set. */
@@ -54,6 +54,14 @@ export function rangeText(r: { distance: number; reach: number; inArc: boolean; 
   if (!r.inArc) return `${yards}, outside its front arc`;
   const effect = r.reach === 0 ? 'out of range' : r.reach === 1 ? 'full effect' : `${pct(r.reach)} effect`;
   return `${yards}, ${effect}${r.reach > 0 && r.zone !== null ? ZONE_WORDS[r.zone] ?? '' : ''}`;
+}
+
+/** '8th Alabama fled 642 yd' / '..., getting away from 1st Minnesota and Battery B'. */
+export function flightText(f: Flight, name: (uid: string) => string): string {
+  const away = f.escaped_from.map(name);
+  const from = away.length === 0 ? '' : `, getting away from ${away.length === 1 ? away[0]
+    : `${away.slice(0, -1).join(', ')} and ${away[away.length - 1]}`}`;
+  return `${name(f.unit)} fled ${Math.round(f.distance)} yd${from}`;
 }
 
 /** 'wiped out', 'broke at 34 min', 'broken', plus guns lost. */

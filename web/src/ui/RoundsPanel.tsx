@@ -1,7 +1,7 @@
 /** Every round fought so far: per unit losses, inflicted, men left, morale and breaks; charges and target switches. */
 
 import type { RoundReport } from '../engine';
-import { chargeText, modifierText, rallyText, status } from './format';
+import { chargeText, flightText, modifierText, rallyText, status } from './format';
 import type { Store } from './store';
 import { StrengthCharts } from './StrengthCharts';
 
@@ -51,6 +51,11 @@ function Round({ store, report, open }: { store: Store; report: RoundReport; ope
       {Object.keys(report.modifiers).length > 0 && (
         <ul aria-label={`Round ${report.round} modifiers`}>
           {Object.entries(report.modifiers).map(([uid, m]) => <li>{name(uid)}: {modifierText(m)}</li>)}
+        </ul>
+      )}
+      {report.flights.length > 0 && (
+        <ul aria-label={`Round ${report.round} flights`}>
+          {report.flights.map((f) => <li>{flightText(f, name)}</li>)}
         </ul>
       )}
       {report.rallies.length > 0 && (
