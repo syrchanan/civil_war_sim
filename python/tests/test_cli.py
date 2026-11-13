@@ -574,6 +574,22 @@ def test_side_summary_shows_who_won(files, capsys):
     assert result.split()[1:] == ['won', 'lost']
 
 
+def test_side_summary_shows_the_verdict_and_the_commanders_rating(files, capsys):
+    from imperial_generals import commanders
+    new(capsys, files)
+    run(capsys, 'resolve', files / 'state.json', '--duration', 90, '--orders', files / 'orders.yaml')
+    _, out, _ = run(capsys, 'finish', files / 'state.json', '--field', 'Union')
+    state = read(files / 'state.json')
+    verdicts = [s['verdict'] for s in api.side_summary(state)]
+    line = [line for line in out.splitlines() if line.startswith('Verdict')][0]
+    assert verdicts[0] in line and verdicts[1] in line
+    union, confed = commanders.ratings(state)
+    line = [line for line in out.splitlines() if line.startswith('Expected share / result')][0]
+    assert f"{union['expected']:.0%} / {union['result']:.0%}" in line
+    line = [line for line in out.splitlines() if line.startswith('Commander rated as')][0]
+    assert union['general']['name'] in line and confed['general']['name'] in line
+
+
 def test_scenario_from_state_writes_a_scenario_that_replays_it(files, capsys):
     new(capsys, files)
     run(capsys, 'resolve', files / 'state.json', '--duration', 90, '--orders', files / 'orders.yaml')

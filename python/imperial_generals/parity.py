@@ -337,14 +337,16 @@ def battles_fixture() -> dict:
 
 
 def summaries_fixture() -> dict:
-    from imperial_generals import api
+    from imperial_generals import api, commanders
     cases = []
     for case in battles_fixture()['cases']:
         final = case['final']
+        done = final['result'] is not None
         cases.append({'name': case['name'], 'seed': case['seed'], 'order_of_battle': api.order_of_battle(final),
-                      'side_summary': api.side_summary(final) if final['result'] is not None else None})
-    return {'description': "api.order_of_battle and api.side_summary (finished battles only) of each battle in "
-                           "battles.json, from its 'final' state.",
+                      'side_summary': api.side_summary(final) if done else None,
+                      'commanders': commanders.ratings(final) if done else None})
+    return {'description': "api.order_of_battle, api.side_summary and commanders.ratings (finished battles only) "
+                           "of each battle in battles.json, from its 'final' state.",
             'cases': cases}
 
 
@@ -371,6 +373,7 @@ def defaults() -> dict:
         'unit_subtypes': {unit_type: sorted(subtypes) for unit_type, subtypes in UNIT_SUBTYPES.items()},
         'artillery': dict(cfg['artillery']),
         'names': {k: dict(cfg['sheets'][k]) for k in ('weapons', 'artillery_weapons', 'actions', 'ammo')},
+        'commanders': cfg['commanders'],
     }
 
 
