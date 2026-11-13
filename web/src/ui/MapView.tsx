@@ -4,13 +4,15 @@
  * the arrow keys, to place it before the battle or move it between rounds; drag the handle in front of it, or use
  * Q and E, to turn it. In battle, click a unit (or select it and press Enter), then an enemy, and confirm fire or
  * charge to give it that target. Once rounds are fought, any round can be replayed as it began: where units stood, their
- * men and the orders given. Display only: the engine ignores positions and facings.
+ * men and the orders given. The selected unit's front arc is drawn out to its range; what else the map shows (NATO
+ * symbols, labels, all arcs, arrows, grid) is chosen in the layers panel (mapLayers.ts).
  */
 
 import { useEffect, useRef } from 'preact/hooks';
 
 import defaults from '../engine/defaults.json';
-import { bearing, FIELD, type Point, turned } from './field';
+import { arcPath, bearing, FIELD, type Point, turned } from './field';
+import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
 
 /** Engine mode -> action word, capitalised (config/sheets.yaml: fire, charge). */
@@ -64,8 +66,45 @@ function TargetMenu({ store, choice, at }: { store: Store; choice: TargetChoice;
   );
 }
 
+/** The front arc of a unit: a wedge out to its maximum range, the stretch within close range shaded darker. */
+function FrontArc({ store, uid, side }: { store: Store; uid: string; side: number }) {
+  const arc = store.arcOf(uid);
+  if (arc === null) return null;
+  return (
+    <g class={`front-arc side-${side}`}>
+      <path class="max-zone" d={arcPath(arc, arc.facing, arc.half, arc.max)} />
+      {arc.close > 0 && <path class="close-zone" d={arcPath(arc, arc.facing, arc.half, arc.close)} />}
+    </g>
+  );
+}
+
+const SYMBOL = { width: 60, height: 40 }; // yards: drawn upright over the block, the same size for every unit
+const ECHELON = 14; // yards the echelon bars rise above the symbol's frame
+
+/** A NATO-style symbol: the frame in the side's colour, the arm inside, the echelon bars above. */
+function NatoSymbol({ type }: { type: string | null }) {
+  const { arm, echelon } = natoSymbol(type);
+  const w = SYMBOL.width / 2;
+  const h = SYMBOL.height / 2;
+  return (
+    <g class={`nato ${arm}`}>
+      <rect class="nato-frame" x={-w} y={-h} width={SYMBOL.width} height={SYMBOL.height} />
+      {arm !== 'artillery' && <line class="nato-arm" x1={-w} y1={h} x2={w} y2={-h} />}
+      {arm === 'infantry' && <line class="nato-arm" x1={-w} y1={-h} x2={w} y2={h} />}
+      {arm === 'artillery' && <circle class="nato-dot" r={h / 3} />}
+      <g class="echelon">
+        {Array.from({ length: echelon }, (_, i) => {
+          const x = (i - (echelon - 1) / 2) * 8;
+          return <line x1={x} x2={x} y1={-h - 4} y2={-h - ECHELON} />;
+        })}
+      </g>
+    </g>
+  );
+}
+
 function Block({ store, unit, movable, selectable, aim }:
   { store: Store; unit: MapUnit; movable: boolean; selectable: boolean; aim: '' | ' aiming' | ' can-target' }) {
+  const layers = store.layers.value;
   const grab = useRef<Point | null>(null);
   const dragged = useRef(false); // a drag ends in a click, which is not a click on the unit
   const turning = useRef(false);
@@ -73,11 +112,18 @@ function Block({ store, unit, movable, selectable, aim }:
   const men = `${unit.rough ? 'about ' : ''}${unit.men.toLocaleString('en-US')}`;
   const label = `${unit.name}, ${men} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°`;
   // two text lines (name, men): below the block for side 0, above it for side 1
-  const labelY = unit.side === 0 ? unit.depth / 2 + 30 : -unit.depth / 2 - 36;
+  // labels and the turn handle stay clear of the symbol (drawn upright, echelon bars on top) when it is shown
+  const below = Math.max(unit.depth / 2, layers.symbols ? SYMBOL.height / 2 : 0);
+  const above = Math.max(unit.depth / 2, layers.symbols ? SYMBOL.height / 2 + ECHELON : 0);
+  const labelY = unit.side === 0 ? below + 30 : -above - 36;
+  // the handle turns with the block: out past the symbol's corner whichever way it faces
+  const handle = layers.symbols ? Math.max(unit.depth / 2, Math.hypot(SYMBOL.width / 2, SYMBOL.height / 2 + ECHELON))
+    : unit.depth / 2;
   return (
     <g class={`map-unit side-${unit.side}${unit.broken ? ' broken' : ''}${unit.wiped ? ' wiped' : ''}${aim}`}
       transform={`translate(${unit.x} ${unit.y})`} role="button" aria-label={label}
       tabindex={movable || selectable ? 0 : undefined}
+      onFocus={() => store.selectUnit(unit.uid)}
       onClick={() => {
         if (dragged.current) dragged.current = false;
         else store.clickUnit(unit.uid);
@@ -103,6 +149,7 @@ function Block({ store, unit, movable, selectable, aim }:
         }
         if (e.key === 'Escape') {
           store.cancelTargeting();
+          store.selectUnit(null);
           return;
         }
         const step = e.shiftKey ? 50 : 10;
@@ -126,7 +173,7 @@ function Block({ store, unit, movable, selectable, aim }:
           </>
         )}
         {movable && (
-          <circle class="turn-handle" cx="0" cy={-unit.depth / 2 - HANDLE_GAP} r="8"
+          <circle class="turn-handle" cx="0" cy={-handle - HANDLE_GAP} r="8"
             onPointerDown={(e) => {
               e.stopPropagation(); // turning, not moving
               turning.current = true;
@@ -139,11 +186,39 @@ function Block({ store, unit, movable, selectable, aim }:
             onPointerUp={() => { turning.current = false; }} />
         )}
       </g>
-      <text y={labelY} text-anchor="middle">
-        <tspan class="unit-name">{unit.name}</tspan>
-        <tspan class="unit-men" x="0" dy="1.1em">{men}</tspan>
-      </text>
+      {layers.symbols && <NatoSymbol type={unit.type} />}
+      {layers.labels && (
+        <text y={labelY} text-anchor="middle">
+          <tspan class="unit-name">{unit.name}</tspan>
+          <tspan class="unit-men" x="0" dy="1.1em">{men}</tspan>
+        </text>
+      )}
     </g>
+  );
+}
+
+/** The layers panel: one checkbox per layer, grouped; one place for every map option. */
+function LayersPanel({ store }: { store: Store }) {
+  const layers = store.layers.value;
+  const groups = [...new Set(LAYERS.map((l) => l.group))];
+  return (
+    <details class="map-layers">
+      <summary>Map layers</summary>
+      <div role="group" aria-label="Map layers" class="layer-groups">
+        {groups.map((group) => (
+          <fieldset>
+            <legend>{group}</legend>
+            {LAYERS.filter((l) => l.group === group).map((l) => (
+              <label>
+                <input type="checkbox" checked={layers[l.key]}
+                  onChange={(e) => store.setLayer(l.key, e.currentTarget.checked)} />
+                {' '}{l.label}
+              </label>
+            ))}
+          </fieldset>
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -164,8 +239,13 @@ export function MapView({ store }: { store: Store }) {
   const choice = store.targetChoice.value;
   const gridX = Array.from({ length: FIELD.width / GRID - 1 }, (_, i) => (i + 1) * GRID);
   const gridY = Array.from({ length: FIELD.height / GRID - 1 }, (_, i) => (i + 1) * GRID);
+  const layers = store.layers.value;
+  const focused = store.focusedUnit.value;
+  const arcs = layers.allArcs ? units.filter((u) => !u.wiped).map((u) => u.uid)
+    : focused !== null && byId[focused] !== undefined ? [focused] : [];
   return (
     <div class="map">
+      <LayersPanel store={store} />
       {store.replayRounds.value.length > 0 && (
         <label class="map-replay">
           Show on the map{' '}
@@ -195,13 +275,17 @@ export function MapView({ store }: { store: Store }) {
               ))}
             </defs>
             <rect class="field" width={FIELD.width} height={FIELD.height} />
-            {gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
-            {gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
-            <g class="scale-bar" transform={`translate(40 ${FIELD.height - 40})`}>
-              <line x1={0} x2={SCALE_BAR} y1={0} y2={0} />
-              <text x={SCALE_BAR / 2} y={-12} text-anchor="middle">{SCALE_BAR} yards</text>
-            </g>
-            {store.orderArrows.value.map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} />)}
+            {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
+            {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
+            {layers.scale && (
+              <g class="scale-bar" transform={`translate(40 ${FIELD.height - 40})`}>
+                <line x1={0} x2={SCALE_BAR} y1={0} y2={0} />
+                <text x={SCALE_BAR / 2} y={-12} text-anchor="middle">{SCALE_BAR} yards</text>
+              </g>
+            )}
+            {arcs.map((uid) => <FrontArc store={store} uid={uid} side={byId[uid].side} />)}
+            {layers.arrows && store.orderArrows.value
+              .map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} />)}
             {units.map((u) => (
               <Block key={u.uid} store={store} unit={u} movable={canMove(u)} selectable={selectable} aim={aimOf(u.uid)} />
             ))}
@@ -219,7 +303,8 @@ export function MapView({ store }: { store: Store }) {
           ? 'Drag a unit, or select it and use the arrow keys, to place it; drag the handle in front of it, or use '
             + 'Q and E, to turn it (Shift for bigger steps). '
           : ''}
-        Positions are for the picture only: the engine doesn't use distance, facing, cover or elevation yet.
+        In battle, fire falls off with distance and a unit fires only within its front arc (drawn for the selected
+        unit, out to its range: darker where fire tells in full); flank and rear attacks hit harder.
         <span class="phone-only"> On a small screen, scroll the map sideways.</span>
       </p>
     </div>

@@ -94,3 +94,23 @@ export const turned = (facing: number, by: number): number => (((facing + by) % 
 /** The facing that points from one point towards another, in whole degrees. */
 export const bearing = (from: Point, to: Point): number =>
   turned(Math.round((Math.atan2(to.x - from.x, from.y - to.y) * 180) / Math.PI), 0);
+
+const tenth = (v: number): number => Math.round(v * 10) / 10 + 0; // + 0: no '-0'
+
+/**
+ * An SVG path for a unit's front arc: a wedge from `at`, centred on `facing` (compass degrees), `half` degrees
+ * either side, out to `radius` yards. A full turn is a circle.
+ */
+export function arcPath(at: Point, facing: number, half: number, radius: number): string {
+  const r = tenth(radius);
+  if (half >= 180) {
+    return `M${tenth(at.x - radius)} ${tenth(at.y)} A${r} ${r} 0 1 1 ${tenth(at.x + radius)} ${tenth(at.y)} `
+      + `A${r} ${r} 0 1 1 ${tenth(at.x - radius)} ${tenth(at.y)} Z`;
+  }
+  const corner = (deg: number) => {
+    const rad = (deg * Math.PI) / 180;
+    return `${tenth(at.x + Math.sin(rad) * radius)} ${tenth(at.y - Math.cos(rad) * radius)}`;
+  };
+  return `M${tenth(at.x)} ${tenth(at.y)} L${corner(facing - half)} A${r} ${r} 0 ${half > 90 ? 1 : 0} 1 `
+    + `${corner(facing + half)} Z`;
+}
