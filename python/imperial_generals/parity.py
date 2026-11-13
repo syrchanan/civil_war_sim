@@ -259,6 +259,24 @@ SYNTHETIC = {
         ],
         'finish': 0,
     },
+    'rally': {
+        # weak units break early, then try to rally (two tries each); seeds differ in who rallies
+        'params': {'rally': {'attempts': 2, 'chance_min': 0.3, 'chance_max': 0.9, 'resolve': 0.4}},
+        'units': [_u('r_weak', 0, 'inf', 'line', 500, '2/2/0/0'), _u('r_cav', 0, 'cav', 'light', 250, '4/3/0/1'),
+                  _u('r_line', 0, 'inf', 'line', 700, '6/6/0/0'),
+                  _u('e_big', 1, 'inf', 'line', 2000, '8/8/1/0'), _u('e_bat', 1, 'art', 'battery', 72, '6/6/0/0', guns=8)],
+        'rounds': [
+            {'duration': 90, 'orders': {'r_weak': _fire('e_big'), 'r_cav': _melee('e_bat'), 'r_line': _fire('e_big'),
+                                        'e_big': _fire('r_weak', on_break='weakest'), 'e_bat': _fire('r_cav', ammo='canister')}},
+            {'duration': 30, 'orders': {'r_weak': {'mode': 'rally'}, 'r_cav': {'mode': 'rally'},
+                                        'r_line': _fire('e_bat'), 'e_big': _fire('r_line'), 'e_bat': _fire('r_weak')}},
+            {'duration': 30, 'orders': {'r_weak': {'mode': 'rally'}, 'r_cav': {'mode': 'rally'},
+                                        'r_line': _fire('e_bat'), 'e_big': _fire('r_cav'), 'e_bat': _fire('r_weak')}},
+            {'duration': 60, 'orders': {'r_weak': _fire('e_big'), 'r_cav': _melee('e_bat'), 'r_line': _melee('e_big'),
+                                        'e_big': _fire('r_weak'), 'e_bat': _fire('r_cav', ammo='canister')}},
+        ],
+        'finish': True,
+    },
     'broken_on_approach': {
         'units': [_u('s1', 0, 'inf', 'line', 3000, '9/9/2/0'), _u('s2', 0, 'inf', 'line', 3000, '9/9/2/0'),
                   _u('slow', 0, 'inf', 'line', 500, '5/5/0/0'), _u('weak', 1, 'inf', 'irregulars', 200, '1/1/-1/0'),

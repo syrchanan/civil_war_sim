@@ -1,0 +1,28 @@
+# =============================================================================
+# RALLY (roadmap Phase C: rally override for broken units)
+# A player can order a broken unit to rally. One roll at the start of the round decides; the unit does nothing
+# else that round. If it works, the unit fights again from the next round, with a small morale budget, hitting
+# less hard and taking more casualties. It can break (and be routed) again.
+# First-guess numbers, untuned (tuning is held until positions arrive).
+# =============================================================================
+rally:
+
+  # Tries per battle; a unit rallies at most once, however many tries are left.
+  attempts: 1
+
+  # Chance the rally works:
+  #   w = experience_weight·(xp−1)/9 + (1−experience_weight)·(morale−1)/9     (starting stats, 1–10)
+  #   chance = (chance_min + (chance_max − chance_min)·w) × (men left / starting men)^men_exponent
+  # A 5/5 unit with 70% of its men: ~29%. An 8/8 unit with 75%: ~46%. A 2/2 unit with 60%: ~13%.
+  chance_min: 0.15
+  chance_max: 0.75
+  experience_weight: 0.5
+  men_exponent: 1.0
+
+  # Share of its morale budget a rallied unit starts again with (1 = fresh).
+  resolve: 0.3
+
+  # For the rest of the battle, casualties a rallied unit inflicts (fire and melee) are multiplied by
+  # effectiveness, and casualties it takes by exposure.
+  effectiveness: 0.75
+  exposure: 1.25

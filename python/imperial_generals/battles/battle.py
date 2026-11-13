@@ -32,7 +32,7 @@ from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
 
-MODES = frozenset({'idle', 'ranged', 'melee'})
+MODES = frozenset({'idle', 'ranged', 'melee', 'rally'})
 ORDER_KEYS = frozenset({'target', 'mode', 'ammo', 'on_break'})
 # What a unit does when its target breaks, by mode; the first is the default.
 ON_BREAK = {'ranged': ('keep', 'strongest', 'weakest'), 'melee': ('fall_back', 'pursue')}
@@ -43,6 +43,9 @@ class Order:
     """
     One regiment's order for a round: whom it targets and how. Artillery may name its ``ammo`` (e.g. 'round_shot',
     'shell', 'canister'); it is fixed for the round, and defaults to ``artillery_default_ammo``.
+
+    A 'rally' order (no target) is for a broken unit: a roll at the start of the round decides whether it rallies
+    (see ``RallyParams``).
 
     ``on_break`` says what the unit does when its target breaks (or is wiped out) during the round:
     - fire: 'keep' (default) firing on the broken unit; or switch to the 'strongest' / 'weakest' active enemy unit
@@ -58,15 +61,15 @@ class Order:
     def __post_init__(self) -> None:
         if self.mode not in MODES:
             raise ValueError(f"mode must be one of {sorted(MODES)}, got {self.mode!r}.")
-        if self.mode == 'idle' and self.target is not None:
-            raise ValueError("An idle order has no target.")
-        if self.mode != 'idle' and self.target is None:
+        if self.mode in ('idle', 'rally') and self.target is not None:
+            raise ValueError(f"A{'n' if self.mode == 'idle' else ''} {self.mode} order has no target.")
+        if self.mode not in ('idle', 'rally') and self.target is None:
             raise ValueError(f"A {self.mode} order needs a target.")
         if self.ammo is not None and self.mode != 'ranged':
             raise ValueError("Only a ranged order can choose ammo.")
-        if self.mode == 'idle':
+        if self.mode in ('idle', 'rally'):
             if self.on_break is not None:
-                raise ValueError("An idle order has no on_break.")
+                raise ValueError(f"A{'n' if self.mode == 'idle' else ''} {self.mode} order has no on_break.")
         elif self.on_break is None:
             object.__setattr__(self, 'on_break', ON_BREAK[self.mode][0])
         elif self.on_break not in ON_BREAK[self.mode]:
@@ -124,6 +127,15 @@ class Retarget:
     old_target: str
     new_target: str
     time: float
+
+
+@dataclass(frozen=True)
+class Rally:
+    """A broken unit's try to rally at the start of a round, and whether it worked (at what chance)."""
+
+    unit: str
+    rallied: bool
+    chance: float
 
 
 MODIFIER_KEYS = ('fire', 'melee', 'morale')
@@ -227,6 +239,7 @@ class RoundReport:
     positions: dict = field(default_factory=dict)   # uid -> position (as saved) as the round began, for placed units
     modifiers: dict = field(default_factory=dict)   # uid -> admin modifiers for this round (fire, melee, morale, note)
     side_modifiers: dict = field(default_factory=dict)   # side -> the side modifiers in force this round
+    rallies: tuple = ()         # Rally per try to rally this round
 
 
 @dataclass(frozen=True)
@@ -271,6 +284,8 @@ class BattleUnit:
     inflicted: int = 0
     captured: int = 0
     guns_lost: int = 0
+    rally_attempts: int = 0     # tries to rally so far
+    rallied: bool = False       # has rallied (once per battle): fights on less effectively, more exposed
 
     @property
     def size(self) -> int:
@@ -378,6 +393,12 @@ class Battle:
             if order.mode == 'idle':
                 continue
             unit = self.units[uid]
+            if order.mode == 'rally':
+                problem = self.rally_problem(uid)
+                if problem is not None:
+                    raise ValueError(f"{uid!r} {problem}.")
+                valid[uid] = order
+                continue
             if not unit.active:
                 raise ValueError(f"{uid!r} is broken or wiped out and can't act.")
             if order.target not in self.units:
@@ -395,6 +416,36 @@ class Battle:
                                      f"one of {sorted(self.params.combat.artillery_ammo)}.")
             valid[uid] = order
         return valid
+
+    def rally_problem(self, uid: str) -> str | None:
+        """Why this unit can't try to rally now ('isn't broken', ...), or None if it can."""
+        unit = self.units[uid]
+        if unit.size == 0:
+            return 'is wiped out'
+        if not unit.morale.broken:
+            return "isn't broken"
+        if unit.rallied:
+            return 'has already rallied once'
+        if unit.rally_attempts >= self.params.rally.attempts:
+            return 'has no rally attempts left'
+        return None
+
+    def _rally(self, orders: dict[str, Order]) -> tuple:
+        """Roll each rally order, in unit order (one draw each): the Rally records."""
+        rally = self.params.rally
+        rallies = []
+        for uid in sorted((u for u, o in orders.items() if o.mode == 'rally'), key=lambda u: self.units[u].index):
+            unit = self.units[uid]
+            xp, morale_stat = unit.initial_stats[0], unit.initial_stats[1]
+            chance = rally.chance(xp, morale_stat, unit.size / unit.initial_size)
+            unit.rally_attempts += 1
+            rallied = self.rng.random() < chance
+            if rallied:
+                unit.rallied = True
+                unit.morale.rally(rally.resolve)
+                self._sync([uid])
+            rallies.append(Rally(uid, rallied, chance))
+        return tuple(rallies)
 
     def _can_fire(self, unit: BattleUnit) -> bool:
         """Has firearms (the stats melee-only flag decides, not the subtype)."""
@@ -540,6 +591,10 @@ class Battle:
                 rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))
             if mode == 'closing':
                 rate = rate * closing * share
+            if unit.rallied:
+                rate = rate * self.params.rally.effectiveness
+            if units[target].rallied:
+                rate = rate * self.params.rally.exposure
             if units[target].morale.broken:
                 # a broken unit scatters: harder to hit by fire, and by pursuit
                 rate = rate * (combat.broken_melee_multiplier if mode == 'melee' else combat.broken_fire_multiplier)
@@ -654,7 +709,9 @@ class Battle:
         a melee order on the other. When a unit breaks or is wiped out, the units targeting it stand down for the
         rest of the round. A unit that breaks loses a share of its remaining men as prisoners (more if enemy cavalry
         is attacking it). Broken units can be attacked (pursued) but don't fight back; they are scattering, so
-        fire and pursuit on them use ``broken_fire_multiplier`` / ``broken_melee_multiplier``.
+        fire and pursuit on them use ``broken_fire_multiplier`` / ``broken_melee_multiplier``. A broken unit
+        ordered to 'rally' rolls for it at the start of the round (see ``RallyParams``); if it works, it can fight
+        again from the next round.
 
         ``modifiers`` are the admin's for this round only (see ``validate_modifiers``), recorded in the report.
         """
@@ -689,6 +746,7 @@ class Battle:
         placed = {uid: u.regiment.position.to_dict() for uid, u in self.units.items() if u.regiment.position is not None}
         prisoners = {0: 0, 1: 0}
         guns = {0: 0, 1: 0}
+        rallies = self._rally(valid)
         self._broken_before_round = {uid for uid, u in self.units.items() if u.morale.broken}
         broke_at: dict[str, float] = {}
         cancelled: set[str] = set()
@@ -857,6 +915,7 @@ class Battle:
             modifiers=checked,
             retargets=tuple(retargets),
             side_modifiers={side: dict(mod) for side, mod in self.side_modifiers.items()},
+            rallies=rallies,
         )
         self.history.append(report)
         return report

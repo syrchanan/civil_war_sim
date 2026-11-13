@@ -10819,6 +10819,16 @@
                 "bonus": -1.0
               }
             ]
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
           }
         }
       ],
@@ -11006,6 +11016,16 @@
                 "bonus": -1.0
               }
             ]
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
           }
         }
       ],
@@ -11191,6 +11211,16 @@
                 "bonus": -1.0
               }
             ]
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
           }
         }
       ],
@@ -11375,6 +11405,16 @@
                 "bonus": -1.0
               }
             ]
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
           }
         }
       ],
@@ -11562,6 +11602,16 @@
                 "bonus": -1.0
               }
             ]
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
           }
         }
       ],
@@ -11713,6 +11763,16 @@
             "spread": 0.5,
             "falter_cost": 0.15,
             "shock_bonus": []
+          },
+          "rally": {
+            "attempts": 1,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.3,
+            "effectiveness": 0.75,
+            "exposure": 1.25
           }
         }
       ]

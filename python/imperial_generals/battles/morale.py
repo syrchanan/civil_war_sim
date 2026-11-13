@@ -166,6 +166,11 @@ class MoraleState:
         self.resolve = 0.0
         self.broken = True
 
+    def rally(self, resolve: float) -> None:
+        """A broken unit rallies: it stands again with ``resolve`` of its morale budget."""
+        self.resolve = resolve
+        self.broken = False
+
     def _spend(self, amount: float) -> None:
         self.resolve -= amount * self.spend_factor
         if self.resolve <= _BREAK_EPSILON:
