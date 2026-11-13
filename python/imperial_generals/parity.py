@@ -286,6 +286,26 @@ SYNTHETIC = {
         ],
         'finish': True,
     },
+    'ranges': {
+        # placed units: fire falls off with distance, artillery by ammo, charges take the distance; a unit moves
+        'params': {'range': {'falloff_exponent': 1.6}},
+        'units': [_u('p_line', 0, 'inf', 'line', 900, '6/6/0/0', position={'x': 400, 'y': 900, 'facing': 0}),
+                  _u('p_rifle', 0, 'inf', 'light', 500, '6/6/1/0', position={'x': 700, 'y': 880}),
+                  _u('p_cav', 0, 'cav', 'heavy', 350, '6/6/0/1', position={'x': 1000, 'y': 1000, 'facing': 10}),
+                  _u('q_line', 1, 'inf', 'line', 1000, '5/5/0/0', position={'x': 420, 'y': 700, 'facing': 180}),
+                  _u('q_bat', 1, 'art', 'battery', 72, '5/5/0/0', guns=8, position={'x': 900, 'y': 300}),
+                  _u('q_far', 1, 'inf', 'line', 600, '4/4/0/0', position={'x': 1900, 'y': 150})],
+        'rounds': [
+            {'duration': 40, 'orders': {'p_line': _fire('q_line'), 'p_rifle': _fire('q_line'), 'p_cav': _melee('q_bat'),
+                                        'q_line': _fire('p_line'), 'q_bat': _fire('p_rifle', ammo='shell'),
+                                        'q_far': _fire('p_cav')}},
+            {'duration': 40, 'positions': {'q_line': {'x': 430, 'y': 820, 'facing': 180},
+                                           'p_rifle': {'x': 650, 'y': 760, 'facing': 350}},
+             'orders': {'p_line': _melee('q_line'), 'q_line': _melee('p_line'), 'p_rifle': _fire('q_bat'),
+                        'q_bat': _fire('p_rifle', ammo='canister'), 'q_far': _fire('p_rifle')}},
+        ],
+        'finish': True,
+    },
     'broken_on_approach': {
         'units': [_u('s1', 0, 'inf', 'line', 3000, '9/9/2/0'), _u('s2', 0, 'inf', 'line', 3000, '9/9/2/0'),
                   _u('slow', 0, 'inf', 'line', 500, '5/5/0/0'), _u('weak', 1, 'inf', 'irregulars', 200, '1/1/-1/0'),
@@ -305,7 +325,7 @@ BATTLE_SEEDS = (1, 2, 3)
 
 def _battle_case(name: str, scenario: dict, seed: int, record_events: bool = False) -> dict:
     from imperial_generals import api
-    from imperial_generals.battles.setup import battle_from_setup
+    from imperial_generals.battles.setup import battle_from_setup, open_ground
     battle = battle_from_setup(scenario, seed=seed)
     start = battle.to_dict()
     rounds = []
@@ -316,6 +336,10 @@ def _battle_case(name: str, scenario: dict, seed: int, record_events: bool = Fal
         if 'side_modifiers' in rnd:
             battle.set_side_modifiers(rnd['side_modifiers'])
             entry['side_modifiers'] = battle.to_dict()['side_modifiers']
+        if 'positions' in rnd:      # moved between rounds
+            for uid, place in rnd['positions'].items():
+                battle.units[uid].regiment.deploy(open_ground(place))
+            entry['positions'] = {uid: battle.units[uid].regiment.position.to_dict() for uid in rnd['positions']}
         battle.resolve_round(rnd['duration'], orders, record_events=record_events, modifiers=modifiers)
         rounds.append(entry)
     finish = scenario.get('finish', False)

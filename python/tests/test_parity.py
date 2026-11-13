@@ -96,10 +96,13 @@ def _as_javascript_writes_it(value):
 @pytest.mark.parametrize("case", parity.build('battles')['cases'], ids=lambda c: f"{c['name']}-{c['seed']}")
 def test_a_state_file_written_by_javascript_resumes_exactly(case):
     from imperial_generals.battles.battle import Battle
+    from imperial_generals.utils import Position
     battle = Battle.from_dict(_as_javascript_writes_it(case['start']))
     for rnd in case['rounds']:
         if 'side_modifiers' in rnd:
             battle.set_side_modifiers(rnd['side_modifiers'])
+        for uid, place in rnd.get('positions', {}).items():
+            battle.units[uid].regiment.deploy(Position.from_dict(place))
         battle.resolve_round(rnd['duration'], rnd['orders'], record_events=rnd['record_events'],
                              modifiers=rnd['modifiers'])
     if case['finished']:
