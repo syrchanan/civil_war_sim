@@ -11,7 +11,7 @@ saved as ``contacts``.
 Version 2 (A13) added contacts, charges and the charge parameters; version 1 files are not loaded. Added since,
 within version 2 (absent in older files, which still load): target switches, facing on positions, per-round
 positions and modifiers, side modifiers (battle-wide and per round), rallies (per unit and per round), and flight (break times
-per unit, flights per round).
+per unit, flights per round), and the terrain.
 
 ``meta`` (battle and per unit) is free-form and round-tripped untouched.
 """
@@ -23,6 +23,7 @@ from imperial_generals.battles.battle import (
     UnitReport,
 )
 from imperial_generals.battles.morale import MoraleState
+from imperial_generals.battles.terrain import Terrain
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
 from imperial_generals.utils import Position, Rng
@@ -135,6 +136,7 @@ def battle_to_dict(battle: Battle) -> dict:
         'contacts': sorted(sorted(pair, key=order) for pair in battle.contacts),
         'history': [report_to_dict(r) for r in battle.history],
         'result': None if battle.result is None else result_to_dict(battle.result),
+        'terrain': None if battle.terrain is None else battle.terrain.to_dict(),
     }
 
 
@@ -226,7 +228,8 @@ def battle_from_dict(data: dict) -> Battle:
         for u in data['units']
     }
     battle = Battle(units, rng=Rng.from_state(data['rng_state']), params=BattleParams.from_dict(data['params']),
-                    meta=data['meta'], side_modifiers=data.get('side_modifiers', {}))     # absent in older files
+                    meta=data['meta'], side_modifiers=data.get('side_modifiers', {}),     # absent in older files
+                    terrain=None if data.get('terrain') is None else Terrain.from_dict(data['terrain']))
     for u in data['units']:
         _restore_unit(battle.units[u['id']], u, battle.params)
     battle.rng = Rng.from_state(data['rng_state'])     # building the units drew break points: rewind

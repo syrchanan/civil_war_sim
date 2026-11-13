@@ -340,6 +340,8 @@ def scenario_from_state(state: dict) -> dict:
         scenario['sides'] = sides
     if first:
         scenario['side_modifiers'] = first
+    if state.get('terrain') is not None:
+        scenario['terrain'] = state['terrain']
     scenario.update({'seed': state['seed'], 'params': state['params'], 'units': units, 'rounds': rounds,
                      'finish': finish})
     return scenario

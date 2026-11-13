@@ -530,7 +530,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -1791,7 +1792,8 @@
             "routs": 0,
             "standing": null
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -2323,7 +2325,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -3559,7 +3562,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -4091,7 +4095,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -5343,7 +5348,8 @@
             "routs": 0,
             "standing": null
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -5906,7 +5912,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -7668,7 +7675,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -8231,7 +8239,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -9961,7 +9970,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -10524,7 +10534,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -12254,7 +12265,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -12881,7 +12893,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -14704,7 +14717,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -15331,7 +15345,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -17138,7 +17153,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -17765,7 +17781,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -19588,7 +19605,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -20143,7 +20161,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -21539,7 +21558,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -22094,7 +22114,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -23490,7 +23511,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -24045,7 +24067,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -25432,7 +25455,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -25904,7 +25928,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -26781,7 +26806,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -27253,7 +27279,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -28151,7 +28178,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -28623,7 +28651,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -29521,7 +29550,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -29980,7 +30010,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -30796,7 +30827,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -31255,7 +31287,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -32071,7 +32104,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -32530,7 +32564,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -33346,7 +33381,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -33805,7 +33841,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -34880,7 +34917,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -35339,7 +35377,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -36414,7 +36453,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -36873,7 +36913,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -37964,7 +38005,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -38497,7 +38539,115 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": {
+          "cell": 25.0,
+          "columns": 12,
+          "rows": 8,
+          "heights": [
+            4.443,
+            8.748,
+            30.365,
+            19.181,
+            36.243,
+            38.322,
+            3.509,
+            29.727,
+            4.654,
+            5.803,
+            1.849,
+            6.227,
+            37.666,
+            21.225,
+            33.467,
+            18.242,
+            9.07,
+            6.206,
+            18.681,
+            37.532,
+            4.66,
+            4.372,
+            12.887,
+            10.609,
+            25.585,
+            11.852,
+            12.358,
+            8.249,
+            0.013,
+            37.687,
+            10.311,
+            38.695,
+            28.096,
+            10.206,
+            11.377,
+            14.267,
+            10.26,
+            17.182,
+            2.663,
+            27.835,
+            16.397,
+            26.045,
+            6.002,
+            8.666,
+            18.166,
+            24.481,
+            7.284,
+            8.751,
+            18.037,
+            35.621,
+            12.488,
+            24.657,
+            10.782,
+            18.666,
+            22.618,
+            5.397,
+            16.201,
+            4.285,
+            16.251,
+            18.767,
+            38.537,
+            12.409,
+            4.669,
+            24.098,
+            29.113,
+            4.079,
+            6.268,
+            4.023,
+            17.031,
+            20.714,
+            13.424,
+            29.614,
+            2.897,
+            22.855,
+            21.412,
+            1.94,
+            8.047,
+            27.108,
+            18.757,
+            17.162,
+            30.777,
+            17.204,
+            9.845,
+            18.714,
+            9.497,
+            1.924,
+            24.107,
+            26.879,
+            34.292,
+            11.769,
+            11.161,
+            27.705,
+            28.91,
+            4.486,
+            11.896,
+            17.849
+          ],
+          "ground": "rrrrroorrrffrfrfforoofooroorfforofrffrroforffofoorooforofrofffoofrrooofrfroooroffoffforfrroforof",
+          "meta": {
+            "preset": "fixture",
+            "seed": 1863
+          }
+        }
       },
       "rounds": [
         {
@@ -39582,6 +39732,114 @@
             "routs": null,
             "standing": null
           }
+        },
+        "terrain": {
+          "cell": 25.0,
+          "columns": 12,
+          "rows": 8,
+          "heights": [
+            4.443,
+            8.748,
+            30.365,
+            19.181,
+            36.243,
+            38.322,
+            3.509,
+            29.727,
+            4.654,
+            5.803,
+            1.849,
+            6.227,
+            37.666,
+            21.225,
+            33.467,
+            18.242,
+            9.07,
+            6.206,
+            18.681,
+            37.532,
+            4.66,
+            4.372,
+            12.887,
+            10.609,
+            25.585,
+            11.852,
+            12.358,
+            8.249,
+            0.013,
+            37.687,
+            10.311,
+            38.695,
+            28.096,
+            10.206,
+            11.377,
+            14.267,
+            10.26,
+            17.182,
+            2.663,
+            27.835,
+            16.397,
+            26.045,
+            6.002,
+            8.666,
+            18.166,
+            24.481,
+            7.284,
+            8.751,
+            18.037,
+            35.621,
+            12.488,
+            24.657,
+            10.782,
+            18.666,
+            22.618,
+            5.397,
+            16.201,
+            4.285,
+            16.251,
+            18.767,
+            38.537,
+            12.409,
+            4.669,
+            24.098,
+            29.113,
+            4.079,
+            6.268,
+            4.023,
+            17.031,
+            20.714,
+            13.424,
+            29.614,
+            2.897,
+            22.855,
+            21.412,
+            1.94,
+            8.047,
+            27.108,
+            18.757,
+            17.162,
+            30.777,
+            17.204,
+            9.845,
+            18.714,
+            9.497,
+            1.924,
+            24.107,
+            26.879,
+            34.292,
+            11.769,
+            11.161,
+            27.705,
+            28.91,
+            4.486,
+            11.896,
+            17.849
+          ],
+          "ground": "rrrrroorrrffrfrfforoofooroorfforofrffrroforffofoorooforofrofffoofrrooofrfroooroffoffforfrroforof",
+          "meta": {
+            "preset": "fixture",
+            "seed": 1863
+          }
         }
       }
     },
@@ -40115,7 +40373,115 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": {
+          "cell": 25.0,
+          "columns": 12,
+          "rows": 8,
+          "heights": [
+            4.443,
+            8.748,
+            30.365,
+            19.181,
+            36.243,
+            38.322,
+            3.509,
+            29.727,
+            4.654,
+            5.803,
+            1.849,
+            6.227,
+            37.666,
+            21.225,
+            33.467,
+            18.242,
+            9.07,
+            6.206,
+            18.681,
+            37.532,
+            4.66,
+            4.372,
+            12.887,
+            10.609,
+            25.585,
+            11.852,
+            12.358,
+            8.249,
+            0.013,
+            37.687,
+            10.311,
+            38.695,
+            28.096,
+            10.206,
+            11.377,
+            14.267,
+            10.26,
+            17.182,
+            2.663,
+            27.835,
+            16.397,
+            26.045,
+            6.002,
+            8.666,
+            18.166,
+            24.481,
+            7.284,
+            8.751,
+            18.037,
+            35.621,
+            12.488,
+            24.657,
+            10.782,
+            18.666,
+            22.618,
+            5.397,
+            16.201,
+            4.285,
+            16.251,
+            18.767,
+            38.537,
+            12.409,
+            4.669,
+            24.098,
+            29.113,
+            4.079,
+            6.268,
+            4.023,
+            17.031,
+            20.714,
+            13.424,
+            29.614,
+            2.897,
+            22.855,
+            21.412,
+            1.94,
+            8.047,
+            27.108,
+            18.757,
+            17.162,
+            30.777,
+            17.204,
+            9.845,
+            18.714,
+            9.497,
+            1.924,
+            24.107,
+            26.879,
+            34.292,
+            11.769,
+            11.161,
+            27.705,
+            28.91,
+            4.486,
+            11.896,
+            17.849
+          ],
+          "ground": "rrrrroorrrffrfrfforoofooroorfforofrffrroforffofoorooforofrofffoofrrooofrfroooroffoffforfrroforof",
+          "meta": {
+            "preset": "fixture",
+            "seed": 1863
+          }
+        }
       },
       "rounds": [
         {
@@ -41200,6 +41566,114 @@
             "routs": null,
             "standing": null
           }
+        },
+        "terrain": {
+          "cell": 25.0,
+          "columns": 12,
+          "rows": 8,
+          "heights": [
+            4.443,
+            8.748,
+            30.365,
+            19.181,
+            36.243,
+            38.322,
+            3.509,
+            29.727,
+            4.654,
+            5.803,
+            1.849,
+            6.227,
+            37.666,
+            21.225,
+            33.467,
+            18.242,
+            9.07,
+            6.206,
+            18.681,
+            37.532,
+            4.66,
+            4.372,
+            12.887,
+            10.609,
+            25.585,
+            11.852,
+            12.358,
+            8.249,
+            0.013,
+            37.687,
+            10.311,
+            38.695,
+            28.096,
+            10.206,
+            11.377,
+            14.267,
+            10.26,
+            17.182,
+            2.663,
+            27.835,
+            16.397,
+            26.045,
+            6.002,
+            8.666,
+            18.166,
+            24.481,
+            7.284,
+            8.751,
+            18.037,
+            35.621,
+            12.488,
+            24.657,
+            10.782,
+            18.666,
+            22.618,
+            5.397,
+            16.201,
+            4.285,
+            16.251,
+            18.767,
+            38.537,
+            12.409,
+            4.669,
+            24.098,
+            29.113,
+            4.079,
+            6.268,
+            4.023,
+            17.031,
+            20.714,
+            13.424,
+            29.614,
+            2.897,
+            22.855,
+            21.412,
+            1.94,
+            8.047,
+            27.108,
+            18.757,
+            17.162,
+            30.777,
+            17.204,
+            9.845,
+            18.714,
+            9.497,
+            1.924,
+            24.107,
+            26.879,
+            34.292,
+            11.769,
+            11.161,
+            27.705,
+            28.91,
+            4.486,
+            11.896,
+            17.849
+          ],
+          "ground": "rrrrroorrrffrfrfforoofooroorfforofrffrroforffofoorooforofrofffoofrrooofrfroooroffoffforfrroforof",
+          "meta": {
+            "preset": "fixture",
+            "seed": 1863
+          }
         }
       }
     },
@@ -41733,7 +42207,115 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": {
+          "cell": 25.0,
+          "columns": 12,
+          "rows": 8,
+          "heights": [
+            4.443,
+            8.748,
+            30.365,
+            19.181,
+            36.243,
+            38.322,
+            3.509,
+            29.727,
+            4.654,
+            5.803,
+            1.849,
+            6.227,
+            37.666,
+            21.225,
+            33.467,
+            18.242,
+            9.07,
+            6.206,
+            18.681,
+            37.532,
+            4.66,
+            4.372,
+            12.887,
+            10.609,
+            25.585,
+            11.852,
+            12.358,
+            8.249,
+            0.013,
+            37.687,
+            10.311,
+            38.695,
+            28.096,
+            10.206,
+            11.377,
+            14.267,
+            10.26,
+            17.182,
+            2.663,
+            27.835,
+            16.397,
+            26.045,
+            6.002,
+            8.666,
+            18.166,
+            24.481,
+            7.284,
+            8.751,
+            18.037,
+            35.621,
+            12.488,
+            24.657,
+            10.782,
+            18.666,
+            22.618,
+            5.397,
+            16.201,
+            4.285,
+            16.251,
+            18.767,
+            38.537,
+            12.409,
+            4.669,
+            24.098,
+            29.113,
+            4.079,
+            6.268,
+            4.023,
+            17.031,
+            20.714,
+            13.424,
+            29.614,
+            2.897,
+            22.855,
+            21.412,
+            1.94,
+            8.047,
+            27.108,
+            18.757,
+            17.162,
+            30.777,
+            17.204,
+            9.845,
+            18.714,
+            9.497,
+            1.924,
+            24.107,
+            26.879,
+            34.292,
+            11.769,
+            11.161,
+            27.705,
+            28.91,
+            4.486,
+            11.896,
+            17.849
+          ],
+          "ground": "rrrrroorrrffrfrfforoofooroorfforofrffrroforffofoorooforofrofffoofrrooofrfroooroffoffforfrroforof",
+          "meta": {
+            "preset": "fixture",
+            "seed": 1863
+          }
+        }
       },
       "rounds": [
         {
@@ -42818,6 +43400,114 @@
             "routs": null,
             "standing": null
           }
+        },
+        "terrain": {
+          "cell": 25.0,
+          "columns": 12,
+          "rows": 8,
+          "heights": [
+            4.443,
+            8.748,
+            30.365,
+            19.181,
+            36.243,
+            38.322,
+            3.509,
+            29.727,
+            4.654,
+            5.803,
+            1.849,
+            6.227,
+            37.666,
+            21.225,
+            33.467,
+            18.242,
+            9.07,
+            6.206,
+            18.681,
+            37.532,
+            4.66,
+            4.372,
+            12.887,
+            10.609,
+            25.585,
+            11.852,
+            12.358,
+            8.249,
+            0.013,
+            37.687,
+            10.311,
+            38.695,
+            28.096,
+            10.206,
+            11.377,
+            14.267,
+            10.26,
+            17.182,
+            2.663,
+            27.835,
+            16.397,
+            26.045,
+            6.002,
+            8.666,
+            18.166,
+            24.481,
+            7.284,
+            8.751,
+            18.037,
+            35.621,
+            12.488,
+            24.657,
+            10.782,
+            18.666,
+            22.618,
+            5.397,
+            16.201,
+            4.285,
+            16.251,
+            18.767,
+            38.537,
+            12.409,
+            4.669,
+            24.098,
+            29.113,
+            4.079,
+            6.268,
+            4.023,
+            17.031,
+            20.714,
+            13.424,
+            29.614,
+            2.897,
+            22.855,
+            21.412,
+            1.94,
+            8.047,
+            27.108,
+            18.757,
+            17.162,
+            30.777,
+            17.204,
+            9.845,
+            18.714,
+            9.497,
+            1.924,
+            24.107,
+            26.879,
+            34.292,
+            11.769,
+            11.161,
+            27.705,
+            28.91,
+            4.486,
+            11.896,
+            17.849
+          ],
+          "ground": "rrrrroorrrffrfrfforoofooroorfforofrffrroforffofoorooforofrofffoofrrooofrfroooroffoffforfrroforof",
+          "meta": {
+            "preset": "fixture",
+            "seed": 1863
+          }
         }
       }
     },
@@ -43312,7 +44002,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -44280,7 +44971,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -44774,7 +45466,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -45744,7 +46437,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -46238,7 +46932,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -47206,7 +47901,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -47738,7 +48434,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -48802,7 +49499,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -49334,7 +50032,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -50398,7 +51097,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -50930,7 +51630,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -51994,7 +52695,8 @@
             "routs": 1,
             "standing": 1
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -52452,7 +53154,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -53279,7 +53982,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -53737,7 +54441,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -54564,7 +55269,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -55022,7 +55728,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -55869,7 +56576,8 @@
             "routs": 0,
             "standing": 0
           }
-        }
+        },
+        "terrain": null
       }
     },
     {
@@ -56401,7 +57109,8 @@
         ],
         "contacts": [],
         "history": [],
-        "result": null
+        "result": null,
+        "terrain": null
       },
       "rounds": [
         {
@@ -61042,7 +61751,8 @@
             "routs": 0,
             "standing": null
           }
-        }
+        },
+        "terrain": null
       }
     }
   ]

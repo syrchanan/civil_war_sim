@@ -539,5 +539,6 @@
       "flights": []
     }
   ],
-  "result": null
+  "result": null,
+  "terrain": null
 }
