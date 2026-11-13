@@ -1,7 +1,7 @@
 {
   "name": "imperial-generals-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0-alpha",
   "type": "module",
   "description": "TypeScript port of the Imperial Generals combat engine and its browser client.",
   "scripts": {

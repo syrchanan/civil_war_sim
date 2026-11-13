@@ -64,7 +64,7 @@ with unlimited line of sight. The map pipeline is kept but parked.
 ### Phase C — Later
 | Item | Status |
 |---|---|
-| Between-battle morale reconciliation / cooling-off | ○ (needs design; deferred 2026-11-13) |
+| Between-battle morale reconciliation / cooling-off | ⏸ (admins handle it for now; battles may not run back to back) |
 | Rally override for broken units | ✓ (2026-11-13, both engines + client) |
 | Admin effect modifier | ✓ (per unit per round in B5; per side for the whole battle 2026-11-13) |
 | Finer outcomes: decisive / Pyrrhic / plain victory, defeat, draw | ✓ (2026-11-13) |
@@ -876,7 +876,10 @@ admin reconciles both sides' orders, can override them, and applies modifiers.
 
 ## Phase C — Later / parked
 
-### Between-battle morale reconciliation ○ (needs design)
+### Between-battle morale reconciliation ⏸
+Parked (user, 2026-11-13): admins settle a unit's morale between battles for now, since battles won't necessarily
+come one after another. Design when campaigns chain battles.
+
 After an engagement ends, a unit's morale must be settled before its next battle. For example, recovery toward
 baseline over rest days, and a "cooling-off period" so back-to-back battles are harder. Open: recovery rate, whether
 winners and losers recover differently, and how this is stored in the game's unit records.
