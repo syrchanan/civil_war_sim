@@ -35,7 +35,8 @@ function toYards(svg: SVGSVGElement, clientX: number, clientY: number): Point {
   return { x: (clientX - r.left) * sx, y: (clientY - r.top) * sy };
 }
 
-function Arrow({ from, to, mode, side }: { from: MapUnit; to: MapUnit; mode: string; side: number }) {
+function Arrow({ from, to, mode, side, blocked }:
+  { from: MapUnit; to: MapUnit; mode: string; side: number; blocked: boolean }) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const length = Math.hypot(dx, dy) || 1;
@@ -45,7 +46,8 @@ function Arrow({ from, to, mode, side }: { from: MapUnit; to: MapUnit; mode: str
   const ox = (-dy / length) * ARROW_OFFSET;
   const oy = (dx / length) * ARROW_OFFSET;
   return (
-    <line class={`order-arrow ${mode === 'melee' ? 'charge' : 'fire'} side-${side}`} x1={from.x + ox}
+    <line class={`order-arrow ${mode === 'melee' ? 'charge' : 'fire'} side-${side}${blocked ? ' blocked' : ''}`}
+      x1={from.x + ox}
       y1={from.y + oy} x2={to.x - (dx / length) * stop + ox} y2={to.y - (dy / length) * stop + oy}
       marker-end={`url(#arrowhead-${side})`} />
   );
@@ -372,7 +374,7 @@ export function MapView({ store }: { store: Store }) {
             )}
             {arcs.map((uid) => <FrontArc store={store} uid={uid} side={byId[uid].side} />)}
             {layers.arrows && store.orderArrows.value
-              .map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} />)}
+              .map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} blocked={a.blocked} />)}
             {units.map((u) => (
               <Block key={u.uid} store={store} unit={u} movable={canMove(u)} selectable={selectable} aim={aimOf(u.uid)} />
             ))}
@@ -390,8 +392,9 @@ export function MapView({ store }: { store: Store }) {
           ? 'Drag a unit, or select it and use the arrow keys, to place it; drag the handle in front of it, or use '
             + 'Q and E, to turn it (Shift for bigger steps). '
           : ''}
-        In battle, fire falls off with distance and a unit fires only within its front arc (drawn for the selected
-        unit, out to its range: darker where fire tells in full); flank and rear attacks hit harder.
+        In battle, fire falls off with distance, a unit fires only within its front arc (drawn for the selected
+        unit, out to its range: darker where fire tells in full) and only at what it can see; higher ground helps,
+        and flank and rear attacks hit harder. Faded arrows are fire that can't tell from where the units stand.
         <span class="phone-only"> On a small screen, scroll the map sideways.</span>
       </p>
     </div>

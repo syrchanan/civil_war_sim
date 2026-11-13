@@ -47,13 +47,21 @@ const ZONE_WORDS: Record<string, string> = { flank: ', on its flank', rear: ', f
 
 /**
  * How far a target is and how much fire tells: '612 yd, out of range', '160 yd, 46% effect',
- * '60 yd, full effect, on its flank', or '60 yd, outside its front arc' (the firing unit faces away).
+ * '60 yd, full effect, on its flank, +12% from higher ground', '60 yd, outside its front arc' (the firing unit
+ * faces away) or '60 yd, no line of sight'.
  */
-export function rangeText(r: { distance: number; reach: number; inArc: boolean; zone: Zone | null }): string {
+export function rangeText(r: {
+  distance: number; reach: number; inArc: boolean; zone: Zone | null; sight: boolean; elevation: number;
+}): string {
   const yards = `${Math.round(r.distance)} yd`;
   if (!r.inArc) return `${yards}, outside its front arc`;
-  const effect = r.reach === 0 ? 'out of range' : r.reach === 1 ? 'full effect' : `${pct(r.reach)} effect`;
-  return `${yards}, ${effect}${r.reach > 0 && r.zone !== null ? ZONE_WORDS[r.zone] ?? '' : ''}`;
+  if (!r.sight) return `${yards}, no line of sight`;
+  if (r.reach === 0) return `${yards}, out of range`;
+  const effect = r.reach === 1 ? 'full effect' : `${pct(r.reach)} effect`;
+  const zone = r.zone !== null ? ZONE_WORDS[r.zone] ?? '' : '';
+  const percent = Math.round(r.elevation * 100);
+  const height = percent > 0 ? `, +${percent}% from higher ground` : percent < 0 ? `, ${percent}% uphill` : '';
+  return `${yards}, ${effect}${zone}${height}`;
 }
 
 /** '8th Alabama fled 642 yd' / '..., getting away from 1st Minnesota and Battery B'. */

@@ -577,6 +577,49 @@ export class RangeParams {
 }
 
 // =============================================================================
+// Elevation and line of sight
+// =============================================================================
+
+export interface SightData {
+  eye_height: Record<string, number>;
+  forest_height: number;
+  sample_step: number;
+  edge_clear: number;
+  elevation_scale: number;
+  elevation_max: number;
+}
+
+export interface SightParams extends Readonly<SightData> {}
+
+/** Line of sight and the elevation bonus on a battle's terrain (config/sight.yaml). */
+export class SightParams {
+  constructor(data: SightData) {
+    if (!isObject(data.eye_height) || !sameKeys(data.eye_height, UNIT_TYPES)) {
+      throw new ValueError(`eye_height needs exactly ${UNIT_TYPES.join(', ')}.`);
+    }
+    if (Object.values(data.eye_height).some((v) => !(v >= 0))) throw new ValueError('eye_height must be >= 0.');
+    for (const name of ['forest_height', 'edge_clear'] as const) {
+      if (!(data[name] >= 0)) throw new ValueError(`${name} must be >= 0.`);
+    }
+    for (const name of ['sample_step', 'elevation_scale'] as const) {
+      if (!(data[name] > 0)) throw new ValueError(`${name} must be > 0.`);
+    }
+    if (!(data.elevation_max >= 0 && data.elevation_max <= 1)) throw new ValueError('elevation_max must be in [0, 1].');
+    Object.assign(this, structuredClone(data));
+    Object.freeze(this);
+  }
+
+  /** The elevation bonus for firing from `rise` yards above the target (negative: below). */
+  bonus(rise: number): number {
+    return Math.max(-this.elevation_max, Math.min(this.elevation_max, rise / this.elevation_scale));
+  }
+
+  toDict(): SightData {
+    return structuredClone({ ...this });
+  }
+}
+
+// =============================================================================
 // Flight
 // =============================================================================
 
@@ -738,12 +781,14 @@ export interface ParamsData {
   range: RangeData;
   flanks: FlankData;
   flight: FlightData;
+  sight: SightData;
 }
 
 /** Nested partial params, e.g. `{ combat: { ranged_kill_rate: 0.005 } }`. */
 export type Overrides = Record<string, Record<string, unknown>>;
 
-const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range', 'flanks', 'flight'] as const;
+const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range', 'flanks', 'flight',
+  'sight'] as const;
 
 function deepMerge(base: Record<string, unknown>, changes: Record<string, unknown>): Record<string, unknown> {
   const merged = { ...base };
@@ -789,6 +834,7 @@ export class BattleParams {
   readonly range: RangeParams;
   readonly flanks: FlankParams;
   readonly flight: FlightParams;
+  readonly sight: SightParams;
   private static cached: BattleParams | null = null;
 
   constructor(data: ParamsData) {
@@ -801,6 +847,7 @@ export class BattleParams {
     this.range = new RangeParams(data.range);
     this.flanks = new FlankParams(data.flanks);
     this.flight = new FlightParams(data.flight);
+    this.sight = new SightParams(data.sight);
     if (!sameKeys(this.range.artillery, Object.keys(this.combat.artillery_ammo))) {
       throw new ValueError(`range.artillery needs every ammo: ${Object.keys(this.combat.artillery_ammo).sort().join(', ')}.`);
     }
@@ -843,6 +890,7 @@ export class BattleParams {
       range: this.range.toDict(),
       flanks: this.flanks.toDict(),
       flight: this.flight.toDict(),
+      sight: this.sight.toDict(),
     };
   }
 

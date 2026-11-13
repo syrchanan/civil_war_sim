@@ -91,6 +91,7 @@ export interface OrderArrow {
   to: string;
   mode: string;
   side: number;
+  blocked: boolean; // fire that can't tell: out of range, outside the front arc, or no line of sight
 }
 
 const finite = (n: number | null): number => (Number.isFinite(n) ? (n as number) : 0);
@@ -288,14 +289,18 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (battle.value !== null && mapRound.value !== null) {
       const b = battle.value;
       return Object.entries(b.history[mapRound.value - 1].orders)
-        .filter(([, o]) => o.mode !== 'idle')
-        .map(([uid, o]) => ({ from: uid, to: o.target!, mode: o.mode, side: b.units.get(uid)!.side }));
+        .filter(([, o]) => o.target !== null) // hold and rally have no target
+        .map(([uid, o]) => ({ from: uid, to: o.target!, mode: o.mode, side: b.units.get(uid)!.side, blocked: false }));
     }
     if (battle.value === null || battle.value.finished) return [];
     const eff = effectiveOrders.value;
     return actingUnits.value
       .filter((u) => eff[u.uid].target !== null) // hold and rally have no target
-      .map((u) => ({ from: u.uid, to: eff[u.uid].target!, mode: eff[u.uid].mode, side: u.side }));
+      .map((u) => {
+        const r = rangeOf(u.uid);
+        const blocked = r !== null && (r.reach === 0 || !r.inArc || !r.sight);
+        return { from: u.uid, to: eff[u.uid].target!, mode: eff[u.uid].mode, side: u.side, blocked };
+      });
   });
 
   const estimateKey = computed(() => {
@@ -433,7 +438,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
    * How far a firing unit's target is, how much of its fire tells there, whether the target is within its front
    * arc, and where it hits the target (front, flank or rear); null unless firing at a placed unit.
    */
-  function rangeOf(uid: string): { distance: number; reach: number; inArc: boolean; zone: Zone | null } | null {
+  function rangeOf(uid: string): {
+    distance: number; reach: number; inArc: boolean; zone: Zone | null; sight: boolean; elevation: number;
+  } | null {
     revision.value;
     const o = effectiveOrders.value[uid];
     if (o.mode !== 'ranged') return null;
@@ -441,6 +448,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const distance = b.distance(uid, o.target!);
     return distance === null ? null : {
       distance, reach: b.reach(uid, o.target!, o.ammo)!, inArc: b.inArc(uid, o.target!), zone: b.zone(o.target!, uid),
+      sight: b.lineOfSight(uid, o.target!), elevation: b.elevationBonus(uid, o.target!),
     };
   }
 

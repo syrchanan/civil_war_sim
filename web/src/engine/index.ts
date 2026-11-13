@@ -8,14 +8,14 @@ export { GROUND, Terrain } from './terrain';
 export type { Ground, GroundCode, TerrainData } from './terrain';
 export {
   AftermathParams, BattleParams, ChargeParams, CombatParams, FlankParams, FlightParams, MatchupParams, MoraleParams,
-  RallyParams,
+  RallyParams, SightParams,
   RangeParams,
   roundHalfEven,
   UNIT_TYPES, WEAPON_CODES,
 } from './params';
 export type {
   AftermathData, ChargeData, CombatData, MatchupData, MatchupOverride, MoraleData, Overrides, ParamsData, RallyData,
-  RangeBand, RangeData, FlankData, FlightData,
+  RangeBand, RangeData, FlankData, FlightData, SightData,
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';

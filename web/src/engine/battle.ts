@@ -328,7 +328,7 @@ interface Pending {
 }
 
 type Slot = [attacker: string, target: string, mode: string, matchup: number, share: number, gunRate: number | null,
-  reach: number, flank: number];
+  reach: number, flank: number, height: number];
 
 export type Zone = 'front' | 'flank' | 'rear';
 type Arrow = [attacker: string, target: string, mode: string, rate: number];
@@ -538,6 +538,42 @@ export class Battle {
     return z === 'flank' || z === 'rear' ? table[z] : 1.0;
   }
 
+  /**
+   * Can `viewer` see `target`: no ground or woods rise above the line between their eyes (SightParams). Always
+   * true without terrain, or unless both are placed.
+   */
+  lineOfSight(viewer: string, target: string): boolean {
+    const t = this.terrain;
+    const p = this.unit(viewer).regiment.position;
+    const q = this.unit(target).regiment.position;
+    if (t === null || p === null || q === null) return true;
+    const sp = this.params.sight;
+    const d = this.distance(viewer, target)!;
+    const za = t.heightAt(p.x, p.y) + sp.eye_height[this.unit(viewer).key[0]];
+    const zb = t.heightAt(q.x, q.y) + sp.eye_height[this.unit(target).key[0]];
+    const steps = Math.floor(d / sp.sample_step);
+    for (let k = 1; k <= steps; k++) {
+      const s = k * sp.sample_step;
+      if (s < sp.edge_clear || d - s < sp.edge_clear) continue;
+      const f = s / d;
+      const x = p.x + (q.x - p.x) * f;
+      const y = p.y + (q.y - p.y) * f;
+      let ground = t.heightAt(x, y);
+      if (t.groundAt(x, y) === 'forest') ground = ground + sp.forest_height;
+      if (ground > za + (zb - za) * f) return false;
+    }
+    return true;
+  }
+
+  /** The share more (or less) the attacker's fire tells from its height over the target; 0 without terrain. */
+  elevationBonus(attacker: string, target: string): number {
+    const t = this.terrain;
+    const p = this.unit(attacker).regiment.position;
+    const q = this.unit(target).regiment.position;
+    if (t === null || p === null || q === null) return 0.0;
+    return this.params.sight.bonus(t.heightAt(p.x, p.y) - t.heightAt(q.x, q.y));
+  }
+
   /** Broken, not wiped out, placed, and its break time known: it flees. */
   private fleeing(unit: BattleUnit): boolean {
     return unit.morale.broken && unit.size > 0 && unit.brokeTime !== null && unit.regiment.position !== null;
@@ -690,7 +726,7 @@ export class Battle {
       if (unit.active && unit.meleeRating > 0) {
         for (const p of ps) {
           slots.push([uid, p, 'melee', matchups.multiplier(unit.key, this.unit(p).key, 'melee'), 1.0, null, 1.0,
-            this.flankOf(p, uid, hits)]);
+            this.flankOf(p, uid, hits), 1.0]);
         }
       }
     }
@@ -711,7 +747,8 @@ export class Battle {
         for (const charger of chargers) {
           if (!this.inArc(targetId, charger)) continue; // charged from outside its front arc: it can't fire on them
           slots.push([targetId, charger, 'closing', matchups.multiplier(target.key, this.unit(charger).key, 'ranged'),
-            1.0 / chargers.length, gunRate, 1.0, this.flankOf(charger, targetId, hits)]);
+            1.0 / chargers.length, gunRate, 1.0, this.flankOf(charger, targetId, hits),
+            1.0 + this.elevationBonus(targetId, charger)]);
         }
       }
     }
@@ -721,13 +758,14 @@ export class Battle {
       const outOfReach = withdrawn.has(order.target!) && !(unit.regiment instanceof ArtilleryBattery);
       if (order.mode === 'ranged' && !cancelled.has(uid) && unit.active && this.unit(order.target!).size > 0
         && !partners.has(uid) && !charging.has(uid) && !closingOn.has(uid) && !outOfReach && this.canFire(unit)
-        && this.inArc(uid, order.target!)) {
+        && this.inArc(uid, order.target!) && this.lineOfSight(uid, order.target!)) {
         // artillery: per-gun rate of the ordered ammo, fixed for the round
         const gunRate = unit.regiment instanceof ArtilleryBattery
           ? combat.artillery_ammo[order.ammo ?? combat.artillery_default_ammo] : null;
         const reach = this.reach(uid, order.target!, order.ammo);
         slots.push([uid, order.target!, 'ranged', matchups.multiplier(unit.key, this.unit(order.target!).key, 'ranged'),
-          1.0, gunRate, reach ?? 1.0, this.flankOf(order.target!, uid, hits)]);
+          1.0, gunRate, reach ?? 1.0, this.flankOf(order.target!, uid, hits),
+          1.0 + this.elevationBonus(uid, order.target!)]);
       }
     }
 
@@ -746,7 +784,7 @@ export class Battle {
       totalFronts.set(uid, total);
     }
     const arrows: Arrow[] = [];
-    for (const [attacker, target, mode, matchup, share, gunRate, reach, flank] of slots) {
+    for (const [attacker, target, mode, matchup, share, gunRate, reach, flank, height] of slots) {
       const unit = this.unit(attacker);
       const stats = unit.regiment.stats;
       let rate: number;
@@ -769,6 +807,7 @@ export class Battle {
       }
       if (reach !== 1.0) rate = rate * reach;
       if (flank !== 1.0) rate = rate * flank;
+      if (height !== 1.0) rate = rate * height;
       const mod = this.modifiers[attacker];
       if (mod !== undefined) rate = rate * (1 + (mode === 'melee' ? mod.melee : mod.fire));
       const sideMod = this.sideModifiers[unit.side];

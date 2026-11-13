@@ -93,8 +93,8 @@ describe('store: the map in battle', () => {
     s.setOrder('us_1mn', { mode: 'ranged', target: 'cs_8al' });
     s.setOrder('cs_8al', { mode: 'melee', target: 'us_1mn' });
     expect(s.orderArrows.value).toEqual([
-      { from: 'us_1mn', to: 'cs_8al', mode: 'ranged', side: 0 },
-      { from: 'cs_8al', to: 'us_1mn', mode: 'melee', side: 1 },
+      { from: 'us_1mn', to: 'cs_8al', mode: 'ranged', side: 0, blocked: false }, // moved up: within rifle range
+      { from: 'cs_8al', to: 'us_1mn', mode: 'melee', side: 1, blocked: false }, // a charge goes anyway
     ]);
   });
 
@@ -144,8 +144,9 @@ describe('store: replaying rounds on the map', () => {
     expect(shown(s, 'us_1mn')).toMatchObject({ x: 500, y: 700, facing: 0, men: 900, broken: false });
     expect(shown(s, 'us_bat').men).toBe(72);
     expect(s.orderArrows.value).toEqual([
-      { from: 'us_1mn', to: 'cs_8al', mode: 'ranged', side: 0 }, { from: 'cs_bat', to: 'us_bat', mode: 'ranged', side: 1 },
-    ]);
+      { from: 'us_1mn', to: 'cs_8al', mode: 'ranged', side: 0, blocked: false },
+      { from: 'cs_bat', to: 'us_bat', mode: 'ranged', side: 1, blocked: false },
+    ]); // replayed rounds draw orders as given
     s.mapRound.value = 2;
     expect(shown(s, 'us_1mn')).toMatchObject({ x: 600, y: 650, facing: 30, men: b.history[0].units.us_1mn.size });
     expect(shown(s, 'us_bat').men).toBe(b.history[0].units.us_bat.size);
