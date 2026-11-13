@@ -197,6 +197,10 @@ class AftermathParams:
     field_rout_gap: float = _config_default('aftermath', 'field_rout_gap')
     field_standing_ratio: float = _config_default('aftermath', 'field_standing_ratio')
     field_votes_needed: int = _config_default('aftermath', 'field_votes_needed')
+    decisive_ratio: float = _config_default('aftermath', 'decisive_ratio')
+    decisive_share: float = _config_default('aftermath', 'decisive_share')
+    pyrrhic_share: float = _config_default('aftermath', 'pyrrhic_share')
+    pyrrhic_ratio: float = _config_default('aftermath', 'pyrrhic_ratio')
 
     def __post_init__(self) -> None:
         for name in ('rout_capture_share', 'killed_share', 'walking_wounded_share', 'wounded_captured_share',
@@ -212,6 +216,13 @@ class AftermathParams:
             raise ValueError("field_rout_gap must be in [0, 1].")
         if type(self.field_votes_needed) is not int or not 1 <= self.field_votes_needed <= 3:
             raise ValueError("field_votes_needed must be a whole number from 1 to 3.")
+        if self.decisive_ratio < 1:
+            raise ValueError("decisive_ratio must be >= 1.")
+        for name in ('decisive_share', 'pyrrhic_share'):
+            if not 0 <= getattr(self, name) <= 1:
+                raise ValueError(f"{name} must be in [0, 1].")
+        if self.pyrrhic_ratio < 0:
+            raise ValueError("pyrrhic_ratio must be >= 0.")
 
 
 # =============================================================================
