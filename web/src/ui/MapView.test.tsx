@@ -88,7 +88,9 @@ describe('map', () => {
     fireEvent.change(screen.getByLabelText('1st Minnesota action'), { target: { value: 'ranged' } });
     fireEvent.change(screen.getByLabelText('8th Alabama action'), { target: { value: 'melee' } });
     const arrows = [...document.querySelectorAll('.order-arrow')];
-    expect(arrows.map((a) => a.getAttribute('class'))).toEqual(['order-arrow fire side-0', 'order-arrow charge side-1']);
+    // 600 yards apart: the rifles are out of range, so their arrow is faded; a charge goes anyway
+    expect(arrows.map((a) => a.getAttribute('class')))
+      .toEqual(['order-arrow fire side-0 blocked', 'order-arrow charge side-1']);
   });
 
   it('an arrow between two units on the same spot is still drawn', () => {
