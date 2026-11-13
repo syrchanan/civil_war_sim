@@ -28,8 +28,8 @@ Two audiences, two languages:
 Long term the whole battle system lives in TypeScript, with a **player mode** (fuzzy estimates) and an **admin mode**
 (exact seeded result).
 
-Out of scope for now: movement, terrain effects, line of sight, weather. Battles are assumed to be on flat, open ground
-with unlimited line of sight. The map pipeline is kept but parked.
+Out of scope for now: movement, cover, weather. Since the positions pass (P1–P5), the engine uses range, facing and
+flanks, flight, elevation and line of sight over a terrain grid; without one, a battle is on flat, open ground.
 
 ---
 
@@ -82,9 +82,13 @@ parity, then the client. Tuning waits until the pass is done.
 | Admin effect modifier | ✓ (per unit per round in B5; per side for the whole battle 2026-11-13) |
 | Finer outcomes: decisive / Pyrrhic / plain victory, defeat, draw | ✓ (2026-11-13) |
 | Commander rating: historical general by performance | ✓ (2026-11-13; odds from the order of battle) |
-| Weapon range stat + range/distance accuracy | ○ |
-| Terrain map in the web client (port of map pipeline; the plain map is B3) | ○ |
-| Terrain effects: elevation, cover, fences, LoS, flanking | ⏸ |
+| Weapon range stat + range/distance accuracy | ✓ (2026-11-13; covered by P1: close and max range per weapon and ammo) |
+| Terrain map in the web client | ✓ (2026-11-13, P4: elevation presets, woods, rough ground; rivers not ported) |
+| Map hover tooltip: terrain type, cover, elevation and the like for the spot under the cursor | ○ (user, 2026-11-13) |
+| Unit info on click: the selected unit's box under the map (vignette, kind, men, quality, status, order, ground); foes show only what could be seen | ✓ (2026-11-13; a hover quick-read is still open) |
+| Unit vignette: pixel art of the selected unit doing what it's ordered to | ✓ (2026-11-13) |
+| Pixel-art cutscenes between rounds and for the result | ○ (user, 2026-11-13) |
+| Terrain effects: cover, fences, charging uphill (elevation, LoS and flanks done in P2/P5) | ⏸ |
 | Weather | ⏸ |
 | Lakes, river→lake termination, roads, fences (map stages 4–6) | ⏸ |
 | Movement system | ⏸ (admins place units instead) |
@@ -784,8 +788,7 @@ Decided (2026-10-23):
   fixture battle.
 - Stack: Preact + `@preact/signals` (signals work like ObservableJS cells), hand-drawn SVG charts, no other runtime
   dependency. UI code is under the same 100% coverage (jsdom tests).
-- Later (user, 2026-10-23): **fog of war**, hiding the exact numbers and stats of the opposing side. For now the
-  client shows everything.
+- **Fog of war**: done 2026-11-13 (player files since B5; across the page and on the terrain, see the unit vignette).
 
 **Built (2026-10-23)**, `cd web && npm run dev`:
 - **Armies**: two side tables (type, subtype, men, experience, morale, weapon by name, melee-only, guns), side
@@ -854,6 +857,13 @@ admin reconciles both sides' orders, can override them, and applies modifiers.
   stats become 5/5/0/0; their morale, losses, inflicted, meta, engagement rates, target switches and modifiers are
   removed; charge odds and casualty events are removed for everyone; the dice state is replaced. Hiding is in the
   file itself, so reading the JSON reveals nothing more. Only for unfinished battles.
+- **Version 2: fog of war on the terrain** (user, 2026-11-13; `engine/sight.ts`, client only, as Python makes no
+  player files). Seeing is the engine's line of sight (as for fire) from any of the side's units not wiped out, at
+  any distance, checked as each round began (the saved positions) and now. An enemy unit never seen isn't in the
+  file at all, nor in any record naming it (history, charges, engagements, flights, target switches, contacts). One
+  seen before but not now stands where it was last seen, with its men and broken as seen then, marked
+  `meta.last_seen`; its history place and orders are kept only for rounds it was seen at the start of, and its round
+  reports show it as last seen. Without terrain everything is seen, as before. Version 1 files still open.
 - **Player view from a player file**: locked to the file's side (no side picker, no battle download); enemy men
   shown as "about N" on the map and in the order of battle (no enemy averages); rounds and charts show only the
   player's units. **Guesses** (user, 2026-10-24): a table of the player's guesses for each enemy unit's men and
@@ -1051,27 +1061,48 @@ over a simulated baseline, and one general per band):
 - Shown in the CLI side summary and the client's result. Watch in tuning: when one side is overwhelmingly stronger
   (expected ≈ 1), even a crushing win scores slightly below expectations, so a wiped-out underdog can rate well.
 
-### Weapon range + range/distance accuracy ○
-Only relevant once position matters. Possible extra weapon stat.
-| Zone | Condition | Accuracy |
-|---|---|---|
-| Close | `distance ≤ max_range × 0.5` | ~90% (TBD) |
-| Effective | `distance ≤ max_range` | ~70% (TBD) |
-| Beyond | `distance > max_range` | Exponential decay (TBD) |
+### Unit vignette ✓
+Built 2026-11-13 at the user's request, just for fun (`ui/Vignette.tsx`, `ui/sprites/`). Under the map, a little pixel-art
+picture of the selected unit doing what it's ordered to, with a caption ("1st Minnesota: firing, in the woods").
+- **Poses**: standing, firing (a rolling volley), charging, in melee (once in contact), broken and running. A battery
+  has no charge or melee pose: its crew stand to the gun. Wiped-out units and hidden enemy units show nothing.
+- **Figures**: infantry (three men), cavalry (two riders), artillery (a gun and two gunners); no subtypes yet.
+- **Ground**: open, woods (trees behind, trunks and leaves in front) and rough (rocks), from the terrain under the unit.
+- **Uniforms** (user, 2026-11-13: American Civil War): the first side Union (dark blue coat, sky-blue trousers,
+  kepi), the second Confederate (cadet gray, butternut trousers). Fixed colours, not the theme's side colours.
+- Drawn in code as letter grids (one letter per palette colour; 'S', 'U', 'K' the side's coat, trousers and cap),
+  48 × 32 pixels, painted to one SVG path per colour. Frames are swapped by CSS alone; a still picture under reduced
+  motion.
+- **The unit info box** (`ui/UnitInfo.tsx`, user, 2026-11-13: only what matters) holds the vignette, the name, its
+  kind and side ("Line infantry, Union"; guns for a battery), then men (of its starting strength), quality
+  (experience, morale, weapon; "melee only" when so), status (steady with morale left before it breaks, rallied,
+  broken, wiped out), the order in one line with target and range ("Fire on 8th Alabama, 60 yd, full effect"), and
+  the ground and height when there is terrain. Replaying a round, that round's orders. After an order is given on
+  the map, the unit that gave it stays selected.
+- **Foes** (user, 2026-11-13): for a player in battle (and the hidden side of a player file), an enemy unit shows
+  only what could be seen across the field: men roughly, steady or broken, and the order the player expects of it.
+  No stats, morale left, guns or ammo. The admin sees everything.
+- **Fog of war across the page** (user, 2026-11-13; `store.fogSide`: the enemy, for a player once the battle has
+  begun, until it is over): enemy men roughly ("~800") on the map and in the order of battle (no averages, no guns), only the
+  player's own units in the rounds tables, charts and estimate. On the terrain: units out of sight are left out
+  (map, targets, the expected-orders table, the order of battle); from a player file, one lost from sight is drawn
+  faded with a "?" where it was last seen ("~800, last seen round N"), with no arc, no picture and no expected
+  order. Replays show only what was seen as that round began. Practising without a file, out of sight is simply
+  hidden (players fight no rounds, so nothing is ever lost).
+- **Orders vs guesses** (user, 2026-11-13): the map gives only the player's own orders. A click on an enemy unit
+  selects it (to read its card) or picks it as the target; what the player expects of the enemy is set in its table.
+- Later (user, 2026-11-13): pixel-art cutscenes between rounds and for the result; subtypes; rally and faltering.
+
+### Weapon range + range/distance accuracy ✓
+Covered by P1 (2026-11-13): each small-arms weapon code and artillery ammo has a `close` and `max` range, with fire
+falling off between them (see P1). The older zone table (close / effective / beyond) is superseded.
 
 ### Terrain effects ⏸
-Kept for when the map returns to combat. Spatial queries use nearest centroid / `get_cell_at_position`, Euclidean
-distance, and ray-cast LoS (no neighbour graph).
-- **Elevation modifier**: `clamp((attacker_elev − target_elev) / ELEVATION_SCALE, −0.15, +0.15)`, additive.
-- **Cover penalty** (additive, floored at 0): target in forest −30%, rough/badlands −15%, fence on target's cell
-  boundary −15%, fence crossed by LoS ray −10%.
-- **Line of sight**: any cell on the ray with `elevation > max(attacker, target)` blocks fire.
-- **Flanking / field of view** (needs design): front width → FOV angle θ; attacks from outside θ get a coef boost.
-  Open: formula for θ; boost scaling; does high ground negate a flank?
-- **Full composition**:
-  ```
-  final_coef = base_coef × matchup × accuracy(range, weather) (+ elevation − cover) × flanking × admin_modifier
-  ```
+Elevation, line of sight (P5) and facing and flanks (P2) are built. Still to do:
+- **Cover**: a target in woods or rough ground takes less fire. First guesses from the old plan: forest −30%,
+  rough −15%. The terrain grid (P4) already carries the ground per cell.
+- **Fences**: need map stages 4–6; a fence at the target −15%, a fence crossed by the line of fire −10% (old plan).
+- **Charging uphill** is harder: height affects fire but not charges or melee yet (noted in P5).
 
 ### Weather ⏸
 Static, map-wide, randomised by season (weights in `weather.yaml`). Multiplies `max_range`: clear 1.0, overcast 0.9,
