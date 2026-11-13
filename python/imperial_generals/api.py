@@ -31,11 +31,13 @@ import copy
 from dataclasses import asdict
 
 from imperial_generals.battles.battle import Battle
-from imperial_generals.battles.setup import SetupError, battle_from_setup, side_modifiers_by_number
+from imperial_generals.battles.setup import (
+    SetupError, battle_from_setup, open_ground, position_problem, side_modifiers_by_number,
+)
 from imperial_generals.battles.state import report_to_dict, result_to_dict
 from imperial_generals.params import BattleParams
 
-ROUND_KEYS = ('duration', 'orders', 'modifiers', 'side_modifiers')
+ROUND_KEYS = ('duration', 'orders', 'modifiers', 'side_modifiers', 'positions')
 
 
 def new_battle(setup: dict, seed: int | None = None) -> dict:
@@ -105,7 +107,7 @@ def _field_holder(value, sides: list | None):
     raise ValueError(f'"finish" must be true, false, auto, none, 0, 1{names}.')
 
 
-def _check_script(scenario: dict) -> list[str]:
+def _check_script(scenario: dict, units) -> list[str]:
     errors = []
     finish = scenario.get('finish', False)
     if finish is not False:
@@ -133,6 +135,15 @@ def _check_script(scenario: dict) -> list[str]:
             errors.append(f'Round {n}: "modifiers" must be a mapping of unit id to modifiers.')
         if not isinstance(rnd.get('side_modifiers', {}), dict):
             errors.append(f'Round {n}: "side_modifiers" must be a mapping of side to modifiers.')
+        moves = rnd.get('positions', {})
+        if not isinstance(moves, dict):
+            errors.append(f'Round {n}: "positions" must be a mapping of unit id to position.')
+            continue
+        for uid, place in moves.items():
+            if uid not in units:
+                errors.append(f'Round {n}: unknown unit {uid} in positions.')
+            elif position_problem(place) is not None:
+                errors.append(f'Round {n}: {uid}: {position_problem(place)}')
     return errors
 
 
@@ -174,7 +185,7 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
         can't be carried out (naming the round).
     """
     battle = battle_from_setup(scenario, seed=seed, overrides=overrides)
-    errors = _check_script(scenario)
+    errors = _check_script(scenario, battle.units)
     if errors:
         raise SetupError(errors)
     reports = []
@@ -183,6 +194,8 @@ def run_scenario(scenario: dict, seed: int | None = None, record_events: bool = 
         try:
             if 'side_modifiers' in rnd:
                 battle.set_side_modifiers(side_modifiers_by_number(rnd['side_modifiers'], _sides(scenario)))
+            for uid, place in rnd.get('positions', {}).items():      # moved between rounds
+                battle.units[uid].regiment.deploy(open_ground(place))
             report = battle.resolve_round(rnd['duration'], orders, record_events=record_events,
                                           modifiers=rnd.get('modifiers'))
         except (ValueError, TypeError) as exc:
@@ -257,6 +270,11 @@ def merge_plans(state: dict, plans: list) -> tuple:
     return state, orders
 
 
+def _written(place: dict) -> dict:
+    """A saved position as a scenario writes it: x, y and facing (units stand on open ground)."""
+    return {'x': place['x'], 'y': place['y'], 'facing': place.get('facing')}
+
+
 def scenario_from_state(state: dict) -> dict:
     """
     The scenario (setup + scripted rounds + finish) that replays a saved battle exactly, e.g. one downloaded from
@@ -285,6 +303,9 @@ def scenario_from_state(state: dict) -> dict:
             unit['guns'] = u['guns'] + u['guns_lost']
         unit['stats'] = u['initial_stats']
         unit['front_size'] = u['front_size']
+        start = state['history'][0]['positions'].get(u['id']) if state['history'] else u['position']
+        if start is not None:
+            unit['position'] = _written(start)
         if u['meta']:
             unit['meta'] = u['meta']
         units.append(unit)
@@ -292,11 +313,16 @@ def scenario_from_state(state: dict) -> dict:
     first = state['history'][0].get('side_modifiers', {}) if state['history'] else state.get('side_modifiers', {})
     in_force = first
     rounds = []
-    for r in state['history']:
+    for index, r in enumerate(state['history']):
         orders = {uid: {k: v for k, v in o.items() if v is not None} for uid, o in r['orders'].items()}
         rnd = {'duration': r['end'] - r['start'], 'orders': orders}
         if r.get('modifiers'):
             rnd['modifiers'] = r['modifiers']
+        if index > 0:
+            before = state['history'][index - 1].get('positions', {})
+            moves = {uid: _written(p) for uid, p in r.get('positions', {}).items() if before.get(uid) != p}
+            if moves:
+                rnd['positions'] = moves
         side_mods = r.get('side_modifiers', {})
         if rounds and side_mods != in_force:
             rnd['side_modifiers'] = side_mods

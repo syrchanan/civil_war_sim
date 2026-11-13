@@ -120,8 +120,8 @@ def _check_run_args(seeds: int, workers: int) -> None:
 
 def _validate_scenario(scenario: dict, overrides: dict | None) -> None:
     """Raise SetupError for setup, script or override problems before any work is sent out."""
-    battle_from_setup(scenario, seed=0, overrides=overrides)
-    errors = api._check_script(scenario)
+    battle = battle_from_setup(scenario, seed=0, overrides=overrides)
+    errors = api._check_script(scenario, battle.units)
     if errors:
         raise SetupError(errors)
 
@@ -209,7 +209,8 @@ def write_csv(rows: list, path) -> None:
 # =============================================================================
 
 GRID_KEYS = ('name', 'params', 'rounds', 'seeds', 'units')
-GRID_UNIT_KEYS = tuple(sorted(set(UNIT_KEYS) - {'id', 'name', 'side'} | {'attack', 'defend'}))
+# grids fight at no particular distance: no positions
+GRID_UNIT_KEYS = tuple(sorted(set(UNIT_KEYS) - {'id', 'name', 'side', 'position'} | {'attack', 'defend'}))
 ORDER_KEYS = {'mode', 'ammo'}
 
 

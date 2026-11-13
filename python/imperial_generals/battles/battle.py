@@ -14,6 +14,8 @@ graph: at most one outgoing arrow per unit (its target), any number of incoming 
   target's close-range fire, then a contact test decides whether it goes home, falters, or the defender breaks
   before contact. Contact persists across rounds while either unit keeps a melee order on the other.
 - Melee casualties scale with the width in contact: min(attacker's men facing the target, target's front).
+- Fire falls off with distance between placed units (see ``RangeParams``); a charge's approach takes as long as
+  the distance needs. Units without a position fight as if within close range.
 - An admin can give units modifiers for one round (e.g. 'uphill, fire -15%'): fire and melee scale the casualties
   the unit inflicts (closing fire counts as fire), morale scales what it spends from its morale budget.
 
@@ -24,6 +26,7 @@ one-on-one ranged battle draws exactly like ``Simulation``.
 """
 
 import json
+import math
 import secrets
 from dataclasses import dataclass, field, replace
 
@@ -447,6 +450,31 @@ class Battle:
             rallies.append(Rally(uid, rallied, chance))
         return tuple(rallies)
 
+    def distance(self, a: str, b: str) -> float | None:
+        """Yards between two units' centres on the flat, or None unless both are placed."""
+        pa, pb = self.units[a].regiment.position, self.units[b].regiment.position
+        if pa is None or pb is None:
+            return None
+        dx, dy = pa.x - pb.x, pa.y - pb.y
+        return math.sqrt(dx * dx + dy * dy)    # correctly rounded, as Math.sqrt
+
+    def reach(self, attacker: str, target: str, ammo: str | None = None) -> float | None:
+        """
+        Share of full effect the attacker's fire has on the target at their distance (1 within close range, 0
+        beyond maximum range), or None unless both are placed. Artillery by its ammo (the default if not given),
+        small arms by the weapon code.
+        """
+        d = self.distance(attacker, target)
+        if d is None:
+            return None
+        r = self.params.range
+        regiment = self.units[attacker].regiment
+        if isinstance(regiment, ArtilleryBattery):
+            band = r.artillery[ammo or self.params.combat.artillery_default_ammo]
+        else:
+            band = r.small_arms[str(max(-2, min(2, regiment.stats[2])))]
+        return r.reach(d, band['close'], band['max'])
+
     def _can_fire(self, unit: BattleUnit) -> bool:
         """Has firearms (the stats melee-only flag decides, not the subtype)."""
         return self.params.combat.unit_coef(unit.regiment.stats, 'ranged') > 0
@@ -482,6 +510,12 @@ class Battle:
             minutes = approach[units[uid].key[0]]
             if meeting:
                 minutes = min(minutes, approach[target.key[0]])
+            d = self.distance(uid, order.target)
+            if d is not None:
+                # covering the distance takes at least the approach; charging each other, both close the gap
+                speed = self.params.charge.speed
+                pace = speed[units[uid].key[0]] + (speed[target.key[0]] if meeting else 0.0)
+                minutes = max(minutes, d / pace)
             pending.append({'charger': uid, 'target': order.target, 'end': start + min(minutes, duration),
                             'meeting': meeting})
         return pending, immediate
@@ -491,8 +525,8 @@ class Battle:
         """
         The arrow structure for this moment of the round.
 
-        Returns ``(slots, partners)``: ``slots`` are ``(attacker, target, mode, matchup, share, gun_rate)`` sorted
-        by (target, attacker) in unit order; ``partners`` maps each unit in melee contact to its contacts.
+        Returns ``(slots, partners)``: ``slots`` are ``(attacker, target, mode, matchup, share, gun_rate, reach)``
+        sorted by (target, attacker) in unit order (reach: the range falloff of ranged fire, else 1); ``partners`` maps each unit in melee contact to its contacts.
         - Melee: both ways along every contact (a broken unit doesn't fight back).
         - Closing fire: a target fires on the units charging it (split between them) unless it is itself charging,
           locked in melee, or can't fire. Batteries switch to the closing ammo.
@@ -519,7 +553,8 @@ class Battle:
             unit = units[uid]
             if unit.active and unit.melee_rating > 0:
                 for p in ps:
-                    slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'), 1.0, None))
+                    slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'), 1.0, None,
+                                  1.0))
 
         charging = {c['charger'] for c in pending}
         closing_on: dict[str, list[str]] = {}
@@ -535,7 +570,7 @@ class Battle:
                 for charger in chargers:
                     slots.append((target_id, charger, 'closing',
                                   matchups.multiplier(target.key, units[charger].key, 'ranged'),
-                                  1.0 / len(chargers), gun_rate))
+                                  1.0 / len(chargers), gun_rate, 1.0))
 
         for uid, order in orders.items():
             unit = units[uid]
@@ -547,8 +582,10 @@ class Battle:
                 gun_rate = None
                 if isinstance(unit.regiment, ArtilleryBattery):
                     gun_rate = combat.artillery_ammo[order.ammo or combat.artillery_default_ammo]
+                reach = self.reach(uid, order.target, order.ammo)
                 slots.append((uid, order.target, 'ranged',
-                              matchups.multiplier(unit.key, units[order.target].key, 'ranged'), 1.0, gun_rate))
+                              matchups.multiplier(unit.key, units[order.target].key, 'ranged'), 1.0, gun_rate,
+                              1.0 if reach is None else reach))
 
         slots.sort(key=lambda s: (units[s[1]].index, units[s[0]].index))
         return slots, partners
@@ -561,7 +598,7 @@ class Battle:
         modifiers = self._modifiers
         total_fronts = {uid: sum(units[p].front for p in ps) for uid, ps in partners.items()}
         arrows = []
-        for attacker, target, mode, matchup, share, gun_rate in slots:
+        for attacker, target, mode, matchup, share, gun_rate, reach in slots:
             unit = units[attacker]
             stats = unit.regiment.stats
             if mode == 'melee':
@@ -583,6 +620,8 @@ class Battle:
                 # (coef * size) * kill_rate first: same operation order as Simulation, for bit-identical
                 # 1-v-1 draws (the infantry-v-infantry matchup is 1.0, an exact multiply)
                 rate = c * unit.size * combat.ranged_kill_rate * matchup
+            if reach != 1.0:
+                rate = rate * reach
             mod = modifiers.get(attacker)
             if mod is not None:
                 rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))

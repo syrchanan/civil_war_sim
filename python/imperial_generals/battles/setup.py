@@ -21,6 +21,7 @@ with where it is ("Unit 3 (cs_cav): ...").
         stats: 6/6/1/0                             # experience/morale/weapon/melee-only
         front_size: 450                            # optional
         meta: {player: p1}                         # optional, free-form
+        position: {x: 400, y: 900, facing: 0}      # optional, yards on open ground; facing in compass degrees
 
 A scenario is a setup plus a script of ``rounds`` (and optionally ``finish``); see ``imperial_generals.api``.
 It can also say what should happen (``expect``, see ``imperial_generals.validation``) and carry players'
@@ -37,11 +38,12 @@ from imperial_generals.battles.battle import Battle, validate_side_modifiers
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
 from imperial_generals.units.Regiment import _parse_stats
-from imperial_generals.utils import Rng
+from imperial_generals.utils import Position, Rng
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
 TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'side_modifiers', 'sides', 'units')
-UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'side', 'size', 'stats', 'subtype', 'type')
+UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'position', 'side', 'size', 'stats', 'subtype', 'type')
+POSITION_KEYS = ('facing', 'x', 'y')
 MAX_SEED = 2 ** 32 - 1
 
 
@@ -78,6 +80,31 @@ def _side(value, sides: list | None):
     if sides is not None and isinstance(value, str) and value in sides:
         return sides.index(value)
     return None
+
+
+def _number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def position_problem(place) -> str | None:
+    """What is wrong with a written position ``{x, y, facing?}`` (yards, compass degrees), or None."""
+    if not isinstance(place, dict):
+        return 'position must be a mapping {x, y, facing}.'
+    unknown = sorted(k for k in place if k not in POSITION_KEYS)
+    if unknown:
+        return f'unknown position key(s) {unknown}; use x, y, facing.'
+    if 'x' not in place or 'y' not in place:
+        return 'position needs x and y (yards).'
+    if not (_number(place['x']) and _number(place['y'])):
+        return 'position x and y must be numbers (yards).'
+    if place.get('facing') is not None and not _number(place['facing']):
+        return 'position facing must be a number (compass degrees) or left out.'
+    return None
+
+
+def open_ground(place: dict) -> Position:
+    """A written position as a Position on open ground (elevation 0, no cover)."""
+    return Position(place['x'], place['y'], 0, 0, 'open', place.get('facing'))
 
 
 def _build_unit(unit: dict, problems: list[str]) -> Regiment | None:
@@ -120,6 +147,10 @@ def _build_unit(unit: dict, problems: list[str]) -> Regiment | None:
         problems.append('front_size must be a positive whole number.')
     if not isinstance(unit.get('meta', {}), dict):
         problems.append('"meta" must be a mapping.')
+    if 'position' in unit:
+        problem = position_problem(unit['position'])
+        if problem is not None:
+            problems.append(problem)
     if problems:
         return None
 
@@ -139,6 +170,8 @@ def _build_unit(unit: dict, problems: list[str]) -> Regiment | None:
         return None
     if front is not None:
         regiment.set_front_size(front)
+    if 'position' in unit:
+        regiment.deploy(open_ground(unit['position']))
     return regiment
 
 
