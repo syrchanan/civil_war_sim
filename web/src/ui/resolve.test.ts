@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest';
 import battles from '../../../test_cases/parity/battles.json';
 import { chargeText, status } from './format';
 import { createStore } from './store';
+import { closeRanks } from './testing';
 
 const started = () => {
   const s = createStore(1863);
+  closeRanks(s);
   s.start();
   return s;
 };

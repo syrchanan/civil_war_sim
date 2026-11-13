@@ -9,6 +9,7 @@ import { useState } from 'preact/hooks';
 import defaults from '../engine/defaults.json';
 import { ArtilleryBattery, type BattleUnit, type Engagement, type Modifier, ON_BREAK } from '../engine';
 import { EstimatePanel } from './EstimatePanel';
+import { rangeText } from './format';
 import type { Store } from './store';
 
 /** Action word -> engine mode (config/sheets.yaml: fire, charge, hold). */
@@ -53,6 +54,7 @@ function OrderRow({ store, unit, expected, admin }:
   store.revision.value; // redraw when the battle changes (e.g. the unit breaks: hold or rally only)
   const order = store.effectiveOrders.value[unit.uid];
   const battery = unit.regiment instanceof ArtilleryBattery;
+  const range = store.rangeOf(unit.uid);
   const can: string[] = store.actionsFor(unit.uid); // only what the unit can do (its current order stays listed)
   const label = (what: string) => `${unit.name} ${what}`;
   return (
@@ -75,6 +77,8 @@ function OrderRow({ store, unit, expected, admin }:
             ))}
           </select>
         )}
+        {range !== null && <span class={`note range${range.reach === 0 ? ' problems' : ''}`} aria-label={label('range')}>
+          {rangeText(range)}</span>}
       </td>
       <td data-label="Ammo">
         {battery && order.mode === 'ranged' ? (

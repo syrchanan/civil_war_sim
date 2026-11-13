@@ -4,11 +4,13 @@ export { ValueError } from './errors';
 export { exp, log } from './fdlibm';
 export { breakFraction, breakScale, MoraleState } from './morale';
 export {
-  AftermathParams, BattleParams, ChargeParams, CombatParams, MatchupParams, MoraleParams, RallyParams, roundHalfEven,
+  AftermathParams, BattleParams, ChargeParams, CombatParams, MatchupParams, MoraleParams, RallyParams, RangeParams,
+  roundHalfEven,
   UNIT_TYPES, WEAPON_CODES,
 } from './params';
 export type {
   AftermathData, ChargeData, CombatData, MatchupData, MatchupOverride, MoraleData, Overrides, ParamsData, RallyData,
+  RangeBand, RangeData,
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';

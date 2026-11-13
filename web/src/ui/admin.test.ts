@@ -2,14 +2,17 @@ import { describe, expect, it } from 'vitest';
 
 import { battleTag } from '../engine';
 import { createStore } from './store';
+import { closeRanks } from './testing';
 
 const admin = () => {
   const s = createStore(1863);
+  closeRanks(s);
   s.start();
   return s;
 };
 const player = (side: 0 | 1) => {
   const s = createStore(1863, 'player');
+  closeRanks(s);
   s.start();
   s.playerSide.value = side;
   return s;

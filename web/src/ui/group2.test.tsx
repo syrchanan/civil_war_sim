@@ -7,11 +7,13 @@ import { ratings } from '../engine';
 import { App } from './App';
 import { rallyText } from './format';
 import { createStore } from './store';
+import { closeRanks } from './testing';
 
 afterEach(cleanup);
 
 const started = (mode: 'admin' | 'player' = 'admin') => {
   const s = createStore(1863, mode);
+  closeRanks(s);
   s.start();
   return s;
 };
@@ -102,6 +104,7 @@ describe('the client', () => {
   const view = () => {
     const store = createStore(1863);
     render(<App store={store} />);
+    closeRanks(store);
     fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
     return store;
   };

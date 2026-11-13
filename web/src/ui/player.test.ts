@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { createStore, modeFromUrl, PLAN_FORMAT } from './store';
+import { closeRanks } from './testing';
 
 const player = (side: 0 | 1 = 0) => {
   const s = createStore(1863, 'player');
+  closeRanks(s);
   s.start();
   s.playerSide.value = side;
   return s;
@@ -42,6 +44,7 @@ describe('player mode: orders and expectations', () => {
   it("a melee-only enemy can't return fire, so it holds", () => {
     const s = createStore(1863, 'player');
     s.updateUnit('cs_8al', { stats: '5/6/0/1' });
+    closeRanks(s);
     s.start();
     s.setOrder('us_1mn', { mode: 'ranged', target: 'cs_8al' });
     expect(s.effectiveOrders.value.cs_8al.mode).toBe('idle');
@@ -121,6 +124,7 @@ describe('orders files', () => {
     const confed = player(1);
     confed.setOrder('cs_8al', { mode: 'melee', target: 'us_1mn', on_break: 'pursue' });
     const admin = createStore(1863);
+    closeRanks(admin);
     admin.start();
     expect(admin.loadPlans([
       { name: 'u.json', text: union.planDownload().text }, { name: 'c.json', text: confed.planDownload().text },
@@ -136,6 +140,7 @@ describe('orders files', () => {
     const plan = JSON.parse(union.planDownload().text);
     plan.positions = { us_1mn: { x: 450, y: 850 } };
     const admin = createStore(1863);
+    closeRanks(admin);
     admin.start();
     admin.faceUnit('us_1mn', 20);
     expect(admin.loadPlans([{ name: 'u.json', text: JSON.stringify(plan) }])).toEqual([]);
@@ -146,6 +151,7 @@ describe('orders files', () => {
     const s = player(0);
     const plan = JSON.parse(s.planDownload().text);
     const admin = createStore(1863);
+    closeRanks(admin);
     admin.start();
     const bad = (change: (p: Record<string, unknown>) => void) => {
       const p = structuredClone(plan);
@@ -177,6 +183,7 @@ describe('orders files', () => {
     const s = player(0);
     const text = s.planDownload().text;
     const admin = createStore(1863);
+    closeRanks(admin);
     admin.start();
     expect(admin.loadPlans([{ name: 'a.json', text }, { name: 'b.json', text }]))
       .toEqual(['b.json: us_1mn has orders in two files.']);
@@ -194,6 +201,7 @@ describe('player mode: edge cases', () => {
 
   it('an orders file without moves loads (as one written by hand)', () => {
     const admin = createStore(1863);
+    closeRanks(admin);
     admin.start();
     const plan = { format: PLAN_FORMAT, version: 1, battle: { seed: 1863, round: 1, time: 0 }, side: 0,
       orders: { us_1mn: { target: 'cs_8al', mode: 'ranged' } } };
