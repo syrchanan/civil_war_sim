@@ -30,7 +30,7 @@ describe('a player file: the battle as one side sees it', () => {
     const b = fought();
     const real = b.toDict();
     const file = playerFile(real, 0);
-    expect(file).toMatchObject({ format: PLAYER_FORMAT, version: 1, side: 0, tag: battleTag(real) });
+    expect(file).toMatchObject({ format: PLAYER_FORMAT, version: 2, side: 0, tag: battleTag(real) });
     const own = (d: StateData) => d.units.filter((u) => u.side === 0);
     expect(own(file.state)).toEqual(own(real));
     expect(file.state.seed).toBe(real.seed);

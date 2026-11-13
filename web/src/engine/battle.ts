@@ -17,6 +17,7 @@ import { RuntimeError, ValueError } from './errors';
 import { breakScale, MoraleState } from './morale';
 import { BattleParams, type Stats, type Unit } from './params';
 import { Rng } from './rng';
+import { sightBetween } from './sight';
 import { cosDeg, sinDeg } from './trig';
 import { battleFromDict, battleToDict, type StateData } from './state';
 import type { Terrain } from './terrain';
@@ -547,22 +548,7 @@ export class Battle {
     const p = this.unit(viewer).regiment.position;
     const q = this.unit(target).regiment.position;
     if (t === null || p === null || q === null) return true;
-    const sp = this.params.sight;
-    const d = this.distance(viewer, target)!;
-    const za = t.heightAt(p.x, p.y) + sp.eye_height[this.unit(viewer).key[0]];
-    const zb = t.heightAt(q.x, q.y) + sp.eye_height[this.unit(target).key[0]];
-    const steps = Math.floor(d / sp.sample_step);
-    for (let k = 1; k <= steps; k++) {
-      const s = k * sp.sample_step;
-      if (s < sp.edge_clear || d - s < sp.edge_clear) continue;
-      const f = s / d;
-      const x = p.x + (q.x - p.x) * f;
-      const y = p.y + (q.y - p.y) * f;
-      let ground = t.heightAt(x, y);
-      if (t.groundAt(x, y) === 'forest') ground = ground + sp.forest_height;
-      if (ground > za + (zb - za) * f) return false;
-    }
-    return true;
+    return sightBetween(t, this.params.sight, p, this.unit(viewer).key[0], q, this.unit(target).key[0]);
   }
 
   /** The share more (or less) the attacker's fire tells from its height over the target; 0 without terrain. */

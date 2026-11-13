@@ -286,14 +286,17 @@ describe('store: picking targets on the map', () => {
     expect(s.aiming.value).toBeNull();
   });
 
-  it('a player aims their own units (orders) and enemy units (what they expect)', () => {
+  it('a player aims only their own units: the map gives orders, never guesses about the enemy', () => {
     const s = started('player');
     s.clickUnit('cs_8al');
+    expect(s.aiming.value).toBeNull();
     s.clickUnit('us_1mn');
+    expect(s.aiming.value).toBe('us_1mn');
+    expect(s.targetChoice.value).toBeNull();      // no choice opened for the enemy against our unit
+    s.clickUnit('cs_8al');
     s.chooseAction('ranged');
-    expect(s.isAssumed('cs_8al')).toBe(true);
-    expect(s.effectiveOrders.value.cs_8al).toMatchObject({ mode: 'ranged', target: 'us_1mn' });
-    expect(s.orders.value.cs_8al.mode).toBe('idle');
+    expect(s.orders.value.us_1mn).toMatchObject({ mode: 'ranged', target: 'cs_8al' });
+    expect(s.isAssumed('cs_8al')).toBe(false);
   });
 });
 

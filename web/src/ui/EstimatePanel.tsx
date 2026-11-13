@@ -14,6 +14,9 @@ export function EstimatePanel({ store, disabled }: { store: Store; disabled: boo
   const name = (uid: string) => units.get(uid)!.name;
   const hidden = store.hiddenSide.value;
   const label = (uid: string) => `${name(uid)}${units.get(uid)!.side === hidden ? ' (guess)' : ''}`;
+  // from a player file the enemy rows rest on the player's guesses; practising, they would give away the real
+  // enemy, so they are left out
+  const fog = hidden === null ? store.fogSide.value : null;
   return (
     <div class="estimate">
       <h3>Estimate</h3>
@@ -34,7 +37,7 @@ export function EstimatePanel({ store, disabled }: { store: Store; disabled: boo
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(estimate.result.units).map(([uid, u]) => (
+                {Object.entries(estimate.result.units).filter(([uid]) => units.get(uid)!.side !== fog).map(([uid, u]) => (
                   <tr class={`side-${units.get(uid)!.side}`}>
                     <td>{label(uid)}</td>
                     <td class="num">{n(u.losses.p50)}</td>
@@ -61,6 +64,7 @@ export function EstimatePanel({ store, disabled }: { store: Store; disabled: boo
             From {estimate.result.runs} runs of the round with different dice. Typical: the middle run; 8 in 10:
             the range 8 runs in 10 fall in. Breaks: how often the unit ends the round broken.
             {hidden !== null && ' Enemy figures come from your guesses about their men and stats.'}
+            {fog !== null && ' Enemy units are left out: you can\'t see their figures.'}
           </p>
         </>
       )}

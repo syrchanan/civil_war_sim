@@ -287,7 +287,7 @@ export function OrdersPanel({ store }: { store: Store }) {
           <OrdersTable store={store} units={acting.filter((u) => u.side === side)} title="Your orders" expected={false} />
           <h3>What you expect the enemy to do</h3>
           <p class="note">Only for the preview and the estimate; your orders file never includes it.</p>
-          <OrdersTable store={store} units={acting.filter((u) => u.side !== side)}
+          <OrdersTable store={store} units={acting.filter((u) => u.side !== side && store.seenNow(u.uid))}
             title="What you expect the enemy to do" expected />
           {store.hiddenSide.value !== null && <Guesses store={store} />}
         </>

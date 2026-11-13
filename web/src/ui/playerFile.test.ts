@@ -99,6 +99,6 @@ describe('player: planning from their file', () => {
     const { file } = fromAdmin(0);
     const data = JSON.parse(file.text);
     data.version = 9;
-    expect(createStore(1, 'player').open(JSON.stringify(data))).toBe('Unsupported player file version 9 (expected 1).');
+    expect(createStore(1, 'player').open(JSON.stringify(data))).toBe('Unsupported player file version 9 (expected 1 or 2).');
   });
 });

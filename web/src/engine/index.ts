@@ -19,6 +19,8 @@ export type {
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';
+export { sightBetween, sightings } from './sight';
+export type { Sighting } from './sight';
 export {
   ArtilleryBattery, CavalryRegiment, closestMoraleStat, InfantryRegiment, parseStats, Regiment,
 } from './units';

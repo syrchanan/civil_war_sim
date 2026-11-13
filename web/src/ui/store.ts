@@ -12,7 +12,7 @@ import {
   ArtilleryBattery, Battle, BattleParams, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
   PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
-  type RoundReport, sideSummary, type SideSummary, Terrain, type UnitSpec, type Zone,
+  type RoundReport, roughly, sideSummary, sightings, type SideSummary, Terrain, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
@@ -74,7 +74,8 @@ export interface MapUnit {
   depth: number;
   broken: boolean;
   wiped: boolean;
-  rough: boolean; // an enemy unit in a player file: men roughly, or the player's guess
+  rough: boolean; // a unit seen through the fog of war (fogSide): men roughly, or the player's guess
+  lastSeen: number | null; // out of sight now: the round it was last seen at the start of (where it is drawn)
 }
 
 /** Picking a target on the map: the unit aiming, the enemy clicked, and what the unit can do to it. */
@@ -157,6 +158,44 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const hiddenSide = computed<0 | 1 | null>(() => (playerFileInfo.value === null ? null
     : (1 - playerFileInfo.value.side) as 0 | 1));
 
+  /**
+   * The side a viewer sees only from across the field (fog of war): the enemy, for a player once the battle has
+   * begun, whether from a player file or practising; null for the admin, and while the armies are being drafted.
+   * Its units show men roughly and no stats, morale or per-unit results until the battle is over.
+   */
+  const fogSide = computed<0 | 1 | null>(() => (revision.value, hiddenSide.value)
+    ?? (modeSignal.value === 'player' && battle.value !== null && !battle.value.finished
+      ? (1 - playerSide.value) as 0 | 1 : null));
+
+  /** Practising (no player file): what the player's side can see of the enemy, worked out from the real battle. */
+  const practiceSight = computed(() => (fogSide.value === null || hiddenSide.value !== null ? null
+    : sightings(battle.value!.toDict(), playerSide.value)));
+
+  /**
+   * Can the player see this unit now? Always for their own units, and with no fog. From a player file, every enemy
+   * unit in it is seen except those marked lost (meta.last_seen); practising, by line of sight.
+   */
+  function seenNow(uid: string): boolean {
+    const u = battle.value!.units.get(uid)!;
+    if (u.side !== fogSide.value) return true;
+    return practiceSight.value === null ? !('last_seen' in u.meta) : practiceSight.value.get(uid)!.now;
+  }
+
+  /** From a player file: the round an enemy unit was last seen at the start of, if it is out of sight now. */
+  function lastSeenRound(uid: string): number | null {
+    const u = battle.value!.units.get(uid)!;
+    return u.side === fogSide.value && typeof u.meta.last_seen === 'number' ? u.meta.last_seen : null;
+  }
+
+  /** Was this unit seen as round `n` began (for replays)? From a player file, its place is kept only if so. */
+  function seenAt(uid: string, n: number): boolean {
+    const b = battle.value!;
+    const u = b.units.get(uid)!;
+    if (u.side !== fogSide.value) return true;
+    if (practiceSight.value !== null) return practiceSight.value.get(uid)!.seen.has(n);
+    return uid in b.history[n - 1].positions || u.regiment.position === null;
+  }
+
   const history = computed<RoundReport[]>(() => {
     revision.value;
     return battle.value === null ? [] : [...battle.value.history];
@@ -209,6 +248,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return Object.fromEntries(Object.entries(orders.value).map(([uid, o]) => {
       if (!isEnemy(uid)) return [uid, o];
       const unit = battle.value!.units.get(uid)!;
+      if (!seenNow(uid)) return [uid, IDLE]; // out of sight: nothing to expect of it
       return [uid, assumptions.value[uid] ?? (unit.active ? defaultExpectation(unit) : IDLE)];
     }));
   });
@@ -229,7 +269,12 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   const orderOfBattleView = computed(() => {
     revision.value;
-    return battle.value === null ? null : orderOfBattle(battle.value.toDict());
+    if (battle.value === null) return null;
+    const data = battle.value.toDict();
+    // practising in the fog: only the enemy units ever seen (a player file holds no others)
+    const sight = practiceSight.value;
+    if (sight !== null) data.units = data.units.filter((u) => sight.get(u.id)?.last !== null);
+    return orderOfBattle(data);
   });
 
   const positions = signal<Record<string, Place>>({}); // places given before the battle starts
@@ -272,11 +317,19 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         place: u.regiment.position === null ? undefined
           : { x: u.regiment.position.x, y: u.regiment.position.y, facing: facingOf(u) },
       }));
-    const sized = shown.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
+    // a player file already holds the enemy's men roughly (or the player's guesses); practising, round them here
+    const seen = hiddenSide.value === null && fogSide.value !== null
+      ? shown.map((u) => (u.side === fogSide.value ? { ...u, men: roughly(u.men), front: roughly(u.front) } : u))
+      : shown;
+    const sized = seen.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
     const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
-    return sized.map(({ front: _front, guns: _guns, place, ...u }) => {
+    // fog of war: an enemy unit out of sight is left out, unless a player file shows where it was last seen
+    const visible = (uid: string) => b === null || fogSide.value === null
+      || (n !== null ? seenAt(uid, n) : seenNow(uid) || lastSeenRound(uid) !== null);
+    return sized.filter((u) => visible(u.uid)).map(({ front: _front, guns: _guns, place, ...u }) => {
       const { x, y, facing } = place ?? { ...layout[u.uid], facing: defaultFacing(u.side) };
-      return { ...u, x, y, facing, rough: u.side === hiddenSide.value };
+      const lastSeen = b === null || n !== null ? null : lastSeenRound(u.uid);
+      return { ...u, x, y, facing, rough: u.side === fogSide.value, lastSeen };
     });
   });
 
@@ -285,6 +338,12 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
    * replaying a round, the orders given for it.
    */
   const orderArrows = computed<OrderArrow[]>(() => {
+    // no arrow to or from a unit out of sight
+    const shown = new Set(mapUnits.value.map((u) => u.uid));
+    return allArrows.value.filter((a) => shown.has(a.from) && shown.has(a.to));
+  });
+
+  const allArrows = computed<OrderArrow[]>(() => {
     revision.value;
     if (battle.value !== null && mapRound.value !== null) {
       const b = battle.value;
@@ -378,7 +437,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   function targetsFor(uid: string): BattleUnit[] {
     const units = [...battle.value!.units.values()];
     const side = battle.value!.units.get(uid)!.side;
-    return units.filter((u) => u.side !== side && u.size > 0);
+    // only what can be seen: not an enemy unit out of sight, nor one only last seen somewhere
+    return units.filter((u) => u.side !== side && u.size > 0 && seenNow(u.uid));
   }
 
   /** Change one unit's order; a new mode gets a target, its default on-break choice, and ammo for batteries. */
@@ -516,6 +576,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   function cancelTargeting(): void {
+    // clicking the target focused (and so selected) it; the unit given the order stays the one selected
+    if (aiming.value !== null) selected.value = aiming.value;
     aiming.value = null;
     targetChoice.value = null;
   }
@@ -523,7 +585,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   /**
    * A unit clicked on the map, while the battle is being fought (not replaying). With a unit aiming, an enemy it
    * can target opens the choice of fire or charge; otherwise a unit that can act starts aiming (the aiming unit
-   * again stops). A player aims their own units (orders) and enemy units (what they expect of them).
+   * again stops). A player aims only their own units: the map gives orders. What they expect of the enemy is set in
+   * its own table, so a click on an enemy unit only selects it (or picks it as the target).
    */
   function clickUnit(uid: string): void {
     const b = battle.value;
@@ -535,7 +598,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
     targetChoice.value = null;
     if (uid === from) aiming.value = null;
-    else if (b.units.get(uid)!.active && actionsFor(uid).length > 0) aiming.value = uid;
+    else if (b.units.get(uid)!.active && !isEnemy(uid) && actionsFor(uid).length > 0) aiming.value = uid;
   }
 
   /** Confirm the picked target: the aiming unit fires on or charges it. */
@@ -644,8 +707,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         if (modeSignal.value === 'admin') {
           return `This is the ${data.state.meta.sides[data.side]} player's file; open the full battle file instead.`;
         }
-        if (data.version !== PLAYER_VERSION) {
-          return `Unsupported player file version ${data.version} (expected ${PLAYER_VERSION}).`;
+        // version 1 files (before the fog of war on the terrain) still open
+        if (data.version !== 1 && data.version !== PLAYER_VERSION) {
+          return `Unsupported player file version ${data.version} (expected 1 or ${PLAYER_VERSION}).`;
         }
         file = { side: data.side, tag: data.tag };
         b = Battle.fromDict(data.state);
@@ -842,9 +906,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
-    estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
+    estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, fogSide, guesses, setGuess,
     modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier, rangeOf,
-    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain,
+    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain, seenNow,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

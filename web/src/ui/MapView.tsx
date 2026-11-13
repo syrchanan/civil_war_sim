@@ -16,6 +16,7 @@ import type { Terrain, TerrainData } from '../engine';
 import { arcPath, bearing, FIELD, type Point, turned } from './field';
 import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
+import { UnitInfo } from './UnitInfo';
 
 /** Engine mode -> action word, capitalised (config/sheets.yaml: fire, charge). */
 const ACTION_WORDS: Record<string, string> = Object.fromEntries(Object.entries(defaults.names.actions)
@@ -192,11 +193,15 @@ function Block({ store, unit, movable, selectable, aim }:
   const dragged = useRef(false); // a drag ends in a click, which is not a click on the unit
   const turning = useRef(false);
   const svgOf = (el: Element) => el.closest('svg') as SVGSVGElement;
-  const men = `${unit.rough ? 'about ' : ''}${unit.men.toLocaleString('en-US')}`;
+  // rough numbers read '~800' on the map and 'about 800' to a screen reader
+  const count = unit.men.toLocaleString('en-US');
+  const men = `${unit.rough ? 'about ' : ''}${count}`;
+  const shown = `${unit.rough ? '~' : ''}${count}${unit.lastSeen === null ? '' : `, last seen round ${unit.lastSeen}`}`;
   const ground = store.terrain.value;
   const standing = ground === null ? ''
     : `, ${Math.round(ground.heightAt(unit.x, unit.y))} yd up on ${ground.groundAt(unit.x, unit.y)} ground`;
-  const label = `${unit.name}, ${men} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°${standing}`;
+  const seen = unit.lastSeen === null ? '' : `, last seen as round ${unit.lastSeen} began`;
+  const label = `${unit.name}, ${men} men${seen}, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°${standing}`;
   // two text lines (name, men): below the block for side 0, above it for side 1
   // labels and the turn handle stay clear of the symbol (drawn upright, echelon bars on top) when it is shown
   const below = Math.max(unit.depth / 2, layers.symbols ? SYMBOL.height / 2 : 0);
@@ -206,7 +211,7 @@ function Block({ store, unit, movable, selectable, aim }:
   const handle = layers.symbols ? Math.max(unit.depth / 2, Math.hypot(SYMBOL.width / 2, SYMBOL.height / 2 + ECHELON))
     : unit.depth / 2;
   return (
-    <g class={`map-unit side-${unit.side}${unit.broken ? ' broken' : ''}${unit.wiped ? ' wiped' : ''}${aim}`}
+    <g class={`map-unit side-${unit.side}${unit.broken ? ' broken' : ''}${unit.wiped ? ' wiped' : ''}${unit.lastSeen !== null ? ' lost' : ''}${aim}`}
       transform={`translate(${unit.x} ${unit.y})`} role="button" aria-label={label}
       tabindex={movable || selectable ? 0 : undefined}
       onFocus={() => store.selectUnit(unit.uid)}
@@ -273,10 +278,12 @@ function Block({ store, unit, movable, selectable, aim }:
         )}
       </g>
       {layers.symbols && <NatoSymbol type={unit.type} />}
+      {/* out of sight: drawn where it was last seen, marked with a question mark */}
+      {unit.lastSeen !== null && <text class="lost-mark" text-anchor="middle" dominant-baseline="central">?</text>}
       {layers.labels && (
         <text y={labelY} text-anchor="middle">
           <tspan class="unit-name">{unit.name}</tspan>
-          <tspan class="unit-men" x="0" dy="1.1em">{men}</tspan>
+          <tspan class="unit-men" x="0" dy="1.1em">{shown}</tspan>
         </text>
       )}
     </g>
@@ -327,8 +334,9 @@ export function MapView({ store }: { store: Store }) {
   const gridY = Array.from({ length: FIELD.height / GRID - 1 }, (_, i) => (i + 1) * GRID);
   const layers = store.layers.value;
   const focused = store.focusedUnit.value;
-  const arcs = layers.allArcs ? units.filter((u) => !u.wiped).map((u) => u.uid)
-    : focused !== null && byId[focused] !== undefined ? [focused] : [];
+  // no arc for a unit only last seen: where it faces now is unknown
+  const arcs = (layers.allArcs ? units.filter((u) => !u.wiped).map((u) => u.uid)
+    : focused !== null && byId[focused] !== undefined ? [focused] : []).filter((uid) => byId[uid].lastSeen === null);
   return (
     <div class="map">
       <LayersPanel store={store} />
@@ -382,6 +390,7 @@ export function MapView({ store }: { store: Store }) {
           {choice !== null && <TargetMenu store={store} choice={choice} at={byId[choice.to]} />}
         </div>
       </div>
+      <UnitInfo store={store} />
       <p class="note">
         {aiming !== null ? `Pick a target for ${byId[aiming].name}: click an enemy (Escape to stop). ` : ''}
         {selectable && aiming === null ? 'Click a unit, then an enemy, to give it a target. ' : ''}

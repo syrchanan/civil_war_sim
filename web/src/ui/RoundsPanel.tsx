@@ -8,8 +8,8 @@ import { StrengthCharts } from './StrengthCharts';
 function Round({ store, report, open }: { store: Store; report: RoundReport; open: boolean }) {
   const units = store.battle.value!.units;
   const name = (uid: string) => units.get(uid)!.name;
-  // from a player file, only the player's own units
-  const rows = Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.hiddenSide.value);
+  // a player sees only their own units' figures (fog of war)
+  const rows = Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.fogSide.value);
   return (
     <details open={open}>
       <summary>Round {report.round} ({report.start.toFixed(0)}–{report.end.toFixed(0)} min)</summary>

@@ -62,7 +62,7 @@ describe('player: planning from their file', () => {
     const real = admin.battle.value!.units.get('cs_8al')!.size;
     const block = screen.getByRole('button', { name: /^8th Alabama,/ });
     expect(block.getAttribute('aria-label')).toMatch(/^8th Alabama, about \d[\d,]* men/);
-    expect(block.querySelector('.unit-men')!.textContent).toMatch(/^about /);
+    expect(block.querySelector('.unit-men')!.textContent).toMatch(/^~\d/);
     expect(real % 50).not.toBe(0);                                     // so the rough number differs
   });
 
@@ -70,7 +70,7 @@ describe('player: planning from their file', () => {
     setup(0);
     const rows = within(screen.getByRole('table', { name: 'Order of battle' })).getAllByRole('row');
     const enemy = rows[2].textContent!;
-    expect(enemy).toContain('about');
+    expect(enemy).toContain('~');
     expect(rows[2].querySelectorAll('td')[6].textContent).toBe('—');
     expect(rows[1].querySelectorAll('td')[6].textContent).not.toBe('—');
   });

@@ -74,17 +74,17 @@ describe('player view', () => {
     expect(names).toEqual(['orders-1863-round-1-Union.json']);
   });
 
-  it('can only move its own units once the battle has started; enemy units can still be aimed', () => {
+  it('can only move its own units once the battle has started; enemy units are selected, not aimed', () => {
     const store = playerView('0');
     const enemy = () => screen.getByRole('button', { name: /^8th Alabama,/ });
     expect(screen.getByRole('button', { name: /^1st Minnesota,/ }).querySelector('.turn-handle')).not.toBeNull();
-    expect(enemy().getAttribute('tabindex')).toBe('0');           // selectable, to aim it or target it
+    expect(enemy().getAttribute('tabindex')).toBe('0');           // selectable, to read it or target it
     expect(enemy().querySelector('.turn-handle')).toBeNull();
     const x = store.mapUnits.value.find((u) => u.uid === 'cs_8al')!.x;
     fireEvent.keyDown(enemy(), { key: 'ArrowLeft' });
     expect(store.mapUnits.value.find((u) => u.uid === 'cs_8al')!.x).toBe(x);
     fireEvent.click(enemy());
-    expect(store.aiming.value).toBe('cs_8al');                    // what the player expects it to do
+    expect(store.aiming.value).toBeNull();                        // guesses are set in their own table
   });
 
   it('before the battle there are no orders to download and no side to pick yet', () => {
