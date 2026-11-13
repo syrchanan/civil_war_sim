@@ -7,12 +7,14 @@
 import { useState } from 'preact/hooks';
 
 import defaults from '../engine/defaults.json';
-import { ArtilleryBattery, type BattleUnit, type Engagement, ON_BREAK } from '../engine';
+import { ArtilleryBattery, type BattleUnit, type Engagement, type Modifier, ON_BREAK } from '../engine';
 import { EstimatePanel } from './EstimatePanel';
 import type { Store } from './store';
 
 /** Action word -> engine mode (config/sheets.yaml: fire, charge, hold). */
 const ACTIONS = Object.entries(defaults.names.actions) as [string, string][];
+/** What a broken unit can be ordered: hold, or try to rally. */
+const BROKEN_ACTIONS: [string, string][] = [['hold', 'idle'], ['rally', 'rally']];
 const AMMO = Object.entries(defaults.names.ammo) as [string, string][];
 const ON_BREAK_LABELS: Record<string, string> = {
   keep: 'keep firing', strongest: 'switch to the strongest', weakest: 'switch to the weakest',
@@ -48,6 +50,7 @@ function Preview({ store, arrows }: { store: Store; arrows: Engagement[] }) {
 
 function OrderRow({ store, unit, expected, admin }:
   { store: Store; unit: BattleUnit; expected: boolean; admin: boolean }) {
+  store.revision.value; // redraw when the battle changes (e.g. the unit breaks: hold or rally only)
   const order = store.effectiveOrders.value[unit.uid];
   const battery = unit.regiment instanceof ArtilleryBattery;
   const can: string[] = store.actionsFor(unit.uid); // only what the unit can do (its current order stays listed)
@@ -58,12 +61,13 @@ function OrderRow({ store, unit, expected, admin }:
       <td data-label="Action">
         <select aria-label={label('action')} value={order.mode}
           onChange={(e) => store.setOrder(unit.uid, { mode: e.currentTarget.value })}>
-          {ACTIONS.filter(([, mode]) => mode === 'idle' || mode === order.mode || can.includes(mode))
+          {(unit.morale.broken ? BROKEN_ACTIONS
+            : ACTIONS.filter(([, mode]) => mode === 'idle' || mode === order.mode || can.includes(mode)))
             .map(([word, mode]) => <option value={mode}>{word}</option>)}
         </select>
       </td>
       <td data-label="Target">
-        {order.mode === 'idle' ? '—' : (
+        {order.target === null ? '—' : (
           <select aria-label={label('target')} value={order.target!}
             onChange={(e) => store.setOrder(unit.uid, { target: e.currentTarget.value })}>
             {store.targetsFor(unit.uid).map((t) => (
@@ -81,7 +85,7 @@ function OrderRow({ store, unit, expected, admin }:
         ) : '—'}
       </td>
       <td data-label="If the target breaks">
-        {order.mode === 'idle' ? '—' : (
+        {order.target === null ? '—' : (
           <select aria-label={label('if the target breaks')} value={order.on_break!}
             onChange={(e) => store.setOrder(unit.uid, { on_break: e.currentTarget.value })}>
             {ON_BREAK[order.mode].map((choice) => <option value={choice}>{ON_BREAK_LABELS[choice]}</option>)}
@@ -221,6 +225,49 @@ function Modifiers({ store }: { store: Store }) {
   );
 }
 
+/** Admin: the whole-battle modifiers per side (commander, supply, events), in percent, with a note. */
+function SideModifiers({ store }: { store: Store }) {
+  const [problem, setProblem] = useState<string | null>(null);
+  const mods = store.sideModifiers.value;
+  const sides = store.sides.value;
+  const count = Object.keys(mods).length;
+  const set = (side: 0 | 1, change: Partial<Modifier>) => setProblem(store.setSideModifier(side, change));
+  return (
+    <details class="modifiers">
+      <summary>Side modifiers for the whole battle ({count === 0 ? 'none set' : `${count} set`})</summary>
+      <p class="note">Percent changes for every unit of a side, from now until you change them, e.g. fire -10 for
+        poor supply or morale +10 for a trusted general. They add to the round's unit modifiers.</p>
+      <div class="table-wrap">
+        <table aria-label="Side modifiers" class="stack">
+          <thead>
+            <tr><th>Side</th><th class="num">Fire %</th><th class="num">Melee %</th><th class="num">Morale %</th>
+              <th>Note</th></tr>
+          </thead>
+          <tbody>
+            {([0, 1] as const).map((side) => (
+              <tr class={`side-${side}`}>
+                <td class="card-title">{sides[side]}</td>
+                {(['fire', 'melee', 'morale'] as const).map((key) => (
+                  <td class="num" data-label={`${key[0].toUpperCase()}${key.slice(1)} %`}>
+                    <input type="number" step="5" class="num" aria-label={`${sides[side]} ${key} % (whole battle)`}
+                      value={percent(mods[side]?.[key] ?? 0)}
+                      onInput={(e) => set(side, { [key]: Number(e.currentTarget.value) / 100 })} />
+                  </td>
+                ))}
+                <td data-label="Note">
+                  <input type="text" aria-label={`${sides[side]} note (whole battle)`} value={mods[side]?.note ?? ''}
+                    onInput={(e) => set(side, { note: e.currentTarget.value })} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          {problem !== null && <tfoot><tr><td colSpan={5} role="alert" class="problems">{problem}</td></tr></tfoot>}
+        </table>
+      </div>
+    </details>
+  );
+}
+
 export function OrdersPanel({ store }: { store: Store }) {
   const battle = store.battle.value!;
   const { arrows, error } = store.preview.value;
@@ -245,6 +292,7 @@ export function OrdersPanel({ store }: { store: Store }) {
           <Received store={store} />
           <OrdersTable store={store} units={acting} title="Orders" expected={false} admin />
           <Modifiers store={store} />
+          <SideModifiers store={store} />
         </>
       )}
       <div class="controls">

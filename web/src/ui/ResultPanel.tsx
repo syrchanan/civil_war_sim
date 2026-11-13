@@ -2,7 +2,7 @@
 
 import { useState } from 'preact/hooks';
 
-import type { FieldHolder, SideSummary } from '../engine';
+import { type FieldHolder, ratings, type SideSummary } from '../engine';
 import { fieldText } from './format';
 import type { Store } from './store';
 
@@ -11,6 +11,7 @@ const pct = (v: number) => `${(v * 100).toFixed(0)}%`;
 
 const SUMMARY_ROWS: [string, (s: SideSummary) => string][] = [
   ['Result', (s) => s.outcome],
+  ['Verdict', (s) => s.verdict],
   ['Started', (s) => n(s.started)],
   ['Killed', (s) => n(s.killed)],
   ['Wounded', (s) => n(s.wounded)],
@@ -57,6 +58,8 @@ export function ResultPanel({ store }: { store: Store }) {
     return store.mode.value === 'player' ? <p class="note">Not finished yet.</p> : <FinishControls store={store} />;
   }
   const result = battle.result!;
+  const rated = ratings(battle.toDict());
+  const share = (x: number) => `${Math.round(x * 100)}%`;
   return (
     <div class="result">
       <p class="field">{fieldText(result, store.sides.value)}</p>
@@ -67,6 +70,10 @@ export function ResultPanel({ store }: { store: Store }) {
             {SUMMARY_ROWS.map(([label, cell]) => (
               <tr><td>{label}</td>{summary.map((s) => <td class="num">{cell(s)}</td>)}</tr>
             ))}
+            <tr><td>Expected share / result</td>
+              {rated.map((r) => <td class="num">{share(r.expected)} / {share(r.result)}</td>)}</tr>
+            <tr><td>Commander rated as</td>
+              {rated.map((r) => <td class="num">{r.general.name} ({r.general.battle})</td>)}</tr>
           </tbody>
         </table>
       </div>
@@ -101,6 +108,9 @@ export function ResultPanel({ store }: { store: Store }) {
         </table>
       </div>
       <p class="note">Final = Started − Killed − Wounded − Prisoners + Returned (wounded who recover rejoin).</p>
+      <p class="note">Commander rating: each side's share of the result (enemy casualties, the field, enemy routs)
+        against the share its strength led to expect (men, experience, morale and weapons as the battle began).
+        Doing better than the odds rates higher; the ladder runs from Varro to Hannibal.</p>
     </div>
   );
 }

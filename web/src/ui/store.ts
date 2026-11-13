@@ -98,6 +98,9 @@ const onOpenGround = (p: Place) => ({ x: p.x, y: p.y, z: 0, cover: 0, terrain_ty
 const facingOf = (u: BattleUnit): number => u.regiment.position?.facing ?? defaultFacing(u.side as 0 | 1);
 
 const IDLE: Order = { mode: 'idle', target: null, ammo: null, on_break: null };
+const RALLY: Order = { mode: 'rally', target: null, ammo: null, on_break: null };
+const NO_MODIFIER: Modifier = { fire: 0, melee: 0, morale: 0, note: '' };
+const isEmptyModifier = (m: Modifier) => m.fire === 0 && m.melee === 0 && m.morale === 0 && m.note === '';
 
 export type Mode = 'player' | 'admin';
 export const PLAN_FORMAT = 'imperial-generals-orders';
@@ -153,10 +156,19 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return battle.value?.finished ? sideSummary(battle.value.toDict()) : null;
   });
 
-  /** Units that can still be given orders. */
+  /** Can this unit be ordered to rally now: broken, not wiped out, with a try left and not rallied before? */
+  const canRally = (uid: string): boolean => battle.value!.rallyProblem(uid) === null;
+
+  /** Units that can still be given orders: those standing, and broken ones that can still try to rally. */
   const actingUnits = computed<BattleUnit[]>(() => {
     revision.value;
-    return battle.value === null ? [] : [...battle.value.units.values()].filter((u) => u.active);
+    return battle.value === null ? [] : [...battle.value.units.values()].filter((u) => u.active || canRally(u.uid));
+  });
+
+  /** The side modifiers in force (whole battle): set by the admin, they last until changed. */
+  const sideModifiers = computed<Record<string, Modifier>>(() => {
+    revision.value;
+    return battle.value === null ? {} : { ...battle.value.sideModifiers };
   });
 
   const isEnemy = (uid: string) =>
@@ -271,7 +283,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (battle.value === null || battle.value.finished) return [];
     const eff = effectiveOrders.value;
     return actingUnits.value
-      .filter((u) => eff[u.uid].mode !== 'idle')
+      .filter((u) => eff[u.uid].target !== null) // hold and rally have no target
       .map((u) => ({ from: u.uid, to: eff[u.uid].target!, mode: eff[u.uid].mode, side: u.side }));
   });
 
@@ -358,8 +370,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const current = effectiveOrders.value[uid];
     let next: Order = { ...current, ...change };
     if (change.mode !== undefined && change.mode !== current.mode) {
-      if (change.mode === 'idle') {
-        next = IDLE;
+      if (change.mode === 'idle' || change.mode === 'rally') {
+        next = change.mode === 'idle' ? IDLE : RALLY;
       } else {
         const battery = battle.value!.units.get(uid)!.regiment instanceof ArtilleryBattery;
         next = {
@@ -387,9 +399,28 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     modifiers.value = empty ? rest : { ...rest, [uid]: next };
   }
 
-  /** Admin: units that can act but have no orders yet, from a file or the admin (they would hold). */
+  /**
+   * Admin: change one side's whole-battle modifiers (fractions); all zero and no note clears them. Returns what is
+   * wrong (the modifiers stay as they were), or null.
+   */
+  function setSideModifier(side: 0 | 1, change: Partial<Modifier>): string | null {
+    const b = battle.value!;
+    const next = { ...(b.sideModifiers[side] ?? NO_MODIFIER), ...change };
+    const all: Record<string, Modifier> = { ...b.sideModifiers };
+    delete all[side];
+    if (!isEmptyModifier(next)) all[side] = next;
+    try {
+      b.setSideModifiers(all);
+    } catch (error) {
+      return (error as Error).message;
+    }
+    touch();
+    return null;
+  }
+
+  /** Admin: standing units that have no orders yet, from a file or the admin (they would hold). */
   const withoutOrders = computed<BattleUnit[]>(() => actingUnits.value
-    .filter((u) => !(u.uid in orderSources.value) && orders.value[u.uid].mode === 'idle'));
+    .filter((u) => u.active && !(u.uid in orderSources.value) && orders.value[u.uid].mode === 'idle'));
 
   /** Forget this round's admin work: modifiers and the players' files loaded. */
   function newRound(): void {
@@ -511,7 +542,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
     newRound();
     orders.value = Object.fromEntries(Object.entries(orders.value).map(([uid, o]) => {
-      const keep = o.mode !== 'idle' && b.units.get(uid)!.active && b.units.get(o.target!)!.size > 0;
+      // hold and rally have no target; a rally is for one round
+      const keep = o.target !== null && b.units.get(uid)!.active && b.units.get(o.target)!.size > 0;
       return [uid, keep ? o : IDLE];
     }));
     touch();
@@ -580,7 +612,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         seed: b.seed, round: b.round + 1, time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()),
       },
       side, side_name: sides.value[side],
-      orders: Object.fromEntries(own.filter((u) => u.active).map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
+      orders: Object.fromEntries(actingUnits.value.filter((u) => u.side === side)
+        .map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
       positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
     };
     const name = `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
@@ -731,7 +764,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
-    modifiers, setModifier, plansLoaded, orderSources, withoutOrders,
+    modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
