@@ -9,13 +9,14 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
+  ArtilleryBattery, Battle, BattleParams, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
   PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, sideSummary, type SideSummary, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
+import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
 
 export type UnitType = 'inf' | 'cav' | 'art';
 
@@ -445,6 +446,48 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   const aiming = signal<string | null>(null); // the unit whose target is being picked on the map
+  const selected = signal<string | null>(null); // the unit last clicked or tabbed to on the map
+  const layers = signal<Layers>(loadLayers()); // what the map shows, remembered per viewer
+
+  function setLayer(key: LayerKey, on: boolean): void {
+    layers.value = { ...layers.value, [key]: on };
+    saveLayers(layers.value);
+  }
+
+  /** The unit the map highlights: the one picking a target, else the one last selected. */
+  const focusedUnit = computed<string | null>(() => aiming.value ?? selected.value);
+
+  function selectUnit(uid: string | null): void {
+    selected.value = uid;
+  }
+
+  const MELEE_REACH = 100; // yards: how far a melee-only unit's front arc is drawn
+
+  /**
+   * A unit's front arc for the map: where it stands and faces, half the front arc, and its close and maximum range
+   * (artillery by its ordered ammo, else the default; melee-only units a short way out). Before the battle, from
+   * the unit drafts and the default params; null when a draft's stats can't be read.
+   */
+  function arcOf(uid: string): { x: number; y: number; facing: number; half: number; close: number; max: number } | null {
+    const m = mapUnits.value.find((u) => u.uid === uid)!;
+    const b = battle.value;
+    const params = b?.params ?? BattleParams.defaults();
+    let stats;
+    try {
+      stats = b === null ? parseStats(units.value.find((u) => u.id === uid)!.stats) : b.units.get(uid)!.regiment.stats;
+    } catch {
+      return null;
+    }
+    const at = { x: m.x, y: m.y, facing: m.facing, half: params.flanks.front_arc / 2 };
+    if (params.combat.unitCoef(stats, 'ranged') <= 0) return { ...at, close: 0, max: MELEE_REACH };
+    const r = params.range;
+    if (m.type === 'art') {
+      const o = b === null ? null : effectiveOrders.value[uid];
+      const band = r.artillery[(o?.mode === 'ranged' ? o.ammo : null) ?? params.combat.artillery_default_ammo];
+      return { ...at, ...band };
+    }
+    return { ...at, ...r.small_arms[String(Math.max(-2, Math.min(2, stats[2])))] };
+  }
   const targetChoice = signal<TargetChoice | null>(null); // the enemy picked, waiting for fire or charge
 
   /** What a unit can do to an enemy: fire if it has a ranged weapon, charge if it can fight hand to hand. */
@@ -780,6 +823,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
     modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier, rangeOf,
+    layers, setLayer, focusedUnit, selectUnit, arcOf,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }
