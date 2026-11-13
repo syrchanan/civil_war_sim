@@ -2,11 +2,13 @@
 
 All notable changes to this project are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
-Nothing has been released yet: everything up to the first public site is 0.1.0-alpha.
+Design decisions and status live in `docs/ROADMAP.md`.
 
 ## [Unreleased]
 
-Working towards 0.1.0-alpha, the first site. Design decisions and status live in `docs/ROADMAP.md`.
+## [0.1.0-alpha] - 2026-11-13
+
+The first public site: everything up to it.
 
 ### Added
 - Phase A, the Python engine:
