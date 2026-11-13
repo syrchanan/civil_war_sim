@@ -201,7 +201,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -212,6 +217,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -749,7 +793,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -760,6 +809,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 180.0,
@@ -1829,7 +1917,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -1840,6 +1933,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -2373,7 +2505,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -2384,6 +2521,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 180.0,
@@ -3432,7 +3608,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -3443,6 +3624,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -3980,7 +4200,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -3991,6 +4216,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 180.0,
@@ -5050,7 +5314,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -5061,6 +5330,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -5704,7 +6012,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -5715,6 +6028,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 450.0,
@@ -7206,7 +7558,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -7217,6 +7574,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -7852,7 +8248,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -7863,6 +8264,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 450.0,
@@ -9330,7 +9770,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -9341,6 +9786,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -9976,7 +10460,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -9987,6 +10476,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 450.0,
@@ -11453,7 +11981,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -11464,6 +11997,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -12148,7 +12720,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -12159,6 +12736,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 330.0,
@@ -13731,7 +14347,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -13742,6 +14363,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -14422,7 +15082,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -14433,6 +15098,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 330.0,
@@ -15993,7 +16697,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -16004,6 +16713,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -16688,7 +17436,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -16699,6 +17452,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 330.0,
@@ -18265,7 +19057,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -18276,6 +19073,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -18856,7 +19692,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -18867,6 +19708,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 195.0,
@@ -20049,7 +20929,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -20060,6 +20945,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -20640,7 +21564,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -20651,6 +21580,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 195.0,
@@ -21833,7 +22801,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -21844,6 +22817,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -22425,7 +23437,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -22436,6 +23453,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 195.0,
@@ -23608,7 +24664,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -23619,6 +24680,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -24059,7 +25159,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -24070,6 +25175,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 120.0,
@@ -24797,7 +25941,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -24808,6 +25957,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -25252,7 +26440,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -25263,6 +26456,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 120.0,
@@ -26007,7 +27239,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -26018,6 +27255,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -26462,7 +27738,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -26473,6 +27754,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 120.0,
@@ -27217,7 +28537,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -27228,6 +28553,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -27636,7 +29000,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -27647,6 +29016,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 150.0,
@@ -28332,7 +29740,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -28343,6 +29756,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -28751,7 +30203,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -28762,6 +30219,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 150.0,
@@ -29447,7 +30943,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -29458,6 +30959,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -29866,7 +31406,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -29877,6 +31422,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 150.0,
@@ -30562,7 +32146,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 2,
@@ -30573,6 +32162,45 @@
             "resolve": 0.4,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -31016,7 +32644,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 2,
@@ -31027,6 +32660,45 @@
             "resolve": 0.4,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 210.0,
@@ -31934,7 +33606,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 2,
@@ -31945,6 +33622,45 @@
             "resolve": 0.4,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -32388,7 +34104,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 2,
@@ -32399,6 +34120,45 @@
             "resolve": 0.4,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 210.0,
@@ -33306,7 +35066,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 2,
@@ -33317,6 +35082,45 @@
             "resolve": 0.4,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -33764,7 +35568,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 2,
@@ -33775,6 +35584,45 @@
             "resolve": 0.4,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 210.0,
@@ -34694,7 +36542,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -34705,6 +36558,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -35113,7 +37005,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -35124,6 +37021,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 50.0,
@@ -35819,7 +37755,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -35830,6 +37771,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -36238,7 +38218,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -36249,6 +38234,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 50.0,
@@ -36944,7 +38968,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -36955,6 +38984,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -37367,7 +39435,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -37378,6 +39451,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 50.0,
@@ -38097,7 +40209,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -38108,6 +40225,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 0.0,
@@ -38650,7 +40806,12 @@
                 "target": "cav",
                 "bonus": -1.0
               }
-            ]
+            ],
+            "speed": {
+              "inf": 120.0,
+              "cav": 350.0,
+              "art": 100.0
+            }
           },
           "rally": {
             "attempts": 1,
@@ -38661,6 +40822,45 @@
             "resolve": 0.3,
             "effectiveness": 0.75,
             "exposure": 1.25
+          },
+          "range": {
+            "falloff_exponent": 1.0,
+            "small_arms": {
+              "-2": {
+                "close": 10,
+                "max": 40
+              },
+              "-1": {
+                "close": 50,
+                "max": 150
+              },
+              "0": {
+                "close": 80,
+                "max": 250
+              },
+              "1": {
+                "close": 150,
+                "max": 500
+              },
+              "2": {
+                "close": 200,
+                "max": 600
+              }
+            },
+            "artillery": {
+              "round_shot": {
+                "close": 500,
+                "max": 1600
+              },
+              "shell": {
+                "close": 500,
+                "max": 1500
+              },
+              "canister": {
+                "close": 100,
+                "max": 400
+              }
+            }
           }
         },
         "time": 180.0,

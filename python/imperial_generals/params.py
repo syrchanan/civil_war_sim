@@ -363,12 +363,15 @@ class ChargeParams:
     spread: float = _charge_default('spread')
     falter_cost: float = _charge_default('falter_cost')
     shock_bonus: tuple = _charge_default('shock_bonus')
+    speed: dict = _charge_default('speed')
 
     def __post_init__(self) -> None:
-        if not isinstance(self.approach_minutes, dict) or set(self.approach_minutes) != set(UNIT_TYPES):
-            raise ValueError(f"approach_minutes needs exactly {list(UNIT_TYPES)}.")
-        if any(not v > 0 for v in self.approach_minutes.values()):
-            raise ValueError("approach_minutes must be > 0.")
+        for name in ('approach_minutes', 'speed'):
+            table = getattr(self, name)
+            if not isinstance(table, dict) or set(table) != set(UNIT_TYPES):
+                raise ValueError(f"{name} needs exactly {list(UNIT_TYPES)}.")
+            if any(not v > 0 for v in table.values()):
+                raise ValueError(f"{name} must be > 0.")
         for name in ('closing_fire_multiplier', 'numbers_weight', 'steadiness_weight', 'shock_weight',
                      'break_threshold', 'falter_threshold'):
             if not getattr(self, name) >= 0:
@@ -410,6 +413,55 @@ class ChargeParams:
         p_break = _sigmoid((x - self.break_threshold) / self.spread)
         p_falter = _sigmoid((-x - self.falter_threshold) / self.spread)
         return p_break, p_falter, max(0.0, 1.0 - p_break - p_falter)
+
+
+# =============================================================================
+# Range
+# =============================================================================
+
+def _range_default(key: str):
+    return field(default_factory=lambda: copy.deepcopy(get_config()['range'][key]))
+
+
+def _check_ranges(name: str, table, keys, what: str) -> None:
+    if not isinstance(table, dict):
+        raise ValueError(f"{name} must be a mapping of {what} to {{close, max}}.")
+    for key, r in table.items():
+        if key not in keys:
+            raise ValueError(f"{name}: unknown {what} {key!r}; one of {sorted(keys)}.")
+        if not isinstance(r, dict) or set(r) != {'close', 'max'}:
+            raise ValueError(f"{name} {key}: needs exactly close and max (yards).")
+        if not 0 <= r['close'] < r['max']:
+            raise ValueError(f"{name} {key}: close must be >= 0 and below max.")
+
+
+@dataclass(frozen=True)
+class RangeParams:
+    """Fire falling off with distance (yards); defaults from config/range.yaml."""
+
+    falloff_exponent: float = _range_default('falloff_exponent')
+    small_arms: dict = _range_default('small_arms')
+    artillery: dict = _range_default('artillery')
+
+    def __post_init__(self) -> None:
+        if not self.falloff_exponent > 0:
+            raise ValueError("falloff_exponent must be > 0.")
+        _check_ranges('small_arms', self.small_arms, {str(c) for c in WEAPON_CODES}, 'weapon code')
+        if set(self.small_arms) != {str(c) for c in WEAPON_CODES}:
+            raise ValueError(f"small_arms needs every weapon code {[str(c) for c in WEAPON_CODES]}.")
+        _check_ranges('artillery', self.artillery, set(self.artillery), 'ammo')
+
+    def reach(self, distance: float, close: float, far: float) -> float:
+        """Share of full effect at ``distance``: 1 up to ``close``, falling to 0 at ``far``."""
+        if distance <= close:
+            return 1.0
+        if distance >= far:
+            return 0.0
+        left = 1 - (distance - close) / (far - close)
+        if self.falloff_exponent == 1:
+            return left
+        from imperial_generals.utils.fdlibm import exp, log   # lazy: utils imports this module
+        return exp(self.falloff_exponent * log(left))
 
 
 # =============================================================================
@@ -500,8 +552,11 @@ class BattleParams:
     matchups: MatchupParams = field(default_factory=MatchupParams)
     charge: ChargeParams = field(default_factory=ChargeParams)
     rally: RallyParams = field(default_factory=RallyParams)
+    range: RangeParams = field(default_factory=RangeParams)
 
     def __post_init__(self) -> None:
+        if set(self.range.artillery) != set(self.combat.artillery_ammo):
+            raise ValueError(f"range.artillery needs every ammo: {sorted(self.combat.artillery_ammo)}.")
         if self.charge.battery_closing_ammo not in self.combat.artillery_ammo:
             raise ValueError(f"charge.battery_closing_ammo must be one of {sorted(self.combat.artillery_ammo)}.")
 

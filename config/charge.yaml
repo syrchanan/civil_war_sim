@@ -9,8 +9,13 @@
 # =============================================================================
 charge:
 
-  # Minutes of approach before the contact test, by charger type.
+  # Minutes of approach before the contact test, by charger type. With both units placed, this is the shortest
+  # approach: a charge from further away takes distance / speed (two units charging each other close the gap
+  # together: distance / (speed + speed)).
   approach_minutes: {inf: 5.0, cav: 2.0, art: 5.0}
+
+  # Charge speed in yards per minute (infantry at the double, cavalry at the charge, gun crews on foot).
+  speed: {inf: 120.0, cav: 350.0, art: 100.0}
 
   # The target's fire on a charger during the approach, as a multiple of its normal rate (close range).
   # Split evenly when several units charge the same target. A target that is itself charging, or locked in
