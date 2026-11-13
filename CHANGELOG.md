@@ -17,6 +17,9 @@ Design decisions and status live in `docs/ROADMAP.md`.
   with NATO symbols.
 - Flight (positions pass P3): broken units flee from the nearest enemy, slowing round after round, until safe or at
   the field's edge; fire fades as they get away, and slower pursuers lose them (`config/flight.yaml`).
+- Terrain (positions pass P4): a battle can be fought on generated ground (flat, hills, forest, badlands,
+  mountains; `config/terrain.yaml`), saved in the state file as a height and ground grid both engines read; drawn as
+  relief and woods layers on the map.
 
 ## [0.1.0-alpha] - 2026-11-13
 

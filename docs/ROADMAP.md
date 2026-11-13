@@ -70,8 +70,8 @@ parity, then the client. Tuning waits until the pass is done.
 | P1 | Range: fire falls off with distance; charges take the distance | ✓ (2026-11-13) |
 | P2 | Facing and flanks: fire only within the front arc; flank and rear attacks hit harder | ✓ (2026-11-13) |
 | P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ✓ (2026-11-13) |
-| P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ► next |
-| P5 | Elevation and line of sight from the terrain | ○ |
+| P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ✓ (2026-11-13) |
+| P5 | Elevation and line of sight from the terrain | ► next |
 
 ### Phase C — Later
 | Item | Status |
@@ -955,6 +955,24 @@ Built 2026-11-13 (`config/flight.yaml`, `FlightParams`).
   CLI). Units without a position or a known break time don't flee, so older battles are unchanged.
 - Simplifications: a fleeing unit keeps its facing (turning it needs `atan2`, not bit-identical across languages);
   a pursuit charge on a slow enough broken unit still makes contact at once, whatever the distance.
+
+### P4. Terrain map ✓
+Built 2026-11-13 (`battles/terrain.py`, `engine/terrain.ts`, `ui/terrainGen.ts`, `config/terrain.yaml`).
+- **The grid**, saved in the state file as `terrain`: square cells (20 yd: 100 × 60 on the 2000 × 1200 field),
+  `heights` in yards above the field's lowest ground (at cell centres), `ground` one letter per cell (o open,
+  f forest, r rough), and free-form `meta` (preset, seed). None is an open field, as before. Setup files and
+  scenarios carry it.
+- **Reading** (both engines, exact parity by fixture): `height_at(x, y)` interpolates between cell centres (level
+  beyond the outermost), `ground_at(x, y)` is the containing cell; off the grid, the nearest edge.
+- **Generating** (client only, once per battle): the map pipeline's elevation presets from `config/map.yaml`
+  (flat, hills, forest, badlands, mountains) — fractal Brownian motion, normalised, raised to the preset's exponent,
+  `base + (shaped − 0.5) × range` feet, with the field converted to map units (6.67 yd each) and heights to yards —
+  over seeded gradient noise (not the Python `opensimplex` library: the client is the only generator, so it needn't
+  match). Woods come from a second noise field at each preset's share (10–40%); open ground steeper than 0.12 yd per
+  yd is rough. The Voronoi cells and rivers of the old pipeline aren't used: water needs its own rules (later).
+- **Client**: a "Ground" choice before the battle (open field or a preset, generated from the battle's seed); two map
+  layers, Relief (eight height bands) and Woods and rough ground; a unit's label says its height and ground.
+- The engine doesn't use the terrain yet: P5 brings elevation and line of sight; cover stays held.
 
 ## Phase C — Later / parked
 
