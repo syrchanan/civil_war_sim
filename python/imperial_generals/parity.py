@@ -329,6 +329,25 @@ SYNTHETIC = {
         ],
         'finish': True,
     },
+    'flight': {
+        # broken units flee and slow; fire fades; a fast pursuer keeps up, a slow one loses contact; a pursuit
+        # charge by a slower unit never makes contact; fugitives stop at the field's edge or when safe
+        'params': {'flight': {'safe_distance': 900.0, 'step_minutes': 2.5, 'speed': {'cav': 600.0}}},
+        'units': [_u('r_weak', 0, 'inf', 'line', 300, '1/1/0/0', position={'x': 900, 'y': 600, 'facing': 0}),
+                  _u('r_cav', 0, 'cav', 'light', 200, '1/1/0/1', position={'x': 1300, 'y': 1150, 'facing': 0}),
+                  _u('r_far', 0, 'inf', 'line', 400, '5/5/0/0', position={'x': 150, 'y': 700, 'facing': 90}),
+                  _u('b_rifle', 1, 'inf', 'light', 1200, '8/8/1/0', position={'x': 900, 'y': 520, 'facing': 180}),
+                  _u('b_hussar', 1, 'cav', 'heavy', 400, '8/8/0/1', position={'x': 1300, 'y': 1100, 'facing': 180}),
+                  _u('b_line', 1, 'inf', 'line', 900, '7/7/0/0', position={'x': 1100, 'y': 640, 'facing': 270})],
+        'rounds': [
+            {'duration': 50, 'orders': {'b_rifle': _fire('r_weak'), 'b_hussar': _melee('r_cav', on_break='pursue'),
+                                        'b_line': _fire('r_weak'), 'r_weak': _fire('b_rifle'),
+                                        'r_cav': _melee('b_hussar')}},
+            {'duration': 40, 'orders': {'b_rifle': _fire('r_weak'), 'b_line': _melee('r_cav'),
+                                        'b_hussar': _melee('r_weak', on_break='pursue'), 'r_far': _fire('b_line')}},
+        ],
+        'finish': True,
+    },
     'broken_on_approach': {
         'units': [_u('s1', 0, 'inf', 'line', 3000, '9/9/2/0'), _u('s2', 0, 'inf', 'line', 3000, '9/9/2/0'),
                   _u('slow', 0, 'inf', 'line', 500, '5/5/0/0'), _u('weak', 1, 'inf', 'irregulars', 200, '1/1/-1/0'),

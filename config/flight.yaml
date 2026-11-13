@@ -1,0 +1,21 @@
+# =============================================================================
+# FLIGHT (positions pass P3)
+# A unit that breaks flees directly away from the nearest standing enemy, fast at first and slower and slower:
+#   speed(t) = speed × 2^(−t / half_life)        t: minutes since it broke
+# so it can never get further than speed × half_life / ln 2. It keeps fleeing round after round until no standing
+# enemy is within safe_distance, or it reaches the field's edge (the same field as the map). A rallied unit stands.
+# Positions move every step_minutes; fire on a fleeing unit fades as it gets away. A unit in pursuit contact keeps
+# up (and moves with it) while its charge speed (config/charge.yaml) is at least the fugitive's current speed;
+# otherwise the fugitive escapes. Units without a position don't flee. First guesses, untuned.
+# =============================================================================
+flight:
+
+  # Yards per minute at the moment of breaking, by unit type (artillery: crews leaving most of their guns).
+  speed: {inf: 80.0, cav: 250.0, art: 40.0}
+
+  half_life: 15.0
+  step_minutes: 1.0
+  safe_distance: 1000.0
+
+  # Yards, as the map: x from 0 to width, y from 0 to height.
+  field: {width: 2000.0, height: 1200.0}

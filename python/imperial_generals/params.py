@@ -465,6 +465,55 @@ class RangeParams:
 
 
 # =============================================================================
+# Flight
+# =============================================================================
+
+_LN2 = 0.6931471805599453
+
+
+def _flight_default(key: str):
+    return field(default_factory=lambda: copy.deepcopy(get_config()['flight'][key]))
+
+
+@dataclass(frozen=True)
+class FlightParams:
+    """Broken units fleeing: speeds, how fast they slow, when they stop; defaults from config/flight.yaml."""
+
+    speed: dict = _flight_default('speed')
+    half_life: float = _flight_default('half_life')
+    step_minutes: float = _flight_default('step_minutes')
+    safe_distance: float = _flight_default('safe_distance')
+    field: dict = _flight_default('field')
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.speed, dict) or set(self.speed) != set(UNIT_TYPES):
+            raise ValueError(f"speed needs exactly {list(UNIT_TYPES)}.")
+        if any(not v >= 0 for v in self.speed.values()):
+            raise ValueError("speed must be >= 0.")
+        for name in ('half_life', 'step_minutes'):
+            if not getattr(self, name) > 0:
+                raise ValueError(f"{name} must be > 0.")
+        if not self.safe_distance >= 0:
+            raise ValueError("safe_distance must be >= 0.")
+        if (not isinstance(self.field, dict) or set(self.field) != {'width', 'height'}
+                or any(not v > 0 for v in self.field.values())):
+            raise ValueError("field needs a width and a height > 0 (yards).")
+
+    def _decay(self, minutes: float) -> float:
+        from imperial_generals.utils.fdlibm import exp   # lazy: utils imports this module
+        return exp(-minutes * _LN2 / self.half_life)
+
+    def speed_at(self, unit_type: str, minutes: float) -> float:
+        """Yards per minute ``minutes`` after breaking."""
+        return self.speed[unit_type] * self._decay(minutes)
+
+    def fled(self, unit_type: str, since: float, until: float) -> float:
+        """Yards covered between ``since`` and ``until`` minutes after breaking."""
+        reach = self.speed[unit_type] * self.half_life / _LN2
+        return reach * (self._decay(since) - self._decay(until))
+
+
+# =============================================================================
 # Facing and flanks
 # =============================================================================
 
@@ -587,6 +636,7 @@ class BattleParams:
     rally: RallyParams = field(default_factory=RallyParams)
     range: RangeParams = field(default_factory=RangeParams)
     flanks: FlankParams = field(default_factory=FlankParams)
+    flight: FlightParams = field(default_factory=FlightParams)
 
     def __post_init__(self) -> None:
         if set(self.range.artillery) != set(self.combat.artillery_ammo):
