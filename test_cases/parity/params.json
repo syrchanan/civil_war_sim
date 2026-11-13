@@ -11427,6 +11427,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ],
@@ -11702,6 +11714,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ],
@@ -11975,6 +11999,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ],
@@ -12247,6 +12283,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ],
@@ -12522,6 +12570,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ],
@@ -12761,6 +12821,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ],
@@ -13037,6 +13109,18 @@
               "width": 2000.0,
               "height": 1200.0
             }
+          },
+          "sight": {
+            "eye_height": {
+              "inf": 2.0,
+              "cav": 3.0,
+              "art": 2.0
+            },
+            "forest_height": 12.0,
+            "sample_step": 10.0,
+            "edge_clear": 30.0,
+            "elevation_scale": 100.0,
+            "elevation_max": 0.15
           }
         }
       ]

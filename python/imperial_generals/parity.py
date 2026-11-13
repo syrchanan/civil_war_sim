@@ -450,6 +450,43 @@ def terrain_fixture() -> dict:
 
 SYNTHETIC['ranges']['terrain'] = fixture_terrain()
 
+
+def sight_terrain() -> dict:
+    """60 × 30 cells of 20 yards: a slope down from the west, a ridge in the middle, woods in the east."""
+    columns, rows, cell = 60, 30, 20.0
+    heights, ground = [], ''
+    for r in range(rows):
+        for c in range(columns):
+            h = max(0.0, 18.0 - c * 0.9) + (14.0 if 28 <= c <= 30 and r < 15 else 0.0)
+            heights.append(round(h + (r % 7) * 0.13, 3))
+            ground += 'f' if 44 <= c <= 50 and 5 <= r <= 25 else 'r' if c == 20 else 'o'
+    return {'cell': cell, 'columns': columns, 'rows': rows, 'heights': heights, 'ground': ground,
+            'meta': {'preset': 'sight fixture'}}
+
+
+SYNTHETIC['sight'] = {
+    # a ridge blocks the north, woods hide what is deep inside, the edge sees out, high ground fires better
+    'terrain': sight_terrain(),
+    'units': [_u('w_hill', 0, 'inf', 'line', 900, '5/5/1/0', position={'x': 150, 'y': 150, 'facing': 90}),
+              _u('w_south', 0, 'inf', 'line', 700, '5/5/1/0', position={'x': 480, 'y': 450, 'facing': 90}),
+              _u('w_gun', 0, 'art', 'battery', 72, '5/5/0/0', guns=8, position={'x': 300, 'y': 100, 'facing': 90}),
+              _u('w_cav', 0, 'cav', 'light', 300, '5/5/0/1', position={'x': 400, 'y': 520, 'facing': 90}),
+              _u('e_edge', 1, 'inf', 'line', 800, '5/5/1/0', position={'x': 885, 'y': 450, 'facing': 270}),
+              _u('e_deep', 1, 'inf', 'line', 600, '5/5/1/0', position={'x': 960, 'y': 300, 'facing': 270}),
+              _u('e_ridge', 1, 'inf', 'line', 800, '5/5/1/0', position={'x': 700, 'y': 150, 'facing': 270}),
+              _u('w_slope', 0, 'inf', 'line', 800, '6/6/1/0', position={'x': 100, 'y': 400, 'facing': 90}),
+              _u('e_low', 1, 'inf', 'line', 800, '5/5/1/0', position={'x': 420, 'y': 400, 'facing': 270})],
+    'rounds': [
+        {'duration': 40, 'orders': {'w_hill': _fire('e_ridge'), 'w_south': _fire('e_edge'), 'w_gun': _fire('e_ridge'),
+                                    'w_cav': _melee('e_edge'), 'e_edge': _fire('w_south'), 'e_deep': _fire('w_south'),
+                                    'e_ridge': _fire('w_gun'), 'w_slope': _fire('e_low'),
+                                    'e_low': _fire('w_slope')}},
+        {'duration': 40, 'orders': {'w_gun': _fire('e_deep', ammo='shell'), 'w_south': _fire('e_deep'),
+                                    'e_edge': _fire('w_cav'), 'e_ridge': _fire('w_hill')}},
+    ],
+    'finish': True,
+}
+
 FIXTURES = {
     'rng': rng_fixture,
     'params': params_fixture,
