@@ -64,16 +64,18 @@ with unlimited line of sight. The map pipeline is kept but parked.
 ### Phase C — Later
 | Item | Status |
 |---|---|
-| Between-battle morale reconciliation / cooling-off | ○ (needs design) |
-| Rally override for broken units | ○ |
-| Admin effect modifier | ○ (per-unit, per-round modifiers done in B5; a per-side scalar for the whole battle is open) |
-| Commander rating: historical general by performance | ○ (needs design) |
+| Between-battle morale reconciliation / cooling-off | ○ (needs design; deferred 2026-11-13) |
+| Rally override for broken units | ✓ (2026-11-13, both engines + client) |
+| Admin effect modifier | ✓ (per unit per round in B5; per side for the whole battle 2026-11-13) |
+| Finer outcomes: decisive / Pyrrhic / plain victory, defeat, draw | ✓ (2026-11-13) |
+| Commander rating: historical general by performance | ✓ (2026-11-13; odds from the order of battle) |
 | Weapon range stat + range/distance accuracy | ○ |
 | Terrain map in the web client (port of map pipeline; the plain map is B3) | ○ |
 | Terrain effects: elevation, cover, fences, LoS, flanking | ⏸ |
 | Weather | ⏸ |
 | Lakes, river→lake termination, roads, fences (map stages 4–6) | ⏸ |
 | Movement system | ⏸ (admins place units instead) |
+| Live multiplayer rooms (Firebase, Google sign-in; real-time + async) | ⏸ (feasible on the free tier, 2026-11-13) |
 
 ### Done
 | Item | Status |
@@ -879,15 +881,34 @@ After an engagement ends, a unit's morale must be settled before its next battle
 baseline over rest days, and a "cooling-off period" so back-to-back battles are harder. Open: recovery rate, whether
 winners and losers recover differently, and how this is stored in the game's unit records.
 
-### Rally override for broken units ○
-The user can force a broken unit back into combat. It fights at reduced effectiveness and takes more casualties
-(penalties TBD, config-driven).
+### Rally override for broken units ✓
+Built 2026-11-13 (decided by the user: a player order plus a roll, once per battle). Python first, then the TS port
+and the client.
+- A **'rally' order** (no target) on a broken unit that isn't wiped out. One roll at the start of the round, one draw
+  per rally in unit order; the unit does nothing else that round.
+- **Odds** from its *starting* experience and morale and the share of men left:
+  `(chance_min + (chance_max − chance_min)·w) × (men left / starting men)^men_exponent`, w blended as for break
+  points. A 5/5 unit with 70% of its men: ~29%.
+- **After rallying** it starts again with `resolve` (0.3) of its morale budget; for the rest of the battle what it
+  inflicts × `effectiveness` (0.75) and what it takes × `exposure` (1.25). It can break and be routed again.
+- `attempts` tries per battle (1), and it rallies at most once. All first guesses in `config/rally.yaml`, untuned.
+- Saved per unit (`rally: {attempts, rallied}`) and per round (`rallies`: unit, rallied, chance). Scripted rallies
+  that can't happen are skipped (`skipped_orders`). Player files keep only the player's own rallies.
 
-### Admin effect modifier ○
-Per-side scalar on combat efficiency at battle setup (commander quality, supply, events). Default 1.0; range TBD
-(e.g. 0.7–1.3). Applied last. Cheap, and it fits the admin-run game, so it may move up.
+### Admin effect modifier ✓
+Per unit per round since B5. **Side modifiers** (2026-11-13): the same fire / melee / morale fractions and a note,
+for every unit of a side, from setup or set between rounds (`api.set_side_modifiers`, CLI `side-modifiers`, the
+admin's "Side modifiers for the whole battle" table). They last until changed, multiply with the round's unit
+modifiers, and are saved in the state file and each round. Player files keep only the player's own side's.
 
-### Commander rating ○ (needs design)
+### Finer outcomes ✓
+Built 2026-11-13: the side summary's `verdict` (`api.verdicts`), from who held the field and each side's casualties
+(killed + wounded + prisoners) against its starting strength. Nobody holding the field is a draw. Otherwise, in
+order: **Pyrrhic victory** if the winner lost ≥ `pyrrhic_share` (25%) and at least `pyrrhic_ratio` (1×) the loser's
+casualties; **decisive victory / defeat** if the loser's whole army is out, or it lost ≥ `decisive_share` (25%) and
+≥ `decisive_ratio` (2×) the winner's; else victory / defeat. Thresholds in `config/aftermath.yaml`, first guesses.
+
+### Commander rating ✓
 For fun: after a battle, rate each side's commander as a historical general, the way Civilization turns a score
 into a historical leader. Better performance means a better general. **Ancient world up to the American Civil
 War; nobody later.**
@@ -899,6 +920,16 @@ War; nobody later.**
   (Fredericksburg) at the bottom; solid commanders (Meade, Wellington, Marlborough, Scipio) in the middle;
   Hannibal, Alexander, Napoleon, Subutai, Khalid ibn al-Walid at the top. A config list, so it can be extended.
 - Per battle first; a career rating (average over a player's battles) once the game site stores results.
+
+**Built 2026-11-13** (`commanders.py` / `commanders.ts`, `config/commanders.yaml`; the user chose the order of battle
+over a simulated baseline, and one general per band):
+- **Power** of a unit = hit rate (casualties per minute at full strength, the engine's own formulas) × staying power
+  (its designed break point), as the battle began. **Expected share** = P^k / (P^k + Q^k), k = 1.5.
+- **Result share** = 0.5 × enemy casualties share (a captured gun counts as 20 men) + 0.3 × field (1 / 0.5 / 0)
+  + 0.2 × enemy routs share. **Score** = result − expected, read on a ladder of 15 generals from Varro (−1) to
+  Hannibal (0.52). The two sides' scores mirror each other.
+- Shown in the CLI side summary and the client's result. Watch in tuning: when one side is overwhelmingly stronger
+  (expected ≈ 1), even a crushing win scores slightly below expectations, so a wiped-out underdog can rate well.
 
 ### Weapon range + range/distance accuracy ○
 Only relevant once position matters. Possible extra weapon stat.
@@ -947,6 +978,27 @@ Superseded by admins placing units. Terrain speed modifiers kept in `movement.ya
 **Broken units' flight** (user, 2026-10-23), once positions exist: a broken unit moves away and can be reached by
 units with the range to target it until it is out of range, and by melee pursuit fast enough to catch it. Its
 flight slows down over time, round after round, so pursuit catches up later.
+
+### Live multiplayer rooms ⏸
+A player on each side and an admin in one live room, replacing the download / send / upload of player and orders
+files (user, 2026-11-13). Checked as feasible, not planned yet. **Must stay free.**
+- **Backend**: Firebase Realtime Database on the free Spark plan, which has no billing account, so it cannot charge.
+  GitHub Pages keeps the hosting. Live listeners give real-time play, and the data persists, so async play is the
+  same flow at a slower pace. Supabase was ruled out because free projects pause after about a week idle, which
+  breaks slow async games.
+- **The admin's browser stays the authority**: it runs the engine, as admin mode does now. The backend is only a
+  mailbox: `rooms/{id}/to_side/{A|B}` (the redacted player state, the B5 format), `orders/{A|B}` (the orders-file
+  format), `meta` (round, who has submitted) and `log`. No game logic on a server.
+- **Identity: Google sign-in** (preferred by the user; free on Spark). The admin assigns each seat to a Google
+  account, and the security rules check `auth.uid`: a player can read only their own side's state and write only
+  their own orders, and only the admin reads orders. Fallback considered: claim-once secret links (random
+  128-bit key, bound on first open to an anonymous-auth ID).
+- **Flow**: the admin creates a room and assigns seats → players plan and **Submit orders** (they can unlock them
+  until the round is resolved) → the admin sees who has submitted, reviews, applies modifiers and resolves →
+  results and map replay go out to both sides → the next round opens. Downloading the state file stays as the
+  backup, and Python still replays it exactly.
+- Open: "your turn" notifications for async play; resolving rounds without the admin online would need the
+  engine on a server (Cloudflare Workers are free; Firebase Cloud Functions are not).
 
 ### Streamlit prototype (removed 2026-10-24)
 Setup + Results pages, map layers, army builder, 1-v-1 sim plots. Removed once the web client did all of it and

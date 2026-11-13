@@ -49,6 +49,13 @@ Working towards 0.1.0-alpha, the first site. Design decisions and status live in
 - Admin modifiers: per unit, one round, fire / melee / morale ±% with a note, in both engines, the round history,
   scenarios and the CLI (`--modifiers`).
 - Army files: save and load one side's units as CSV from the army builder.
+- Side modifiers: whole-battle fire / melee / morale ±% per side (commander, supply, events), set at setup or
+  between rounds (CLI `side-modifiers`, the admin's side modifiers table), stacking with the unit modifiers.
+- Rally: players can order a broken unit to rally; a roll from its experience, morale and men left decides, and a
+  rallied unit fights on with a small morale budget, less effective and more exposed (`config/rally.yaml`).
+- Verdicts: decisive / Pyrrhic / plain victory, defeat or draw for each side in the summary.
+- Commander rating: each side's commander as a historical general, from the result against the odds the armies'
+  strength gave (`config/commanders.yaml`), in the CLI and the client's result.
 - Phone layout: editable tables become cards, read-only tables keep their unit column in view, the map scrolls
   sideways at a readable size.
 - A pre-push git hook (`.githooks/pre-push`, enabled with `git config core.hooksPath .githooks`) runs the same
