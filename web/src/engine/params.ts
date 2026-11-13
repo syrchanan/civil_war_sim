@@ -214,6 +214,10 @@ export interface AftermathData {
   field_rout_gap: number;
   field_standing_ratio: number;
   field_votes_needed: number;
+  decisive_ratio: number;
+  decisive_share: number;
+  pyrrhic_share: number;
+  pyrrhic_ratio: number;
 }
 
 export interface AftermathParams extends Readonly<AftermathData> {}
@@ -235,6 +239,11 @@ export class AftermathParams {
     if (!Number.isInteger(data.field_votes_needed) || data.field_votes_needed < 1 || data.field_votes_needed > 3) {
       throw new ValueError('field_votes_needed must be a whole number from 1 to 3.');
     }
+    if (data.decisive_ratio < 1) throw new ValueError('decisive_ratio must be >= 1.');
+    for (const name of ['decisive_share', 'pyrrhic_share'] as const) {
+      if (!(0 <= data[name] && data[name] <= 1)) throw new ValueError(`${name} must be in [0, 1].`);
+    }
+    if (data.pyrrhic_ratio < 0) throw new ValueError('pyrrhic_ratio must be >= 0.');
     Object.assign(this, data);
     Object.freeze(this);
   }
@@ -495,6 +504,59 @@ export class ChargeParams implements ChargeData {
 }
 
 // =============================================================================
+// Rally
+// =============================================================================
+
+export interface RallyData {
+  attempts: number;
+  chance_min: number;
+  chance_max: number;
+  experience_weight: number;
+  men_exponent: number;
+  resolve: number;
+  effectiveness: number;
+  exposure: number;
+}
+
+export interface RallyParams extends Readonly<RallyData> {}
+
+/** Rallying broken units: the odds, tries per battle and the penalties after (config/rally.yaml). */
+export class RallyParams {
+  constructor(data: RallyData) {
+    if (!Number.isInteger(data.attempts) || data.attempts < 1) {
+      throw new ValueError('attempts must be a whole number >= 1.');
+    }
+    if (!(0 <= data.chance_max && data.chance_max <= 1)) throw new ValueError('chance_max must be in [0, 1].');
+    if (!(0 <= data.chance_min && data.chance_min <= data.chance_max)) {
+      throw new ValueError('chance_min must be in [0, chance_max].');
+    }
+    if (!(0 <= data.experience_weight && data.experience_weight <= 1)) {
+      throw new ValueError('experience_weight must be in [0, 1].');
+    }
+    if (!(data.men_exponent >= 0)) throw new ValueError('men_exponent must be >= 0.');
+    if (!(0 < data.resolve && data.resolve <= 1)) throw new ValueError('resolve must be in (0, 1].');
+    for (const name of ['effectiveness', 'exposure'] as const) {
+      if (!(data[name] >= 0)) throw new ValueError(`${name} must be >= 0.`);
+    }
+    Object.assign(this, data);
+    Object.freeze(this);
+  }
+
+  /** Chance a rally works, from starting experience and morale (1–10) and the share of men left (> 0). */
+  chance(xp: number, moraleStat: number, menLeft: number): number {
+    const xpNorm = (clamp(1, 10, xp) - 1) / 9;
+    const moraleNorm = (clamp(1, 10, moraleStat) - 1) / 9;
+    const w = this.experience_weight * xpNorm + (1 - this.experience_weight) * moraleNorm;
+    const base = this.chance_min + (this.chance_max - this.chance_min) * w;
+    return base * exp(this.men_exponent * log(menLeft));
+  }
+
+  toDict(): RallyData {
+    return { ...this };
+  }
+}
+
+// =============================================================================
 // Battle
 // =============================================================================
 
@@ -504,12 +566,13 @@ export interface ParamsData {
   aftermath: AftermathData;
   matchups: MatchupData;
   charge: ChargeData;
+  rally: RallyData;
 }
 
 /** Nested partial params, e.g. `{ combat: { ranged_kill_rate: 0.005 } }`. */
 export type Overrides = Record<string, Record<string, unknown>>;
 
-const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge'] as const;
+const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally'] as const;
 
 function deepMerge(base: Record<string, unknown>, changes: Record<string, unknown>): Record<string, unknown> {
   const merged = { ...base };
@@ -551,6 +614,7 @@ export class BattleParams {
   readonly aftermath: AftermathParams;
   readonly matchups: MatchupParams;
   readonly charge: ChargeParams;
+  readonly rally: RallyParams;
   private static cached: BattleParams | null = null;
 
   constructor(data: ParamsData) {
@@ -559,6 +623,7 @@ export class BattleParams {
     this.aftermath = new AftermathParams(data.aftermath);
     this.matchups = new MatchupParams(data.matchups);
     this.charge = new ChargeParams(data.charge);
+    this.rally = new RallyParams(data.rally);
     if (!(this.charge.battery_closing_ammo in this.combat.artillery_ammo)) {
       throw new ValueError(`charge.battery_closing_ammo must be one of ${Object.keys(this.combat.artillery_ammo)
         .sort().join(', ')}.`);
@@ -594,6 +659,7 @@ export class BattleParams {
       aftermath: this.aftermath.toDict(),
       matchups: this.matchups.toDict(),
       charge: this.charge.toDict(),
+      rally: this.rally.toDict(),
     };
   }
 

@@ -4,6 +4,7 @@
  */
 
 import { ValueError } from './errors';
+import { type AftermathParams, BattleParams, type Overrides } from './params';
 import type { StateData, UnitData } from './state';
 import { parseStats } from './units';
 
@@ -43,6 +44,31 @@ export interface SideSummary {
   prisoners_taken: number;
   guns_lost: number;
   guns_taken: number;
+  verdict: Verdict;
+}
+
+export type Verdict = 'draw' | 'victory' | 'decisive victory' | 'Pyrrhic victory' | 'defeat' | 'decisive defeat';
+
+/**
+ * How the result reads for each side (port of api.verdicts): 'draw' when nobody held the field; otherwise the
+ * winner's 'Pyrrhic victory', 'decisive victory' or 'victory', and the loser's 'decisive defeat' or 'defeat'.
+ * Thresholds in config/aftermath.yaml.
+ */
+export function verdicts(holder: number | null, decidedBy: string, casualties: number[], started: number[],
+  params: AftermathParams): [Verdict, Verdict] {
+  if (holder === null) return ['draw', 'draw'];
+  const w = holder;
+  const l = 1 - holder;
+  const out: Verdict[] = ['draw', 'draw'];
+  if (casualties[w] >= params.pyrrhic_share * started[w] && casualties[w] >= params.pyrrhic_ratio * casualties[l]) {
+    [out[w], out[l]] = ['Pyrrhic victory', 'defeat'];
+  } else if (decidedBy === 'army_out' || (casualties[l] >= params.decisive_share * started[l]
+    && casualties[l] >= params.decisive_ratio * casualties[w])) {
+    [out[w], out[l]] = ['decisive victory', 'decisive defeat'];
+  } else {
+    [out[w], out[l]] = ['victory', 'defeat'];
+  }
+  return out as [Verdict, Verdict];
 }
 
 function sideNames(state: StateData): [string, string] {
@@ -82,14 +108,14 @@ export function orderOfBattle(state: StateData): SideOrder[] {
 /**
  * Each side's performance over a finished battle. started - killed - wounded - prisoners_lost + returned = final,
  * where wounded excludes wounded taken prisoner. `outcome` reads the field as the result: 'won' (held the field),
- * 'lost' (the other side held it) or 'drawn' (nobody did).
+ * 'lost' (the other side held it) or 'drawn' (nobody did); `verdict` reads it finer (see verdicts).
  */
 export function sideSummary(state: StateData): SideSummary[] {
   const result = state.result;
   if (result === null) throw new ValueError('The battle has to be finished first (finish settles killed / wounded / prisoners).');
   const names = sideNames(state);
   const holder = result.field_held_by;
-  return [0, 1].map((side) => {
+  const sides = [0, 1].map((side): SideSummary => {
     const units = sideUnits(state, side);
     const outcomes = units.map((u) => result.units[u.id]);
     const started = sum(units, (u) => u.initial_size);
@@ -120,6 +146,12 @@ export function sideSummary(state: StateData): SideSummary[] {
       prisoners_taken: result.prisoners[String(side)],
       guns_lost: sum(outcomes, (o) => o.guns_lost),
       guns_taken: result.guns_captured[String(side)],
+      verdict: 'draw',
     };
   });
+  const params = BattleParams.fromDict(state.params as unknown as Overrides).aftermath;
+  const read = verdicts(holder, result.field_decided_by ?? 'admin', sides.map((s) => s.casualties),
+    sides.map((s) => s.started), params);
+  sides.forEach((s, i) => { s.verdict = read[i]; });
+  return sides;
 }

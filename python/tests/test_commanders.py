@@ -58,6 +58,7 @@ def test_expected_share_grows_with_strength():
     assert commanders.expected_share(2.0, 1.0, 1.0) == pytest.approx(2 / 3)
     assert commanders.expected_share(2.0, 1.0, 1.5) == pytest.approx(2 ** 1.5 / (2 ** 1.5 + 1))
     assert commanders.expected_share(0.0, 0.0, 1.5) == 0.5
+    assert commanders.expected_share(0.0, 3.0, 1.5) == 0.0
 
 
 # --- the result ------------------------------------------------------------------------------------------------

@@ -4,11 +4,11 @@ export { ValueError } from './errors';
 export { exp, log } from './fdlibm';
 export { breakFraction, breakScale, MoraleState } from './morale';
 export {
-  AftermathParams, BattleParams, ChargeParams, CombatParams, MatchupParams, MoraleParams, roundHalfEven, UNIT_TYPES,
-  WEAPON_CODES,
+  AftermathParams, BattleParams, ChargeParams, CombatParams, MatchupParams, MoraleParams, RallyParams, roundHalfEven,
+  UNIT_TYPES, WEAPON_CODES,
 } from './params';
 export type {
-  AftermathData, ChargeData, CombatData, MatchupData, MatchupOverride, MoraleData, Overrides, ParamsData,
+  AftermathData, ChargeData, CombatData, MatchupData, MatchupOverride, MoraleData, Overrides, ParamsData, RallyData,
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';
@@ -16,16 +16,20 @@ export {
   ArtilleryBattery, CavalryRegiment, closestMoraleStat, InfantryRegiment, parseStats, Regiment,
 } from './units';
 export type { Position, RegimentOptions } from './units';
-export { Battle, BattleUnit, makeOrder, MODIFIER_KEYS, ON_BREAK, ORDER_KEYS, validateModifiers } from './battle';
+export {
+  Battle, BattleUnit, makeOrder, MODIFIER_KEYS, ON_BREAK, ORDER_KEYS, validateModifiers, validateSideModifiers,
+} from './battle';
 export type {
   BattleResult, BySide, CasualtyEvent, Charge, Engagement, FieldHolder, FieldTest, Modifier, ModifierInput, Order,
-  OrderInput, Retarget, RoundReport, UnitOutcome, UnitReport, UnitSpec,
+  OrderInput, Rally, Retarget, RoundReport, UnitOutcome, UnitReport, UnitSpec,
 } from './battle';
 export { RuntimeError } from './errors';
 export { battleFromDict, battleTag, battleToDict, FORMAT, VERSION } from './state';
 export type { StateData, UnitData } from './state';
-export { orderOfBattle, sideSummary } from './summary';
-export type { SideOrder, SideSummary, TypeTotal } from './summary';
+export { orderOfBattle, sideSummary, verdicts } from './summary';
+export type { SideOrder, SideSummary, TypeTotal, Verdict } from './summary';
+export { expectedShare, general, ratings, resultShares, sidePower, unitPower } from './commanders';
+export type { CommandersConfig, General, Rating, SideResult } from './commanders';
 export { estimateRound, quantile } from './estimate';
 export type { ChargeEstimate, Range, RoundEstimate, UnitEstimate } from './estimate';
 export { PLAYER_FORMAT, PLAYER_VERSION, playerFile, roughly, UNKNOWN_STATS } from './playerFile';

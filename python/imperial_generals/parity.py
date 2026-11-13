@@ -64,6 +64,7 @@ VALID_OVERRIDES = [
     {'matchups': {'ranged': {'inf': {'cav': 1.5}}, 'melee_ratings': {'inf/line': 0.9},
                   'overrides': [{'attacker': 'cav/heavy', 'target': 'inf', 'mode': 'melee', 'multiplier': 1.3}]}},
     {'charge': {'approach_minutes': {'cav': 3.0}, 'shock_bonus': []}},
+    {'rally': {'attempts': 2, 'resolve': 0.5}, 'aftermath': {'pyrrhic_share': 0.4}},
 ]
 INVALID_OVERRIDES = [
     {'weather': {}},
@@ -78,6 +79,9 @@ INVALID_OVERRIDES = [
     {'matchups': {'overrides': [{'attacker': 'inf/hussars', 'target': 'cav', 'mode': 'melee', 'multiplier': 1.0}]}},
     {'matchups': {'melee_ratings': {'inf': 1.0}}},
     {'charge': {'spread': 0.0}},
+    {'rally': {'attempts': 0}},
+    {'rally': {'chance_min': 0.9}},
+    {'aftermath': {'decisive_ratio': 0.5}},
     {'charge': {'approach_minutes': {'navy': 1.0}}},
     {'charge': {'shock_bonus': [{'charger': 'cav', 'target': 'inf'}]}},
     {'charge': {'battery_closing_ammo': 'grape'}},
@@ -106,12 +110,17 @@ def params_fixture() -> dict:
                 for cm, tm in ((500, 500), (1000, 400), (300, 900)) for cs, ts in ((0.8, 0.8), (0.9, 0.3))
                 for b in (0.0, 0.5, -2.0)]
     odds = [[x, list(charge.odds(x))] for x in (-4.0, -1.5, -0.5, 0.0, 0.37, 1.0, 2.5, 6.0)]
+    curved = p.with_overrides({'rally': {'men_exponent': 1.7, 'experience_weight': 0.2}}).rally
+    rally_chance = [[xp, m, left, p.rally.chance(xp, m, left)] + ([curved.chance(xp, m, left), 'curved'] if xp == 5 else [])
+                    for xp in (0, 1, 5, 10, 12) for m in (1, 4, 10) for left in (1.0, 0.75, 0.3333, 0.01)]
     return {
         'description': 'BattleParams: defaults (see web/src/engine/defaults.json) and what each section computes; '
                        'overrides that are accepted (with the resulting params) or rejected.',
         'combat': {'efficiency': efficiency, 'unit_coef': unit_coef, 'melee_efficiency': melee_efficiency},
         'matchups': {'multiplier': multiplier, 'melee_rating': melee_rating},
         'charge': {'steadiness': steadiness, 'bonus': bonus, 'pressure': pressure, 'odds': odds},
+        # [xp, morale, men left, chance(, chance with men_exponent 1.7 and experience_weight 0.2, 'curved')]
+        'rally': {'chance': rally_chance},
         'overrides': {'valid': [[o, p.with_overrides(o).to_dict()] for o in VALID_OVERRIDES],
                       'invalid': INVALID_OVERRIDES},
     }

@@ -50,7 +50,11 @@
       "field_exchange_ratio": 1.5,
       "field_rout_gap": 0.25,
       "field_standing_ratio": 1.5,
-      "field_votes_needed": 2
+      "field_votes_needed": 2,
+      "decisive_ratio": 2.0,
+      "decisive_share": 0.25,
+      "pyrrhic_share": 0.25,
+      "pyrrhic_ratio": 1.0
     },
     "matchups": {
       "ranged": {
@@ -175,6 +179,16 @@
           "bonus": -1.0
         }
       ]
+    },
+    "rally": {
+      "attempts": 1,
+      "chance_min": 0.15,
+      "chance_max": 0.75,
+      "experience_weight": 0.5,
+      "men_exponent": 1.0,
+      "resolve": 0.3,
+      "effectiveness": 0.75,
+      "exposure": 1.25
     }
   },
   "morale_scale": {
@@ -230,5 +244,91 @@
       "shell": "shell",
       "canister": "canister"
     }
+  },
+  "commanders": {
+    "power_exponent": 1.5,
+    "gun_value": 20,
+    "weights": {
+      "casualties": 0.5,
+      "field": 0.3,
+      "routs": 0.2
+    },
+    "ladder": [
+      {
+        "name": "Varro",
+        "battle": "Cannae (216 BC)",
+        "from": -1
+      },
+      {
+        "name": "Crassus",
+        "battle": "Carrhae (53 BC)",
+        "from": -0.45
+      },
+      {
+        "name": "Mack",
+        "battle": "Ulm (1805)",
+        "from": -0.35
+      },
+      {
+        "name": "Burnside",
+        "battle": "Fredericksburg (1862)",
+        "from": -0.26
+      },
+      {
+        "name": "Hooker",
+        "battle": "Chancellorsville (1863)",
+        "from": -0.18
+      },
+      {
+        "name": "McClellan",
+        "battle": "the Seven Days (1862)",
+        "from": -0.1
+      },
+      {
+        "name": "Meade",
+        "battle": "Gettysburg (1863)",
+        "from": -0.03
+      },
+      {
+        "name": "Wellington",
+        "battle": "Waterloo (1815)",
+        "from": 0.03
+      },
+      {
+        "name": "Marlborough",
+        "battle": "Blenheim (1704)",
+        "from": 0.1
+      },
+      {
+        "name": "Scipio Africanus",
+        "battle": "Zama (202 BC)",
+        "from": 0.18
+      },
+      {
+        "name": "Khalid ibn al-Walid",
+        "battle": "Yarmouk (636)",
+        "from": 0.26
+      },
+      {
+        "name": "Subutai",
+        "battle": "Mohi (1241)",
+        "from": 0.33
+      },
+      {
+        "name": "Alexander",
+        "battle": "Gaugamela (331 BC)",
+        "from": 0.4
+      },
+      {
+        "name": "Napoleon",
+        "battle": "Austerlitz (1805)",
+        "from": 0.46
+      },
+      {
+        "name": "Hannibal",
+        "battle": "Cannae (216 BC)",
+        "from": 0.52
+      }
+    ]
   }
 }

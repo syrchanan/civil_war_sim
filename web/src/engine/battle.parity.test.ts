@@ -10,7 +10,7 @@ interface Case {
   start: StateData;
   rounds: {
     duration: number; orders: Record<string, OrderInput>; record_events: boolean;
-    modifiers: Record<string, ModifierInput>;
+    modifiers: Record<string, ModifierInput>; side_modifiers?: Record<string, ModifierInput>;
   }[];
   finished: boolean;
   field_held_by: FieldHolder;
@@ -22,6 +22,7 @@ describe('whole battles replay the Python engine exactly', () => {
     const battle = Battle.fromDict(structuredClone(c.start));
     expect(battle.toDict(), 'start state round-trips').toEqual(c.start);
     c.rounds.forEach((r, i) => {
+      if (r.side_modifiers !== undefined) battle.setSideModifiers(r.side_modifiers);
       const report = battle.resolveRound(r.duration, r.orders, r.record_events, r.modifiers);
       expect(report, `round ${i + 1}`).toEqual(c.final.history[i]);
     });

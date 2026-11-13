@@ -3,10 +3,13 @@
  * battle can be saved after any round and resumed later, in either language, with exactly the same results.
  *
  * Version 2: melee contacts, charges in the round history, charge params. Added since, within version 2 (absent in
- * older files, which still load): target switches, facing on positions, and per-round positions and modifiers.
+ * older files, which still load): target switches, facing on positions, per-round positions and modifiers, side
+ * modifiers (battle-wide and per round), and rallies (per unit and per round).
  */
 
-import { Battle, BattleUnit, type BattleResult, type BySide, type RoundReport, type UnitSpec } from './battle';
+import {
+  Battle, BattleUnit, type BattleResult, type BySide, type Modifier, type RoundReport, type UnitSpec,
+} from './battle';
 import { ValueError } from './errors';
 import { MoraleState } from './morale';
 import { BattleParams, type Overrides, type ParamsData, type Stats } from './params';
@@ -35,6 +38,7 @@ export interface UnitData {
   inflicted: number;
   captured: number;
   guns_lost: number;
+  rally: { attempts: number; rallied: boolean };
   meta: Record<string, unknown>;
   guns?: number;
 }
@@ -51,6 +55,7 @@ export interface StateData {
   finished: boolean;
   prisoners: BySide;
   guns_captured: BySide;
+  side_modifiers: Record<string, Modifier>;
   units: UnitData[];
   contacts: string[][];
   history: RoundReport[];
@@ -98,6 +103,7 @@ function unitToDict(unit: BattleUnit): UnitData {
     inflicted: unit.inflicted,
     captured: unit.captured,
     guns_lost: unit.gunsLost,
+    rally: { attempts: unit.rallyAttempts, rallied: unit.rallied },
     meta: structuredClone(unit.meta),
   };
   if (reg instanceof ArtilleryBattery) data.guns = reg.guns;
@@ -122,6 +128,7 @@ export function battleToDict(battle: Battle): StateData {
     finished: battle.finished,
     prisoners: { ...battle.prisoners },
     guns_captured: { ...battle.gunsCaptured },
+    side_modifiers: structuredClone(battle.sideModifiers),
     units: [...battle.units.values()].map(unitToDict),
     contacts,
     history: structuredClone(battle.history),
@@ -165,6 +172,9 @@ function restoreUnit(unit: BattleUnit, data: UnitData, params: BattleParams): vo
   unit.inflicted = data.inflicted;
   unit.captured = data.captured;
   unit.gunsLost = data.guns_lost;
+  const rally = data.rally ?? { attempts: 0, rallied: false }; // absent in older files
+  unit.rallyAttempts = rally.attempts;
+  unit.rallied = rally.rallied;
 }
 
 export function battleFromDict(data: StateData): Battle {
@@ -175,7 +185,7 @@ export function battleFromDict(data: StateData): Battle {
   const units: Record<string, UnitSpec> = {};
   for (const u of data.units) units[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, meta: u.meta };
   const battle = new Battle(units, Rng.fromState(data.rng_state),
-    BattleParams.fromDict(data.params as unknown as Overrides), data.meta);
+    BattleParams.fromDict(data.params as unknown as Overrides), data.meta, data.side_modifiers ?? {});
   for (const u of data.units) restoreUnit(battle.units.get(u.id)!, u, battle.params);
   battle.rng = Rng.fromState(data.rng_state); // building the units drew break points: rewind
 
@@ -185,9 +195,11 @@ export function battleFromDict(data: StateData): Battle {
   battle.finished = data.finished;
   battle.prisoners = { ...data.prisoners };
   battle.gunsCaptured = { ...data.guns_captured };
-  // retargets, round positions and modifiers are absent in files saved before they existed
-  battle.history = structuredClone(data.history)
-    .map((r) => ({ ...r, retargets: r.retargets ?? [], positions: r.positions ?? {}, modifiers: r.modifiers ?? {} }));
+  // retargets, round positions, modifiers, side modifiers and rallies are absent in files saved before they existed
+  battle.history = structuredClone(data.history).map((r) => ({
+    ...r, retargets: r.retargets ?? [], positions: r.positions ?? {}, modifiers: r.modifiers ?? {},
+    side_modifiers: r.side_modifiers ?? {}, rallies: r.rallies ?? [],
+  }));
   battle.contacts = new Set(data.contacts.map(([a, b]) => (a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`)));
   battle.result = data.result === null ? null : {
     ...structuredClone(data.result),

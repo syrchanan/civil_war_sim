@@ -1,7 +1,8 @@
 /**
  * A player file: the battle as one side sees it, for a player to plan their next orders. The admin makes one per
  * side from the real battle. The player's own units are exact; of the enemy only what could be seen from the
- * field is kept (name, type, where it stands, whether it has broken, its guns, and its men roughly). Their stats
+ * field is kept (name, type, where it stands, whether it has broken, its guns, and its men roughly; whether it has
+ * rallied, but not its odds). The enemy side's modifiers are left out. Their stats
  * are a neutral placeholder, which the player can replace with guesses. The dice state stays with the admin; the
  * real battle's tag goes along, so the player's orders file can be checked against the battle it was made from.
  */
@@ -55,9 +56,13 @@ export function playerFile(real: StateData, side: 0 | 1): PlayerFile {
   if (real.finished) throw new ValueError('The battle is over: there are no more orders to give.');
   const enemy = new Set(real.units.filter((u) => u.side !== side).map((u) => u.id));
   const own = (uid: string) => !enemy.has(uid);
+  // the other side's whole-battle modifiers (its commander, supply) are its own business
+  const ownSide = <T>(bySide: Record<string, T>) => Object.fromEntries(Object.entries(bySide)
+    .filter(([s]) => s === String(side)).map(([s, m]) => [s, structuredClone(m)]));
   const state: StateData = {
     ...structuredClone(real),
     rng_state: new Rng(0).state, // the dice stay with the admin
+    side_modifiers: ownSide(real.side_modifiers),
     units: real.units.map((u) => (own(u.id) ? structuredClone(u) : enemyUnit(u))),
     history: real.history.map((r) => ({
       ...structuredClone(r),
@@ -68,6 +73,8 @@ export function playerFile(real: StateData, side: 0 | 1): PlayerFile {
       charges: r.charges.map((c) => ({ ...c, p_defender_breaks: null, p_falter: null, p_home: null })),
       retargets: r.retargets.filter((t) => own(t.unit)),
       modifiers: Object.fromEntries(Object.entries(r.modifiers).filter(([uid]) => own(uid))),
+      side_modifiers: ownSide(r.side_modifiers),
+      rallies: r.rallies.filter((x) => own(x.unit)),
     })),
   };
   return { format: PLAYER_FORMAT, version: PLAYER_VERSION, side, tag: battleTag(real), state };
