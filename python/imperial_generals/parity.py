@@ -110,6 +110,10 @@ def params_fixture() -> dict:
                 for cm, tm in ((500, 500), (1000, 400), (300, 900)) for cs, ts in ((0.8, 0.8), (0.9, 0.3))
                 for b in (0.0, 0.5, -2.0)]
     odds = [[x, list(charge.odds(x))] for x in (-4.0, -1.5, -0.5, 0.0, 0.37, 1.0, 2.5, 6.0)]
+    from imperial_generals.utils.trig import cos_deg, sin_deg
+    angles = [0, 1e-9, 0.5, 30, 44.999, 45, 45.001, 60, 89.999999, 90, 123.456, 180, 200.25, 270, 315.5, 359.9999,
+              360, 361, -0.0, -45, -1e-20, 719.5, 1e-300, 97.3, 7.77, 333.333]
+    trig = [[d, cos_deg(d), sin_deg(d)] for d in angles]
     curved = p.with_overrides({'rally': {'men_exponent': 1.7, 'experience_weight': 0.2}}).rally
     rally_chance = [[xp, m, left, p.rally.chance(xp, m, left)] + ([curved.chance(xp, m, left), 'curved'] if xp == 5 else [])
                     for xp in (0, 1, 5, 10, 12) for m in (1, 4, 10) for left in (1.0, 0.75, 0.3333, 0.01)]
@@ -121,6 +125,8 @@ def params_fixture() -> dict:
         'charge': {'steadiness': steadiness, 'bonus': bonus, 'pressure': pressure, 'odds': odds},
         # [xp, morale, men left, chance(, chance with men_exponent 1.7 and experience_weight 0.2, 'curved')]
         'rally': {'chance': rally_chance},
+        # [degrees, cos_deg, sin_deg]
+        'trig': trig,
         'overrides': {'valid': [[o, p.with_overrides(o).to_dict()] for o in VALID_OVERRIDES],
                       'invalid': INVALID_OVERRIDES},
     }
@@ -303,6 +309,23 @@ SYNTHETIC = {
                                            'p_rifle': {'x': 650, 'y': 760, 'facing': 350}},
              'orders': {'p_line': _melee('q_line'), 'q_line': _melee('p_line'), 'p_rifle': _fire('q_bat'),
                         'q_bat': _fire('p_rifle', ammo='canister'), 'q_far': _fire('p_rifle')}},
+        ],
+        'finish': True,
+    },
+    'flanks': {
+        # facings: fire only within the front arc, flank and rear fire and melee, closing fire out of arc, a charge
+        # into a flank
+        'units': [_u('f_line', 0, 'inf', 'line', 800, '5/5/0/0', position={'x': 500, 'y': 600, 'facing': 90}),
+                  _u('f_cav', 0, 'cav', 'heavy', 300, '6/6/0/1', position={'x': 900, 'y': 520, 'facing': 270}),
+                  _u('f_back', 0, 'inf', 'line', 600, '5/5/1/0', position={'x': 650, 'y': 760, 'facing': 0}),
+                  _u('g_line', 1, 'inf', 'line', 900, '5/5/0/0', position={'x': 640, 'y': 600, 'facing': 0}),
+                  _u('g_bat', 1, 'art', 'battery', 72, '5/5/0/0', guns=8, position={'x': 900, 'y': 600,
+                                                                                     'facing': 270})],
+        'rounds': [
+            {'duration': 30, 'orders': {'f_line': _fire('g_line'), 'f_back': _fire('g_line'), 'f_cav': _melee('g_line'),
+                                        'g_line': _fire('f_line'), 'g_bat': _fire('f_back', ammo='canister')}},
+            {'duration': 45, 'orders': {'f_line': _melee('g_line'), 'g_line': _melee('f_line'),
+                                        'f_back': _fire('g_bat'), 'g_bat': _fire('f_line', ammo='shell')}},
         ],
         'finish': True,
     },

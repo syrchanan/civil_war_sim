@@ -16,6 +16,8 @@ graph: at most one outgoing arrow per unit (its target), any number of incoming 
 - Melee casualties scale with the width in contact: min(attacker's men facing the target, target's front).
 - Fire falls off with distance between placed units (see ``RangeParams``); a charge's approach takes as long as
   the distance needs. Units without a position fight as if within close range.
+- A unit with a facing fires only at targets within its front arc; attacks from its flank or rear hit harder and
+  shake it more, and a charge there presses harder (see ``FlankParams``).
 - An admin can give units modifiers for one round (e.g. 'uphill, fire -15%'): fire and melee scale the casualties
   the unit inflicts (closing fire counts as fire), morale scales what it spends from its morale budget.
 
@@ -34,6 +36,7 @@ from imperial_generals.battles.morale import MoraleState, break_scale
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
 from imperial_generals.utils import Rng
+from imperial_generals.utils.trig import cos_deg, sin_deg
 
 MODES = frozenset({'idle', 'ranged', 'melee', 'rally'})
 ORDER_KEYS = frozenset({'target', 'mode', 'ammo', 'on_break'})
@@ -475,6 +478,45 @@ class Battle:
             band = r.small_arms[str(max(-2, min(2, regiment.stats[2])))]
         return r.reach(d, band['close'], band['max'])
 
+    def _off_front(self, uid: str, other: str) -> float | None:
+        """
+        Cosine of the angle between where ``uid`` faces and the direction to ``other``, or None unless both are
+        placed and ``uid`` has a facing. 1 when they stand on the same spot.
+        """
+        p, q = self.units[uid].regiment.position, self.units[other].regiment.position
+        if p is None or q is None or p.facing is None:
+            return None
+        dx, dy = q.x - p.x, q.y - p.y
+        d = math.sqrt(dx * dx + dy * dy)
+        if d == 0:
+            return 1.0
+        # facing in compass degrees: north is towards y = 0
+        return (dx * sin_deg(p.facing) - dy * cos_deg(p.facing)) / d
+
+    def zone(self, uid: str, other: str) -> str | None:
+        """
+        Where ``other`` stands as ``uid`` sees it: 'front', 'flank' or 'rear' (arcs in ``FlankParams``); None
+        unless both are placed and ``uid`` has a facing.
+        """
+        c = self._off_front(uid, other)
+        if c is None:
+            return None
+        f = self.params.flanks
+        if c >= cos_deg(f.front_arc / 2):
+            return 'front'
+        if c <= -cos_deg(f.rear_arc / 2):
+            return 'rear'
+        return 'flank'
+
+    def in_arc(self, attacker: str, target: str) -> bool:
+        """Can the attacker fire at the target: within its front arc, or it has no facing (or no position)."""
+        return self.zone(attacker, target) in (None, 'front')
+
+    def _flank(self, target: str, attacker: str, table: dict) -> float:
+        """The ``table`` entry for where the attacker stands on the target's flank or rear; else 1."""
+        zone = self.zone(target, attacker)
+        return table[zone] if zone in ('flank', 'rear') else 1.0
+
     def _can_fire(self, unit: BattleUnit) -> bool:
         """Has firearms (the stats melee-only flag decides, not the subtype)."""
         return self.params.combat.unit_coef(unit.regiment.stats, 'ranged') > 0
@@ -525,8 +567,9 @@ class Battle:
         """
         The arrow structure for this moment of the round.
 
-        Returns ``(slots, partners)``: ``slots`` are ``(attacker, target, mode, matchup, share, gun_rate, reach)``
-        sorted by (target, attacker) in unit order (reach: the range falloff of ranged fire, else 1); ``partners`` maps each unit in melee contact to its contacts.
+        Returns ``(slots, partners)``: ``slots`` are ``(attacker, target, mode, matchup, share, gun_rate, reach,
+        flank)`` sorted by (target, attacker) in unit order (reach: the range falloff of ranged fire, else 1;
+        flank: the casualty multiplier for attacking from the target's flank or rear, else 1); ``partners`` maps each unit in melee contact to its contacts.
         - Melee: both ways along every contact (a broken unit doesn't fight back).
         - Closing fire: a target fires on the units charging it (split between them) unless it is itself charging,
           locked in melee, or can't fire. Batteries switch to the closing ammo.
@@ -538,6 +581,7 @@ class Battle:
         units = self.units
         combat = self.params.combat
         matchups = self.params.matchups
+        hits = self.params.flanks.casualties
         order_key = lambda u: units[u].index     # noqa: E731
 
         partners: dict[str, list[str]] = {}
@@ -554,7 +598,7 @@ class Battle:
             if unit.active and unit.melee_rating > 0:
                 for p in ps:
                     slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'), 1.0, None,
-                                  1.0))
+                                  1.0, self._flank(p, uid, hits)))
 
         charging = {c['charger'] for c in pending}
         closing_on: dict[str, list[str]] = {}
@@ -568,16 +612,18 @@ class Battle:
                 if isinstance(target.regiment, ArtilleryBattery):
                     gun_rate = combat.artillery_ammo[self.params.charge.battery_closing_ammo]
                 for charger in chargers:
+                    if not self.in_arc(target_id, charger):
+                        continue                # charged from outside its front arc: it can't fire on them
                     slots.append((target_id, charger, 'closing',
                                   matchups.multiplier(target.key, units[charger].key, 'ranged'),
-                                  1.0 / len(chargers), gun_rate, 1.0))
+                                  1.0 / len(chargers), gun_rate, 1.0, self._flank(charger, target_id, hits)))
 
         for uid, order in orders.items():
             unit = units[uid]
             out_of_reach = order.target in withdrawn and not isinstance(unit.regiment, ArtilleryBattery)
             if (order.mode == 'ranged' and uid not in cancelled and unit.active and units[order.target].size > 0
                     and uid not in partners and uid not in charging and uid not in closing_on
-                    and not out_of_reach and self._can_fire(unit)):
+                    and not out_of_reach and self._can_fire(unit) and self.in_arc(uid, order.target)):
                 # artillery: per-gun rate of the ordered ammo, fixed for the round
                 gun_rate = None
                 if isinstance(unit.regiment, ArtilleryBattery):
@@ -585,7 +631,7 @@ class Battle:
                 reach = self.reach(uid, order.target, order.ammo)
                 slots.append((uid, order.target, 'ranged',
                               matchups.multiplier(unit.key, units[order.target].key, 'ranged'), 1.0, gun_rate,
-                              1.0 if reach is None else reach))
+                              1.0 if reach is None else reach, self._flank(order.target, uid, hits)))
 
         slots.sort(key=lambda s: (units[s[1]].index, units[s[0]].index))
         return slots, partners
@@ -598,7 +644,7 @@ class Battle:
         modifiers = self._modifiers
         total_fronts = {uid: sum(units[p].front for p in ps) for uid, ps in partners.items()}
         arrows = []
-        for attacker, target, mode, matchup, share, gun_rate, reach in slots:
+        for attacker, target, mode, matchup, share, gun_rate, reach, flank in slots:
             unit = units[attacker]
             stats = unit.regiment.stats
             if mode == 'melee':
@@ -622,6 +668,8 @@ class Battle:
                 rate = c * unit.size * combat.ranged_kill_rate * matchup
             if reach != 1.0:
                 rate = rate * reach
+            if flank != 1.0:
+                rate = rate * flank
             mod = modifiers.get(attacker)
             if mod is not None:
                 rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))
@@ -728,7 +776,11 @@ class Battle:
         a, x = self.units[charge['charger']], self.units[charge['target']]
         s_a = ch.steadiness(a.morale.resolve, a.regiment.stats[0], a.morale.shock)
         s_x = ch.steadiness(x.morale.resolve, x.regiment.stats[0], x.morale.shock)
-        odds = ch.odds(ch.pressure(a.size, x.size, s_a, s_x, ch.bonus(a.key, x.key)))
+        bonus = ch.bonus(a.key, x.key)
+        zone = self.zone(x.uid, a.uid)          # a charge into the flank or rear presses harder
+        if zone in ('flank', 'rear'):
+            bonus = bonus + self.params.flanks.charge_bonus[zone]
+        odds = ch.odds(ch.pressure(a.size, x.size, s_a, s_x, bonus))
         u = self.rng.random()
         if u < odds[0]:
             return 'defender_broke', odds
@@ -797,6 +849,13 @@ class Battle:
         retargets = []
         slots, partners = self._plan(live, cancelled, contacts, pending, frozenset(withdrawn))
         opening = tuple(Engagement(*a) for a in self._rates(slots, partners))
+        exposure: dict = {}                 # (victim, attacker) -> morale cost multiplier; positions are fixed
+
+        def exposed(victim: str, attacker: str) -> float:
+            key = (victim, attacker)
+            if key not in exposure:
+                exposure[key] = self._flank(victim, attacker, self.params.flanks.shock)
+            return exposure[key]
 
         def stand_down(gone: set, t: float) -> None:
             """
@@ -904,7 +963,7 @@ class Battle:
             victim.regiment.update_size(victim.size - 1)
             victim.losses += 1
             attacker.inflicted += 1
-            victim.morale.take_loss(firing_back=victim.uid in attackers)
+            victim.morale.take_loss(firing_back=victim.uid in attackers, exposure=exposed(victim.uid, attacker.uid))
             attacker.morale.inflict_loss(enemy_initial_size=victim.initial_size)
             self._sync(engaged)
 

@@ -246,6 +246,22 @@
           "max": 400
         }
       }
+    },
+    "flanks": {
+      "front_arc": 120,
+      "rear_arc": 90,
+      "casualties": {
+        "flank": 1.5,
+        "rear": 2.0
+      },
+      "shock": {
+        "flank": 1.5,
+        "rear": 2.0
+      },
+      "charge_bonus": {
+        "flank": 1.0,
+        "rear": 2.0
+      }
     }
   },
   "time": 90.0,
