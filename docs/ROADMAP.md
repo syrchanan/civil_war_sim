@@ -68,8 +68,8 @@ parity, then the client. Tuning waits until the pass is done.
 | # | Stage | Status |
 |---|---|---|
 | P1 | Range: fire falls off with distance; charges take the distance | ✓ (2026-11-13) |
-| P2 | Facing and flanks: fire only within the front arc; flank and rear attacks hit harder | ► next |
-| P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ○ |
+| P2 | Facing and flanks: fire only within the front arc; flank and rear attacks hit harder | ✓ (2026-11-13) |
+| P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ► next |
 | P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ○ |
 | P5 | Elevation and line of sight from the terrain | ○ |
 
@@ -917,6 +917,22 @@ Built 2026-11-13 (`config/range.yaml`, `RangeParams`, `Battle.distance` / `Battl
   layout opens 600 yards apart, in artillery but not musket range, as a real battle opened.
 - Open for tuning: whether the default layout should open closer; long charges against short rounds (the contact
   test happens at the round's end even if the charger is still on its way).
+
+### P2. Facing and flanks ✓
+Built 2026-11-13 (`config/flanks.yaml`, `FlankParams`, `Battle.zone` / `Battle.in_arc`).
+- **Zones**: where an attacker stands relative to the way a unit faces: front within `front_arc / 2` (60°) of its
+  facing, rear within `rear_arc / 2` (45°) of directly behind, flank in between.
+- A unit with a facing **fires only within its front arc**, closing fire on a charge included. Charges and melee
+  can come from any side (units wheel to meet them).
+- From the **flank / rear**: casualties taken × 1.5 / × 2 (fire, closing fire, melee), each loss costs × 1.5 / × 2
+  morale, and a charge adds +1 / +2 to the contact test's pressure.
+- Units without a facing or a position are unaffected.
+- **Parity**: zones come from dot products with the facing (no `atan2`), and the facing's cos / sin come from
+  `utils/trig.py` / `trig.ts`, built only from + − × ÷ (exact angle reduction, Taylor polynomials), so both
+  engines agree bit for bit. Also: Python 3.12's `sum()` compensates float rounding, so float totals that must
+  match the port are added in a plain loop.
+- The client's orders table says "outside its front arc", or "on its flank" / "from its rear".
+- Later: draw each unit's front arc on the map while aiming.
 
 ## Phase C — Later / parked
 

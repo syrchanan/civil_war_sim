@@ -10,6 +10,8 @@ Design decisions and status live in `docs/ROADMAP.md`.
 - Range (positions pass P1): fire falls off with distance from each weapon's and ammo's close range to its maximum
   range (`config/range.yaml`); a charge's approach takes as long as the distance needs. Setup files and scenario
   rounds take unit positions. The orders table shows each firing unit's distance and effect.
+- Facing and flanks (positions pass P2): a unit fires only within its front arc; fire, melee and charges from a
+  unit's flank or rear hit harder and shake it more (`config/flanks.yaml`). The orders table says so.
 
 ## [0.1.0-alpha] - 2026-11-13
 
