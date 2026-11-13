@@ -295,6 +295,7 @@ SYNTHETIC = {
     'ranges': {
         # placed units: fire falls off with distance, artillery by ammo, charges take the distance; a unit moves
         'params': {'range': {'falloff_exponent': 1.6}},
+        'terrain': None,        # set below: the terrain fixture's grid, saved and loaded with the battle
         'units': [_u('p_line', 0, 'inf', 'line', 900, '6/6/0/0', position={'x': 400, 'y': 900, 'facing': 0}),
                   _u('p_rifle', 0, 'inf', 'light', 500, '6/6/1/0', position={'x': 700, 'y': 880}),
                   _u('p_cav', 0, 'cav', 'heavy', 350, '6/6/0/1', position={'x': 1000, 'y': 1000, 'facing': 10}),
@@ -425,6 +426,30 @@ def summaries_fixture() -> dict:
             'cases': cases}
 
 
+def fixture_terrain() -> dict:
+    """A small terrain grid from a fixed seed: 12 × 8 cells of 25 yards, uneven heights, every kind of ground."""
+    rng = Rng(1863)
+    columns, rows = 12, 8
+    heights = [round(rng.random() * 40, 3) for _ in range(columns * rows)]
+    ground = ''.join('ofr'[int(rng.random() * 3)] for _ in range(columns * rows))
+    return {'cell': 25.0, 'columns': columns, 'rows': rows, 'heights': heights, 'ground': ground,
+            'meta': {'preset': 'fixture', 'seed': 1863}}
+
+
+def terrain_fixture() -> dict:
+    from imperial_generals.battles.terrain import Terrain
+    data = fixture_terrain()
+    t = Terrain.from_dict(data)
+    rng = Rng(77)
+    points = [(x, y) for x in (-30.0, 0.0, 12.5, 25.0, 37.4999, 150.0, 287.5, 299.99, 300.0, 400.0)
+              for y in (-1.0, 0.0, 12.5, 100.0, 187.5, 199.999, 200.0, 250.0)]
+    points += [(rng.random() * 340 - 20, rng.random() * 240 - 20) for _ in range(200)]
+    return {'description': 'battles.terrain: a grid and [x, y, height_at, ground_at] at points on and off it.',
+            'terrain': data, 'samples': [[x, y, t.height_at(x, y), t.ground_at(x, y)] for x, y in points]}
+
+
+SYNTHETIC['ranges']['terrain'] = fixture_terrain()
+
 FIXTURES = {
     'rng': rng_fixture,
     'params': params_fixture,
@@ -432,6 +457,7 @@ FIXTURES = {
     'units': units_fixture,
     'battles': battles_fixture,
     'summaries': summaries_fixture,
+    'terrain': terrain_fixture,
 }
 
 
@@ -449,6 +475,9 @@ def defaults() -> dict:
         'artillery': dict(cfg['artillery']),
         'names': {k: dict(cfg['sheets'][k]) for k in ('weapons', 'artillery_weapons', 'actions', 'ammo')},
         'commanders': cfg['commanders'],
+        # the client's terrain generator: its settings, and the map pipeline's elevation presets it uses
+        'terrain': {**cfg['terrain'], 'elevation': {name: dict(cfg['map']['terrain_presets'][name])
+                                                    for name in cfg['terrain']['presets']}},
     }
 
 

@@ -11,6 +11,7 @@ with where it is ("Unit 3 (cs_cav): ...").
     side_modifiers:                                # optional, whole battle (commander, supply, events)
       Confederate: {fire: -0.1, note: poor supply}   # side 0, 1 or a name; fire / melee / morale fractions
     params: {combat: {ranged_kill_rate: 0.005}}    # optional overrides on the defaults
+    terrain: {cell: 20, columns: 100, ...}         # optional, the ground as the client saves it (battles.terrain)
     units:
       - id: us_1mn                                 # id and name default to each other
         name: 1st Minnesota
@@ -35,13 +36,15 @@ from pathlib import Path
 import yaml
 
 from imperial_generals.battles.battle import Battle, validate_side_modifiers
+from imperial_generals.battles.terrain import Terrain
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
 from imperial_generals.units.Regiment import _parse_stats
 from imperial_generals.utils import Position, Rng
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
-TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'side_modifiers', 'sides', 'units')
+TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'side_modifiers', 'sides', 'terrain',
+            'units')
 UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'position', 'side', 'size', 'stats', 'subtype', 'type')
 POSITION_KEYS = ('facing', 'x', 'y')
 MAX_SEED = 2 ** 32 - 1
@@ -271,6 +274,12 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
             errors.append(f'overrides: {exc}')
 
     side_modifiers = _side_modifiers(data.get('side_modifiers', {}), sides, errors)
+    terrain = None
+    if data.get('terrain') is not None:
+        try:
+            terrain = Terrain.from_dict(data['terrain'])
+        except ValueError as exc:
+            errors.append(str(exc) if str(exc).startswith('"terrain"') else f'terrain: {exc}')
 
     if not errors:
         for side in (0, 1):
@@ -286,7 +295,7 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
     meta = dict(data.get('meta', {}))
     if sides is not None:
         meta['sides'] = list(sides)
-    return Battle(units, rng=Rng(seed), params=params, meta=meta, side_modifiers=side_modifiers)
+    return Battle(units, rng=Rng(seed), params=params, meta=meta, side_modifiers=side_modifiers, terrain=terrain)
 
 
 def side_modifiers_by_number(mods, sides: list | None) -> dict:

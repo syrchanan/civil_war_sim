@@ -1,0 +1,29 @@
+# =============================================================================
+# TERRAIN (positions pass P4)
+# The ground the client generates for a battle (web/src/ui/terrainGen.ts) and saves in the state file as a grid;
+# both engines only read it (python/imperial_generals/battles/terrain.py). The elevation presets are those of the
+# map pipeline (map.yaml terrain_presets: fractal noise, octaves / persistence / lacunarity / scale / exponent),
+# converted: their spatial scale is in map units and their elevations in feet.
+# =============================================================================
+terrain:
+
+  # Yards a side of a grid cell (the 2000 × 1200 yard field: 100 × 60 cells).
+  cell: 20
+
+  # map.yaml presets are on a 300-unit map; the field is 2000 yards wide.
+  yards_per_unit: 6.67
+  feet_per_yard: 3
+
+  # The presets offered in the client, in order (map.yaml terrain_presets), and the share of the field in woods.
+  presets:
+    flat: {forest_share: 0.10}
+    hills: {forest_share: 0.15}
+    forest: {forest_share: 0.40}
+    badlands: {forest_share: 0.03}
+    mountains: {forest_share: 0.20}
+
+  # Woods come from a second noise field; their patch size in yards.
+  forest_scale: 260
+
+  # Rise per yard of distance (on the grid) above which open ground is rough (broken, rocky slopes).
+  rough_slope: 0.12

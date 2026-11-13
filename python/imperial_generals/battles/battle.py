@@ -341,10 +341,12 @@ class Battle:
         Whole-battle modifiers per side (``{side: {'fire', 'melee', 'morale', 'note'}}``, see
         ``validate_side_modifiers``), e.g. for a commander, supply or events. They last until changed with
         ``set_side_modifiers`` and multiply with each round's unit modifiers.
+    terrain : Terrain, optional
+        The ground (``battles.terrain``); None is an open field.
     """
 
     def __init__(self, units: dict, rng: Rng | None = None, params: BattleParams | None = None,
-                 meta: dict | None = None, side_modifiers: dict | None = None) -> None:
+                 meta: dict | None = None, side_modifiers: dict | None = None, terrain=None) -> None:
         if rng is not None and not isinstance(rng, Rng):
             raise TypeError(f"rng must be an Rng instance, got {type(rng).__name__}.")
         if params is not None and not isinstance(params, BattleParams):
@@ -354,6 +356,7 @@ class Battle:
         self.params: BattleParams = params if params is not None else BattleParams()
         self.meta: dict = dict(meta or {})
         self.side_modifiers: dict = validate_side_modifiers(side_modifiers or {})
+        self.terrain = terrain
 
         self.units: dict[str, BattleUnit] = {}
         for index, (uid, spec) in enumerate(units.items()):
