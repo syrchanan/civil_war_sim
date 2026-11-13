@@ -10640,6 +10640,394 @@
       ]
     ]
   },
+  "rally": {
+    "chance": [
+      [
+        0,
+        1,
+        1.0,
+        0.15
+      ],
+      [
+        0,
+        1,
+        0.75,
+        0.11249999999999999
+      ],
+      [
+        0,
+        1,
+        0.3333,
+        0.049995000000000005
+      ],
+      [
+        0,
+        1,
+        0.01,
+        0.0015000000000000007
+      ],
+      [
+        0,
+        4,
+        1.0,
+        0.25
+      ],
+      [
+        0,
+        4,
+        0.75,
+        0.1875
+      ],
+      [
+        0,
+        4,
+        0.3333,
+        0.08332500000000001
+      ],
+      [
+        0,
+        4,
+        0.01,
+        0.0025000000000000014
+      ],
+      [
+        0,
+        10,
+        1.0,
+        0.44999999999999996
+      ],
+      [
+        0,
+        10,
+        0.75,
+        0.33749999999999997
+      ],
+      [
+        0,
+        10,
+        0.3333,
+        0.149985
+      ],
+      [
+        0,
+        10,
+        0.01,
+        0.004500000000000002
+      ],
+      [
+        1,
+        1,
+        1.0,
+        0.15
+      ],
+      [
+        1,
+        1,
+        0.75,
+        0.11249999999999999
+      ],
+      [
+        1,
+        1,
+        0.3333,
+        0.049995000000000005
+      ],
+      [
+        1,
+        1,
+        0.01,
+        0.0015000000000000007
+      ],
+      [
+        1,
+        4,
+        1.0,
+        0.25
+      ],
+      [
+        1,
+        4,
+        0.75,
+        0.1875
+      ],
+      [
+        1,
+        4,
+        0.3333,
+        0.08332500000000001
+      ],
+      [
+        1,
+        4,
+        0.01,
+        0.0025000000000000014
+      ],
+      [
+        1,
+        10,
+        1.0,
+        0.44999999999999996
+      ],
+      [
+        1,
+        10,
+        0.75,
+        0.33749999999999997
+      ],
+      [
+        1,
+        10,
+        0.3333,
+        0.149985
+      ],
+      [
+        1,
+        10,
+        0.01,
+        0.004500000000000002
+      ],
+      [
+        5,
+        1,
+        1.0,
+        0.2833333333333333,
+        0.20333333333333334,
+        "curved"
+      ],
+      [
+        5,
+        1,
+        0.75,
+        0.2125,
+        0.12468457464699453,
+        "curved"
+      ],
+      [
+        5,
+        1,
+        0.3333,
+        0.094435,
+        0.03140715613267448,
+        "curved"
+      ],
+      [
+        5,
+        1,
+        0.01,
+        0.002833333333333335,
+        8.094845801254457e-05,
+        "curved"
+      ],
+      [
+        5,
+        4,
+        1.0,
+        0.3833333333333333,
+        0.36333333333333334,
+        "curved"
+      ],
+      [
+        5,
+        4,
+        0.75,
+        0.2875,
+        0.22279702682823613,
+        "curved"
+      ],
+      [
+        5,
+        4,
+        0.3333,
+        0.12776500000000002,
+        0.05612098390920522,
+        "curved"
+      ],
+      [
+        5,
+        4,
+        0.01,
+        0.0038333333333333353,
+        0.0001446456053011042,
+        "curved"
+      ],
+      [
+        5,
+        10,
+        1.0,
+        0.5833333333333333,
+        0.6833333333333333,
+        "curved"
+      ],
+      [
+        5,
+        10,
+        0.75,
+        0.43749999999999994,
+        0.41902193119071934,
+        "curved"
+      ],
+      [
+        5,
+        10,
+        0.3333,
+        0.194425,
+        0.1055486394622667,
+        "curved"
+      ],
+      [
+        5,
+        10,
+        0.01,
+        0.005833333333333335,
+        0.00027203989987822355,
+        "curved"
+      ],
+      [
+        10,
+        1,
+        1.0,
+        0.44999999999999996
+      ],
+      [
+        10,
+        1,
+        0.75,
+        0.33749999999999997
+      ],
+      [
+        10,
+        1,
+        0.3333,
+        0.149985
+      ],
+      [
+        10,
+        1,
+        0.01,
+        0.004500000000000002
+      ],
+      [
+        10,
+        4,
+        1.0,
+        0.5499999999999999
+      ],
+      [
+        10,
+        4,
+        0.75,
+        0.4125
+      ],
+      [
+        10,
+        4,
+        0.3333,
+        0.183315
+      ],
+      [
+        10,
+        4,
+        0.01,
+        0.005500000000000002
+      ],
+      [
+        10,
+        10,
+        1.0,
+        0.75
+      ],
+      [
+        10,
+        10,
+        0.75,
+        0.5625
+      ],
+      [
+        10,
+        10,
+        0.3333,
+        0.24997500000000003
+      ],
+      [
+        10,
+        10,
+        0.01,
+        0.007500000000000004
+      ],
+      [
+        12,
+        1,
+        1.0,
+        0.44999999999999996
+      ],
+      [
+        12,
+        1,
+        0.75,
+        0.33749999999999997
+      ],
+      [
+        12,
+        1,
+        0.3333,
+        0.149985
+      ],
+      [
+        12,
+        1,
+        0.01,
+        0.004500000000000002
+      ],
+      [
+        12,
+        4,
+        1.0,
+        0.5499999999999999
+      ],
+      [
+        12,
+        4,
+        0.75,
+        0.4125
+      ],
+      [
+        12,
+        4,
+        0.3333,
+        0.183315
+      ],
+      [
+        12,
+        4,
+        0.01,
+        0.005500000000000002
+      ],
+      [
+        12,
+        10,
+        1.0,
+        0.75
+      ],
+      [
+        12,
+        10,
+        0.75,
+        0.5625
+      ],
+      [
+        12,
+        10,
+        0.3333,
+        0.24997500000000003
+      ],
+      [
+        12,
+        10,
+        0.01,
+        0.007500000000000004
+      ]
+    ]
+  },
   "overrides": {
     "valid": [
       [
@@ -11799,6 +12187,208 @@
             "exposure": 1.25
           }
         }
+      ],
+      [
+        {
+          "rally": {
+            "attempts": 2,
+            "resolve": 0.5
+          },
+          "aftermath": {
+            "pyrrhic_share": 0.4
+          }
+        },
+        {
+          "combat": {
+            "weapon_multipliers": {
+              "-2": 0.2,
+              "-1": 0.5,
+              "0": 1.0,
+              "1": 1.5,
+              "2": 2.5
+            },
+            "xp_boost_per_level": 0.08,
+            "morale_boost_per_level": 0.04,
+            "melee_penalty_factor": 0.7,
+            "ranged_kill_rate": 0.00438,
+            "melee_kill_rate": 0.01564,
+            "broken_fire_multiplier": 0.5,
+            "broken_melee_multiplier": 0.75,
+            "artillery_ammo": {
+              "round_shot": 0.164,
+              "shell": 0.274,
+              "canister": 0.493
+            },
+            "artillery_default_ammo": "round_shot"
+          },
+          "morale": {
+            "break_fraction_min": 0.15,
+            "break_fraction_max": 0.75,
+            "experience_weight": 0.5,
+            "break_curve": 1.5,
+            "break_point_spread": 0.12,
+            "break_fraction_ceiling": 0.95,
+            "size_reference": 500,
+            "size_exponent": 0.0,
+            "acceleration": 1.0,
+            "shock_weight": 4.0,
+            "shock_half_life": 15.0,
+            "helpless_weight": 0.5,
+            "drain_per_hour": 0.05,
+            "gain_weight": 0.5
+          },
+          "aftermath": {
+            "rout_capture_share": 0.1,
+            "cavalry_capture_multiplier": 2.0,
+            "killed_share": 0.22,
+            "walking_wounded_share": 0.4,
+            "wounded_captured_share": 0.6,
+            "wounded_return_share": 0.4,
+            "share_spread": 0.25,
+            "field_exchange_ratio": 1.5,
+            "field_rout_gap": 0.25,
+            "field_standing_ratio": 1.5,
+            "field_votes_needed": 2,
+            "decisive_ratio": 2.0,
+            "decisive_share": 0.25,
+            "pyrrhic_share": 0.4,
+            "pyrrhic_ratio": 1.0
+          },
+          "matchups": {
+            "ranged": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.1
+              },
+              "cav": {
+                "inf": 0.6,
+                "cav": 0.6,
+                "art": 0.1
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.2,
+                "art": 0.6
+              }
+            },
+            "melee": {
+              "inf": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.2
+              },
+              "cav": {
+                "inf": 0.5,
+                "cav": 1.0,
+                "art": 2.0
+              },
+              "art": {
+                "inf": 1.0,
+                "cav": 1.0,
+                "art": 1.0
+              }
+            },
+            "overrides": [
+              {
+                "attacker": "inf/pikes",
+                "target": "cav",
+                "mode": "melee",
+                "multiplier": 2.0
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "*",
+                "mode": "ranged",
+                "multiplier": 0.9
+              },
+              {
+                "attacker": "cav/dragoons",
+                "target": "art",
+                "mode": "ranged",
+                "multiplier": 0.15
+              }
+            ],
+            "melee_ratings": {
+              "default": 0.7,
+              "inf/line": 0.7,
+              "inf/light": 0.6,
+              "inf/marine": 0.8,
+              "inf/pikes": 1.0,
+              "inf/irregulars": 0.5,
+              "cav/light": 1.0,
+              "cav/heavy": 1.4,
+              "cav/dragoons": 0.9,
+              "art/battery": 0.25,
+              "art/horse battery": 0.3,
+              "art/siege battery": 0.2
+            }
+          },
+          "charge": {
+            "approach_minutes": {
+              "inf": 5.0,
+              "cav": 2.0,
+              "art": 5.0
+            },
+            "closing_fire_multiplier": 3.0,
+            "battery_closing_ammo": "canister",
+            "numbers_weight": 1.0,
+            "steadiness_weight": 3.0,
+            "veterancy_weight": 0.5,
+            "shock_weight": 2.0,
+            "break_threshold": 1.0,
+            "falter_threshold": 0.5,
+            "spread": 0.5,
+            "falter_cost": 0.15,
+            "shock_bonus": [
+              {
+                "charger": "cav",
+                "target": "inf",
+                "bonus": 0.5
+              },
+              {
+                "charger": "cav/heavy",
+                "target": "inf",
+                "bonus": 0.3
+              },
+              {
+                "charger": "cav",
+                "target": "inf/pikes",
+                "bonus": -2.0
+              },
+              {
+                "charger": "cav",
+                "target": "art",
+                "bonus": 1.0
+              },
+              {
+                "charger": "inf",
+                "target": "art",
+                "bonus": 0.5
+              },
+              {
+                "charger": "art",
+                "target": "inf",
+                "bonus": -1.0
+              },
+              {
+                "charger": "art",
+                "target": "cav",
+                "bonus": -1.0
+              }
+            ]
+          },
+          "rally": {
+            "attempts": 2,
+            "chance_min": 0.15,
+            "chance_max": 0.75,
+            "experience_weight": 0.5,
+            "men_exponent": 1.0,
+            "resolve": 0.5,
+            "effectiveness": 0.75,
+            "exposure": 1.25
+          }
+        }
       ]
     ],
     "invalid": [
@@ -11873,6 +12463,21 @@
       {
         "charge": {
           "spread": 0.0
+        }
+      },
+      {
+        "rally": {
+          "attempts": 0
+        }
+      },
+      {
+        "rally": {
+          "chance_min": 0.9
+        }
+      },
+      {
+        "aftermath": {
+          "decisive_ratio": 0.5
         }
       },
       {

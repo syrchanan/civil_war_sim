@@ -108,3 +108,23 @@ describe('target switches in a player file', () => {
     expect(playerFile(real, 0).state.history[0].retargets.map((t) => t.unit)).toEqual(['a_line']);
   });
 });
+
+describe('side modifiers and rallies in a player file', () => {
+  it('keep only the player\'s own side modifiers, now and in each round', () => {
+    const b = fought();
+    b.setSideModifiers({ 0: { fire: 0.1, note: 'good supply' }, 1: { morale: -0.2, note: 'their general is ill' } });
+    const real = b.toDict();
+    real.history[0].side_modifiers = structuredClone(real.side_modifiers);
+    const file = playerFile(real, 0);
+    expect(file.state.side_modifiers).toEqual({ 0: real.side_modifiers[0] });
+    expect(file.state.history[0].side_modifiers).toEqual({ 0: real.side_modifiers[0] });
+    expect(playerFile(real, 1).state.side_modifiers).toEqual({ 1: real.side_modifiers[1] });
+  });
+
+  it('keep the player\'s own rallies; the enemy\'s are gone (whether a unit stands again still shows)', () => {
+    const real = fought().toDict();
+    real.history[0].rallies = [{ unit: 'a_line', rallied: false, chance: 0.3 },
+      { unit: 'x_line', rallied: true, chance: 0.4 }];
+    expect(playerFile(real, 0).state.history[0].rallies).toEqual([{ unit: 'a_line', rallied: false, chance: 0.3 }]);
+  });
+});

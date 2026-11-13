@@ -123,6 +123,12 @@ export class MoraleState {
     this.broken = true;
   }
 
+  /** A broken unit rallies: it stands again with `resolve` of its morale budget. */
+  rally(resolve: number): void {
+    this.resolve = resolve;
+    this.broken = false;
+  }
+
   private spend(amount: number): void {
     this.resolve -= amount * this.spendFactor;
     if (this.resolve <= BREAK_EPSILON) {

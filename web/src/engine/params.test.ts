@@ -5,7 +5,8 @@ import fixture from '../../../test_cases/parity/params.json';
 import { ValueError } from './errors';
 import {
   AftermathParams, type AftermathData, BattleParams, ChargeParams, type ChargeData, CombatParams, type CombatData, MatchupParams,
-  type MatchupData, MoraleParams, type MoraleData, type Overrides, type ParamsData, roundHalfEven, type Unit,
+  type MatchupData, MoraleParams, type MoraleData, type Overrides, type ParamsData, RallyParams, type RallyData,
+  roundHalfEven, type Unit,
 } from './params';
 
 const combatDefaults = defaults.params.combat as CombatData;
@@ -92,8 +93,33 @@ describe('AftermathParams', () => {
     { wounded_return_share: -0.1 }, { share_spread: 1.5 }, { field_exchange_ratio: 0.9 },
     { field_standing_ratio: 0.5 }, { field_rout_gap: -0.1 }, { field_rout_gap: 1.1 },
     { field_votes_needed: 0 }, { field_votes_needed: 4 }, { field_votes_needed: 1.5 },
+    { decisive_ratio: 0.9 }, { decisive_share: 1.5 }, { pyrrhic_share: -0.1 }, { pyrrhic_ratio: -1 },
   ])('rejects %j', (change) => {
     expect(() => new AftermathParams({ ...data, ...change })).toThrow(ValueError);
+  });
+});
+
+describe('RallyParams', () => {
+  const data = defaults.params.rally as RallyData;
+  const rally = new RallyParams(data);
+  const curved = new RallyParams({ ...data, men_exponent: 1.7, experience_weight: 0.2 });
+
+  it('keeps the defaults', () => {
+    expect(rally.toDict()).toEqual(data);
+    expect(Object.isFrozen(rally)).toBe(true);
+  });
+
+  it.each(fixture.rally.chance as (number | string)[][])('chance(%s, %s, %s) = %s', (xp, m, left, expected, bent) => {
+    expect(rally.chance(xp as number, m as number, left as number)).toBe(expected);
+    if (bent !== undefined) expect(curved.chance(xp as number, m as number, left as number)).toBe(bent);
+  });
+
+  it.each([
+    { chance_min: -0.1 }, { chance_max: 1.5 }, { chance_min: 0.8, chance_max: 0.5 }, { experience_weight: 2 },
+    { men_exponent: -1 }, { resolve: 0 }, { resolve: 1.2 }, { effectiveness: -0.1 }, { exposure: -1 },
+    { attempts: 0 }, { attempts: 1.5 },
+  ])('rejects %j', (change) => {
+    expect(() => new RallyParams({ ...data, ...change })).toThrow(ValueError);
   });
 });
 

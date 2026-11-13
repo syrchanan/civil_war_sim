@@ -9,6 +9,7 @@ from imperial_generals.battles.morale import break_fraction
 from imperial_generals.config import get_config
 from imperial_generals.params import BattleParams
 from imperial_generals.units.ArtilleryBattery import ArtilleryBattery
+from imperial_generals.utils.fdlibm import exp, log
 
 
 def _stats(text: str) -> tuple:
@@ -37,8 +38,11 @@ def side_power(state: dict, side: int, params: BattleParams) -> float:
 
 
 def expected_share(power: float, other: float, exponent: float) -> float:
-    """The share of the result a side's strength leads to expect: P^k / (P^k + Q^k)."""
-    a, b = power ** exponent, other ** exponent
+    """
+    The share of the result a side's strength leads to expect: P^k / (P^k + Q^k). Powers go through the fdlibm
+    ``exp`` / ``log`` ports so the TS port agrees to the last bit.
+    """
+    a, b = (0.0 if p == 0 else exp(exponent * log(p)) for p in (power, other))
     return 0.5 if a + b == 0 else a / (a + b)
 
 

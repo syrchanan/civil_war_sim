@@ -20,7 +20,9 @@ import { Rng } from './rng';
 import { battleFromDict, battleToDict, type StateData } from './state';
 import { ArtilleryBattery, CavalryRegiment, type Position, Regiment } from './units';
 
-const MODES = ['idle', 'ranged', 'melee'] as const;
+const MODES = ['idle', 'ranged', 'melee', 'rally'] as const;
+const NO_TARGET = ['idle', 'rally'];
+const article = (mode: string): string => (mode === 'idle' ? 'An' : 'A');
 export const ORDER_KEYS = ['target', 'mode', 'ammo', 'on_break'] as const;
 /** What a unit does when its target breaks, by mode; the first is the default. */
 export const ON_BREAK: Record<string, readonly string[]> = {
@@ -41,7 +43,8 @@ export interface OrderInput {
 }
 
 /**
- * A validated order. Artillery may name its `ammo`, fixed for the round. `on_break` says what the unit does
+ * A validated order. A 'rally' order (no target) is for a broken unit: a roll at the start of the round decides
+ * whether it rallies (see RallyParams). Artillery may name its `ammo`, fixed for the round. `on_break` says what the unit does
  * when its target breaks (or is wiped out) during the round: fire 'keep' (default) / 'strongest' / 'weakest'
  * (men × share of morale budget left); melee 'fall_back' (default) / 'pursue'.
  */
@@ -65,11 +68,11 @@ export function makeOrder(value: OrderInput | null | undefined): Order {
   if (!(MODES as readonly string[]).includes(mode)) {
     throw new ValueError(`mode must be one of ${[...MODES].sort().join(', ')}, got ${mode}.`);
   }
-  if (mode === 'idle' && target !== null) throw new ValueError('An idle order has no target.');
-  if (mode !== 'idle' && target === null) throw new ValueError(`A ${mode} order needs a target.`);
+  if (NO_TARGET.includes(mode) && target !== null) throw new ValueError(`${article(mode)} ${mode} order has no target.`);
+  if (!NO_TARGET.includes(mode) && target === null) throw new ValueError(`A ${mode} order needs a target.`);
   if (ammo !== null && mode !== 'ranged') throw new ValueError('Only a ranged order can choose ammo.');
-  if (mode === 'idle') {
-    if (onBreak !== null) throw new ValueError('An idle order has no on_break.');
+  if (NO_TARGET.includes(mode)) {
+    if (onBreak !== null) throw new ValueError(`${article(mode)} ${mode} order has no on_break.`);
   } else if (onBreak === null) {
     onBreak = ON_BREAK[mode][0];
   } else if (!ON_BREAK[mode].includes(onBreak)) {
@@ -113,6 +116,13 @@ export interface Retarget {
   time: number;
 }
 
+/** A broken unit's try to rally at the start of a round, and whether it worked (at what chance). */
+export interface Rally {
+  unit: string;
+  rallied: boolean;
+  chance: number;
+}
+
 export interface CasualtyEvent {
   time: number;
   attacker: string;
@@ -148,6 +158,10 @@ export interface RoundReport {
   positions: Record<string, Position>;
   /** The admin's modifiers for this round. */
   modifiers: Record<string, Modifier>;
+  /** The side modifiers in force this round ('0' / '1'). */
+  side_modifiers: Record<string, Modifier>;
+  /** Tries to rally this round. */
+  rallies: Rally[];
 }
 
 /** An admin's modifiers for one unit and one round: fractions from -1 to 1 (-0.15 is -15%), and a note. */
@@ -171,29 +185,50 @@ export function validateModifiers(modifiers: unknown, units: Map<string, unknown
   const checked: Record<string, Modifier> = {};
   for (const [uid, mod] of Object.entries(modifiers)) {
     if (!units.has(uid)) throw new ValueError(`Unknown unit ${uid} in modifiers.`);
-    if (!isMapping(mod)) throw new ValueError(`${uid}: modifiers must be a mapping (fire, melee, morale, note).`);
-    const unknown = Object.keys(mod).filter((k) => !['fire', 'melee', 'morale', 'note'].includes(k)).sort();
-    if (unknown.length) {
-      throw new ValueError(`Unknown modifier(s) [${unknown.join(', ')}] for ${uid}; use fire, melee, morale, note.`);
-    }
-    const out = { fire: 0, melee: 0, morale: 0, note: '' };
-    for (const key of MODIFIER_KEYS) {
-      const value = mod[key] ?? 0;
-      if (typeof value !== 'number') {
-        throw new ValueError(
-          `${uid}: ${key} must be a number (a fraction, -0.15 for -15%), got ${JSON.stringify(value)}.`);
-      }
-      if (!(value >= -1 && value <= 1)) {
-        throw new ValueError(`${uid}: ${key} must be between -1 and 1 (-100% to +100%), got ${value}.`);
-      }
-      out[key] = value;
-    }
-    const note = mod.note ?? '';
-    if (typeof note !== 'string') throw new ValueError(`${uid}: the note must be text, got ${JSON.stringify(note)}.`);
-    out.note = note;
-    checked[uid] = out;
+    checked[uid] = checkModifier(uid, mod);
   }
   return checked;
+}
+
+/**
+ * Check a battle's side modifiers (port of Python's validate_side_modifiers): the same shape as the unit
+ * modifiers, for every unit of side 0 or 1. Returns them complete, keyed '0' / '1' in order.
+ */
+export function validateSideModifiers(modifiers: unknown): Record<string, Modifier> {
+  if (!isMapping(modifiers)) throw new ValueError('side modifiers must be a mapping of side to modifiers.');
+  const checked: Record<string, Modifier> = {};
+  for (const [key, mod] of Object.entries(modifiers)) {
+    if (key !== '0' && key !== '1') throw new ValueError(`A side modifier's side must be 0 or 1, got ${key}.`);
+    checked[key] = checkModifier(`side ${key}`, mod);
+  }
+  const ordered: Record<string, Modifier> = {};
+  for (const side of ['0', '1']) if (side in checked) ordered[side] = checked[side];
+  return ordered;
+}
+
+/** One set of modifiers (fire, melee, morale as fractions from -1 to 1, and a note), made complete. */
+function checkModifier(label: string, mod: unknown): Modifier {
+  if (!isMapping(mod)) throw new ValueError(`${label}: modifiers must be a mapping (fire, melee, morale, note).`);
+  const unknown = Object.keys(mod).filter((k) => !['fire', 'melee', 'morale', 'note'].includes(k)).sort();
+  if (unknown.length) {
+    throw new ValueError(`Unknown modifier(s) [${unknown.join(', ')}] for ${label}; use fire, melee, morale, note.`);
+  }
+  const out = { fire: 0, melee: 0, morale: 0, note: '' };
+  for (const key of MODIFIER_KEYS) {
+    const value = mod[key] ?? 0;
+    if (typeof value !== 'number') {
+      throw new ValueError(
+        `${label}: ${key} must be a number (a fraction, -0.15 for -15%), got ${JSON.stringify(value)}.`);
+    }
+    if (!(value >= -1 && value <= 1)) {
+      throw new ValueError(`${label}: ${key} must be between -1 and 1 (-100% to +100%), got ${value}.`);
+    }
+    out[key] = value;
+  }
+  const note = mod.note ?? '';
+  if (typeof note !== 'string') throw new ValueError(`${label}: the note must be text, got ${JSON.stringify(note)}.`);
+  out.note = note;
+  return out;
 }
 
 export interface UnitOutcome {
@@ -230,6 +265,8 @@ export class BattleUnit {
   inflicted = 0;
   captured = 0;
   gunsLost = 0;
+  rallyAttempts = 0; // tries to rally so far
+  rallied = false; // has rallied (once per battle): fights on less effectively, more exposed
 
   constructor(
     readonly uid: string,
@@ -304,6 +341,8 @@ export class Battle {
   result: BattleResult | null = null;
   private brokenBeforeRound = new Set<string>();
   private modifiers: Record<string, Modifier> = {}; // this round's admin modifiers, while it is fought or previewed
+  /** Whole-battle modifiers per side ('0' / '1'): last until changed, multiply with each round's unit modifiers. */
+  sideModifiers: Record<string, Modifier>;
 
   /**
    * @param units unit id -> {side, regiment, name?, meta?}; side is 0 or 1. Insertion order is the unit order
@@ -311,12 +350,15 @@ export class Battle {
    * @param rng seeded generator (defaults to a randomly seeded one)
    * @param params per-battle constants (defaults to config)
    * @param meta free-form battle details, round-tripped untouched
+   * @param sideModifiers whole-battle modifiers per side (see validateSideModifiers)
    */
-  constructor(units: Record<string, UnitSpec>, rng?: Rng, params?: BattleParams, meta?: Record<string, unknown>) {
+  constructor(units: Record<string, UnitSpec>, rng?: Rng, params?: BattleParams, meta?: Record<string, unknown>,
+    sideModifiers: unknown = {}) {
     this.rng = rng ?? new Rng(Math.floor(Math.random() * 2 ** 32));
     this.seed = this.rng.seed;
     this.params = params ?? BattleParams.defaults();
     this.meta = { ...(meta ?? {}) };
+    this.sideModifiers = validateSideModifiers(sideModifiers);
     Object.entries(units).forEach(([uid, spec], index) => {
       if (spec.side !== 0 && spec.side !== 1) throw new ValueError(`side must be 0 or 1, got ${spec.side} for ${uid}.`);
       const regiment = spec.regiment;
@@ -336,6 +378,11 @@ export class Battle {
   }
 
   private byIndex = (a: string, b: string): number => this.unit(a).index - this.unit(b).index;
+
+  /** Replace the side modifiers ({} clears them); they apply from the next round on. */
+  setSideModifiers(modifiers: unknown): void {
+    this.sideModifiers = validateSideModifiers(modifiers);
+  }
 
   // ---------------------------------------------------------------------------
   // Orders and the targeting graph
@@ -357,6 +404,12 @@ export class Battle {
       const order = makeOrder(value);
       if (order.mode === 'idle') continue;
       const unit = this.unit(uid);
+      if (order.mode === 'rally') {
+        const problem = this.rallyProblem(uid);
+        if (problem !== null) throw new ValueError(`${uid} ${problem}.`);
+        valid.set(uid, order);
+        continue;
+      }
       if (!unit.active) throw new ValueError(`${uid} is broken or wiped out and can't act.`);
       if (!this.units.has(order.target!)) throw new ValueError(`${uid} targets unknown unit ${order.target}.`);
       const target = this.unit(order.target!);
@@ -372,6 +425,36 @@ export class Battle {
       valid.set(uid, order);
     }
     return valid;
+  }
+
+  /** Why this unit can't try to rally now ("isn't broken", ...), or null if it can. */
+  rallyProblem(uid: string): string | null {
+    const unit = this.unit(uid);
+    if (unit.size === 0) return 'is wiped out';
+    if (!unit.morale.broken) return "isn't broken";
+    if (unit.rallied) return 'has already rallied once';
+    if (unit.rallyAttempts >= this.params.rally.attempts) return 'has no rally attempts left';
+    return null;
+  }
+
+  /** Roll each rally order, in unit order (one draw each): the Rally records. */
+  private rally(orders: Map<string, Order>): Rally[] {
+    const rally = this.params.rally;
+    const rallies: Rally[] = [];
+    const uids = [...orders].filter(([, o]) => o.mode === 'rally').map(([uid]) => uid).sort(this.byIndex);
+    for (const uid of uids) {
+      const unit = this.unit(uid);
+      const chance = rally.chance(unit.initialStats[0], unit.initialStats[1], unit.size / unit.initialSize);
+      unit.rallyAttempts += 1;
+      const rallied = this.rng.random() < chance;
+      if (rallied) {
+        unit.rallied = true;
+        unit.morale.rally(rally.resolve);
+        this.sync([uid]);
+      }
+      rallies.push({ unit: uid, rallied, chance });
+    }
+    return rallies;
   }
 
   /** Has firearms (the stats melee-only flag decides, not the subtype). */
@@ -513,7 +596,11 @@ export class Battle {
       }
       const mod = this.modifiers[attacker];
       if (mod !== undefined) rate = rate * (1 + (mode === 'melee' ? mod.melee : mod.fire));
+      const sideMod = this.sideModifiers[unit.side];
+      if (sideMod !== undefined) rate = rate * (1 + (mode === 'melee' ? sideMod.melee : sideMod.fire));
       if (mode === 'closing') rate = rate * closing * share;
+      if (unit.rallied) rate = rate * this.params.rally.effectiveness;
+      if (this.unit(target).rallied) rate = rate * this.params.rally.exposure;
       if (this.unit(target).morale.broken) {
         // a broken unit scatters: harder to hit by fire, and by pursuit
         rate = rate * (mode === 'melee' ? combat.broken_melee_multiplier : combat.broken_fire_multiplier);
@@ -625,7 +712,8 @@ export class Battle {
   /**
    * Fight one round of `duration` game minutes under `orders` and return its report. Units left out of `orders`
    * are idle. See the Python engine for the rules; this follows it step for step. `modifiers` are the admin's
-   * for this round only, recorded in the report.
+   * for this round only, recorded in the report. A broken unit ordered to 'rally' rolls for it at the start of the
+   * round; if it works, it can fight again from the next round.
    */
   resolveRound(duration: number, orders: Record<string, OrderInput | null>, recordEvents = false,
     modifiers: Record<string, ModifierInput> = {}): RoundReport {
@@ -634,12 +722,18 @@ export class Battle {
     const valid = this.validateOrders(orders);
     const checked = validateModifiers(modifiers, this.units);
     this.modifiers = checked;
-    for (const [uid, mod] of Object.entries(checked)) this.unit(uid).morale.spendFactor = 1 - mod.morale;
+    for (const [uid, unit] of this.units) {
+      let factor = 1.0;
+      if (uid in checked) factor = 1 - checked[uid].morale;
+      const sideMod = this.sideModifiers[unit.side];
+      if (sideMod !== undefined) factor = factor * (1 - sideMod.morale);
+      unit.morale.spendFactor = factor;
+    }
     try {
       return this.fightRound(duration, valid, recordEvents, checked);
     } finally {
       this.modifiers = {};
-      for (const uid of Object.keys(checked)) this.unit(uid).morale.spendFactor = 1;
+      for (const unit of this.units.values()) unit.morale.spendFactor = 1;
     }
   }
 
@@ -658,6 +752,7 @@ export class Battle {
     }
     const prisoners = bySide();
     const guns = bySide();
+    const rallies = this.rally(valid);
     this.brokenBeforeRound = new Set([...this.units].filter(([, u]) => u.morale.broken).map(([uid]) => uid));
     const brokeAt = new Map<string, number>();
     const cancelled = new Set<string>();
@@ -845,6 +940,8 @@ export class Battle {
       retargets,
       positions: placed,
       modifiers: checked,
+      side_modifiers: structuredClone(this.sideModifiers),
+      rallies,
     };
     this.history.push(report);
     return report;
