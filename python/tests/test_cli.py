@@ -693,3 +693,33 @@ def test_bad_side_modifiers_file_is_reported(files, capsys, text, message):
     mods.write_text(text, encoding='utf-8')
     code, _, err = run(capsys, 'side-modifiers', files / 'state.json', mods)
     assert code == 2 and message in err
+
+
+def test_every_charge_outcome_has_words():
+    from imperial_generals.cli import CHARGE_OUTCOMES, _charge_text
+    outcomes = {'home', 'faltered', 'defender_broke', 'meeting', 'pursuit', 'charger_broke', 'target_broke', 'escaped'}
+    assert set(CHARGE_OUTCOMES) == outcomes
+    c = {'charger': 'a', 'target': 'b', 'outcome': 'escaped', 'resolved_at': 30.0, 'p_home': None}
+    assert _charge_text(c, {'a': 'A', 'b': 'B'}) == 'A -> B: the target fled too fast to catch at 30 min'
+
+
+def test_round_report_lists_flights(tmp_path, capsys):
+    setup = tmp_path / 'setup.yaml'
+    setup.write_text("""\
+seed: 2
+units:
+  - {id: us, name: 1st Minnesota, side: 0, size: 300, stats: 1/1/0/0, position: {x: 1000, y: 600, facing: 0}}
+  - {id: cs, name: 26th North Carolina, side: 1, size: 1500, stats: 8/8/1/0, position: {x: 1000, y: 520, facing: 180}}
+""", encoding='utf-8')
+    orders = tmp_path / 'orders.yaml'
+    orders.write_text("cs: {target: us, mode: ranged}\n", encoding='utf-8')
+    run(capsys, 'new', setup, '-o', tmp_path / 'state.json')
+    code, out, _ = run(capsys, 'resolve', tmp_path / 'state.json', '--duration', 120, '--orders', orders)
+    assert code == 0
+    assert any(line.startswith('Flights: 1st Minnesota fled ') and line.endswith(' yd') for line in out.splitlines())
+
+
+def test_flight_text_names_the_pursuers_it_got_away_from():
+    from imperial_generals.cli import _flight_text
+    f = {'unit': 'a', 'distance': 50.4, 'escaped_from': ['b']}
+    assert _flight_text(f, {'a': 'A', 'b': 'B'}) == 'A fled 50 yd, getting away from B'

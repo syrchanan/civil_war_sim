@@ -39,6 +39,7 @@ export interface UnitData {
   captured: number;
   guns_lost: number;
   rally: { attempts: number; rallied: boolean };
+  broke_time: number | null;
   meta: Record<string, unknown>;
   guns?: number;
 }
@@ -104,6 +105,7 @@ function unitToDict(unit: BattleUnit): UnitData {
     captured: unit.captured,
     guns_lost: unit.gunsLost,
     rally: { attempts: unit.rallyAttempts, rallied: unit.rallied },
+    broke_time: unit.brokeTime,
     meta: structuredClone(unit.meta),
   };
   if (reg instanceof ArtilleryBattery) data.guns = reg.guns;
@@ -175,6 +177,7 @@ function restoreUnit(unit: BattleUnit, data: UnitData, params: BattleParams): vo
   const rally = data.rally ?? { attempts: 0, rallied: false }; // absent in older files
   unit.rallyAttempts = rally.attempts;
   unit.rallied = rally.rallied;
+  unit.brokeTime = data.broke_time ?? null; // absent in older files
 }
 
 export function battleFromDict(data: StateData): Battle {
@@ -198,7 +201,7 @@ export function battleFromDict(data: StateData): Battle {
   // retargets, round positions, modifiers, side modifiers and rallies are absent in files saved before they existed
   battle.history = structuredClone(data.history).map((r) => ({
     ...r, retargets: r.retargets ?? [], positions: r.positions ?? {}, modifiers: r.modifiers ?? {},
-    side_modifiers: r.side_modifiers ?? {}, rallies: r.rallies ?? [],
+    side_modifiers: r.side_modifiers ?? {}, rallies: r.rallies ?? [], flights: r.flights ?? [],
   }));
   battle.contacts = new Set(data.contacts.map(([a, b]) => (a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`)));
   battle.result = data.result === null ? null : {

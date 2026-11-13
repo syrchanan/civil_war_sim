@@ -144,8 +144,14 @@ def _status(size: int, broken: bool, broke_at=None, guns_lost: int = 0) -> str:
 CHARGE_OUTCOMES = {
     'home': 'went home', 'faltered': 'faltered', 'defender_broke': 'broke the defender before contact',
     'meeting': 'met head on', 'pursuit': 'pursuit', 'charger_broke': 'charger broke on the approach',
-    'target_broke': 'target broke before contact',
+    'target_broke': 'target broke before contact', 'escaped': 'the target fled too fast to catch',
 }
+
+
+def _flight_text(f: dict, names: dict) -> str:
+    """'1st Minnesota fled 642 yd', '..., getting away from 26th North Carolina'."""
+    away = ', '.join(names[u] for u in f['escaped_from'])
+    return f"{names[f['unit']]} fled {f['distance']:.0f} yd" + (f', getting away from {away}' if away else '')
 
 
 def _charge_text(c: dict, names: dict) -> str:
@@ -171,6 +177,8 @@ def _print_report(state: dict, report: dict) -> None:
         print('Side modifiers: ' + _side_modifiers_text(report['side_modifiers'], sides))
     if report['charges']:
         print('Charges: ' + '; '.join(_charge_text(c, names) for c in report['charges']))
+    if report['flights']:
+        print('Flights: ' + '; '.join(_flight_text(f, names) for f in report['flights']))
     skipped = report.get('skipped_orders', {})
     if skipped:
         print('Skipped orders: ' + ', '.join(f'{uid} ({why})' for uid, why in skipped.items()))

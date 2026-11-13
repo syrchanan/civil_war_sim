@@ -5,14 +5,15 @@ export { exp, log } from './fdlibm';
 export { breakFraction, breakScale, MoraleState } from './morale';
 export { cosDeg, sinDeg } from './trig';
 export {
-  AftermathParams, BattleParams, ChargeParams, CombatParams, FlankParams, MatchupParams, MoraleParams, RallyParams,
+  AftermathParams, BattleParams, ChargeParams, CombatParams, FlankParams, FlightParams, MatchupParams, MoraleParams,
+  RallyParams,
   RangeParams,
   roundHalfEven,
   UNIT_TYPES, WEAPON_CODES,
 } from './params';
 export type {
   AftermathData, ChargeData, CombatData, MatchupData, MatchupOverride, MoraleData, Overrides, ParamsData, RallyData,
-  RangeBand, RangeData, FlankData,
+  RangeBand, RangeData, FlankData, FlightData,
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';
@@ -25,7 +26,7 @@ export {
 } from './battle';
 export type {
   BattleResult, BySide, CasualtyEvent, Charge, Engagement, FieldHolder, FieldTest, Modifier, ModifierInput, Order,
-  OrderInput, Rally, Retarget, RoundReport, UnitOutcome, UnitReport, UnitSpec, Zone,
+  Flight, OrderInput, Rally, Retarget, RoundReport, UnitOutcome, UnitReport, UnitSpec, Zone,
 } from './battle';
 export { RuntimeError } from './errors';
 export { battleFromDict, battleTag, battleToDict, FORMAT, VERSION } from './state';
