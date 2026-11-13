@@ -577,6 +577,46 @@ export class RangeParams {
 }
 
 // =============================================================================
+// Facing and flanks
+// =============================================================================
+
+export interface FlankData {
+  front_arc: number;
+  rear_arc: number;
+  casualties: { flank: number; rear: number };
+  shock: { flank: number; rear: number };
+  charge_bonus: { flank: number; rear: number };
+}
+
+export interface FlankParams extends Readonly<FlankData> {}
+
+/** Front, flank and rear: arcs (degrees) and what attacks from the flank or rear do (config/flanks.yaml). */
+export class FlankParams {
+  constructor(data: FlankData) {
+    if (!(data.front_arc > 0 && data.front_arc <= 360)) throw new ValueError('front_arc must be in (0, 360] degrees.');
+    if (!(data.rear_arc >= 0 && data.rear_arc < 360)) throw new ValueError('rear_arc must be in [0, 360) degrees.');
+    if (data.front_arc + data.rear_arc > 360) {
+      throw new ValueError('front_arc + rear_arc must leave room for the flanks (at most 360 degrees).');
+    }
+    for (const name of ['casualties', 'shock', 'charge_bonus'] as const) {
+      const table = data[name];
+      if (!isObject(table) || !sameKeys(table, ['flank', 'rear'])) {
+        throw new ValueError(`${name} needs exactly flank and rear.`);
+      }
+      if (name !== 'charge_bonus' && Object.values(table).some((v) => !(v >= 0))) {
+        throw new ValueError(`${name} multipliers must be >= 0.`);
+      }
+    }
+    Object.assign(this, structuredClone(data));
+    Object.freeze(this);
+  }
+
+  toDict(): FlankData {
+    return structuredClone({ ...this });
+  }
+}
+
+// =============================================================================
 // Rally
 // =============================================================================
 
@@ -641,12 +681,13 @@ export interface ParamsData {
   charge: ChargeData;
   rally: RallyData;
   range: RangeData;
+  flanks: FlankData;
 }
 
 /** Nested partial params, e.g. `{ combat: { ranged_kill_rate: 0.005 } }`. */
 export type Overrides = Record<string, Record<string, unknown>>;
 
-const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range'] as const;
+const SECTIONS = ['combat', 'morale', 'aftermath', 'matchups', 'charge', 'rally', 'range', 'flanks'] as const;
 
 function deepMerge(base: Record<string, unknown>, changes: Record<string, unknown>): Record<string, unknown> {
   const merged = { ...base };
@@ -690,6 +731,7 @@ export class BattleParams {
   readonly charge: ChargeParams;
   readonly rally: RallyParams;
   readonly range: RangeParams;
+  readonly flanks: FlankParams;
   private static cached: BattleParams | null = null;
 
   constructor(data: ParamsData) {
@@ -700,6 +742,7 @@ export class BattleParams {
     this.charge = new ChargeParams(data.charge);
     this.rally = new RallyParams(data.rally);
     this.range = new RangeParams(data.range);
+    this.flanks = new FlankParams(data.flanks);
     if (!sameKeys(this.range.artillery, Object.keys(this.combat.artillery_ammo))) {
       throw new ValueError(`range.artillery needs every ammo: ${Object.keys(this.combat.artillery_ammo).sort().join(', ')}.`);
     }
@@ -740,6 +783,7 @@ export class BattleParams {
       charge: this.charge.toDict(),
       rally: this.rally.toDict(),
       range: this.range.toDict(),
+      flanks: this.flanks.toDict(),
     };
   }
 

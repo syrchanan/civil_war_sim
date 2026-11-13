@@ -12,7 +12,7 @@ import {
   ArtilleryBattery, Battle, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
   PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
-  type RoundReport, sideSummary, type SideSummary, type UnitSpec,
+  type RoundReport, sideSummary, type SideSummary, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
@@ -418,14 +418,19 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return null;
   }
 
-  /** How far a firing unit's target is and how much of its fire tells there; null unless firing at a placed unit. */
-  function rangeOf(uid: string): { distance: number; reach: number } | null {
+  /**
+   * How far a firing unit's target is, how much of its fire tells there, whether the target is within its front
+   * arc, and where it hits the target (front, flank or rear); null unless firing at a placed unit.
+   */
+  function rangeOf(uid: string): { distance: number; reach: number; inArc: boolean; zone: Zone | null } | null {
     revision.value;
     const o = effectiveOrders.value[uid];
     if (o.mode !== 'ranged') return null;
     const b = battle.value!;
     const distance = b.distance(uid, o.target!);
-    return distance === null ? null : { distance, reach: b.reach(uid, o.target!, o.ammo)! };
+    return distance === null ? null : {
+      distance, reach: b.reach(uid, o.target!, o.ammo)!, inArc: b.inArc(uid, o.target!), zone: b.zone(o.target!, uid),
+    };
   }
 
   /** Admin: standing units that have no orders yet, from a file or the admin (they would hold). */

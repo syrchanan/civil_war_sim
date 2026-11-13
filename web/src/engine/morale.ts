@@ -95,13 +95,14 @@ export class MoraleState {
   }
 
   /** Record one casualty; `firingBack` is false when the unit can't or doesn't reply. */
-  takeLoss(firingBack: boolean): void {
+  takeLoss(firingBack: boolean, exposure = 1.0): void {
     const p = this.params;
     const fractionMid = (this.lost + 0.5) / this.initialSize;
-    const cost = this.costScale
+    let cost = this.costScale
       * (1 + p.acceleration * fractionMid)
       * (1 + p.shock_weight * this.shock)
       * (1 + (firingBack ? 0.0 : p.helpless_weight));
+    if (exposure !== 1.0) cost = cost * exposure; // a loss from the flank or rear shakes a unit more
     this.lost += 1;
     this.shock += 1 / this.initialSize;
     if (!this.broken) this.spend(cost);
