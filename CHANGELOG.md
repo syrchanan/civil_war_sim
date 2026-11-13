@@ -6,6 +6,11 @@ Design decisions and status live in `docs/ROADMAP.md`.
 
 ## [Unreleased]
 
+### Added
+- Range (positions pass P1): fire falls off with distance from each weapon's and ammo's close range to its maximum
+  range (`config/range.yaml`); a charge's approach takes as long as the distance needs. Setup files and scenario
+  rounds take unit positions. The orders table shows each firing unit's distance and effect.
+
 ## [0.1.0-alpha] - 2026-11-13
 
 The first public site: everything up to it.

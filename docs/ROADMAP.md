@@ -61,6 +61,18 @@ with unlimited line of sight. The map pipeline is kept but parked.
 | B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ✓ (2026-10-23) |
 | B5 | One side per player (player files), admin rounds and modifiers, army files, phones | ✓ (2026-10-24) |
 
+### Positions pass (2026-11-13 →)
+The engine starts using where units stand. Each stage Python first (red/green TDD), then the TS port with exact
+parity, then the client. Tuning waits until the pass is done.
+
+| # | Stage | Status |
+|---|---|---|
+| P1 | Range: fire falls off with distance; charges take the distance | ✓ (2026-11-13) |
+| P2 | Facing and flanks: fire only within the front arc; flank and rear attacks hit harder | ► next |
+| P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ○ |
+| P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ○ |
+| P5 | Elevation and line of sight from the terrain | ○ |
+
 ### Phase C — Later
 | Item | Status |
 |---|---|
@@ -873,6 +885,38 @@ admin reconciles both sides' orders, can override them, and applies modifiers.
 - Later (user, 2026-10-24): import / export army files to and from **Google Sheets**, for players on phones.
 
 ---
+
+## Positions pass
+
+**Decisions (user, 2026-11-13)**:
+- Units move **between rounds** (players and the admin place them, as now). Within a round only broken units move,
+  fleeing (P3).
+- Fire falls off **smoothly** with distance (no zones).
+- **Port the terrain map**. To keep both engines identical without porting the noise and geometry libraries bit
+  for bit, the client generates the map once and saves it in the state file as a grid (height and terrain type per
+  cell); both engines only read it (height at a point, line of sight). The same seed need not give the same map in
+  Python, but every saved battle replays exactly in both.
+- **Flanks** from facing are in this pass.
+- Weather and cover stay held.
+
+### P1. Range ✓
+Built 2026-11-13 (`config/range.yaml`, `RangeParams`, `Battle.distance` / `Battle.reach`).
+- Each small-arms weapon code and each artillery ammo has a `close` and a `max` range in yards. Reach = 1 up to
+  close, `(1 − t)^falloff_exponent` past it (t from 0 at close to 1 at max), 0 beyond max. Ranged fire is
+  multiplied by it. First guesses: smoothbore 80 / 250, rifled musket 150 / 500, round shot 500 / 1600, canister
+  100 / 400.
+- Distance is centre to centre on the flat. Units without a position (or facing an unplaced unit) fight as
+  before, so older battles and Python scenarios without positions are unchanged.
+- Closing fire on a charge is close by definition and isn't reduced.
+- A charge's approach takes `max(approach_minutes, distance / speed)`; two units charging each other close the gap
+  together (`distance / (speed + speed)`). Charge speeds (yards per minute): infantry 120, cavalry 350,
+  artillery 100.
+- Setup files take `position: {x, y, facing}` per unit; scenario rounds take `positions` (units moved between
+  rounds), and `scenario_from_state` writes them, so downloaded battles still replay exactly.
+- The client's orders table shows each firing unit's distance and effect ("612 yd, out of range"). The default
+  layout opens 600 yards apart, in artillery but not musket range, as a real battle opened.
+- Open for tuning: whether the default layout should open closer; long charges against short rounds (the contact
+  test happens at the round's end even if the charger is still on its way).
 
 ## Phase C — Later / parked
 
