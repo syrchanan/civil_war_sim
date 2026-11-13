@@ -145,25 +145,51 @@ def validate_modifiers(modifiers, units) -> dict:
     for uid, mod in modifiers.items():
         if uid not in units:
             raise ValueError(f"Unknown unit {uid} in modifiers.")
-        if not isinstance(mod, dict):
-            raise ValueError(f"{uid}: modifiers must be a mapping (fire, melee, morale, note).")
-        unknown = sorted(k for k in mod if k not in (*MODIFIER_KEYS, 'note'))
-        if unknown:
-            raise ValueError(f"Unknown modifier(s) {unknown} for {uid}; use fire, melee, morale, note.")
-        out = {}
-        for key in MODIFIER_KEYS:
-            value = mod.get(key, 0.0)
-            if isinstance(value, bool) or not isinstance(value, (int, float)):
-                raise ValueError(f"{uid}: {key} must be a number (a fraction, -0.15 for -15%), got {value!r}.")
-            if not -1 <= value <= 1:
-                raise ValueError(f"{uid}: {key} must be between -1 and 1 (-100% to +100%), got {value}.")
-            out[key] = float(value)
-        note = mod.get('note', '')
-        if not isinstance(note, str):
-            raise ValueError(f"{uid}: the note must be text, got {note!r}.")
-        out['note'] = note
-        checked[uid] = out
+        checked[uid] = _check_modifier(uid, mod)
     return checked
+
+
+def validate_side_modifiers(modifiers) -> dict:
+    """
+    Check a battle's side modifiers, ``{side: {'fire', 'melee', 'morale', 'note'}}``: the same shape as the unit
+    modifiers, for every unit of side 0 or 1 (keys may be text, as in JSON). Returns them complete, keyed 0 / 1.
+
+    Raises
+    ------
+    ValueError
+        Naming the side and what is wrong.
+    """
+    if not isinstance(modifiers, dict):
+        raise ValueError(f"side modifiers must be a mapping of side to modifiers, got {type(modifiers).__name__}.")
+    checked = {}
+    for key, mod in modifiers.items():
+        side = {0: 0, 1: 1, '0': 0, '1': 1}.get(key) if not isinstance(key, bool) else None
+        if side is None:
+            raise ValueError(f"A side modifier's side must be 0 or 1, got {key!r}.")
+        checked[side] = _check_modifier(f'side {side}', mod)
+    return dict(sorted(checked.items()))
+
+
+def _check_modifier(label: str, mod) -> dict:
+    """One set of modifiers (fire, melee, morale as fractions from -1 to 1, and a note), made complete."""
+    if not isinstance(mod, dict):
+        raise ValueError(f"{label}: modifiers must be a mapping (fire, melee, morale, note).")
+    unknown = sorted(k for k in mod if k not in (*MODIFIER_KEYS, 'note'))
+    if unknown:
+        raise ValueError(f"Unknown modifier(s) {unknown} for {label}; use fire, melee, morale, note.")
+    out = {}
+    for key in MODIFIER_KEYS:
+        value = mod.get(key, 0.0)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"{label}: {key} must be a number (a fraction, -0.15 for -15%), got {value!r}.")
+        if not -1 <= value <= 1:
+            raise ValueError(f"{label}: {key} must be between -1 and 1 (-100% to +100%), got {value}.")
+        out[key] = float(value)
+    note = mod.get('note', '')
+    if not isinstance(note, str):
+        raise ValueError(f"{label}: the note must be text, got {note!r}.")
+    out['note'] = note
+    return out
 
 
 @dataclass(frozen=True)
@@ -200,6 +226,7 @@ class RoundReport:
     retargets: tuple = ()       # Retarget per switch of target this round
     positions: dict = field(default_factory=dict)   # uid -> position (as saved) as the round began, for placed units
     modifiers: dict = field(default_factory=dict)   # uid -> admin modifiers for this round (fire, melee, morale, note)
+    side_modifiers: dict = field(default_factory=dict)   # side -> the side modifiers in force this round
 
 
 @dataclass(frozen=True)
@@ -275,10 +302,14 @@ class Battle:
         Per-battle constants; defaults to config.
     meta : dict, optional
         Free-form battle details (name, date, location, ...), round-tripped untouched.
+    side_modifiers : dict, optional
+        Whole-battle modifiers per side (``{side: {'fire', 'melee', 'morale', 'note'}}``, see
+        ``validate_side_modifiers``), e.g. for a commander, supply or events. They last until changed with
+        ``set_side_modifiers`` and multiply with each round's unit modifiers.
     """
 
     def __init__(self, units: dict, rng: Rng | None = None, params: BattleParams | None = None,
-                 meta: dict | None = None) -> None:
+                 meta: dict | None = None, side_modifiers: dict | None = None) -> None:
         if rng is not None and not isinstance(rng, Rng):
             raise TypeError(f"rng must be an Rng instance, got {type(rng).__name__}.")
         if params is not None and not isinstance(params, BattleParams):
@@ -287,6 +318,7 @@ class Battle:
         self.seed: int | None = self.rng.seed
         self.params: BattleParams = params if params is not None else BattleParams()
         self.meta: dict = dict(meta or {})
+        self.side_modifiers: dict = validate_side_modifiers(side_modifiers or {})
 
         self.units: dict[str, BattleUnit] = {}
         for index, (uid, spec) in enumerate(units.items()):
@@ -323,6 +355,10 @@ class Battle:
         self.result: BattleResult | None = None      # set by finish()
         self._broken_before_round: set[str] = set()
         self._modifiers: dict = {}                   # this round's admin modifiers, while it is fought or previewed
+
+    def set_side_modifiers(self, modifiers: dict) -> None:
+        """Replace the side modifiers (``{}`` clears them); they apply from the next round on."""
+        self.side_modifiers = validate_side_modifiers(modifiers)
 
     # -------------------------------------------------------------------------
     # Orders and the targeting graph
@@ -499,6 +535,9 @@ class Battle:
             mod = modifiers.get(attacker)
             if mod is not None:
                 rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))
+            mod = self.side_modifiers.get(unit.side)
+            if mod is not None:
+                rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))
             if mode == 'closing':
                 rate = rate * closing * share
             if units[target].morale.broken:
@@ -626,14 +665,19 @@ class Battle:
         valid = self._validate_orders(orders)
         checked = validate_modifiers(modifiers or {}, self.units)
         self._modifiers = checked
-        for uid, mod in checked.items():
-            self.units[uid].morale.spend_factor = 1 - mod['morale']
+        for uid, unit in self.units.items():
+            factor = 1.0
+            if uid in checked:
+                factor = 1 - checked[uid]['morale']
+            if unit.side in self.side_modifiers:
+                factor = factor * (1 - self.side_modifiers[unit.side]['morale'])
+            unit.morale.spend_factor = factor
         try:
             return self._resolve_round(duration, valid, record_events, checked)
         finally:
             self._modifiers = {}
-            for uid in checked:
-                self.units[uid].morale.spend_factor = 1.0
+            for unit in self.units.values():
+                unit.morale.spend_factor = 1.0
 
     def _resolve_round(self, duration: float, valid: dict, record_events: bool, checked: dict) -> RoundReport:
         live = dict(valid)               # orders as they stand: a retarget changes the target here, not in valid
@@ -812,6 +856,7 @@ class Battle:
             positions=placed,
             modifiers=checked,
             retargets=tuple(retargets),
+            side_modifiers={side: dict(mod) for side, mod in self.side_modifiers.items()},
         )
         self.history.append(report)
         return report

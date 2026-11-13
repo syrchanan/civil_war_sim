@@ -9,8 +9,8 @@ battle is finished, its ``result`` (the casualty settlement from ``Battle.finish
 saved as ``contacts``.
 
 Version 2 (A13) added contacts, charges and the charge parameters; version 1 files are not loaded. Added since,
-within version 2 (absent in older files, which still load): target switches, facing on positions, and per-round
-positions and modifiers.
+within version 2 (absent in older files, which still load): target switches, facing on positions, per-round
+positions and modifiers, and side modifiers (battle-wide and per round).
 
 ``meta`` (battle and per unit) is free-form and round-tripped untouched.
 """
@@ -94,6 +94,7 @@ def report_to_dict(report: RoundReport) -> dict:
         'retargets': [asdict(r) for r in report.retargets],
         'positions': report.positions,
         'modifiers': report.modifiers,
+        'side_modifiers': _by_side(report.side_modifiers),
     }
 
 
@@ -122,6 +123,7 @@ def battle_to_dict(battle: Battle) -> dict:
         'finished': battle.finished,
         'prisoners': _by_side(battle.prisoners),
         'guns_captured': _by_side(battle.guns_captured),
+        'side_modifiers': _by_side(battle.side_modifiers),
         'units': [_unit_to_dict(u) for u in battle.units.values()],
         'contacts': sorted(sorted(pair, key=order) for pair in battle.contacts),
         'history': [report_to_dict(r) for r in battle.history],
@@ -184,6 +186,7 @@ def _report_from_dict(data: dict) -> RoundReport:
         retargets=tuple(Retarget(**r) for r in data.get('retargets', [])),     # absent in older files
         positions=data.get('positions', {}),                                   # absent in older files
         modifiers=data.get('modifiers', {}),                                   # absent in older files
+        side_modifiers=_from_sides(data.get('side_modifiers', {})),           # absent in older files
     )
 
 
@@ -210,7 +213,7 @@ def battle_from_dict(data: dict) -> Battle:
         for u in data['units']
     }
     battle = Battle(units, rng=Rng.from_state(data['rng_state']), params=BattleParams.from_dict(data['params']),
-                    meta=data['meta'])
+                    meta=data['meta'], side_modifiers=data.get('side_modifiers', {}))     # absent in older files
     for u in data['units']:
         _restore_unit(battle.units[u['id']], u, battle.params)
     battle.rng = Rng.from_state(data['rng_state'])     # building the units drew break points: rewind

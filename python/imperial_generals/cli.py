@@ -5,6 +5,7 @@ Command line for the battle engine (roadmap A9). Run ``python -m imperial_genera
     python -m imperial_generals preview battle.json --orders o.yaml   # who would fight whom, no dice rolled
     python -m imperial_generals resolve battle.json --duration 90 --orders o.yaml
     python -m imperial_generals resolve battle.json --duration 90 --orders o.yaml --modifiers m.yaml   # admin's
+    python -m imperial_generals side-modifiers battle.json sides.yaml # admin's whole-battle modifiers per side
     python -m imperial_generals finish battle.json --field Union      # settle killed / wounded / captured
     python -m imperial_generals show battle.json
     python -m imperial_generals run scenario.yaml                     # setup + scripted rounds, start to end
@@ -83,6 +84,16 @@ def _modifiers_text(report: dict, names: dict) -> str:
     return '; '.join(parts)
 
 
+def _side_modifiers_text(side_modifiers: dict, sides: list) -> str:
+    """'Union morale +10%; Confederate fire -20% (short of ammunition)', or 'none'."""
+    parts = []
+    for side, mod in sorted(side_modifiers.items()):
+        changes = ', '.join(f'{key} {mod[key]:+.0%}' for key in ('fire', 'melee', 'morale') if mod[key])
+        note = f"({mod['note']})" if mod['note'] else ''
+        parts.append(' '.join(part for part in (sides[int(side)], changes, note) if part))
+    return '; '.join(parts) or 'none'
+
+
 def _save(state: dict, path: Path) -> None:
     path.write_text(json.dumps(state, indent=2) + '\n', encoding='utf-8', newline='\n')
 
@@ -156,6 +167,8 @@ def _print_report(state: dict, report: dict) -> None:
     print(_table(['Unit', 'Side', 'Size', 'Lost', 'Captured', 'Inflicted', 'Morale', 'Status'], rows))
     if report['modifiers']:
         print('Modifiers: ' + _modifiers_text(report, names))
+    if report['side_modifiers']:
+        print('Side modifiers: ' + _side_modifiers_text(report['side_modifiers'], sides))
     if report['charges']:
         print('Charges: ' + '; '.join(_charge_text(c, names) for c in report['charges']))
     skipped = report.get('skipped_orders', {})
@@ -310,6 +323,16 @@ def _field(value: str, state: dict):
         return sides.index(value)
     names = f" or a side name ({', '.join(sides)})" if isinstance(sides, list) else ''
     raise CliError(f'--field must be auto, none, 0, 1{names}; got {value!r}.')
+
+
+def _cmd_side_modifiers(args) -> None:
+    mods = load_setup_file(args.modifiers) or {}
+    if not isinstance(mods, dict):
+        raise CliError(f'{args.modifiers.name} must map sides (0, 1 or a side name) to modifiers '
+                       '(fire, melee, morale, note).')
+    state = api.set_side_modifiers(_load_state(args.state), mods)
+    _save(state, args.output or args.state)
+    print('Side modifiers: ' + _side_modifiers_text(state['side_modifiers'], _side_names(state)))
 
 
 def _cmd_finish(args) -> None:
@@ -674,6 +697,14 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument('--modifiers', type=Path)
     p.add_argument('--json', action='store_true')
     p.set_defaults(run=_cmd_preview)
+
+    p = commands.add_parser('side-modifiers', help="set the admin's whole-battle modifiers per side (commander, "
+                                                  'supply, events); they last until set again')
+    p.add_argument('state', type=Path)
+    p.add_argument('modifiers', type=Path, help='side (0, 1 or a side name) -> {fire, melee, morale, note}, fractions '
+                                                'from -1 to 1 (-0.15 is -15%%); an empty file clears them')
+    p.add_argument('-o', '--output', type=Path, help='write the new state here instead of updating STATE')
+    p.set_defaults(run=_cmd_side_modifiers)
 
     p = commands.add_parser('finish', help='end the battle and settle killed / wounded / captured')
     p.add_argument('state', type=Path)

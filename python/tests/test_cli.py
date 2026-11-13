@@ -646,3 +646,34 @@ def test_bad_modifiers_file_is_reported(files, capsys):
     assert code != 0 and 'mods.yaml must map unit ids to modifiers' in err
     mods.write_text("", encoding='utf-8')                       # an empty file: no modifiers
     assert run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--modifiers', mods)[0] == 0
+
+
+def test_side_modifiers_are_set_by_file_and_shown_in_each_round(files, capsys):
+    new(capsys, files)
+    mods = files / 'sides.yaml'
+    mods.write_text("Confederate: {fire: -0.2, note: short of ammunition}\n0: {morale: 0.1}\n", encoding='utf-8')
+    code, out, err = run(capsys, 'side-modifiers', files / 'state.json', mods)
+    assert code == 0, err
+    assert 'Side modifiers: Union morale +10%; Confederate fire -20% (short of ammunition)' in out
+    assert read(files / 'state.json')['side_modifiers']['1']['fire'] == -0.2
+    code, out, _ = run(capsys, 'resolve', files / 'state.json', '--duration', 30, '--orders', files / 'orders.yaml')
+    assert 'Side modifiers: Union morale +10%; Confederate fire -20% (short of ammunition)' in out
+    # an empty file clears them, and -o writes elsewhere
+    mods.write_text("", encoding='utf-8')
+    code, out, _ = run(capsys, 'side-modifiers', files / 'state.json', mods, '-o', files / 'cleared.json')
+    assert code == 0 and 'Side modifiers: none' in out
+    assert read(files / 'cleared.json')['side_modifiers'] == {}
+    assert read(files / 'state.json')['side_modifiers'] != {}
+
+
+@pytest.mark.parametrize('text, message', [
+    ("- Union\n", 'sides.yaml must map sides'),
+    ("Prussia: {fire: 0.1}\n", 'unknown side "Prussia"'),
+    ("Union: {fire: 5}\n", 'between -1 and 1'),
+])
+def test_bad_side_modifiers_file_is_reported(files, capsys, text, message):
+    new(capsys, files)
+    mods = files / 'sides.yaml'
+    mods.write_text(text, encoding='utf-8')
+    code, _, err = run(capsys, 'side-modifiers', files / 'state.json', mods)
+    assert code == 2 and message in err

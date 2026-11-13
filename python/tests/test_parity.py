@@ -98,6 +98,8 @@ def test_a_state_file_written_by_javascript_resumes_exactly(case):
     from imperial_generals.battles.battle import Battle
     battle = Battle.from_dict(_as_javascript_writes_it(case['start']))
     for rnd in case['rounds']:
+        if 'side_modifiers' in rnd:
+            battle.set_side_modifiers(rnd['side_modifiers'])
         battle.resolve_round(rnd['duration'], rnd['orders'], record_events=rnd['record_events'],
                              modifiers=rnd['modifiers'])
     if case['finished']:
