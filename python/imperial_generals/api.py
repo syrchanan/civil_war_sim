@@ -22,7 +22,8 @@ A **scenario** is a setup plus a script of rounds, so a whole battle can be repl
     finish: true        # settle casualties after the last round: true / auto, none, or the side holding the field
 
 Scripted orders can't foresee random breaks, so orders that can no longer be carried out (the unit has broken or
-been wiped out, or its target has been wiped out) are skipped and listed in the round's ``skipped_orders``.
+been wiped out, or its target has been wiped out; a rally for a unit that isn't broken, or has no tries left) are
+skipped and listed in the round's ``skipped_orders``.
 Broken targets can still be attacked (pursuit).
 """
 
@@ -140,7 +141,13 @@ def _playable(battle: Battle, orders: dict) -> tuple:
     for uid, order in orders.items():
         unit = battle.units.get(uid)
         target = battle.units.get(order.get('target')) if isinstance(order, dict) else None
-        if unit is not None and not unit.active:
+        if unit is not None and isinstance(order, dict) and order.get('mode') == 'rally':
+            problem = battle.rally_problem(uid)
+            if problem is None:
+                keep[uid] = order
+            else:
+                skipped[uid] = f'{uid} {problem}'
+        elif unit is not None and not unit.active:
             skipped[uid] = f'{uid} is {"wiped out" if unit.size == 0 else "broken"}'
         elif target is not None and target.size == 0:
             skipped[uid] = f"target {order['target']} is wiped out"

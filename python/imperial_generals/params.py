@@ -3,7 +3,8 @@ Per-battle tunable parameters (roadmap A3).
 
 ``BattleParams`` bundles every constant the engine uses in a battle: ``CombatParams`` (effectiveness and kill
 rates), ``MoraleParams`` (the morale model), ``AftermathParams`` (prisoners and casualty accounting),
-``MatchupParams`` (unit-type advantages, melee ratings) and ``ChargeParams`` (approach and contact test). Defaults come from config/*.yaml; overrides are applied per
+``MatchupParams`` (unit-type advantages, melee ratings), ``ChargeParams`` (approach and contact test) and
+``RallyParams`` (rallying broken units). Defaults come from config/*.yaml; overrides are applied per
 battle and never touch the global config, so a tuning or RL loop can run many parameter sets in one process.
 
 ``to_dict`` / ``from_dict`` are JSON-safe, for the battle state file (A8).
@@ -401,6 +402,55 @@ class ChargeParams:
 
 
 # =============================================================================
+# Rally
+# =============================================================================
+
+def _rally_default(key: str):
+    return field(default_factory=lambda: get_config()['rally'][key])
+
+
+@dataclass(frozen=True)
+class RallyParams:
+    """Rallying broken units: the odds, tries per battle and the penalties after; defaults from config/rally.yaml."""
+
+    attempts: int = _rally_default('attempts')
+    chance_min: float = _rally_default('chance_min')
+    chance_max: float = _rally_default('chance_max')
+    experience_weight: float = _rally_default('experience_weight')
+    men_exponent: float = _rally_default('men_exponent')
+    resolve: float = _rally_default('resolve')
+    effectiveness: float = _rally_default('effectiveness')
+    exposure: float = _rally_default('exposure')
+
+    def __post_init__(self) -> None:
+        if isinstance(self.attempts, bool) or not isinstance(self.attempts, int) or self.attempts < 1:
+            raise ValueError("attempts must be a whole number >= 1.")
+        if not 0 <= self.chance_max <= 1:
+            raise ValueError("chance_max must be in [0, 1].")
+        if not 0 <= self.chance_min <= self.chance_max:
+            raise ValueError("chance_min must be in [0, chance_max].")
+        if not 0 <= self.experience_weight <= 1:
+            raise ValueError("experience_weight must be in [0, 1].")
+        if not self.men_exponent >= 0:
+            raise ValueError("men_exponent must be >= 0.")
+        if not 0 < self.resolve <= 1:
+            raise ValueError("resolve must be in (0, 1].")
+        for name in ('effectiveness', 'exposure'):
+            if not getattr(self, name) >= 0:
+                raise ValueError(f"{name} must be >= 0.")
+
+    def chance(self, xp: int, morale_stat: int, men_left: float) -> float:
+        """Chance a rally works, from starting experience and morale (1–10) and the share of men left."""
+        from imperial_generals.utils.fdlibm import exp, log   # lazy: utils imports this module
+        xp_norm = (max(1, min(10, xp)) - 1) / 9
+        morale_norm = (max(1, min(10, morale_stat)) - 1) / 9
+        w = self.experience_weight * xp_norm + (1 - self.experience_weight) * morale_norm
+        base = self.chance_min + (self.chance_max - self.chance_min) * w
+        # men_left > 0: a wiped-out unit can't rally
+        return base * exp(self.men_exponent * log(men_left))
+
+
+# =============================================================================
 # Battle
 # =============================================================================
 
@@ -438,6 +488,7 @@ class BattleParams:
     aftermath: AftermathParams = field(default_factory=AftermathParams)
     matchups: MatchupParams = field(default_factory=MatchupParams)
     charge: ChargeParams = field(default_factory=ChargeParams)
+    rally: RallyParams = field(default_factory=RallyParams)
 
     def __post_init__(self) -> None:
         if self.charge.battery_closing_ammo not in self.combat.artillery_ammo:

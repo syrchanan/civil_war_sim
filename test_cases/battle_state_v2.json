@@ -188,6 +188,16 @@
           "bonus": -1.0
         }
       ]
+    },
+    "rally": {
+      "attempts": 1,
+      "chance_min": 0.15,
+      "chance_max": 0.75,
+      "experience_weight": 0.5,
+      "men_exponent": 1.0,
+      "resolve": 0.3,
+      "effectiveness": 0.75,
+      "exposure": 1.25
     }
   },
   "time": 90.0,
@@ -228,6 +238,10 @@
       "inflicted": 149,
       "captured": 0,
       "guns_lost": 0,
+      "rally": {
+        "attempts": 0,
+        "rallied": false
+      },
       "meta": {
         "player": "union_player"
       }
@@ -257,6 +271,10 @@
       "inflicted": 0,
       "captured": 9,
       "guns_lost": 2,
+      "rally": {
+        "attempts": 0,
+        "rallied": false
+      },
       "meta": {},
       "guns": 6
     },
@@ -285,6 +303,10 @@
       "inflicted": 120,
       "captured": 0,
       "guns_lost": 0,
+      "rally": {
+        "attempts": 0,
+        "rallied": false
+      },
       "meta": {
         "player": "confederate_player"
       }
@@ -314,6 +336,10 @@
       "inflicted": 18,
       "captured": 0,
       "guns_lost": 0,
+      "rally": {
+        "attempts": 0,
+        "rallied": false
+      },
       "meta": {}
     }
   ],
@@ -426,7 +452,8 @@
       "retargets": [],
       "positions": {},
       "modifiers": {},
-      "side_modifiers": {}
+      "side_modifiers": {},
+      "rallies": []
     }
   ],
   "result": null

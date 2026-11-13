@@ -1577,6 +1577,267 @@
       ]
     },
     {
+      "name": "rally",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 3,
+          "men": 1450,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1200
+            },
+            "cav": {
+              "units": 1,
+              "men": 250
+            }
+          },
+          "avg_experience": 4.275862068965517,
+          "avg_morale": 4.103448275862069
+        },
+        {
+          "name": "Side 1",
+          "units": 2,
+          "men": 2072,
+          "by_type": {
+            "inf": {
+              "units": 1,
+              "men": 2000
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 7.93050193050193,
+          "avg_morale": 7.93050193050193
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 3,
+          "started": 1450,
+          "killed": 128,
+          "wounded": 290,
+          "prisoners_lost": 316,
+          "casualties": 734,
+          "casualty_share": 0.5062068965517241,
+          "returned": 99,
+          "final": 815,
+          "loss_share": 0.4379310344827586,
+          "hits_taken": 618,
+          "hits_inflicted": 52,
+          "exchange_ratio": 0.08414239482200647,
+          "prisoners_taken": 12,
+          "guns_lost": 0,
+          "guns_taken": 8
+        },
+        {
+          "name": "Side 1",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 1,
+          "started": 2072,
+          "killed": 12,
+          "wounded": 40,
+          "prisoners_lost": 12,
+          "casualties": 64,
+          "casualty_share": 0.03088803088803089,
+          "returned": 17,
+          "final": 2025,
+          "loss_share": 0.022683397683397683,
+          "hits_taken": 52,
+          "hits_inflicted": 618,
+          "exchange_ratio": 11.884615384615385,
+          "prisoners_taken": 316,
+          "guns_lost": 8,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "rally",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 3,
+          "men": 1450,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1200
+            },
+            "cav": {
+              "units": 1,
+              "men": 250
+            }
+          },
+          "avg_experience": 4.275862068965517,
+          "avg_morale": 4.103448275862069
+        },
+        {
+          "name": "Side 1",
+          "units": 2,
+          "men": 2072,
+          "by_type": {
+            "inf": {
+              "units": 1,
+              "men": 2000
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 7.93050193050193,
+          "avg_morale": 7.93050193050193
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 3,
+          "started": 1450,
+          "killed": 180,
+          "wounded": 341,
+          "prisoners_lost": 296,
+          "casualties": 817,
+          "casualty_share": 0.5634482758620689,
+          "returned": 116,
+          "final": 749,
+          "loss_share": 0.48344827586206895,
+          "hits_taken": 686,
+          "hits_inflicted": 61,
+          "exchange_ratio": 0.08892128279883382,
+          "prisoners_taken": 14,
+          "guns_lost": 0,
+          "guns_taken": 8
+        },
+        {
+          "name": "Side 1",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 1,
+          "started": 2072,
+          "killed": 14,
+          "wounded": 47,
+          "prisoners_lost": 14,
+          "casualties": 75,
+          "casualty_share": 0.036196911196911194,
+          "returned": 14,
+          "final": 2011,
+          "loss_share": 0.02944015444015444,
+          "hits_taken": 61,
+          "hits_inflicted": 686,
+          "exchange_ratio": 11.245901639344263,
+          "prisoners_taken": 296,
+          "guns_lost": 8,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
+      "name": "rally",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 3,
+          "men": 1450,
+          "by_type": {
+            "inf": {
+              "units": 2,
+              "men": 1200
+            },
+            "cav": {
+              "units": 1,
+              "men": 250
+            }
+          },
+          "avg_experience": 4.275862068965517,
+          "avg_morale": 4.103448275862069
+        },
+        {
+          "name": "Side 1",
+          "units": 2,
+          "men": 2072,
+          "by_type": {
+            "inf": {
+              "units": 1,
+              "men": 2000
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            }
+          },
+          "avg_experience": 7.93050193050193,
+          "avg_morale": 7.93050193050193
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "lost",
+          "held_field": false,
+          "units": 3,
+          "units_out": 3,
+          "started": 1450,
+          "killed": 174,
+          "wounded": 359,
+          "prisoners_lost": 323,
+          "casualties": 856,
+          "casualty_share": 0.5903448275862069,
+          "returned": 136,
+          "final": 730,
+          "loss_share": 0.496551724137931,
+          "hits_taken": 701,
+          "hits_inflicted": 59,
+          "exchange_ratio": 0.08416547788873038,
+          "prisoners_taken": 14,
+          "guns_lost": 0,
+          "guns_taken": 8
+        },
+        {
+          "name": "Side 1",
+          "outcome": "won",
+          "held_field": true,
+          "units": 2,
+          "units_out": 1,
+          "started": 2072,
+          "killed": 12,
+          "wounded": 47,
+          "prisoners_lost": 14,
+          "casualties": 73,
+          "casualty_share": 0.03523166023166023,
+          "returned": 19,
+          "final": 2018,
+          "loss_share": 0.026061776061776062,
+          "hits_taken": 59,
+          "hits_inflicted": 701,
+          "exchange_ratio": 11.88135593220339,
+          "prisoners_taken": 323,
+          "guns_lost": 8,
+          "guns_taken": 0
+        }
+      ]
+    },
+    {
       "name": "broken_on_approach",
       "seed": 1,
       "order_of_battle": [
