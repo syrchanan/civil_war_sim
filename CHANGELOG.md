@@ -12,6 +12,11 @@ Design decisions and status live in `docs/ROADMAP.md`.
   rounds take unit positions. The orders table shows each firing unit's distance and effect.
 - Facing and flanks (positions pass P2): a unit fires only within its front arc; fire, melee and charges from a
   unit's flank or rear hit harder and shake it more (`config/flanks.yaml`). The orders table says so.
+- Map layers: one grouped panel for what the map shows (NATO symbols, names and men, all front arcs, order arrows,
+  grid, scale bar), remembered per viewer; the selected unit's front arc is drawn out to its range. Units are shown
+  with NATO symbols.
+- Flight (positions pass P3): broken units flee from the nearest enemy, slowing round after round, until safe or at
+  the field's edge; fire fades as they get away, and slower pursuers lose them (`config/flight.yaml`).
 
 ## [0.1.0-alpha] - 2026-11-13
 

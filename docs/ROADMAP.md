@@ -69,8 +69,8 @@ parity, then the client. Tuning waits until the pass is done.
 |---|---|---|
 | P1 | Range: fire falls off with distance; charges take the distance | ✓ (2026-11-13) |
 | P2 | Facing and flanks: fire only within the front arc; flank and rear attacks hit harder | ✓ (2026-11-13) |
-| P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ► next |
-| P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ○ |
+| P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ✓ (2026-11-13) |
+| P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ► next |
 | P5 | Elevation and line of sight from the terrain | ○ |
 
 ### Phase C — Later
@@ -932,7 +932,29 @@ Built 2026-11-13 (`config/flanks.yaml`, `FlankParams`, `Battle.zone` / `Battle.i
   engines agree bit for bit. Also: Python 3.12's `sum()` compensates float rounding, so float totals that must
   match the port are added in a plain loop.
 - The client's orders table says "outside its front arc", or "on its flank" / "from its rear".
-- Later: draw each unit's front arc on the map while aiming.
+
+**Map layers** (user, 2026-11-13): every map option is one entry in `web/src/ui/mapLayers.ts` (key, label, group,
+default), shown in a grouped "Map layers" panel and remembered per viewer in the browser. Now: NATO symbols, names
+and men, front arcs of all units, order arrows, grid, scale bar. The selected unit (clicked or tabbed to) always
+shows its front arc: a wedge out to its maximum range, darker within close range. Units carry simplified APP-6 symbols
+(infantry ✕, cavalry diagonal, artillery dot; echelon III regiment, I battery), drawn upright over the to-scale
+block. Terrain (P4) and line of sight (P5) will add layers here.
+
+### P3. Flight ✓
+Built 2026-11-13 (`config/flight.yaml`, `FlightParams`).
+- A unit that breaks **flees directly away from the nearest standing enemy** at its type's speed (infantry 80,
+  cavalry 250, artillery 40 yd/min), halving every `half_life` (15) minutes, so it never gets further than
+  speed × half_life / ln 2. It keeps going round after round, until no standing enemy is within `safe_distance`
+  (1000 yd) or it reaches the field's edge (2000 × 1200 yd, as the map). On the enemy's spot it falls back
+  towards its own side. A rallied unit stands.
+- Positions move every `step_minutes` (1) and at the round's end, using the exact distance covered (fdlibm `exp`),
+  and the arrows are replanned, so **fire fades** as the unit gets away.
+- **Pursuit**: a unit in contact moves with its quarry while its charge speed is at least the quarry's current
+  speed; slower pursuers lose contact. A pursuit charge by a slower unit never makes contact (outcome 'escaped').
+- Saved: `broke_time` per unit, `flights` per round (unit, yards, pursuers escaped). Rounds list them (client and
+  CLI). Units without a position or a known break time don't flee, so older battles are unchanged.
+- Simplifications: a fleeing unit keeps its facing (turning it needs `atan2`, not bit-identical across languages);
+  a pursuit charge on a slow enough broken unit still makes contact at once, whatever the distance.
 
 ## Phase C — Later / parked
 
