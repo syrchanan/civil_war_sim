@@ -17,6 +17,7 @@ import { RuntimeError, ValueError } from './errors';
 import { breakScale, MoraleState } from './morale';
 import { BattleParams, type Stats, type Unit } from './params';
 import { Rng } from './rng';
+import { cosDeg, sinDeg } from './trig';
 import { battleFromDict, battleToDict, type StateData } from './state';
 import { ArtilleryBattery, CavalryRegiment, type Position, Regiment } from './units';
 
@@ -316,7 +317,9 @@ interface Pending {
 }
 
 type Slot = [attacker: string, target: string, mode: string, matchup: number, share: number, gunRate: number | null,
-  reach: number];
+  reach: number, flank: number];
+
+export type Zone = 'front' | 'flank' | 'rear';
 type Arrow = [attacker: string, target: string, mode: string, rate: number];
 
 const bySide = (): BySide => ({ 0: 0, 1: 0 });
@@ -484,6 +487,44 @@ export class Battle {
     return r.reach(d, band.close, band.max);
   }
 
+  /**
+   * Cosine of the angle between where `uid` faces and the direction to `other`, or null unless both are placed
+   * and `uid` has a facing; 1 on the same spot.
+   */
+  private offFront(uid: string, other: string): number | null {
+    const p = this.unit(uid).regiment.position;
+    const q = this.unit(other).regiment.position;
+    if (p === null || q === null || p.facing === null || p.facing === undefined) return null;
+    const dx = q.x - p.x;
+    const dy = q.y - p.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d === 0) return 1.0;
+    // facing in compass degrees: north is towards y = 0
+    return (dx * sinDeg(p.facing) - dy * cosDeg(p.facing)) / d;
+  }
+
+  /** Where `other` stands as `uid` sees it ('front', 'flank', 'rear'); null without both placed and a facing. */
+  zone(uid: string, other: string): Zone | null {
+    const c = this.offFront(uid, other);
+    if (c === null) return null;
+    const f = this.params.flanks;
+    if (c >= cosDeg(f.front_arc / 2)) return 'front';
+    if (c <= -cosDeg(f.rear_arc / 2)) return 'rear';
+    return 'flank';
+  }
+
+  /** Can the attacker fire at the target: within its front arc, or it has no facing (or no position). */
+  inArc(attacker: string, target: string): boolean {
+    const z = this.zone(attacker, target);
+    return z === null || z === 'front';
+  }
+
+  /** The table's entry for where the attacker stands on the target's flank or rear; else 1. */
+  private flankOf(target: string, attacker: string, table: { flank: number; rear: number }): number {
+    const z = this.zone(target, attacker);
+    return z === 'flank' || z === 'rear' ? table[z] : 1.0;
+  }
+
   /** Has firearms (the stats melee-only flag decides, not the subtype). */
   private canFire(unit: BattleUnit): boolean {
     return this.params.combat.unitCoef(unit.regiment.stats, 'ranged') > 0;
@@ -540,6 +581,7 @@ export class Battle {
     withdrawn: Set<string> = new Set()): [Slot[], Map<string, string[]>] {
     const combat = this.params.combat;
     const matchups = this.params.matchups;
+    const hits = this.params.flanks.casualties;
 
     const partners = new Map<string, string[]>();
     for (const key of contacts) {
@@ -556,7 +598,8 @@ export class Battle {
       const unit = this.unit(uid);
       if (unit.active && unit.meleeRating > 0) {
         for (const p of ps) {
-          slots.push([uid, p, 'melee', matchups.multiplier(unit.key, this.unit(p).key, 'melee'), 1.0, null, 1.0]);
+          slots.push([uid, p, 'melee', matchups.multiplier(unit.key, this.unit(p).key, 'melee'), 1.0, null, 1.0,
+            this.flankOf(p, uid, hits)]);
         }
       }
     }
@@ -575,8 +618,9 @@ export class Battle {
         const gunRate = target.regiment instanceof ArtilleryBattery
           ? combat.artillery_ammo[this.params.charge.battery_closing_ammo] : null;
         for (const charger of chargers) {
+          if (!this.inArc(targetId, charger)) continue; // charged from outside its front arc: it can't fire on them
           slots.push([targetId, charger, 'closing', matchups.multiplier(target.key, this.unit(charger).key, 'ranged'),
-            1.0 / chargers.length, gunRate, 1.0]);
+            1.0 / chargers.length, gunRate, 1.0, this.flankOf(charger, targetId, hits)]);
         }
       }
     }
@@ -585,13 +629,14 @@ export class Battle {
       const unit = this.unit(uid);
       const outOfReach = withdrawn.has(order.target!) && !(unit.regiment instanceof ArtilleryBattery);
       if (order.mode === 'ranged' && !cancelled.has(uid) && unit.active && this.unit(order.target!).size > 0
-        && !partners.has(uid) && !charging.has(uid) && !closingOn.has(uid) && !outOfReach && this.canFire(unit)) {
+        && !partners.has(uid) && !charging.has(uid) && !closingOn.has(uid) && !outOfReach && this.canFire(unit)
+        && this.inArc(uid, order.target!)) {
         // artillery: per-gun rate of the ordered ammo, fixed for the round
         const gunRate = unit.regiment instanceof ArtilleryBattery
           ? combat.artillery_ammo[order.ammo ?? combat.artillery_default_ammo] : null;
         const reach = this.reach(uid, order.target!, order.ammo);
         slots.push([uid, order.target!, 'ranged', matchups.multiplier(unit.key, this.unit(order.target!).key, 'ranged'),
-          1.0, gunRate, reach ?? 1.0]);
+          1.0, gunRate, reach ?? 1.0, this.flankOf(order.target!, uid, hits)]);
       }
     }
 
@@ -610,7 +655,7 @@ export class Battle {
       totalFronts.set(uid, total);
     }
     const arrows: Arrow[] = [];
-    for (const [attacker, target, mode, matchup, share, gunRate, reach] of slots) {
+    for (const [attacker, target, mode, matchup, share, gunRate, reach, flank] of slots) {
       const unit = this.unit(attacker);
       const stats = unit.regiment.stats;
       let rate: number;
@@ -632,6 +677,7 @@ export class Battle {
         rate = c * unit.size * combat.ranged_kill_rate * matchup;
       }
       if (reach !== 1.0) rate = rate * reach;
+      if (flank !== 1.0) rate = rate * flank;
       const mod = this.modifiers[attacker];
       if (mod !== undefined) rate = rate * (1 + (mode === 'melee' ? mod.melee : mod.fire));
       const sideMod = this.sideModifiers[unit.side];
@@ -740,7 +786,10 @@ export class Battle {
     const x = this.unit(c.target);
     const sA = ch.steadiness(a.morale.resolve, a.regiment.stats[0], a.morale.shock);
     const sX = ch.steadiness(x.morale.resolve, x.regiment.stats[0], x.morale.shock);
-    const odds = ch.odds(ch.pressure(a.size, x.size, sA, sX, ch.bonus(a.key, x.key)));
+    let bonus = ch.bonus(a.key, x.key);
+    const zone = this.zone(x.uid, a.uid); // a charge into the flank or rear presses harder
+    if (zone === 'flank' || zone === 'rear') bonus = bonus + this.params.flanks.charge_bonus[zone];
+    const odds = ch.odds(ch.pressure(a.size, x.size, sA, sX, bonus));
     const u = this.rng.random();
     if (u < odds[0]) return ['defender_broke', odds];
     if (u < odds[0] + odds[1]) return ['faltered', odds];
@@ -802,6 +851,12 @@ export class Battle {
     const retargets: Retarget[] = [];
     let [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
     const opening = this.rates(slots, partners).map(engagement);
+    const exposure = new Map<string, number>(); // victim + attacker -> morale cost multiplier; positions are fixed
+    const exposed = (victim: string, attacker: string): number => {
+      const key = victim + SEP + attacker;
+      if (!exposure.has(key)) exposure.set(key, this.flankOf(victim, attacker, this.params.flanks.shock));
+      return exposure.get(key)!;
+    };
 
     /**
      * Units that broke or were wiped out: contacts and approaches end; melee attackers fall back, and fire on a
@@ -925,7 +980,7 @@ export class Battle {
       victim.regiment.updateSize(victim.size - 1);
       victim.losses += 1;
       attacker.inflicted += 1;
-      victim.morale.takeLoss(attackers.has(victim.uid));
+      victim.morale.takeLoss(attackers.has(victim.uid), exposed(victim.uid, attacker.uid));
       attacker.morale.inflictLoss(victim.initialSize);
       this.sync(engaged);
 

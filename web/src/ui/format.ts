@@ -1,6 +1,6 @@
 /** How the client words a battle: the same phrases as the Python CLI (python/imperial_generals/cli.py). */
 
-import type { BattleResult, Charge, Modifier, Rally } from '../engine';
+import type { BattleResult, Charge, Modifier, Rally, Zone } from '../engine';
 
 export const CHARGE_OUTCOMES: Record<string, string> = {
   home: 'went home', faltered: 'faltered', defender_broke: 'broke the defender before contact',
@@ -43,10 +43,17 @@ export function rallyText(r: Rally, name: (uid: string) => string): string {
   return `${name(r.unit)} ${r.rallied ? 'rallied' : 'failed to rally'} (${pct(r.chance)} chance)`;
 }
 
-/** '612 yd, out of range' / '160 yd, 46% effect' / '60 yd, full effect': how far a target is, how much fire tells. */
-export function rangeText(r: { distance: number; reach: number }): string {
+const ZONE_WORDS: Record<string, string> = { flank: ', on its flank', rear: ', from its rear' };
+
+/**
+ * How far a target is and how much fire tells: '612 yd, out of range', '160 yd, 46% effect',
+ * '60 yd, full effect, on its flank', or '60 yd, outside its front arc' (the firing unit faces away).
+ */
+export function rangeText(r: { distance: number; reach: number; inArc: boolean; zone: Zone | null }): string {
+  const yards = `${Math.round(r.distance)} yd`;
+  if (!r.inArc) return `${yards}, outside its front arc`;
   const effect = r.reach === 0 ? 'out of range' : r.reach === 1 ? 'full effect' : `${pct(r.reach)} effect`;
-  return `${Math.round(r.distance)} yd, ${effect}`;
+  return `${yards}, ${effect}${r.reach > 0 && r.zone !== null ? ZONE_WORDS[r.zone] ?? '' : ''}`;
 }
 
 /** 'wiped out', 'broke at 34 min', 'broken', plus guns lost. */

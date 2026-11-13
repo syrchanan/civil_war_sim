@@ -34,7 +34,12 @@ def unit_power(unit: dict, params: BattleParams) -> float:
 
 
 def side_power(state: dict, side: int, params: BattleParams) -> float:
-    return sum(unit_power(u, params) for u in state['units'] if u['side'] == side)
+    # a plain running total, as the TS port adds: Python 3.12's sum() compensates float rounding
+    total = 0.0
+    for u in state['units']:
+        if u['side'] == side:
+            total += unit_power(u, params)
+    return total
 
 
 def expected_share(power: float, other: float, exponent: float) -> float:
