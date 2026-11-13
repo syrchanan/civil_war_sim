@@ -262,6 +262,20 @@
         "flank": 1.0,
         "rear": 2.0
       }
+    },
+    "flight": {
+      "speed": {
+        "inf": 80.0,
+        "cav": 250.0,
+        "art": 40.0
+      },
+      "half_life": 15.0,
+      "step_minutes": 1.0,
+      "safe_distance": 1000.0,
+      "field": {
+        "width": 2000.0,
+        "height": 1200.0
+      }
     }
   },
   "time": 90.0,
@@ -306,6 +320,7 @@
         "attempts": 0,
         "rallied": false
       },
+      "broke_time": null,
       "meta": {
         "player": "union_player"
       }
@@ -339,6 +354,7 @@
         "attempts": 0,
         "rallied": false
       },
+      "broke_time": null,
       "meta": {},
       "guns": 6
     },
@@ -371,6 +387,7 @@
         "attempts": 0,
         "rallied": false
       },
+      "broke_time": null,
       "meta": {
         "player": "confederate_player"
       }
@@ -404,6 +421,7 @@
         "attempts": 0,
         "rallied": false
       },
+      "broke_time": null,
       "meta": {}
     }
   ],
@@ -517,7 +535,8 @@
       "positions": {},
       "modifiers": {},
       "side_modifiers": {},
-      "rallies": []
+      "rallies": [],
+      "flights": []
     }
   ],
   "result": null

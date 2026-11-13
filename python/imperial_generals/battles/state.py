@@ -10,7 +10,8 @@ saved as ``contacts``.
 
 Version 2 (A13) added contacts, charges and the charge parameters; version 1 files are not loaded. Added since,
 within version 2 (absent in older files, which still load): target switches, facing on positions, per-round
-positions and modifiers, side modifiers (battle-wide and per round), and rallies (per unit and per round).
+positions and modifiers, side modifiers (battle-wide and per round), rallies (per unit and per round), and flight (break times
+per unit, flights per round).
 
 ``meta`` (battle and per unit) is free-form and round-tripped untouched.
 """
@@ -18,7 +19,8 @@ positions and modifiers, side modifiers (battle-wide and per round), and rallies
 from dataclasses import asdict
 
 from imperial_generals.battles.battle import (
-    Battle, BattleResult, CasualtyEvent, Charge, Engagement, Rally, Retarget, RoundReport, UnitOutcome, UnitReport,
+    Battle, BattleResult, CasualtyEvent, Charge, Engagement, Flight, Rally, Retarget, RoundReport, UnitOutcome,
+    UnitReport,
 )
 from imperial_generals.battles.morale import MoraleState
 from imperial_generals.params import BattleParams
@@ -73,6 +75,7 @@ def _unit_to_dict(unit) -> dict:
         'captured': unit.captured,
         'guns_lost': unit.guns_lost,
         'rally': {'attempts': unit.rally_attempts, 'rallied': unit.rallied},
+        'broke_time': unit.broke_time,
         'meta': unit.meta,
     }
     if isinstance(reg, ArtilleryBattery):
@@ -97,6 +100,8 @@ def report_to_dict(report: RoundReport) -> dict:
         'modifiers': report.modifiers,
         'side_modifiers': _by_side(report.side_modifiers),
         'rallies': [asdict(r) for r in report.rallies],
+        'flights': [{'unit': f.unit, 'distance': f.distance, 'escaped_from': list(f.escaped_from)}
+                    for f in report.flights],
     }
 
 
@@ -173,6 +178,7 @@ def _restore_unit(unit, data: dict, params) -> None:
     unit.captured, unit.guns_lost = data['captured'], data['guns_lost']
     rally = data.get('rally', {'attempts': 0, 'rallied': False})     # absent in older files
     unit.rally_attempts, unit.rallied = rally['attempts'], rally['rallied']
+    unit.broke_time = data.get('broke_time')                         # absent in older files
 
 
 def _report_from_dict(data: dict) -> RoundReport:
@@ -192,6 +198,8 @@ def _report_from_dict(data: dict) -> RoundReport:
         modifiers=data.get('modifiers', {}),                                   # absent in older files
         side_modifiers=_from_sides(data.get('side_modifiers', {})),           # absent in older files
         rallies=tuple(Rally(**r) for r in data.get('rallies', [])),             # absent in older files
+        flights=tuple(Flight(f['unit'], f['distance'], tuple(f['escaped_from']))
+                      for f in data.get('flights', [])),                       # absent in older files
     )
 
 

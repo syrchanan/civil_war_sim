@@ -18,6 +18,8 @@ graph: at most one outgoing arrow per unit (its target), any number of incoming 
   the distance needs. Units without a position fight as if within close range.
 - A unit with a facing fires only at targets within its front arc; attacks from its flank or rear hit harder and
   shake it more, and a charge there presses harder (see ``FlankParams``).
+- A broken unit flees away from the nearest standing enemy, slowing as it goes (see ``FlightParams``); fire on it
+  fades as it gets away, and a pursuer keeps contact only while it is fast enough.
 - An admin can give units modifiers for one round (e.g. 'uphill, fire -15%'): fire and melee scale the casualties
   the unit inflicts (closing fire counts as fire), morale scales what it spends from its morale budget.
 
@@ -35,7 +37,7 @@ from dataclasses import dataclass, field, replace
 from imperial_generals.battles.morale import MoraleState, break_scale
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, Regiment
-from imperial_generals.utils import Rng
+from imperial_generals.utils import Position, Rng
 from imperial_generals.utils.trig import cos_deg, sin_deg
 
 MODES = frozenset({'idle', 'ranged', 'melee', 'rally'})
@@ -111,8 +113,9 @@ class Charge:
 
     ``outcome``: 'home' (contact), 'faltered' (the charger stood down, shaken), 'defender_broke' (before contact),
     'meeting' (two units charging each other: contact, no test), 'pursuit' (the target was already broken:
-    contact at once), 'charger_broke' / 'target_broke' (on the approach, from fire). The odds are those of the
-    contact test, when one was rolled.
+    contact at once), 'escaped' (the target is fleeing faster than the charger can run: no contact),
+    'charger_broke' / 'target_broke' (on the approach, from fire). The odds are those of the contact test, when
+    one was rolled.
     """
 
     charger: str
@@ -142,6 +145,15 @@ class Rally:
     unit: str
     rallied: bool
     chance: float
+
+
+@dataclass(frozen=True)
+class Flight:
+    """How far a broken unit fled in a round (yards), and the pursuers it got away from."""
+
+    unit: str
+    distance: float
+    escaped_from: tuple = ()
 
 
 MODIFIER_KEYS = ('fire', 'melee', 'morale')
@@ -246,6 +258,7 @@ class RoundReport:
     modifiers: dict = field(default_factory=dict)   # uid -> admin modifiers for this round (fire, melee, morale, note)
     side_modifiers: dict = field(default_factory=dict)   # side -> the side modifiers in force this round
     rallies: tuple = ()         # Rally per try to rally this round
+    flights: tuple = ()         # Flight per broken unit that fled this round
 
 
 @dataclass(frozen=True)
@@ -292,6 +305,7 @@ class BattleUnit:
     guns_lost: int = 0
     rally_attempts: int = 0     # tries to rally so far
     rallied: bool = False       # has rallied (once per battle): fights on less effectively, more exposed
+    broke_time: float | None = None     # game minute it last broke (it flees from then on); None while standing
 
     @property
     def size(self) -> int:
@@ -448,6 +462,7 @@ class Battle:
             rallied = self.rng.random() < chance
             if rallied:
                 unit.rallied = True
+                unit.broke_time = None
                 unit.morale.rally(rally.resolve)
                 self._sync([uid])
             rallies.append(Rally(uid, rallied, chance))
@@ -517,6 +532,76 @@ class Battle:
         zone = self.zone(target, attacker)
         return table[zone] if zone in ('flank', 'rear') else 1.0
 
+    def _fleeing(self, unit: BattleUnit) -> bool:
+        """Broken, not wiped out, placed, and its break time known: it flees."""
+        return (unit.morale.broken and unit.size > 0 and unit.broke_time is not None
+                and unit.regiment.position is not None)
+
+    def _outrun(self, fugitive: BattleUnit, pursuer: BattleUnit, t: float) -> bool:
+        """Is the fugitive fleeing faster at time ``t`` than the pursuer can charge?"""
+        if not self._fleeing(fugitive):
+            return False
+        speed = self.params.flight.speed_at(fugitive.key[0], t - fugitive.broke_time)
+        return self.params.charge.speed[pursuer.key[0]] < speed
+
+    def _flee(self, since: float, t: float, contacts: set, cancelled: set, fled: dict, escaped: dict) -> bool:
+        """
+        Move every fleeing unit for the time from ``since`` to ``t``: directly away from the nearest standing enemy
+        (on the same spot: back towards its own side), unless none is within ``safe_distance``; kept on the field.
+        Pursuers in contact move with it while their charge speed is at least its speed; slower ones lose contact.
+        Records yards fled in ``fled`` and pursuers escaped in ``escaped``. Returns whether anything moved.
+        """
+        fp = self.params.flight
+        width, height = fp.field['width'], fp.field['height']
+        units = self.units
+        moved = False
+
+        def place(unit: BattleUnit, x: float, y: float) -> None:
+            p = unit.regiment.position
+            unit.regiment.deploy(Position(min(width, max(0.0, x)), min(height, max(0.0, y)), p.z, p.cover,
+                                          p.terrain_type, p.facing))
+
+        for unit in sorted(units.values(), key=lambda u: u.index):
+            if not self._fleeing(unit):
+                continue
+            nearest, best = None, float('inf')
+            for enemy in sorted(units.values(), key=lambda u: u.index):
+                if enemy.side != unit.side and enemy.active and enemy.regiment.position is not None:
+                    d = self.distance(unit.uid, enemy.uid)
+                    if d < best:
+                        nearest, best = enemy, d
+            if nearest is None or best > fp.safe_distance:
+                continue
+            a, b = max(since, unit.broke_time) - unit.broke_time, t - unit.broke_time
+            p, q = unit.regiment.position, nearest.regiment.position
+            if best == 0:
+                ux, uy = 0.0, (1.0 if unit.side == 0 else -1.0)
+            else:
+                ux, uy = (p.x - q.x) / best, (p.y - q.y) / best
+            dist = fp.fled(unit.key[0], a, b)
+            place(unit, p.x + ux * dist, p.y + uy * dist)
+            n = unit.regiment.position
+            dx, dy = n.x - p.x, n.y - p.y
+            step = math.sqrt(dx * dx + dy * dy)
+            if step == 0:
+                continue
+            moved = True
+            fled[unit.uid] = fled.get(unit.uid, 0.0) + step
+            speed = fp.speed_at(unit.key[0], a)
+            chasers = sorted((other for pair in contacts if unit.uid in pair for other in pair if other != unit.uid),
+                             key=lambda u: units[u].index)
+            for uid in chasers:
+                chaser = units[uid]
+                if self.params.charge.speed[chaser.key[0]] >= speed:
+                    c = chaser.regiment.position
+                    if c is not None:
+                        place(chaser, c.x + dx, c.y + dy)
+                else:
+                    contacts.discard(frozenset((unit.uid, uid)))
+                    cancelled.add(uid)
+                    escaped.setdefault(unit.uid, []).append(uid)
+        return moved
+
     def _can_fire(self, unit: BattleUnit) -> bool:
         """Has firearms (the stats melee-only flag decides, not the subtype)."""
         return self.params.combat.unit_coef(unit.regiment.stats, 'ranged') > 0
@@ -544,6 +629,9 @@ class Battle:
             seen.add(pair)
             target = units[order.target]
             if not target.active:
+                if self._outrun(target, units[uid], start):
+                    immediate.append(Charge(uid, order.target, start, start, 'escaped'))
+                    continue
                 contacts.add(pair)
                 immediate.append(Charge(uid, order.target, start, start, 'pursuit'))
                 continue
@@ -726,6 +814,7 @@ class Battle:
         for uid in candidates:
             if uid not in broke_at and uid not in self._broken_before_round and self.units[uid].morale.broken:
                 broke_at[uid] = t
+                self.units[uid].broke_time = t
                 gone.add(uid)
         return gone
 
@@ -849,7 +938,11 @@ class Battle:
         retargets = []
         slots, partners = self._plan(live, cancelled, contacts, pending, frozenset(withdrawn))
         opening = tuple(Engagement(*a) for a in self._rates(slots, partners))
-        exposure: dict = {}                 # (victim, attacker) -> morale cost multiplier; positions are fixed
+        exposure: dict = {}                 # (victim, attacker) -> morale cost multiplier, until anyone moves
+        fled: dict = {}                     # uid -> yards fled this round
+        escaped: dict = {}                  # uid -> pursuers it got away from this round
+        last_move = start
+        step = self.params.flight.step_minutes
 
         def exposed(victim: str, attacker: str) -> float:
             key = (victim, attacker)
@@ -900,8 +993,11 @@ class Battle:
                 engaged.add(attacker_id)
                 engaged.add(target_id)
 
-            # the next scheduled moment: the round's end, or the end of an approach
+            # the next scheduled moment: the round's end, the end of an approach, or a flight step
             horizon = min([end] + [c['end'] for c in pending])
+            fleeing = any(self._fleeing(u) for u in self.units.values())
+            if fleeing:
+                horizon = min(horizon, start + step * (math.floor((t - start) / step) + 1))
             dt = self.rng.exponential(total_rate) if total_rate > 0 else None
             if dt is None or t + dt >= horizon:
                 self._advance(horizon - t, engaged)
@@ -941,7 +1037,13 @@ class Battle:
                         self._lose_guns(target, 0, guns)        # overrun where it stands: no time to limber up
                     if gone:
                         stand_down(gone, t)
-                if gone or due:
+                moved = False
+                if fleeing:
+                    moved = self._flee(last_move, t, contacts, cancelled, fled, escaped)
+                    last_move = t
+                    if moved:
+                        exposure.clear()
+                if gone or due or moved:
                     slots, partners = self._plan(live, cancelled, contacts, pending, frozenset(withdrawn))
                 continue
 
@@ -1014,6 +1116,8 @@ class Battle:
             retargets=tuple(retargets),
             side_modifiers={side: dict(mod) for side, mod in self.side_modifiers.items()},
             rallies=rallies,
+            flights=tuple(Flight(uid, fled.get(uid, 0.0), tuple(escaped.get(uid, ())))
+                          for uid in sorted(set(fled) | set(escaped), key=lambda u: self.units[u].index)),
         )
         self.history.append(report)
         return report

@@ -11413,6 +11413,20 @@
               "flank": 1.0,
               "rear": 2.0
             }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
+            }
           }
         }
       ],
@@ -11674,6 +11688,20 @@
               "flank": 1.0,
               "rear": 2.0
             }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
+            }
           }
         }
       ],
@@ -11933,6 +11961,20 @@
               "flank": 1.0,
               "rear": 2.0
             }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
+            }
           }
         }
       ],
@@ -12190,6 +12232,20 @@
             "charge_bonus": {
               "flank": 1.0,
               "rear": 2.0
+            }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
             }
           }
         }
@@ -12452,6 +12508,20 @@
               "flank": 1.0,
               "rear": 2.0
             }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
+            }
           }
         }
       ],
@@ -12676,6 +12746,20 @@
             "charge_bonus": {
               "flank": 1.0,
               "rear": 2.0
+            }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
             }
           }
         }
@@ -12938,6 +13022,20 @@
             "charge_bonus": {
               "flank": 1.0,
               "rear": 2.0
+            }
+          },
+          "flight": {
+            "speed": {
+              "inf": 80.0,
+              "cav": 250.0,
+              "art": 40.0
+            },
+            "half_life": 15.0,
+            "step_minutes": 1.0,
+            "safe_distance": 1000.0,
+            "field": {
+              "width": 2000.0,
+              "height": 1200.0
             }
           }
         }
