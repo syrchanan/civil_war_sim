@@ -11,7 +11,7 @@ export interface Layer {
   default: boolean;
 }
 
-export type LayerKey = 'symbols' | 'labels' | 'allArcs' | 'arrows' | 'grid' | 'scale';
+export type LayerKey = 'symbols' | 'labels' | 'allArcs' | 'arrows' | 'relief' | 'woods' | 'grid' | 'scale';
 export type Layers = Record<LayerKey, boolean>;
 
 export const LAYERS: readonly Layer[] = [
@@ -19,6 +19,8 @@ export const LAYERS: readonly Layer[] = [
   { key: 'labels', label: 'Names and men', group: 'Units', default: true },
   { key: 'allArcs', label: 'Front arcs of all units', group: 'Facing', default: false },
   { key: 'arrows', label: 'Order arrows', group: 'Orders', default: true },
+  { key: 'relief', label: 'Relief', group: 'Terrain', default: true },
+  { key: 'woods', label: 'Woods and rough ground', group: 'Terrain', default: true },
   { key: 'grid', label: 'Grid', group: 'Field', default: true },
   { key: 'scale', label: 'Scale bar', group: 'Field', default: true },
 ];

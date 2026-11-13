@@ -12,11 +12,12 @@ import {
   ArtilleryBattery, Battle, BattleParams, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
   PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
-  type RoundReport, sideSummary, type SideSummary, type UnitSpec, type Zone,
+  type RoundReport, sideSummary, type SideSummary, Terrain, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
 import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
+import { generateTerrain, TERRAIN_PRESETS } from './terrainGen';
 
 export type UnitType = 'inf' | 'cav' | 'art';
 
@@ -141,6 +142,15 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   // player: the side and real battle tag of the player file being planned on (null: a full battle file)
   const playerFileInfo = signal<{ side: 0 | 1; tag: string } | null>(null);
   const guesses = signal<Record<string, { size: number; stats: string }>>({}); // player: guesses about enemy units
+  const terrainPreset = signal<string>('none'); // the ground for a new battle: 'none' (an open field) or a preset
+
+  /** The ground on the map: the battle's own; before the battle, generated from the preset and the seed. */
+  const terrain = computed<Terrain | null>(() => {
+    revision.value;
+    if (battle.value !== null) return battle.value.terrain;
+    if (terrainPreset.value === 'none') return null;
+    return new Terrain(generateTerrain(terrainPreset.value, seedSignal.value));
+  });
 
   /** The side whose details are hidden: the enemy, when planning from a player file. */
   const hiddenSide = computed<0 | 1 | null>(() => (playerFileInfo.value === null ? null
@@ -576,7 +586,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
     if (problems.length) return problems;
     for (const u of mapUnits.value) specs[u.uid].regiment.position = onOpenGround(u);
-    battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] });
+    battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] }, {},
+      terrain.value);
     mapRound.value = null;
     newRound();
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
@@ -645,6 +656,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       size: u.initial_size, stats: u.initial_stats, guns: u.guns === undefined ? null : u.guns + u.guns_lost,
     }));
     battle.value = b;
+    const preset = b.terrain?.meta.preset;
+    terrainPreset.value = typeof preset === 'string' && TERRAIN_PRESETS.includes(preset) ? preset : 'none';
     mapRound.value = null;
     newRound();
     playerFileInfo.value = file;
@@ -823,7 +836,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, guesses, setGuess,
     modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier, rangeOf,
-    layers, setLayer, focusedUnit, selectUnit, arcOf,
+    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

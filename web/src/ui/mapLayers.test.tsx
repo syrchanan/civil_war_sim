@@ -14,8 +14,10 @@ afterEach(cleanup);
 describe('layers', () => {
   it('each has a key, a label, a group and a default; keys are unique', () => {
     expect(new Set(LAYERS.map((l) => l.key)).size).toBe(LAYERS.length);
-    expect(LAYERS.map((l) => l.key)).toEqual(['symbols', 'labels', 'allArcs', 'arrows', 'grid', 'scale']);
-    expect(LAYERS.filter((l) => l.default).map((l) => l.key)).toEqual(['symbols', 'labels', 'arrows', 'grid', 'scale']);
+    expect(LAYERS.map((l) => l.key))
+      .toEqual(['symbols', 'labels', 'allArcs', 'arrows', 'relief', 'woods', 'grid', 'scale']);
+    expect(LAYERS.filter((l) => l.default).map((l) => l.key))
+      .toEqual(['symbols', 'labels', 'arrows', 'relief', 'woods', 'grid', 'scale']);
   });
 
   it('are remembered per viewer; unknown or broken saved values fall back to the defaults', () => {

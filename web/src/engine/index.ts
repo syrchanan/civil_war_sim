@@ -4,6 +4,8 @@ export { ValueError } from './errors';
 export { exp, log } from './fdlibm';
 export { breakFraction, breakScale, MoraleState } from './morale';
 export { cosDeg, sinDeg } from './trig';
+export { GROUND, Terrain } from './terrain';
+export type { Ground, GroundCode, TerrainData } from './terrain';
 export {
   AftermathParams, BattleParams, ChargeParams, CombatParams, FlankParams, FlightParams, MatchupParams, MoraleParams,
   RallyParams,

@@ -8,6 +8,9 @@ import { useState } from 'preact/hooks';
 import defaults from '../engine/defaults.json';
 import { save } from './FileBar';
 import type { Store, UnitDraft, UnitType } from './store';
+import { TERRAIN_PRESETS } from './terrainGen';
+
+const presetName = (p: string) => p[0].toUpperCase() + p.slice(1);
 
 const SUBTYPES: Record<string, string[]> = defaults.unit_subtypes;
 const TYPE_LABELS: [UnitType | '', string][] = [['inf', 'Infantry'], ['cav', 'Cavalry'], ['art', 'Artillery'],
@@ -131,6 +134,14 @@ export function ArmyBuilder({ store }: { store: Store }) {
             onInput={(e) => { store.seed.value = toNumber(e.currentTarget.value); }} />
         </label>
         <button onClick={() => store.newSeed()}>New seed</button>
+        <label>
+          Ground{' '}
+          <select aria-label="Ground" value={store.terrainPreset.value}
+            onChange={(e) => { store.terrainPreset.value = e.currentTarget.value; }}>
+            <option value="none">Open field</option>
+            {TERRAIN_PRESETS.map((p) => <option value={p}>{presetName(p)}</option>)}
+          </select>
+        </label>
         <button onClick={() => store.clearUnits()}>Clear all units</button>
         <button class="primary" onClick={() => setProblems(store.start())}>Start battle</button>
       </div>

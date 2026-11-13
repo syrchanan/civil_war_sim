@@ -14,6 +14,7 @@ import { ValueError } from './errors';
 import { MoraleState } from './morale';
 import { BattleParams, type Overrides, type ParamsData, type Stats } from './params';
 import { Rng } from './rng';
+import { Terrain, type TerrainData } from './terrain';
 import { ArtilleryBattery, CavalryRegiment, InfantryRegiment, type Position, Regiment } from './units';
 
 export const FORMAT = 'imperial-generals-battle';
@@ -61,6 +62,7 @@ export interface StateData {
   contacts: string[][];
   history: RoundReport[];
   result: BattleResult | null;
+  terrain: TerrainData | null;
 }
 
 const statsText = (stats: Stats): string => stats.join('/');
@@ -135,6 +137,7 @@ export function battleToDict(battle: Battle): StateData {
     contacts,
     history: structuredClone(battle.history),
     result: structuredClone(battle.result),
+    terrain: battle.terrain === null ? null : battle.terrain.toDict(),
   };
 }
 
@@ -188,7 +191,8 @@ export function battleFromDict(data: StateData): Battle {
   const units: Record<string, UnitSpec> = {};
   for (const u of data.units) units[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, meta: u.meta };
   const battle = new Battle(units, Rng.fromState(data.rng_state),
-    BattleParams.fromDict(data.params as unknown as Overrides), data.meta, data.side_modifiers ?? {});
+    BattleParams.fromDict(data.params as unknown as Overrides), data.meta, data.side_modifiers ?? {},
+    data.terrain === undefined || data.terrain === null ? null : new Terrain(data.terrain)); // absent in older files
   for (const u of data.units) restoreUnit(battle.units.get(u.id)!, u, battle.params);
   battle.rng = Rng.fromState(data.rng_state); // building the units drew break points: rewind
 

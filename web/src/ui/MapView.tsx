@@ -8,9 +8,11 @@
  * symbols, labels, all arcs, arrows, grid) is chosen in the layers panel (mapLayers.ts).
  */
 
+import { Component } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 
 import defaults from '../engine/defaults.json';
+import type { Terrain, TerrainData } from '../engine';
 import { arcPath, bearing, FIELD, type Point, turned } from './field';
 import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
@@ -102,6 +104,85 @@ function NatoSymbol({ type }: { type: string | null }) {
   );
 }
 
+const RELIEF_BANDS = 8;
+
+export interface Run {
+  x: number;
+  y: number;
+  width: number;
+  band: number;
+}
+
+/**
+ * The terrain's cells as runs along each row: neighbours in the same height band (`bands` from the lowest to the
+ * highest ground) become one rectangle, so the relief is a few hundred shapes rather than thousands.
+ */
+export function reliefRuns(t: Pick<TerrainData, 'cell' | 'columns' | 'rows'> & { heights: readonly number[] },
+  bands: number): Run[] {
+  const lo = Math.min(...t.heights);
+  const span = Math.max(...t.heights) - lo;
+  const band = (h: number) => (span === 0 ? 0 : Math.min(bands - 1, Math.floor(((h - lo) / span) * bands)));
+  const runs: Run[] = [];
+  for (let r = 0; r < t.rows; r++) {
+    for (let c = 0; c < t.columns; c++) {
+      const b = band(t.heights[r * t.columns + c]);
+      const last = runs[runs.length - 1];
+      if (c > 0 && last.band === b) last.width += t.cell;
+      else runs.push({ x: c * t.cell, y: r * t.cell, width: t.cell, band: b });
+    }
+  }
+  return runs;
+}
+
+/** Runs of woods (f) and rough ground (r) along each row. */
+export function groundRuns(t: Pick<TerrainData, 'cell' | 'columns' | 'rows' | 'ground'>):
+  { x: number; y: number; width: number; code: string }[] {
+  const runs: { x: number; y: number; width: number; code: string }[] = [];
+  for (let r = 0; r < t.rows; r++) {
+    let open = true;
+    for (let c = 0; c < t.columns; c++) {
+      const code = t.ground[r * t.columns + c];
+      const last = runs[runs.length - 1];
+      if (code === 'o') open = true;
+      else if (!open && last.code === code) last.width += t.cell;
+      else {
+        runs.push({ x: c * t.cell, y: r * t.cell, width: t.cell, code });
+        open = false;
+      }
+    }
+  }
+  return runs;
+}
+
+/** The ground, drawn once per terrain and layer choice (thousands of cells: not redrawn on every move). */
+class TerrainLayer extends Component<{ terrain: Terrain; relief: boolean; woods: boolean }> {
+  shouldComponentUpdate(next: { terrain: Terrain; relief: boolean; woods: boolean }): boolean {
+    return next.terrain !== this.props.terrain || next.relief !== this.props.relief || next.woods !== this.props.woods;
+  }
+
+  render() {
+    const { terrain: t, relief, woods } = this.props;
+    return (
+      <g class="terrain">
+        {relief && (
+          <g class="relief">
+            {reliefRuns(t, RELIEF_BANDS).map((r) => (
+              <rect class={`band-${r.band}`} x={r.x} y={r.y} width={r.width} height={t.cell} />
+            ))}
+          </g>
+        )}
+        {woods && (
+          <g class="woods">
+            {groundRuns(t).map((r) => (
+              <rect class={r.code === 'f' ? 'forest' : 'rough'} x={r.x} y={r.y} width={r.width} height={t.cell} />
+            ))}
+          </g>
+        )}
+      </g>
+    );
+  }
+}
+
 function Block({ store, unit, movable, selectable, aim }:
   { store: Store; unit: MapUnit; movable: boolean; selectable: boolean; aim: '' | ' aiming' | ' can-target' }) {
   const layers = store.layers.value;
@@ -110,7 +191,10 @@ function Block({ store, unit, movable, selectable, aim }:
   const turning = useRef(false);
   const svgOf = (el: Element) => el.closest('svg') as SVGSVGElement;
   const men = `${unit.rough ? 'about ' : ''}${unit.men.toLocaleString('en-US')}`;
-  const label = `${unit.name}, ${men} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°`;
+  const ground = store.terrain.value;
+  const standing = ground === null ? ''
+    : `, ${Math.round(ground.heightAt(unit.x, unit.y))} yd up on ${ground.groundAt(unit.x, unit.y)} ground`;
+  const label = `${unit.name}, ${men} men, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°${standing}`;
   // two text lines (name, men): below the block for side 0, above it for side 1
   // labels and the turn handle stay clear of the symbol (drawn upright, echelon bars on top) when it is shown
   const below = Math.max(unit.depth / 2, layers.symbols ? SYMBOL.height / 2 : 0);
@@ -275,6 +359,9 @@ export function MapView({ store }: { store: Store }) {
               ))}
             </defs>
             <rect class="field" width={FIELD.width} height={FIELD.height} />
+            {store.terrain.value !== null && (
+              <TerrainLayer terrain={store.terrain.value} relief={layers.relief} woods={layers.woods} />
+            )}
             {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
             {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
             {layers.scale && (
