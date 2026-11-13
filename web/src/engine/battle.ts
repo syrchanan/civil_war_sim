@@ -19,6 +19,7 @@ import { BattleParams, type Stats, type Unit } from './params';
 import { Rng } from './rng';
 import { cosDeg, sinDeg } from './trig';
 import { battleFromDict, battleToDict, type StateData } from './state';
+import type { Terrain } from './terrain';
 import { ArtilleryBattery, CavalryRegiment, type Position, Regiment } from './units';
 
 const MODES = ['idle', 'ranged', 'melee', 'rally'] as const;
@@ -365,9 +366,10 @@ export class Battle {
    * @param params per-battle constants (defaults to config)
    * @param meta free-form battle details, round-tripped untouched
    * @param sideModifiers whole-battle modifiers per side (see validateSideModifiers)
+   * @param terrain the ground (terrain.ts); null is an open field
    */
   constructor(units: Record<string, UnitSpec>, rng?: Rng, params?: BattleParams, meta?: Record<string, unknown>,
-    sideModifiers: unknown = {}) {
+    sideModifiers: unknown = {}, readonly terrain: Terrain | null = null) {
     this.rng = rng ?? new Rng(Math.floor(Math.random() * 2 ** 32));
     this.seed = this.rng.seed;
     this.params = params ?? BattleParams.defaults();

@@ -404,5 +404,76 @@
         "from": 0.52
       }
     ]
+  },
+  "terrain": {
+    "cell": 20,
+    "yards_per_unit": 6.67,
+    "feet_per_yard": 3,
+    "presets": {
+      "flat": {
+        "forest_share": 0.1
+      },
+      "hills": {
+        "forest_share": 0.15
+      },
+      "forest": {
+        "forest_share": 0.4
+      },
+      "badlands": {
+        "forest_share": 0.03
+      },
+      "mountains": {
+        "forest_share": 0.2
+      }
+    },
+    "forest_scale": 260,
+    "rough_slope": 0.12,
+    "elevation": {
+      "flat": {
+        "octaves": 2,
+        "persistence": 0.3,
+        "lacunarity": 2.0,
+        "scale": 150.0,
+        "base_elevation": 50.0,
+        "elevation_range": 20.0,
+        "exponent": 1.0
+      },
+      "hills": {
+        "octaves": 4,
+        "persistence": 0.45,
+        "lacunarity": 2.0,
+        "scale": 70.0,
+        "base_elevation": 50.0,
+        "elevation_range": 60.0,
+        "exponent": 1.2
+      },
+      "forest": {
+        "octaves": 3,
+        "persistence": 0.45,
+        "lacunarity": 2.0,
+        "scale": 75.0,
+        "base_elevation": 50.0,
+        "elevation_range": 40.0,
+        "exponent": 1.0
+      },
+      "badlands": {
+        "octaves": 5,
+        "persistence": 0.7,
+        "lacunarity": 3.0,
+        "scale": 35.0,
+        "base_elevation": 50.0,
+        "elevation_range": 100.0,
+        "exponent": 2.2
+      },
+      "mountains": {
+        "octaves": 6,
+        "persistence": 0.6,
+        "lacunarity": 2.5,
+        "scale": 40.0,
+        "base_elevation": 50.0,
+        "elevation_range": 150.0,
+        "exponent": 1.8
+      }
+    }
   }
 }
