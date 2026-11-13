@@ -465,6 +465,44 @@ class RangeParams:
 
 
 # =============================================================================
+# Elevation and line of sight
+# =============================================================================
+
+def _sight_default(key: str):
+    return field(default_factory=lambda: copy.deepcopy(get_config()['sight'][key]))
+
+
+@dataclass(frozen=True)
+class SightParams:
+    """Line of sight and the elevation bonus on a battle's terrain; defaults from config/sight.yaml."""
+
+    eye_height: dict = _sight_default('eye_height')
+    forest_height: float = _sight_default('forest_height')
+    sample_step: float = _sight_default('sample_step')
+    edge_clear: float = _sight_default('edge_clear')
+    elevation_scale: float = _sight_default('elevation_scale')
+    elevation_max: float = _sight_default('elevation_max')
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.eye_height, dict) or set(self.eye_height) != set(UNIT_TYPES):
+            raise ValueError(f"eye_height needs exactly {list(UNIT_TYPES)}.")
+        if any(not v >= 0 for v in self.eye_height.values()):
+            raise ValueError("eye_height must be >= 0.")
+        for name in ('forest_height', 'edge_clear'):
+            if not getattr(self, name) >= 0:
+                raise ValueError(f"{name} must be >= 0.")
+        for name in ('sample_step', 'elevation_scale'):
+            if not getattr(self, name) > 0:
+                raise ValueError(f"{name} must be > 0.")
+        if not 0 <= self.elevation_max <= 1:
+            raise ValueError("elevation_max must be in [0, 1].")
+
+    def bonus(self, rise: float) -> float:
+        """The elevation bonus for firing from ``rise`` yards above the target (negative: below)."""
+        return max(-self.elevation_max, min(self.elevation_max, rise / self.elevation_scale))
+
+
+# =============================================================================
 # Flight
 # =============================================================================
 
@@ -637,6 +675,7 @@ class BattleParams:
     range: RangeParams = field(default_factory=RangeParams)
     flanks: FlankParams = field(default_factory=FlankParams)
     flight: FlightParams = field(default_factory=FlightParams)
+    sight: SightParams = field(default_factory=SightParams)
 
     def __post_init__(self) -> None:
         if set(self.range.artillery) != set(self.combat.artillery_ammo):

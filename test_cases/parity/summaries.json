@@ -2474,19 +2474,19 @@
           "units_out": 0,
           "started": 1750,
           "killed": 17,
-          "wounded": 78,
+          "wounded": 72,
           "prisoners_lost": 0,
-          "casualties": 95,
-          "casualty_share": 0.054285714285714284,
-          "returned": 25,
-          "final": 1680,
-          "loss_share": 0.04,
-          "hits_taken": 95,
-          "hits_inflicted": 140,
-          "exchange_ratio": 1.4736842105263157,
-          "prisoners_taken": 9,
+          "casualties": 89,
+          "casualty_share": 0.05085714285714286,
+          "returned": 34,
+          "final": 1695,
+          "loss_share": 0.03142857142857143,
+          "hits_taken": 89,
+          "hits_inflicted": 97,
+          "exchange_ratio": 1.0898876404494382,
+          "prisoners_taken": 13,
           "guns_lost": 0,
-          "guns_taken": 2,
+          "guns_taken": 8,
           "verdict": "draw"
         },
         {
@@ -2496,19 +2496,19 @@
           "units": 3,
           "units_out": 1,
           "started": 1672,
-          "killed": 35,
-          "wounded": 105,
-          "prisoners_lost": 9,
-          "casualties": 149,
-          "casualty_share": 0.08911483253588516,
-          "returned": 40,
-          "final": 1563,
-          "loss_share": 0.0651913875598086,
-          "hits_taken": 140,
-          "hits_inflicted": 95,
-          "exchange_ratio": 0.6785714285714286,
+          "killed": 19,
+          "wounded": 78,
+          "prisoners_lost": 13,
+          "casualties": 110,
+          "casualty_share": 0.06578947368421052,
+          "returned": 35,
+          "final": 1597,
+          "loss_share": 0.04485645933014354,
+          "hits_taken": 97,
+          "hits_inflicted": 89,
+          "exchange_ratio": 0.9175257731958762,
           "prisoners_taken": 0,
-          "guns_lost": 2,
+          "guns_lost": 8,
           "guns_taken": 0,
           "verdict": "draw"
         }
@@ -2518,24 +2518,24 @@
           "name": "Side 0",
           "power": 1.825596711991739,
           "expected": 0.8036515252545205,
-          "result": 0.6827464788732394,
-          "score": -0.12090504638128119,
+          "result": 0.7260445682451253,
+          "score": -0.07760695700939524,
           "general": {
-            "name": "Hooker",
-            "battle": "Chancellorsville (1863)",
-            "from": -0.18
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
           }
         },
         {
           "name": "Side 1",
           "power": 0.7134737797049029,
           "expected": 0.19634847474547942,
-          "result": 0.31725352112676053,
-          "score": 0.1209050463812811,
+          "result": 0.27395543175487463,
+          "score": 0.07760695700939521,
           "general": {
-            "name": "Marlborough",
-            "battle": "Blenheim (1704)",
-            "from": 0.1
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
           }
         }
       ]
@@ -2588,18 +2588,18 @@
           "units": 3,
           "units_out": 0,
           "started": 1750,
-          "killed": 27,
-          "wounded": 79,
+          "killed": 20,
+          "wounded": 82,
           "prisoners_lost": 0,
-          "casualties": 106,
-          "casualty_share": 0.060571428571428575,
-          "returned": 30,
-          "final": 1674,
-          "loss_share": 0.04342857142857143,
-          "hits_taken": 106,
-          "hits_inflicted": 118,
-          "exchange_ratio": 1.1132075471698113,
-          "prisoners_taken": 17,
+          "casualties": 102,
+          "casualty_share": 0.05828571428571429,
+          "returned": 40,
+          "final": 1688,
+          "loss_share": 0.03542857142857143,
+          "hits_taken": 102,
+          "hits_inflicted": 110,
+          "exchange_ratio": 1.0784313725490196,
+          "prisoners_taken": 11,
           "guns_lost": 0,
           "guns_taken": 8,
           "verdict": "draw"
@@ -2611,17 +2611,17 @@
           "units": 3,
           "units_out": 1,
           "started": 1672,
-          "killed": 28,
-          "wounded": 90,
-          "prisoners_lost": 17,
-          "casualties": 135,
-          "casualty_share": 0.08074162679425838,
-          "returned": 28,
-          "final": 1565,
-          "loss_share": 0.06399521531100479,
-          "hits_taken": 118,
-          "hits_inflicted": 106,
-          "exchange_ratio": 0.8983050847457628,
+          "killed": 29,
+          "wounded": 81,
+          "prisoners_lost": 11,
+          "casualties": 121,
+          "casualty_share": 0.07236842105263158,
+          "returned": 25,
+          "final": 1576,
+          "loss_share": 0.05741626794258373,
+          "hits_taken": 110,
+          "hits_inflicted": 102,
+          "exchange_ratio": 0.9272727272727272,
           "prisoners_taken": 0,
           "guns_lost": 8,
           "guns_taken": 0,
@@ -2633,8 +2633,8 @@
           "name": "Side 0",
           "power": 1.825596711991739,
           "expected": 0.8036515252545205,
-          "result": 0.7178304239401496,
-          "score": -0.08582110131437093,
+          "result": 0.7168407310704961,
+          "score": -0.08681079418402449,
           "general": {
             "name": "McClellan",
             "battle": "the Seven Days (1862)",
@@ -2645,8 +2645,8 @@
           "name": "Side 1",
           "power": 0.7134737797049029,
           "expected": 0.19634847474547942,
-          "result": 0.2821695760598504,
-          "score": 0.08582110131437096,
+          "result": 0.28315926892950394,
+          "score": 0.08681079418402451,
           "general": {
             "name": "Wellington",
             "battle": "Waterloo (1815)",
@@ -2703,17 +2703,17 @@
           "units": 3,
           "units_out": 0,
           "started": 1750,
-          "killed": 19,
-          "wounded": 83,
+          "killed": 18,
+          "wounded": 74,
           "prisoners_lost": 0,
-          "casualties": 102,
-          "casualty_share": 0.05828571428571429,
-          "returned": 39,
-          "final": 1687,
-          "loss_share": 0.036,
-          "hits_taken": 102,
-          "hits_inflicted": 96,
-          "exchange_ratio": 0.9411764705882353,
+          "casualties": 92,
+          "casualty_share": 0.052571428571428575,
+          "returned": 24,
+          "final": 1682,
+          "loss_share": 0.038857142857142854,
+          "hits_taken": 92,
+          "hits_inflicted": 97,
+          "exchange_ratio": 1.0543478260869565,
           "prisoners_taken": 13,
           "guns_lost": 0,
           "guns_taken": 8,
@@ -2726,17 +2726,17 @@
           "units": 3,
           "units_out": 1,
           "started": 1672,
-          "killed": 23,
-          "wounded": 73,
+          "killed": 26,
+          "wounded": 71,
           "prisoners_lost": 13,
-          "casualties": 109,
-          "casualty_share": 0.0651913875598086,
-          "returned": 24,
-          "final": 1587,
-          "loss_share": 0.05083732057416268,
-          "hits_taken": 96,
-          "hits_inflicted": 102,
-          "exchange_ratio": 1.0625,
+          "casualties": 110,
+          "casualty_share": 0.06578947368421052,
+          "returned": 22,
+          "final": 1584,
+          "loss_share": 0.05263157894736842,
+          "hits_taken": 97,
+          "hits_inflicted": 92,
+          "exchange_ratio": 0.9484536082474226,
           "prisoners_taken": 0,
           "guns_lost": 8,
           "guns_taken": 0,
@@ -2748,8 +2748,8 @@
           "name": "Side 0",
           "power": 1.825596711991739,
           "expected": 0.8036515252545205,
-          "result": 0.712533692722372,
-          "score": -0.09111783253214856,
+          "result": 0.7229281767955802,
+          "score": -0.08072334845894036,
           "general": {
             "name": "McClellan",
             "battle": "the Seven Days (1862)",
@@ -2760,8 +2760,8 @@
           "name": "Side 1",
           "power": 0.7134737797049029,
           "expected": 0.19634847474547942,
-          "result": 0.287466307277628,
-          "score": 0.09111783253214858,
+          "result": 0.2770718232044199,
+          "score": 0.0807233484589405,
           "general": {
             "name": "Wellington",
             "battle": "Waterloo (1815)",
@@ -3771,6 +3771,351 @@
             "name": "Khalid ibn al-Walid",
             "battle": "Yarmouk (636)",
             "from": 0.26
+          }
+        }
+      ]
+    },
+    {
+      "name": "sight",
+      "seed": 1,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 5,
+          "men": 2772,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            },
+            "cav": {
+              "units": 1,
+              "men": 300
+            }
+          },
+          "avg_experience": 5.288600288600288,
+          "avg_morale": 5.288600288600288
+        },
+        {
+          "name": "Side 1",
+          "units": 4,
+          "men": 3000,
+          "by_type": {
+            "inf": {
+              "units": 4,
+              "men": 3000
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 5,
+          "units_out": 0,
+          "started": 2772,
+          "killed": 15,
+          "wounded": 50,
+          "prisoners_lost": 0,
+          "casualties": 65,
+          "casualty_share": 0.023448773448773448,
+          "returned": 22,
+          "final": 2729,
+          "loss_share": 0.015512265512265512,
+          "hits_taken": 65,
+          "hits_inflicted": 72,
+          "exchange_ratio": 1.1076923076923078,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0,
+          "verdict": "draw"
+        },
+        {
+          "name": "Side 1",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 4,
+          "units_out": 0,
+          "started": 3000,
+          "killed": 17,
+          "wounded": 55,
+          "prisoners_lost": 0,
+          "casualties": 72,
+          "casualty_share": 0.024,
+          "returned": 20,
+          "final": 2948,
+          "loss_share": 0.017333333333333333,
+          "hits_taken": 72,
+          "hits_inflicted": 65,
+          "exchange_ratio": 0.9027777777777778,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0,
+          "verdict": "draw"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 2.1851763517859446,
+          "expected": 0.5643682133891009,
+          "result": 0.5127737226277372,
+          "score": -0.05159449076136369,
+          "general": {
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 1.8387576923076918,
+          "expected": 0.4356317866108991,
+          "result": 0.48722627737226276,
+          "score": 0.05159449076136369,
+          "general": {
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
+          }
+        }
+      ]
+    },
+    {
+      "name": "sight",
+      "seed": 2,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 5,
+          "men": 2772,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            },
+            "cav": {
+              "units": 1,
+              "men": 300
+            }
+          },
+          "avg_experience": 5.288600288600288,
+          "avg_morale": 5.288600288600288
+        },
+        {
+          "name": "Side 1",
+          "units": 4,
+          "men": 3000,
+          "by_type": {
+            "inf": {
+              "units": 4,
+              "men": 3000
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 5,
+          "units_out": 0,
+          "started": 2772,
+          "killed": 13,
+          "wounded": 50,
+          "prisoners_lost": 0,
+          "casualties": 63,
+          "casualty_share": 0.022727272727272728,
+          "returned": 24,
+          "final": 2733,
+          "loss_share": 0.01406926406926407,
+          "hits_taken": 63,
+          "hits_inflicted": 89,
+          "exchange_ratio": 1.4126984126984128,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0,
+          "verdict": "draw"
+        },
+        {
+          "name": "Side 1",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 4,
+          "units_out": 0,
+          "started": 3000,
+          "killed": 16,
+          "wounded": 73,
+          "prisoners_lost": 0,
+          "casualties": 89,
+          "casualty_share": 0.029666666666666668,
+          "returned": 30,
+          "final": 2941,
+          "loss_share": 0.019666666666666666,
+          "hits_taken": 89,
+          "hits_inflicted": 63,
+          "exchange_ratio": 0.7078651685393258,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0,
+          "verdict": "draw"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 2.1851763517859446,
+          "expected": 0.5643682133891009,
+          "result": 0.5427631578947368,
+          "score": -0.02160505549436409,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 1.8387576923076918,
+          "expected": 0.4356317866108991,
+          "result": 0.45723684210526316,
+          "score": 0.02160505549436409,
+          "general": {
+            "name": "Meade",
+            "battle": "Gettysburg (1863)",
+            "from": -0.03
+          }
+        }
+      ]
+    },
+    {
+      "name": "sight",
+      "seed": 3,
+      "order_of_battle": [
+        {
+          "name": "Side 0",
+          "units": 5,
+          "men": 2772,
+          "by_type": {
+            "inf": {
+              "units": 3,
+              "men": 2400
+            },
+            "art": {
+              "units": 1,
+              "men": 72,
+              "guns": 8
+            },
+            "cav": {
+              "units": 1,
+              "men": 300
+            }
+          },
+          "avg_experience": 5.288600288600288,
+          "avg_morale": 5.288600288600288
+        },
+        {
+          "name": "Side 1",
+          "units": 4,
+          "men": 3000,
+          "by_type": {
+            "inf": {
+              "units": 4,
+              "men": 3000
+            }
+          },
+          "avg_experience": 5.0,
+          "avg_morale": 5.0
+        }
+      ],
+      "side_summary": [
+        {
+          "name": "Side 0",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 5,
+          "units_out": 0,
+          "started": 2772,
+          "killed": 10,
+          "wounded": 40,
+          "prisoners_lost": 0,
+          "casualties": 50,
+          "casualty_share": 0.018037518037518036,
+          "returned": 14,
+          "final": 2736,
+          "loss_share": 0.012987012987012988,
+          "hits_taken": 50,
+          "hits_inflicted": 54,
+          "exchange_ratio": 1.08,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0,
+          "verdict": "draw"
+        },
+        {
+          "name": "Side 1",
+          "outcome": "drawn",
+          "held_field": false,
+          "units": 4,
+          "units_out": 0,
+          "started": 3000,
+          "killed": 14,
+          "wounded": 40,
+          "prisoners_lost": 0,
+          "casualties": 54,
+          "casualty_share": 0.018,
+          "returned": 16,
+          "final": 2962,
+          "loss_share": 0.012666666666666666,
+          "hits_taken": 54,
+          "hits_inflicted": 50,
+          "exchange_ratio": 0.9259259259259259,
+          "prisoners_taken": 0,
+          "guns_lost": 0,
+          "guns_taken": 0,
+          "verdict": "draw"
+        }
+      ],
+      "commanders": [
+        {
+          "name": "Side 0",
+          "power": 2.1851763517859446,
+          "expected": 0.5643682133891009,
+          "result": 0.5096153846153846,
+          "score": -0.054752828773716344,
+          "general": {
+            "name": "McClellan",
+            "battle": "the Seven Days (1862)",
+            "from": -0.1
+          }
+        },
+        {
+          "name": "Side 1",
+          "power": 1.8387576923076918,
+          "expected": 0.4356317866108991,
+          "result": 0.4903846153846154,
+          "score": 0.054752828773716344,
+          "general": {
+            "name": "Wellington",
+            "battle": "Waterloo (1815)",
+            "from": 0.03
           }
         }
       ]

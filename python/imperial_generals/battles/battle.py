@@ -20,6 +20,7 @@ graph: at most one outgoing arrow per unit (its target), any number of incoming 
   shake it more, and a charge there presses harder (see ``FlankParams``).
 - A broken unit flees away from the nearest standing enemy, slowing as it goes (see ``FlightParams``); fire on it
   fades as it gets away, and a pursuer keeps contact only while it is fast enough.
+- On a battle's terrain, fire needs a line of sight and fire from higher ground tells more (see ``SightParams``).
 - An admin can give units modifiers for one round (e.g. 'uphill, fire -15%'): fire and melee scale the casualties
   the unit inflicts (closing fire counts as fire), morale scales what it spends from its morale budget.
 
@@ -535,6 +536,40 @@ class Battle:
         zone = self.zone(target, attacker)
         return table[zone] if zone in ('flank', 'rear') else 1.0
 
+    def line_of_sight(self, viewer: str, target: str) -> bool:
+        """
+        Can ``viewer`` see ``target``: no ground or woods rise above the line between their eyes (``SightParams``).
+        Always True without terrain, or unless both are placed.
+        """
+        t = self.terrain
+        p, q = self.units[viewer].regiment.position, self.units[target].regiment.position
+        if t is None or p is None or q is None:
+            return True
+        sp = self.params.sight
+        d = self.distance(viewer, target)
+        za = t.height_at(p.x, p.y) + sp.eye_height[self.units[viewer].key[0]]
+        zb = t.height_at(q.x, q.y) + sp.eye_height[self.units[target].key[0]]
+        for k in range(1, math.floor(d / sp.sample_step) + 1):
+            s = k * sp.sample_step
+            if s < sp.edge_clear or d - s < sp.edge_clear:
+                continue
+            f = s / d
+            x, y = p.x + (q.x - p.x) * f, p.y + (q.y - p.y) * f
+            ground = t.height_at(x, y)
+            if t.ground_at(x, y) == 'forest':
+                ground = ground + sp.forest_height
+            if ground > za + (zb - za) * f:
+                return False
+        return True
+
+    def elevation_bonus(self, attacker: str, target: str) -> float:
+        """The share more (or less) the attacker's fire tells from its height over the target; 0 without terrain."""
+        t = self.terrain
+        p, q = self.units[attacker].regiment.position, self.units[target].regiment.position
+        if t is None or p is None or q is None:
+            return 0.0
+        return self.params.sight.bonus(t.height_at(p.x, p.y) - t.height_at(q.x, q.y))
+
     def _fleeing(self, unit: BattleUnit) -> bool:
         """Broken, not wiped out, placed, and its break time known: it flees."""
         return (unit.morale.broken and unit.size > 0 and unit.broke_time is not None
@@ -659,8 +694,9 @@ class Battle:
         The arrow structure for this moment of the round.
 
         Returns ``(slots, partners)``: ``slots`` are ``(attacker, target, mode, matchup, share, gun_rate, reach,
-        flank)`` sorted by (target, attacker) in unit order (reach: the range falloff of ranged fire, else 1;
-        flank: the casualty multiplier for attacking from the target's flank or rear, else 1); ``partners`` maps each unit in melee contact to its contacts.
+        flank, height)`` sorted by (target, attacker) in unit order (reach: the range falloff of ranged fire, else 1;
+        flank: the casualty multiplier for attacking from the target's flank or rear, else 1; height: 1 + the
+        elevation bonus of fire and closing fire, else 1); ``partners`` maps each unit in melee contact to its contacts.
         - Melee: both ways along every contact (a broken unit doesn't fight back).
         - Closing fire: a target fires on the units charging it (split between them) unless it is itself charging,
           locked in melee, or can't fire. Batteries switch to the closing ammo.
@@ -689,7 +725,7 @@ class Battle:
             if unit.active and unit.melee_rating > 0:
                 for p in ps:
                     slots.append((uid, p, 'melee', matchups.multiplier(unit.key, units[p].key, 'melee'), 1.0, None,
-                                  1.0, self._flank(p, uid, hits)))
+                                  1.0, self._flank(p, uid, hits), 1.0))
 
         charging = {c['charger'] for c in pending}
         closing_on: dict[str, list[str]] = {}
@@ -707,14 +743,16 @@ class Battle:
                         continue                # charged from outside its front arc: it can't fire on them
                     slots.append((target_id, charger, 'closing',
                                   matchups.multiplier(target.key, units[charger].key, 'ranged'),
-                                  1.0 / len(chargers), gun_rate, 1.0, self._flank(charger, target_id, hits)))
+                                  1.0 / len(chargers), gun_rate, 1.0, self._flank(charger, target_id, hits),
+                                  1.0 + self.elevation_bonus(target_id, charger)))
 
         for uid, order in orders.items():
             unit = units[uid]
             out_of_reach = order.target in withdrawn and not isinstance(unit.regiment, ArtilleryBattery)
             if (order.mode == 'ranged' and uid not in cancelled and unit.active and units[order.target].size > 0
                     and uid not in partners and uid not in charging and uid not in closing_on
-                    and not out_of_reach and self._can_fire(unit) and self.in_arc(uid, order.target)):
+                    and not out_of_reach and self._can_fire(unit) and self.in_arc(uid, order.target)
+                    and self.line_of_sight(uid, order.target)):
                 # artillery: per-gun rate of the ordered ammo, fixed for the round
                 gun_rate = None
                 if isinstance(unit.regiment, ArtilleryBattery):
@@ -722,7 +760,8 @@ class Battle:
                 reach = self.reach(uid, order.target, order.ammo)
                 slots.append((uid, order.target, 'ranged',
                               matchups.multiplier(unit.key, units[order.target].key, 'ranged'), 1.0, gun_rate,
-                              1.0 if reach is None else reach, self._flank(order.target, uid, hits)))
+                              1.0 if reach is None else reach, self._flank(order.target, uid, hits),
+                              1.0 + self.elevation_bonus(uid, order.target)))
 
         slots.sort(key=lambda s: (units[s[1]].index, units[s[0]].index))
         return slots, partners
@@ -735,7 +774,7 @@ class Battle:
         modifiers = self._modifiers
         total_fronts = {uid: sum(units[p].front for p in ps) for uid, ps in partners.items()}
         arrows = []
-        for attacker, target, mode, matchup, share, gun_rate, reach, flank in slots:
+        for attacker, target, mode, matchup, share, gun_rate, reach, flank, height in slots:
             unit = units[attacker]
             stats = unit.regiment.stats
             if mode == 'melee':
@@ -761,6 +800,8 @@ class Battle:
                 rate = rate * reach
             if flank != 1.0:
                 rate = rate * flank
+            if height != 1.0:
+                rate = rate * height
             mod = modifiers.get(attacker)
             if mod is not None:
                 rate = rate * (1 + (mod['melee'] if mode == 'melee' else mod['fire']))
