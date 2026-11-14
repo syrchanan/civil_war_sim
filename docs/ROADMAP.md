@@ -90,7 +90,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ✓ (2026-11-14) |
 | D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ✓ (2026-11-14) |
 | D5 | Round results as a dispatch | ✓ (2026-11-14) |
-| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ► next |
+| D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ► next |
+| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
 | D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
 | D8 | Phones, cleanup, merge | ○ |
 
@@ -195,6 +196,14 @@ everything is TypeScript, and D1's Python side below is a record.
     closes it.
 - **The Dispatches tab** lists every round's dispatch, latest first, each with **The full report** (the old
   per-unit table, charges, target switches, modifiers, flights and rallies) folded underneath.
+
+**After D5** (browser pass, 2026-11-14, Playwright on desktop):
+- Contact reveals: an enemy unit that charges, is charged by, or trades fire with a side's unit is seen by that
+  side as that round began (where it came at them), so a player's file and dispatch tell of a charge from a unit
+  they couldn't see before. Not where it stands now, which could leak a move made since (`sight.ts`).
+- Fixed: the round strip while deploying (round 1 was missing); the map's hint while deploying; morale on the unit
+  card while replaying; the dispatch tables in the dock; a loaded army file's problems shown twice; the army tables
+  overflowing at 1440 px.
 
 ### Phase C — Later
 | Item | Status |
