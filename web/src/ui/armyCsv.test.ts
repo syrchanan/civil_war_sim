@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { armyFromCsv, armyToCsv, parseCsv } from './armyCsv';
 import { EXAMPLE_ARMIES } from './store';
 
-const HEADER = 'name,type,subtype,men,experience,morale,weapon,melee_only,guns';
+const HEADER = 'name,type,subtype,men,experience,morale,weapon,melee_only,guns,corps,division,brigade';
 
 describe('CSV text', () => {
   it('reads quoted cells (commas, quotes, line breaks), CRLF, a BOM and a missing last newline', () => {
@@ -18,19 +18,26 @@ describe('army files (CSV, one side)', () => {
   it('written with words a player can edit in a spreadsheet', () => {
     expect(armyToCsv(union).split('\r\n')).toEqual([
       HEADER,
-      '1st Minnesota,Infantry,line,900,6,6,rifled musket,no,',
-      '15th Massachusetts,Infantry,line,700,5,5,rifled musket,no,',
-      'Battery B,Artillery,battery,72,5,5,smoothbore guns,no,8',
+      '1st Minnesota,Infantry,line,900,6,6,rifled musket,no,,,,',
+      '15th Massachusetts,Infantry,line,700,5,5,rifled musket,no,,,,',
+      'Battery B,Artillery,battery,72,5,5,smoothbore guns,no,8,,,',
       '',
     ]);
     expect(armyToCsv([{ ...union[0], name: 'Smith, "Old" Guard', type: null, subtype: null, stats: '3/4/-2/1' }]))
-      .toContain('"Smith, ""Old"" Guard",Generic,,900,3,4,unarmed / pikes,yes,');
+      .toContain('"Smith, ""Old"" Guard",Generic,,900,3,4,unarmed / pikes,yes,,,,');
+    expect(armyToCsv([{ ...union[0], org: { corps: 'II', brigade: 'Harrow' } }])).toContain('rifled musket,no,,II,,Harrow');
+  });
+
+  it('corps, division and brigade are optional names, read and written', () => {
+    const units = [{ ...union[0], org: { corps: 'II', division: 'Gibbon', brigade: 'Harrow' } }];
+    expect(armyFromCsv(armyToCsv(units), 0).units[0].org).toEqual({ corps: 'II', division: 'Gibbon', brigade: 'Harrow' });
+    expect(armyFromCsv('name,men,brigade\nA,500,Webb', 0).units[0].org).toEqual({ brigade: 'Webb' });
   });
 
   it('read back exactly', () => {
     const { units, problems } = armyFromCsv(armyToCsv(union), 0);
     expect(problems).toEqual([]);
-    expect(units).toEqual(union.map(({ id: _id, ...u }) => u));
+    expect(units).toEqual(union.map(({ id: _id, ...u }) => ({ ...u, org: {} })));
   });
 
   it('blank cells take the usual values; words in any case; weapons by name or code', () => {
@@ -45,19 +52,20 @@ describe('army files (CSV, one side)', () => {
     const { units, problems } = armyFromCsv(text, 1);
     expect(problems).toEqual(['Line 6: men must be a whole number, 1 or more.']);
     expect(units).toEqual([
-      { name: 'Pickets', side: 1, type: null, subtype: null, size: 120, stats: '5/5/0/0', guns: null },
-      { name: 'Riders', side: 1, type: 'cav', subtype: 'light', size: 300, stats: '4/5/0/1', guns: null },
-      { name: 'Guns', side: 1, type: 'art', subtype: 'horse battery', size: 54, stats: '6/6/1/0', guns: 6 },
-      { name: 'Big guns', side: 1, type: 'art', subtype: 'battery', size: 72, stats: '5/5/0/0', guns: 8 },
+      { name: 'Pickets', side: 1, type: null, subtype: null, size: 120, stats: '5/5/0/0', guns: null, org: {} },
+      { name: 'Riders', side: 1, type: 'cav', subtype: 'light', size: 300, stats: '4/5/0/1', guns: null, org: {} },
+      { name: 'Guns', side: 1, type: 'art', subtype: 'horse battery', size: 54, stats: '6/6/1/0', guns: 6, org: {} },
+      { name: 'Big guns', side: 1, type: 'art', subtype: 'battery', size: 72, stats: '5/5/0/0', guns: 8, org: {} },
     ]);
   });
 
   it('columns can come in any order; unknown columns are a problem', () => {
     expect(armyFromCsv('men,name\n500,Alpha', 0).units).toEqual([
-      { name: 'Alpha', side: 0, type: null, subtype: null, size: 500, stats: '5/5/0/0', guns: null },
+      { name: 'Alpha', side: 0, type: null, subtype: null, size: 500, stats: '5/5/0/0', guns: null, org: {} },
     ]);
     expect(armyFromCsv('name,men,colour\nA,5,red', 0).problems).toEqual(
-      ['Unknown column "colour". Columns: name, type, subtype, men, experience, morale, weapon, melee_only, guns.']);
+      ['Unknown column "colour". Columns: name, type, subtype, men, experience, morale, weapon, melee_only, guns, corps, '
+        + 'division, brigade.']);
     expect(armyFromCsv('type\nInfantry', 0).problems).toEqual(['The file needs a "name" and a "men" column.']);
     expect(armyFromCsv('', 0).problems).toEqual(['The file is empty.']);
   });

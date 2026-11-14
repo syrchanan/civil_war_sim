@@ -13,6 +13,11 @@ within version 2 (absent in older files, which still load): target switches, fac
 positions and modifiers, side modifiers (battle-wide and per round), rallies (per unit and per round), and flight (break times
 per unit, flights per round), and the terrain.
 
+Version 3 (game flow, Phase D) adds each unit's ``org`` (corps, division and brigade names) and the battle's
+``plan`` (rounds planned, the start clock, the phase and the deployment zones: the web client's game flow, carried
+through untouched by the engine). Version 2 files still load: no org, and a plan that is open-ended, already in
+battle, with no zones.
+
 ``meta`` (battle and per unit) is free-form and round-tripped untouched.
 """
 
@@ -29,7 +34,8 @@ from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryR
 from imperial_generals.utils import Position, Rng
 
 FORMAT = 'imperial-generals-battle'
-VERSION = 2   # 2: melee contacts, charges in round history, charge params (A13)
+VERSION = 3   # 3: unit org, battle plan (Phase D); 2: melee contacts, charges in round history, charge params (A13)
+READABLE = (2, 3)
 
 
 def _stats(stats: tuple) -> str:
@@ -78,6 +84,7 @@ def _unit_to_dict(unit) -> dict:
         'rally': {'attempts': unit.rally_attempts, 'rallied': unit.rallied},
         'broke_time': unit.broke_time,
         'meta': unit.meta,
+        'org': unit.org,
     }
     if isinstance(reg, ArtilleryBattery):
         data['guns'] = reg.guns
@@ -137,6 +144,7 @@ def battle_to_dict(battle: Battle) -> dict:
         'history': [report_to_dict(r) for r in battle.history],
         'result': None if battle.result is None else result_to_dict(battle.result),
         'terrain': None if battle.terrain is None else battle.terrain.to_dict(),
+        'plan': {**battle.plan, 'zones': _by_side(battle.plan['zones'])},
     }
 
 
@@ -220,16 +228,18 @@ def _result_from_dict(data: dict) -> BattleResult:
 def battle_from_dict(data: dict) -> Battle:
     if data.get('format') != FORMAT:
         raise ValueError(f"Not a battle state file (format {data.get('format')!r}).")
-    if data.get('version') != VERSION:
-        raise ValueError(f"Unsupported battle state version {data.get('version')!r} (expected {VERSION}).")
+    if data.get('version') not in READABLE:
+        raise ValueError(f"Unsupported battle state version {data.get('version')!r} (expected 2 or {VERSION}).")
 
     units = {
-        u['id']: {'side': u['side'], 'regiment': _build_regiment(u), 'name': u['name'], 'meta': u['meta']}
+        u['id']: {'side': u['side'], 'regiment': _build_regiment(u), 'name': u['name'], 'meta': u['meta'],
+                  'org': u.get('org', {})}     # absent in version 2
         for u in data['units']
     }
     battle = Battle(units, rng=Rng.from_state(data['rng_state']), params=BattleParams.from_dict(data['params']),
                     meta=data['meta'], side_modifiers=data.get('side_modifiers', {}),     # absent in older files
-                    terrain=None if data.get('terrain') is None else Terrain.from_dict(data['terrain']))
+                    terrain=None if data.get('terrain') is None else Terrain.from_dict(data['terrain']),
+                    plan=data.get('plan'))     # absent in version 2
     for u in data['units']:
         _restore_unit(battle.units[u['id']], u, battle.params)
     battle.rng = Rng.from_state(data['rng_state'])     # building the units drew break points: rewind

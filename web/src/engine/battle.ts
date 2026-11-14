@@ -17,6 +17,7 @@ import { RuntimeError, ValueError } from './errors';
 import { breakScale, MoraleState } from './morale';
 import { BattleParams, type Stats, type Unit } from './params';
 import { Rng } from './rng';
+import { inside, type Org, type Plan, validateOrg, validatePlan } from './plan';
 import { sightBetween } from './sight';
 import { cosDeg, sinDeg } from './trig';
 import { battleFromDict, battleToDict, type StateData } from './state';
@@ -280,6 +281,7 @@ export class BattleUnit {
   rallyAttempts = 0; // tries to rally so far
   rallied = false; // has rallied (once per battle): fights on less effectively, more exposed
   brokeTime: number | null = null; // game minute it last broke (it flees from then on); null while standing
+  org: Org = {}; // corps / division / brigade names, for organising lists only
 
   constructor(
     readonly uid: string,
@@ -314,6 +316,7 @@ export interface UnitSpec {
   regiment: Regiment;
   name?: string;
   meta?: Record<string, unknown>;
+  org?: unknown; // corps / division / brigade names (validateOrg)
 }
 
 // Python frozenset pairs: one canonical key per pair of unit ids
@@ -359,6 +362,8 @@ export class Battle {
   private modifiers: Record<string, Modifier> = {}; // this round's admin modifiers, while it is fought or previewed
   /** Whole-battle modifiers per side ('0' / '1'): last until changed, multiply with each round's unit modifiers. */
   sideModifiers: Record<string, Modifier>;
+  /** The admin's plan (plan.ts): rounds planned, start clock, phase (deployment or battle), deployment zones. */
+  plan: Plan;
 
   /**
    * @param units unit id -> {side, regiment, name?, meta?}; side is 0 or 1. Insertion order is the unit order
@@ -368,14 +373,16 @@ export class Battle {
    * @param meta free-form battle details, round-tripped untouched
    * @param sideModifiers whole-battle modifiers per side (see validateSideModifiers)
    * @param terrain the ground (terrain.ts); null is an open field
+   * @param plan the admin's plan (validatePlan); null: open-ended, in battle, no zones
    */
   constructor(units: Record<string, UnitSpec>, rng?: Rng, params?: BattleParams, meta?: Record<string, unknown>,
-    sideModifiers: unknown = {}, readonly terrain: Terrain | null = null) {
+    sideModifiers: unknown = {}, readonly terrain: Terrain | null = null, plan: unknown = null) {
     this.rng = rng ?? new Rng(Math.floor(Math.random() * 2 ** 32));
     this.seed = this.rng.seed;
     this.params = params ?? BattleParams.defaults();
     this.meta = { ...(meta ?? {}) };
     this.sideModifiers = validateSideModifiers(sideModifiers);
+    this.plan = validatePlan(plan);
     Object.entries(units).forEach(([uid, spec], index) => {
       if (spec.side !== 0 && spec.side !== 1) throw new ValueError(`side must be 0 or 1, got ${spec.side} for ${uid}.`);
       const regiment = spec.regiment;
@@ -387,7 +394,47 @@ export class Battle {
       const key: Unit = [regiment.unitType ?? 'inf', regiment.subtype];
       this.units.set(uid, new BattleUnit(uid, spec.side, regiment, morale, regiment.size, index, key,
         this.params.matchups.meleeRating(key), spec.name ?? uid, { ...(spec.meta ?? {}) }, regiment.stats));
+      this.units.get(uid)!.org = validateOrg(spec.org ?? {});
     });
+  }
+
+  // --- the game flow (web only: the Python engine carries the plan through untouched) ---
+
+  /** Plan the battle to last `rounds` rounds (null: open-ended); at least the rounds already fought. */
+  setRoundsPlanned(rounds: number | null): void {
+    const least = Math.max(1, this.round);
+    if (rounds !== null && !(Number.isInteger(rounds) && rounds >= least)) {
+      throw new ValueError(`Rounds planned must be a whole number, at least ${least} (the rounds fought so far, and 1 `
+        + `or more), or open-ended; got ${rounds}.`);
+    }
+    this.plan = { ...this.plan, rounds_planned: rounds };
+  }
+
+  /** Does the unit stand inside its side's deployment zone? True if its side has none or it is not placed. */
+  inZone(uid: string): boolean {
+    const unit = this.unit(uid);
+    const zone = this.plan.zones[String(unit.side)];
+    const pos = unit.regiment.position;
+    return zone === undefined || pos === null || inside(zone, pos.x, pos.y);
+  }
+
+  /** What stops the battle opening: units not placed yet, or placed outside their side's zone. */
+  deploymentProblems(): string[] {
+    const problems: string[] = [];
+    for (const [uid, unit] of this.units) {
+      if (unit.size === 0) continue;
+      if (unit.regiment.position === null) problems.push(`${unit.name} has not been placed.`);
+      else if (!this.inZone(uid)) problems.push(`${unit.name} stands outside its side's deployment zone.`);
+    }
+    return problems;
+  }
+
+  /** End the deployment (round 0): every unit placed inside its side's zone; the first round can be fought. */
+  openBattle(): void {
+    if (this.plan.phase !== 'deployment') throw new ValueError('The battle is not being deployed: it is already open.');
+    const problems = this.deploymentProblems();
+    if (problems.length) throw new ValueError(problems.join(' '));
+    this.plan = { ...this.plan, phase: 'battle' };
   }
 
   private unit(uid: string): BattleUnit {
@@ -690,7 +737,7 @@ export class Battle {
    * The arrow structure for this moment of the round: [slots, partners]. Slots are sorted by (target, attacker)
    * in unit order; partners maps each unit in melee contact to its contacts.
    */
-  private plan(orders: Map<string, Order>, cancelled: Set<string>, contacts: Set<string>, pending: Pending[],
+  private planArrows(orders: Map<string, Order>, cancelled: Set<string>, contacts: Set<string>, pending: Pending[],
     withdrawn: Set<string> = new Set()): [Slot[], Map<string, string[]>] {
     const combat = this.params.combat;
     const matchups = this.params.matchups;
@@ -820,7 +867,7 @@ export class Battle {
     try {
       const contacts = this.roundContacts(valid);
       const [pending] = this.newCharges(valid, contacts, this.time, Infinity);
-      return this.rates(...this.plan(valid, new Set(), contacts, pending)).map(engagement);
+      return this.rates(...this.planArrows(valid, new Set(), contacts, pending)).map(engagement);
     } finally {
       this.modifiers = {};
     }
@@ -922,6 +969,9 @@ export class Battle {
   resolveRound(duration: number, orders: Record<string, OrderInput | null>, recordEvents = false,
     modifiers: Record<string, ModifierInput> = {}): RoundReport {
     if (this.finished) throw new RuntimeError('This battle is finished.');
+    if (this.plan.phase === 'deployment') {
+      throw new RuntimeError('The armies are still deploying: open the battle before fighting.');
+    }
     if (!(duration > 0)) throw new ValueError(`duration must be > 0, got ${duration}.`);
     const valid = this.validateOrders(orders);
     const checked = validateModifiers(modifiers, this.units);
@@ -966,7 +1016,7 @@ export class Battle {
     const [pending, immediate] = this.newCharges(valid, contacts, start, duration);
     const charges: Charge[] = [...immediate];
     const retargets: Retarget[] = [];
-    let [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
+    let [slots, partners] = this.planArrows(live, cancelled, contacts, pending, withdrawn);
     const opening = this.rates(slots, partners).map(engagement);
     const exposure = new Map<string, number>(); // victim + attacker -> morale cost multiplier, until anyone moves
     const fled = new Map<string, number>(); // yards fled this round
@@ -1085,7 +1135,7 @@ export class Battle {
           lastMove = t;
           if (moved) exposure.clear();
         }
-        if (gone.size || due.length || moved) [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
+        if (gone.size || due.length || moved) [slots, partners] = this.planArrows(live, cancelled, contacts, pending, withdrawn);
         continue;
       }
 
@@ -1125,7 +1175,7 @@ export class Battle {
       }
       if (gone.size) {
         standDown(gone, t);
-        [slots, partners] = this.plan(live, cancelled, contacts, pending, withdrawn);
+        [slots, partners] = this.planArrows(live, cancelled, contacts, pending, withdrawn);
       }
     }
 

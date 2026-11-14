@@ -83,7 +83,7 @@ describe('sightings', () => {
 describe('the player file', () => {
   it('holds nothing of a unit never seen', () => {
     const file = playerFile(overTheRidge().battle.value!.toDict(), 0);
-    expect(file.version).toBe(2);
+    expect(file.version).toBe(3);
     expect(JSON.stringify(file)).not.toContain('cs_8al');
     expect(JSON.stringify(file)).not.toContain('8th Alabama');
   });

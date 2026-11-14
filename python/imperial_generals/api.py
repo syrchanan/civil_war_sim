@@ -30,7 +30,7 @@ Broken targets can still be attacked (pursuit).
 import copy
 from dataclasses import asdict
 
-from imperial_generals.battles.battle import Battle
+from imperial_generals.battles.battle import Battle, validate_plan
 from imperial_generals.battles.setup import (
     SetupError, battle_from_setup, open_ground, position_problem, side_modifiers_by_number,
 )
@@ -308,6 +308,8 @@ def scenario_from_state(state: dict) -> dict:
             unit['position'] = _written(start)
         if u['meta']:
             unit['meta'] = u['meta']
+        if u.get('org'):     # absent in version 2 files
+            unit['org'] = u['org']
         units.append(unit)
     # side modifiers: those of the first round (or now) at the start; a round sets them when they changed
     first = state['history'][0].get('side_modifiers', {}) if state['history'] else state.get('side_modifiers', {})
@@ -342,6 +344,9 @@ def scenario_from_state(state: dict) -> dict:
         scenario['side_modifiers'] = first
     if state.get('terrain') is not None:
         scenario['terrain'] = state['terrain']
+    plan = state.get('plan')     # absent in version 2 files; the web client's game flow, carried through
+    if plan is not None and plan != validate_plan(None):
+        scenario['plan'] = plan
     scenario.update({'seed': state['seed'], 'params': state['params'], 'units': units, 'rounds': rounds,
                      'finish': finish})
     return scenario

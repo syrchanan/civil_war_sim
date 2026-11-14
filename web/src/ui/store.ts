@@ -11,7 +11,7 @@ import { computed, signal } from '@preact/signals';
 import {
   ArtilleryBattery, Battle, BattleParams, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
-  PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
+  PLAYER_VERSION, playerFile, type Order, type OrderInput, type Org, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, roughly, sideSummary, sightings, type SideSummary, Terrain, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
@@ -31,6 +31,7 @@ export interface UnitDraft {
   size: number; // artillery: crew
   stats: string; // experience/morale/weapon/melee-only
   guns: number | null; // artillery only
+  org?: Org; // corps / division / brigade names, for organising lists only
 }
 
 /** The usual subtype when a unit's type is picked. */
@@ -643,7 +644,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         continue;
       }
       try {
-        specs[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name };
+        specs[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, org: u.org ?? {} };
       } catch (error) {
         problems.push(`${u.name}: ${(error as Error).message}`);
       }
@@ -707,9 +708,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
         if (modeSignal.value === 'admin') {
           return `This is the ${data.state.meta.sides[data.side]} player's file; open the full battle file instead.`;
         }
-        // version 1 files (before the fog of war on the terrain) still open
-        if (data.version !== 1 && data.version !== PLAYER_VERSION) {
-          return `Unsupported player file version ${data.version} (expected 1 or ${PLAYER_VERSION}).`;
+        // older files (before the fog of war on the terrain, before the game flow) still open
+        if (![1, 2, PLAYER_VERSION].includes(data.version)) {
+          return `Unsupported player file version ${data.version} (expected 1 to ${PLAYER_VERSION}).`;
         }
         file = { side: data.side, tag: data.tag };
         b = Battle.fromDict(data.state);
@@ -726,6 +727,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     units.value = data.units.map((u) => ({
       id: u.id, name: u.name, side: u.side as 0 | 1, type: u.type as UnitType | null, subtype: u.subtype,
       size: u.initial_size, stats: u.initial_stats, guns: u.guns === undefined ? null : u.guns + u.guns_lost,
+      org: { ...u.org }, // toDict always writes it
     }));
     battle.value = b;
     const preset = b.terrain?.meta.preset;

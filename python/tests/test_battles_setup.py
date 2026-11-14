@@ -121,7 +121,7 @@ def test_setup_must_be_a_mapping_with_units():
 
 def test_unknown_top_level_key_is_reported():
     errors = errors_of(setup(unit=[]))
-    assert errors == ['Unknown key "unit". Allowed: expect, feedback, finish, meta, params, rounds, seed, side_modifiers, sides, terrain, '
+    assert errors == ['Unknown key "unit". Allowed: expect, feedback, finish, meta, params, plan, rounds, seed, side_modifiers, sides, terrain, '
                       'units.']
 
 
@@ -180,7 +180,7 @@ def test_problems_across_units_are_collected():
      'Unit 1 (a): front_size must be a positive whole number.'),
     ({'id': 'a', 'side': 0, 'size': 10, 'stats': '5/5/0/0', 'meta': 'p1'}, 'Unit 1 (a): "meta" must be a mapping.'),
     ({'id': 'a', 'side': 0, 'size': 10, 'stats': '5/5/0/0', 'sise': 3},
-     'Unit 1 (a): unknown key "sise". Allowed: front_size, guns, id, meta, name, position, side, size, stats, subtype, type.'),
+     'Unit 1 (a): unknown key "sise". Allowed: front_size, guns, id, meta, name, org, position, side, size, stats, subtype, type.'),
 ])
 def test_unit_problems(unit, message):
     data = setup()

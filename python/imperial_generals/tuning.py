@@ -210,7 +210,7 @@ def write_csv(rows: list, path) -> None:
 
 GRID_KEYS = ('name', 'params', 'rounds', 'seeds', 'units')
 # grids fight at no particular distance: no positions
-GRID_UNIT_KEYS = tuple(sorted(set(UNIT_KEYS) - {'id', 'name', 'side', 'position'} | {'attack', 'defend'}))
+GRID_UNIT_KEYS = tuple(sorted(set(UNIT_KEYS) - {'id', 'name', 'side', 'position', 'org'} | {'attack', 'defend'}))
 ORDER_KEYS = {'mode', 'ammo'}
 
 

@@ -370,7 +370,7 @@ def test_charges_are_deterministic_and_resume_exactly():
 def test_contacts_and_charges_are_saved():
     b, report = charge_round(**ALWAYS_HOME)
     data = json.loads(b.to_json())
-    assert data['version'] == 2
+    assert data['version'] == 3
     assert data['contacts'] == [['a', 'x']]
     assert data['history'][0]['charges'][0]['outcome'] == 'home'
     assert Battle.from_json(b.to_json()).history[0].charges == report.charges

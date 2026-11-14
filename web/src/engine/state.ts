@@ -5,6 +5,10 @@
  * Version 2: melee contacts, charges in the round history, charge params. Added since, within version 2 (absent in
  * older files, which still load): target switches, facing on positions, per-round positions and modifiers, side
  * modifiers (battle-wide and per round), and rallies (per unit and per round).
+ *
+ * Version 3 (game flow, Phase D): each unit's org (corps, division and brigade names) and the battle's plan (rounds
+ * planned, start clock, phase, deployment zones; plan.ts). Version 2 files still load: no org, and a plan that is
+ * open-ended, already in battle, with no zones.
  */
 
 import {
@@ -12,13 +16,15 @@ import {
 } from './battle';
 import { ValueError } from './errors';
 import { MoraleState } from './morale';
+import type { Org, Plan } from './plan';
 import { BattleParams, type Overrides, type ParamsData, type Stats } from './params';
 import { Rng } from './rng';
 import { Terrain, type TerrainData } from './terrain';
 import { ArtilleryBattery, CavalryRegiment, InfantryRegiment, type Position, Regiment } from './units';
 
 export const FORMAT = 'imperial-generals-battle';
-export const VERSION = 2;
+export const VERSION = 3;
+const READABLE = [2, 3];
 
 export interface UnitData {
   id: string;
@@ -42,6 +48,7 @@ export interface UnitData {
   rally: { attempts: number; rallied: boolean };
   broke_time: number | null;
   meta: Record<string, unknown>;
+  org?: Org; // absent in version 2
   guns?: number;
 }
 
@@ -63,6 +70,7 @@ export interface StateData {
   history: RoundReport[];
   result: BattleResult | null;
   terrain: TerrainData | null;
+  plan?: Plan; // absent in version 2
 }
 
 const statsText = (stats: Stats): string => stats.join('/');
@@ -109,6 +117,7 @@ function unitToDict(unit: BattleUnit): UnitData {
     rally: { attempts: unit.rallyAttempts, rallied: unit.rallied },
     broke_time: unit.brokeTime,
     meta: structuredClone(unit.meta),
+    org: { ...unit.org },
   };
   if (reg instanceof ArtilleryBattery) data.guns = reg.guns;
   return data;
@@ -138,6 +147,7 @@ export function battleToDict(battle: Battle): StateData {
     history: structuredClone(battle.history),
     result: structuredClone(battle.result),
     terrain: battle.terrain === null ? null : battle.terrain.toDict(),
+    plan: structuredClone(battle.plan),
   };
 }
 
@@ -185,14 +195,17 @@ function restoreUnit(unit: BattleUnit, data: UnitData, params: BattleParams): vo
 
 export function battleFromDict(data: StateData): Battle {
   if (data.format !== FORMAT) throw new ValueError(`Not a battle state file (format ${JSON.stringify(data.format)}).`);
-  if (data.version !== VERSION) {
-    throw new ValueError(`Unsupported battle state version ${JSON.stringify(data.version)} (expected ${VERSION}).`);
+  if (!READABLE.includes(data.version)) {
+    throw new ValueError(`Unsupported battle state version ${JSON.stringify(data.version)} (expected 2 or ${VERSION}).`);
   }
   const units: Record<string, UnitSpec> = {};
-  for (const u of data.units) units[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, meta: u.meta };
+  for (const u of data.units) {
+    units[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, meta: u.meta, org: u.org ?? {} };
+  }
   const battle = new Battle(units, Rng.fromState(data.rng_state),
     BattleParams.fromDict(data.params as unknown as Overrides), data.meta, data.side_modifiers ?? {},
-    data.terrain === undefined || data.terrain === null ? null : new Terrain(data.terrain)); // absent in older files
+    data.terrain === undefined || data.terrain === null ? null : new Terrain(data.terrain), // absent in older files
+    data.plan ?? null); // absent in version 2
   for (const u of data.units) restoreUnit(battle.units.get(u.id)!, u, battle.params);
   battle.rng = Rng.fromState(data.rng_state); // building the units drew break points: rewind
 

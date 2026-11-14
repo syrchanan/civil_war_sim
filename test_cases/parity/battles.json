@@ -6,7 +6,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -343,7 +343,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -375,7 +376,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -408,6 +410,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -440,7 +443,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -472,7 +476,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -504,7 +509,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -537,13 +543,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -648,7 +661,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -985,7 +998,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -1017,7 +1031,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -1050,6 +1065,7 @@
             },
             "broke_time": 53.791307421840415,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -1082,7 +1098,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -1114,7 +1131,8 @@
               "rallied": false
             },
             "broke_time": 120.5055780570778,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -1146,7 +1164,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -1179,6 +1198,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -1817,7 +1837,13 @@
             "standing": null
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -1825,7 +1851,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -2162,7 +2188,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -2194,7 +2221,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -2227,6 +2255,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -2259,7 +2288,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -2291,7 +2321,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -2323,7 +2354,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -2356,13 +2388,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -2463,7 +2502,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -2800,7 +2839,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -2832,7 +2872,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -2865,6 +2906,7 @@
             },
             "broke_time": 43.15736843695087,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -2897,7 +2939,8 @@
               "rallied": false
             },
             "broke_time": 105.62687754569808,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -2929,7 +2972,8 @@
               "rallied": false
             },
             "broke_time": 148.2073502707806,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -2961,7 +3005,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -2994,6 +3039,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -3611,7 +3657,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -3619,7 +3671,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -3956,7 +4008,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -3988,7 +4041,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -4021,6 +4075,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -4053,7 +4108,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -4085,7 +4141,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -4117,7 +4174,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -4150,13 +4208,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -4261,7 +4326,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -4598,7 +4663,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -4630,7 +4696,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -4663,6 +4730,7 @@
             },
             "broke_time": 48.14436584001943,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -4695,7 +4763,8 @@
               "rallied": false
             },
             "broke_time": 125.85436960444827,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -4727,7 +4796,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -4759,7 +4829,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -4792,6 +4863,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -5421,7 +5493,13 @@
             "standing": null
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -5429,7 +5507,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of even firefight",
           "notes": "Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.",
@@ -5765,7 +5843,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n2",
@@ -5797,7 +5876,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n3",
@@ -5829,7 +5909,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "nb",
@@ -5862,6 +5943,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -5894,7 +5976,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -5926,7 +6009,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s3",
@@ -5958,7 +6042,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "sb",
@@ -5991,13 +6076,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -6178,7 +6270,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of even firefight",
           "notes": "Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.",
@@ -6514,7 +6606,8 @@
               "rallied": false
             },
             "broke_time": 419.3494266730371,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n2",
@@ -6546,7 +6639,8 @@
               "rallied": false
             },
             "broke_time": 261.9983016262622,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n3",
@@ -6578,7 +6672,8 @@
               "rallied": false
             },
             "broke_time": 261.89303472285235,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "nb",
@@ -6611,6 +6706,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -6643,7 +6739,8 @@
               "rallied": false
             },
             "broke_time": 219.90508969952444,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -6675,7 +6772,8 @@
               "rallied": false
             },
             "broke_time": 190.13358036076,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s3",
@@ -6707,7 +6805,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "sb",
@@ -6740,6 +6839,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -7772,7 +7872,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -7780,7 +7886,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of even firefight",
           "notes": "Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.",
@@ -8116,7 +8222,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n2",
@@ -8148,7 +8255,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n3",
@@ -8180,7 +8288,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "nb",
@@ -8213,6 +8322,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -8245,7 +8355,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -8277,7 +8388,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s3",
@@ -8309,7 +8421,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "sb",
@@ -8342,13 +8455,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -8521,7 +8641,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of even firefight",
           "notes": "Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.",
@@ -8857,7 +8977,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n2",
@@ -8889,7 +9010,8 @@
               "rallied": false
             },
             "broke_time": 142.619679846532,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n3",
@@ -8921,7 +9043,8 @@
               "rallied": false
             },
             "broke_time": 265.83255835937274,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "nb",
@@ -8954,6 +9077,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -8986,7 +9110,8 @@
               "rallied": false
             },
             "broke_time": 208.27699329696338,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -9018,7 +9143,8 @@
               "rallied": false
             },
             "broke_time": 123.07001073196804,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s3",
@@ -9050,7 +9176,8 @@
               "rallied": false
             },
             "broke_time": 420.17931765793537,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "sb",
@@ -9083,6 +9210,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -10091,7 +10219,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -10099,7 +10233,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of even firefight",
           "notes": "Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.",
@@ -10435,7 +10569,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n2",
@@ -10467,7 +10602,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n3",
@@ -10499,7 +10635,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "nb",
@@ -10532,6 +10669,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -10564,7 +10702,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -10596,7 +10735,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s3",
@@ -10628,7 +10768,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "sb",
@@ -10661,13 +10802,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -10840,7 +10988,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of even firefight",
           "notes": "Two average brigades trade volleys from 7 am to 2:30 pm; batteries duel and then fire on the infantry.",
@@ -11176,7 +11324,8 @@
               "rallied": false
             },
             "broke_time": 236.28090801166252,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n2",
@@ -11208,7 +11357,8 @@
               "rallied": false
             },
             "broke_time": 166.36583345819318,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "n3",
@@ -11240,7 +11390,8 @@
               "rallied": false
             },
             "broke_time": 317.0445592227419,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "nb",
@@ -11273,6 +11424,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -11305,7 +11457,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -11337,7 +11490,8 @@
               "rallied": false
             },
             "broke_time": 136.5017721499098,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s3",
@@ -11369,7 +11523,8 @@
               "rallied": false
             },
             "broke_time": 312.31232701697553,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "sb",
@@ -11402,6 +11557,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -12410,7 +12566,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -12418,7 +12580,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of assault",
           "sides": [
@@ -12753,7 +12915,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a2",
@@ -12785,7 +12948,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a3",
@@ -12817,7 +12981,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a4",
@@ -12849,7 +13014,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "ab1",
@@ -12882,6 +13048,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -12915,6 +13082,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -12947,7 +13115,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d2",
@@ -12979,7 +13148,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d3",
@@ -13011,7 +13181,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "db",
@@ -13044,13 +13215,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -13210,7 +13388,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of assault",
           "sides": [
@@ -13545,7 +13723,8 @@
               "rallied": false
             },
             "broke_time": 164.8325033510279,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a2",
@@ -13577,7 +13756,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a3",
@@ -13609,7 +13789,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a4",
@@ -13641,7 +13822,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "ab1",
@@ -13674,6 +13856,7 @@
             },
             "broke_time": 60.04951787591082,
             "meta": {},
+            "org": {},
             "guns": 7
           },
           {
@@ -13707,6 +13890,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -13739,7 +13923,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d2",
@@ -13771,7 +13956,8 @@
               "rallied": false
             },
             "broke_time": 121.87995988764827,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d3",
@@ -13803,7 +13989,8 @@
               "rallied": false
             },
             "broke_time": 160.44357794451278,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "db",
@@ -13836,6 +14023,7 @@
             },
             "broke_time": 155.0,
             "meta": {},
+            "org": {},
             "guns": 0
           }
         ],
@@ -14886,7 +15074,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -14894,7 +15088,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of assault",
           "sides": [
@@ -15229,7 +15423,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a2",
@@ -15261,7 +15456,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a3",
@@ -15293,7 +15489,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a4",
@@ -15325,7 +15522,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "ab1",
@@ -15358,6 +15556,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -15391,6 +15590,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -15423,7 +15623,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d2",
@@ -15455,7 +15656,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d3",
@@ -15487,7 +15689,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "db",
@@ -15520,13 +15723,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -15682,7 +15892,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of assault",
           "sides": [
@@ -16017,7 +16227,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a2",
@@ -16049,7 +16260,8 @@
               "rallied": false
             },
             "broke_time": 139.68819244343206,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a3",
@@ -16081,7 +16293,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a4",
@@ -16113,7 +16326,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "ab1",
@@ -16146,6 +16360,7 @@
             },
             "broke_time": 55.68381516969664,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -16179,6 +16394,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -16211,7 +16427,8 @@
               "rallied": false
             },
             "broke_time": 147.1909746459391,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d2",
@@ -16243,7 +16460,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d3",
@@ -16275,7 +16493,8 @@
               "rallied": false
             },
             "broke_time": 162.43528183741907,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "db",
@@ -16308,6 +16527,7 @@
             },
             "broke_time": 155.0,
             "meta": {},
+            "org": {},
             "guns": 0
           }
         ],
@@ -17346,7 +17566,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -17354,7 +17580,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of assault",
           "sides": [
@@ -17689,7 +17915,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a2",
@@ -17721,7 +17948,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a3",
@@ -17753,7 +17981,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a4",
@@ -17785,7 +18014,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "ab1",
@@ -17818,6 +18048,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -17851,6 +18082,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -17883,7 +18115,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d2",
@@ -17915,7 +18148,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d3",
@@ -17947,7 +18181,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "db",
@@ -17980,13 +18215,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -18146,7 +18388,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Day of assault",
           "sides": [
@@ -18481,7 +18723,8 @@
               "rallied": false
             },
             "broke_time": 170.89959922728193,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a2",
@@ -18513,7 +18756,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a3",
@@ -18545,7 +18789,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a4",
@@ -18577,7 +18822,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "ab1",
@@ -18610,6 +18856,7 @@
             },
             "broke_time": 52.738748871377304,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -18643,6 +18890,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -18675,7 +18923,8 @@
               "rallied": false
             },
             "broke_time": 293.6142044473142,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d2",
@@ -18707,7 +18956,8 @@
               "rallied": false
             },
             "broke_time": 95.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "d3",
@@ -18739,7 +18989,8 @@
               "rallied": false
             },
             "broke_time": 174.1849598083109,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "db",
@@ -18772,6 +19023,7 @@
             },
             "broke_time": 155.0,
             "meta": {},
+            "org": {},
             "guns": 0
           }
         ],
@@ -19822,7 +20074,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -19830,7 +20088,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -20159,7 +20417,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_heavy",
@@ -20191,7 +20450,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_drag",
@@ -20223,7 +20483,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_pikes",
@@ -20255,7 +20516,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_line",
@@ -20287,7 +20549,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_light",
@@ -20319,7 +20582,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -20352,6 +20616,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -20384,13 +20649,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -20516,7 +20788,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -20845,7 +21117,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_heavy",
@@ -20877,7 +21150,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_drag",
@@ -20909,7 +21183,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_pikes",
@@ -20941,7 +21216,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_line",
@@ -20973,7 +21249,8 @@
               "rallied": false
             },
             "broke_time": 91.55536071364254,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_light",
@@ -21005,7 +21282,8 @@
               "rallied": false
             },
             "broke_time": 39.01520551022259,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -21038,6 +21316,7 @@
             },
             "broke_time": 47.0,
             "meta": {},
+            "org": {},
             "guns": 0
           },
           {
@@ -21070,7 +21349,8 @@
               "rallied": false
             },
             "broke_time": 107.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -21799,7 +22079,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -21807,7 +22093,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -22136,7 +22422,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_heavy",
@@ -22168,7 +22455,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_drag",
@@ -22200,7 +22488,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_pikes",
@@ -22232,7 +22521,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_line",
@@ -22264,7 +22554,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_light",
@@ -22296,7 +22587,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -22329,6 +22621,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -22361,13 +22654,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -22493,7 +22793,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -22822,7 +23122,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_heavy",
@@ -22854,7 +23155,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_drag",
@@ -22886,7 +23188,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_pikes",
@@ -22918,7 +23221,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_line",
@@ -22950,7 +23254,8 @@
               "rallied": false
             },
             "broke_time": 102.89962449781738,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_light",
@@ -22982,7 +23287,8 @@
               "rallied": false
             },
             "broke_time": 24.797012777279313,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -23015,6 +23321,7 @@
             },
             "broke_time": 47.0,
             "meta": {},
+            "org": {},
             "guns": 0
           },
           {
@@ -23047,7 +23354,8 @@
               "rallied": false
             },
             "broke_time": 158.02662770490358,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -23776,7 +24084,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -23784,7 +24098,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -24113,7 +24427,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_heavy",
@@ -24145,7 +24460,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_drag",
@@ -24177,7 +24493,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_pikes",
@@ -24209,7 +24526,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_line",
@@ -24241,7 +24559,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_light",
@@ -24273,7 +24592,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -24306,6 +24626,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -24338,13 +24659,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -24471,7 +24799,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -24800,7 +25128,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_heavy",
@@ -24832,7 +25161,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_drag",
@@ -24864,7 +25194,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_pikes",
@@ -24896,7 +25227,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_line",
@@ -24928,7 +25260,8 @@
               "rallied": false
             },
             "broke_time": 135.6916748468607,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_light",
@@ -24960,7 +25293,8 @@
               "rallied": false
             },
             "broke_time": 29.68215041999352,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -24993,6 +25327,7 @@
             },
             "broke_time": 61.96433150627078,
             "meta": {},
+            "org": {},
             "guns": 5
           },
           {
@@ -25025,7 +25360,8 @@
               "rallied": false
             },
             "broke_time": 2.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -25744,7 +26080,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -25752,7 +26094,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -26094,7 +26436,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_cav",
@@ -26126,7 +26469,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_inf",
@@ -26158,7 +26502,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -26191,6 +26536,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -26223,13 +26569,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -26295,7 +26648,7 @@
       "field_held_by": null,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -26631,7 +26984,8 @@
               "rallied": false
             },
             "broke_time": 3.120720015691618,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_cav",
@@ -26663,7 +27017,8 @@
               "rallied": false
             },
             "broke_time": 8.898316518648288,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_inf",
@@ -26695,7 +27050,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -26728,6 +27084,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -26760,7 +27117,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -27119,7 +27477,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -27127,7 +27491,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -27469,7 +27833,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_cav",
@@ -27501,7 +27866,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_inf",
@@ -27533,7 +27899,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -27566,6 +27933,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -27598,13 +27966,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -27674,7 +28049,7 @@
       "field_held_by": null,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -28010,7 +28385,8 @@
               "rallied": false
             },
             "broke_time": 4.687135464035886,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_cav",
@@ -28042,7 +28418,8 @@
               "rallied": false
             },
             "broke_time": 61.867479114915895,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_inf",
@@ -28074,7 +28451,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -28107,6 +28485,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -28139,7 +28518,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -28515,7 +28895,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -28523,7 +28909,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -28865,7 +29251,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_cav",
@@ -28897,7 +29284,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_inf",
@@ -28929,7 +29317,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -28962,6 +29351,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -28994,13 +29384,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -29070,7 +29467,7 @@
       "field_held_by": null,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -29406,7 +29803,8 @@
               "rallied": false
             },
             "broke_time": 2.5078681974964905,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "a_cav",
@@ -29438,7 +29836,8 @@
               "rallied": false
             },
             "broke_time": 71.44428465451587,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_inf",
@@ -29470,7 +29869,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "x_bat",
@@ -29503,6 +29903,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 6
           },
           {
@@ -29535,7 +29936,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -29911,7 +30313,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -29919,7 +30327,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -30248,7 +30656,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "mid",
@@ -30280,7 +30689,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "tiny",
@@ -30312,7 +30722,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "gun",
@@ -30345,6 +30756,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 4
           },
           {
@@ -30377,13 +30789,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -30430,7 +30849,7 @@
       "field_held_by": 0,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -30759,7 +31178,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "mid",
@@ -30791,7 +31211,8 @@
               "rallied": false
             },
             "broke_time": 150.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "tiny",
@@ -30823,7 +31244,8 @@
               "rallied": false
             },
             "broke_time": 1.7868855151844716,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "gun",
@@ -30856,6 +31278,7 @@
             },
             "broke_time": 0.3203226091024224,
             "meta": {},
+            "org": {},
             "guns": 1
           },
           {
@@ -30888,7 +31311,8 @@
               "rallied": false
             },
             "broke_time": 5.933107258066427,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -31212,7 +31636,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -31220,7 +31650,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -31549,7 +31979,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "mid",
@@ -31581,7 +32012,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "tiny",
@@ -31613,7 +32045,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "gun",
@@ -31646,6 +32079,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 4
           },
           {
@@ -31678,13 +32112,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -31731,7 +32172,7 @@
       "field_held_by": 0,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -32060,7 +32501,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "mid",
@@ -32092,7 +32534,8 @@
               "rallied": false
             },
             "broke_time": 150.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "tiny",
@@ -32124,7 +32567,8 @@
               "rallied": false
             },
             "broke_time": 1.724471207328032,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "gun",
@@ -32157,6 +32601,7 @@
             },
             "broke_time": 4.278479798278564,
             "meta": {},
+            "org": {},
             "guns": 1
           },
           {
@@ -32189,7 +32634,8 @@
               "rallied": false
             },
             "broke_time": 10.43661733071166,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -32513,7 +32959,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -32521,7 +32973,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -32850,7 +33302,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "mid",
@@ -32882,7 +33335,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "tiny",
@@ -32914,7 +33368,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "gun",
@@ -32947,6 +33402,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 4
           },
           {
@@ -32979,13 +33435,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -33032,7 +33495,7 @@
       "field_held_by": 0,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -33361,7 +33824,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "mid",
@@ -33393,7 +33857,8 @@
               "rallied": false
             },
             "broke_time": 141.12168026469075,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "tiny",
@@ -33425,7 +33890,8 @@
               "rallied": false
             },
             "broke_time": 0.2298160469269943,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "gun",
@@ -33458,6 +33924,7 @@
             },
             "broke_time": 1.5537764452966876,
             "meta": {},
+            "org": {},
             "guns": 1
           },
           {
@@ -33490,7 +33957,8 @@
               "rallied": false
             },
             "broke_time": 8.507826744996963,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -33814,7 +34282,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -33822,7 +34296,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -34151,7 +34625,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -34183,7 +34658,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_line",
@@ -34215,7 +34691,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_big",
@@ -34247,7 +34724,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_bat",
@@ -34280,13 +34758,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -34368,7 +34853,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -34697,7 +35182,8 @@
               "rallied": false
             },
             "broke_time": 10.332257803583902,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -34729,7 +35215,8 @@
               "rallied": false
             },
             "broke_time": 16.325282081737413,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_line",
@@ -34761,7 +35248,8 @@
               "rallied": false
             },
             "broke_time": 63.22024695399023,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_big",
@@ -34793,7 +35281,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_bat",
@@ -34826,6 +35315,7 @@
             },
             "broke_time": 2.0,
             "meta": {},
+            "org": {},
             "guns": 0
           }
         ],
@@ -35374,7 +35864,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -35382,7 +35878,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -35711,7 +36207,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -35743,7 +36240,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_line",
@@ -35775,7 +36273,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_big",
@@ -35807,7 +36306,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_bat",
@@ -35840,13 +36340,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -35928,7 +36435,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -36257,7 +36764,8 @@
               "rallied": false
             },
             "broke_time": 24.445796407602533,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -36289,7 +36797,8 @@
               "rallied": false
             },
             "broke_time": 28.64495978018495,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_line",
@@ -36321,7 +36830,8 @@
               "rallied": false
             },
             "broke_time": 69.91925571116865,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_big",
@@ -36353,7 +36863,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_bat",
@@ -36386,6 +36897,7 @@
             },
             "broke_time": 2.0,
             "meta": {},
+            "org": {},
             "guns": 0
           }
         ],
@@ -36934,7 +37446,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -36942,7 +37460,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -37271,7 +37789,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -37303,7 +37822,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_line",
@@ -37335,7 +37855,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_big",
@@ -37367,7 +37888,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_bat",
@@ -37400,13 +37922,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -37492,7 +38021,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -37821,7 +38350,8 @@
               "rallied": true
             },
             "broke_time": 153.8890665166091,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -37853,7 +38383,8 @@
               "rallied": true
             },
             "broke_time": 121.74768486859068,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_line",
@@ -37885,7 +38416,8 @@
               "rallied": false
             },
             "broke_time": 70.31211302809653,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_big",
@@ -37917,7 +38449,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_bat",
@@ -37950,6 +38483,7 @@
             },
             "broke_time": 2.0,
             "meta": {},
+            "org": {},
             "guns": 0
           }
         ],
@@ -38510,7 +39044,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -38518,7 +39058,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -38854,7 +39394,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_rifle",
@@ -38893,7 +39434,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_cav",
@@ -38932,7 +39474,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_line",
@@ -38971,7 +39514,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_bat",
@@ -39011,6 +39555,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -39050,7 +39595,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -39163,6 +39709,12 @@
             "preset": "fixture",
             "seed": 1863
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       },
       "rounds": [
@@ -39244,7 +39796,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -39580,7 +40132,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_rifle",
@@ -39619,7 +40172,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_cav",
@@ -39658,7 +40212,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_line",
@@ -39697,7 +40252,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_bat",
@@ -39737,6 +40293,7 @@
             },
             "broke_time": 2.0203050891044216,
             "meta": {},
+            "org": {},
             "guns": 0
           },
           {
@@ -39776,7 +40333,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [
@@ -40350,6 +40908,12 @@
             "preset": "fixture",
             "seed": 1863
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       }
     },
@@ -40358,7 +40922,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -40694,7 +41258,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_rifle",
@@ -40733,7 +41298,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_cav",
@@ -40772,7 +41338,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_line",
@@ -40811,7 +41378,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_bat",
@@ -40851,6 +41419,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -40890,7 +41459,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -41003,6 +41573,12 @@
             "preset": "fixture",
             "seed": 1863
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       },
       "rounds": [
@@ -41084,7 +41660,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -41420,7 +41996,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_rifle",
@@ -41459,7 +42036,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_cav",
@@ -41498,7 +42076,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_line",
@@ -41537,7 +42116,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_bat",
@@ -41577,6 +42157,7 @@
             },
             "broke_time": 2.0203050891044216,
             "meta": {},
+            "org": {},
             "guns": 0
           },
           {
@@ -41616,7 +42197,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [
@@ -42190,6 +42772,12 @@
             "preset": "fixture",
             "seed": 1863
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       }
     },
@@ -42198,7 +42786,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -42534,7 +43122,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_rifle",
@@ -42573,7 +43162,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_cav",
@@ -42612,7 +43202,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_line",
@@ -42651,7 +43242,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_bat",
@@ -42691,6 +43283,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -42730,7 +43323,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -42843,6 +43437,12 @@
             "preset": "fixture",
             "seed": 1863
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       },
       "rounds": [
@@ -42924,7 +43524,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -43260,7 +43860,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_rifle",
@@ -43299,7 +43900,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "p_cav",
@@ -43338,7 +43940,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_line",
@@ -43377,7 +43980,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "q_bat",
@@ -43417,6 +44021,7 @@
             },
             "broke_time": 2.0203050891044216,
             "meta": {},
+            "org": {},
             "guns": 0
           },
           {
@@ -43456,7 +44061,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [
@@ -44030,6 +44636,12 @@
             "preset": "fixture",
             "seed": 1863
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       }
     },
@@ -44038,7 +44650,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -44374,7 +44986,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_cav",
@@ -44413,7 +45026,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_back",
@@ -44452,7 +45066,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_line",
@@ -44491,7 +45106,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_bat",
@@ -44531,13 +45147,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -44597,7 +45220,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -44933,7 +45556,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_cav",
@@ -44972,7 +45596,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_back",
@@ -45011,7 +45636,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_line",
@@ -45050,7 +45676,8 @@
               "rallied": false
             },
             "broke_time": 50.07531394072685,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_bat",
@@ -45090,6 +45717,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -45518,7 +46146,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -45526,7 +46160,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -45862,7 +46496,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_cav",
@@ -45901,7 +46536,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_back",
@@ -45940,7 +46576,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_line",
@@ -45979,7 +46616,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_bat",
@@ -46019,13 +46657,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -46081,7 +46726,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -46417,7 +47062,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_cav",
@@ -46456,7 +47102,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_back",
@@ -46495,7 +47142,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_line",
@@ -46534,7 +47182,8 @@
               "rallied": false
             },
             "broke_time": 2.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_bat",
@@ -46574,6 +47223,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -47008,7 +47658,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -47016,7 +47672,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -47352,7 +48008,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_cav",
@@ -47391,7 +48048,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_back",
@@ -47430,7 +48088,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_line",
@@ -47469,7 +48128,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_bat",
@@ -47509,13 +48169,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -47575,7 +48242,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -47911,7 +48578,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_cav",
@@ -47950,7 +48618,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "f_back",
@@ -47989,7 +48658,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_line",
@@ -48028,7 +48698,8 @@
               "rallied": false
             },
             "broke_time": 42.28511905293412,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "g_bat",
@@ -48068,6 +48739,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -48496,7 +49168,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -48504,7 +49182,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -48840,7 +49518,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -48879,7 +49558,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_far",
@@ -48918,7 +49598,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_rifle",
@@ -48957,7 +49638,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_hussar",
@@ -48996,7 +49678,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_line",
@@ -49035,13 +49718,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -49101,7 +49791,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -49437,7 +50127,8 @@
               "rallied": false
             },
             "broke_time": 7.8153545202562436,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -49476,7 +50167,8 @@
               "rallied": false
             },
             "broke_time": 26.517131283308647,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_far",
@@ -49515,7 +50207,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_rifle",
@@ -49554,7 +50247,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_hussar",
@@ -49593,7 +50287,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_line",
@@ -49632,7 +50327,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -50118,7 +50814,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -50126,7 +50828,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -50462,7 +51164,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -50501,7 +51204,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_far",
@@ -50540,7 +51244,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_rifle",
@@ -50579,7 +51284,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_hussar",
@@ -50618,7 +51324,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_line",
@@ -50657,13 +51364,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -50723,7 +51437,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -51059,7 +51773,8 @@
               "rallied": false
             },
             "broke_time": 17.517333955852486,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -51098,7 +51813,8 @@
               "rallied": false
             },
             "broke_time": 18.830274125822797,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_far",
@@ -51137,7 +51853,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_rifle",
@@ -51176,7 +51893,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_hussar",
@@ -51215,7 +51933,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_line",
@@ -51254,7 +51973,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -51740,7 +52460,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -51748,7 +52474,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -52084,7 +52810,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -52123,7 +52850,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_far",
@@ -52162,7 +52890,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_rifle",
@@ -52201,7 +52930,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_hussar",
@@ -52240,7 +52970,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_line",
@@ -52279,13 +53010,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -52345,7 +53083,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -52681,7 +53419,8 @@
               "rallied": false
             },
             "broke_time": 11.530204107317545,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_cav",
@@ -52720,7 +53459,8 @@
               "rallied": false
             },
             "broke_time": 16.259296653560455,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "r_far",
@@ -52759,7 +53499,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_rifle",
@@ -52798,7 +53539,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_hussar",
@@ -52837,7 +53579,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "b_line",
@@ -52876,7 +53619,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -53362,7 +54106,13 @@
             "standing": 1
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -53370,7 +54120,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -53699,7 +54449,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -53731,7 +54482,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "slow",
@@ -53763,7 +54515,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "weak",
@@ -53795,7 +54548,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "other",
@@ -53827,13 +54581,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -53881,7 +54642,7 @@
       "field_held_by": 1,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -54210,7 +54971,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -54242,7 +55004,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "slow",
@@ -54274,7 +55037,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "weak",
@@ -54306,7 +55070,8 @@
               "rallied": false
             },
             "broke_time": 1.3419130564087025,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "other",
@@ -54338,7 +55103,8 @@
               "rallied": false
             },
             "broke_time": 16.584721329045266,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -54673,7 +55439,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -54681,7 +55453,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -55010,7 +55782,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -55042,7 +55815,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "slow",
@@ -55074,7 +55848,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "weak",
@@ -55106,7 +55881,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "other",
@@ -55138,13 +55914,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -55192,7 +55975,7 @@
       "field_held_by": 1,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -55521,7 +56304,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -55553,7 +56337,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "slow",
@@ -55585,7 +56370,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "weak",
@@ -55617,7 +56403,8 @@
               "rallied": false
             },
             "broke_time": 0.9281274138881584,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "other",
@@ -55649,7 +56436,8 @@
               "rallied": false
             },
             "broke_time": 18.68582013768448,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -55984,7 +56772,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -55992,7 +56786,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -56321,7 +57115,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -56353,7 +57148,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "slow",
@@ -56385,7 +57181,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "weak",
@@ -56417,7 +57214,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "other",
@@ -56449,13 +57247,20 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -56507,7 +57312,7 @@
       "field_held_by": 1,
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -56836,7 +57641,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "s2",
@@ -56868,7 +57674,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "slow",
@@ -56900,7 +57707,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "weak",
@@ -56932,7 +57740,8 @@
               "rallied": false
             },
             "broke_time": 0.9423571157295504,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "other",
@@ -56964,7 +57773,8 @@
               "rallied": false
             },
             "broke_time": 23.429174098337317,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -57315,7 +58125,13 @@
             "standing": 0
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     },
     {
@@ -57323,7 +58139,7 @@
       "seed": 1,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -57659,7 +58475,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_south",
@@ -57698,7 +58515,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_gun",
@@ -57738,6 +58556,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -57777,7 +58596,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_edge",
@@ -57816,7 +58636,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_deep",
@@ -57855,7 +58676,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_ridge",
@@ -57894,7 +58716,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_slope",
@@ -57933,7 +58756,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_low",
@@ -57972,7 +58796,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -59788,6 +60613,12 @@
           "meta": {
             "preset": "sight fixture"
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       },
       "rounds": [
@@ -59863,7 +60694,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 1,
         "rng_state": [
@@ -60199,7 +61030,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_south",
@@ -60238,7 +61070,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_gun",
@@ -60278,6 +61111,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -60317,7 +61151,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_edge",
@@ -60356,7 +61191,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_deep",
@@ -60395,7 +61231,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_ridge",
@@ -60434,7 +61271,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_slope",
@@ -60473,7 +61311,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_low",
@@ -60512,7 +61351,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -62945,6 +63785,12 @@
           "meta": {
             "preset": "sight fixture"
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       }
     },
@@ -62953,7 +63799,7 @@
       "seed": 2,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -63289,7 +64135,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_south",
@@ -63328,7 +64175,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_gun",
@@ -63368,6 +64216,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -63407,7 +64256,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_edge",
@@ -63446,7 +64296,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_deep",
@@ -63485,7 +64336,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_ridge",
@@ -63524,7 +64376,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_slope",
@@ -63563,7 +64416,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_low",
@@ -63602,7 +64456,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -65418,6 +66273,12 @@
           "meta": {
             "preset": "sight fixture"
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       },
       "rounds": [
@@ -65493,7 +66354,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 2,
         "rng_state": [
@@ -65829,7 +66690,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_south",
@@ -65868,7 +66730,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_gun",
@@ -65908,6 +66771,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -65947,7 +66811,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_edge",
@@ -65986,7 +66851,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_deep",
@@ -66025,7 +66891,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_ridge",
@@ -66064,7 +66931,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_slope",
@@ -66103,7 +66971,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_low",
@@ -66142,7 +67011,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -68575,6 +69445,12 @@
           "meta": {
             "preset": "sight fixture"
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       }
     },
@@ -68583,7 +69459,7 @@
       "seed": 3,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -68919,7 +69795,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_south",
@@ -68958,7 +69835,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_gun",
@@ -68998,6 +69876,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -69037,7 +69916,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_edge",
@@ -69076,7 +69956,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_deep",
@@ -69115,7 +69996,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_ridge",
@@ -69154,7 +70036,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_slope",
@@ -69193,7 +70076,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_low",
@@ -69232,7 +70116,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -71048,6 +71933,12 @@
           "meta": {
             "preset": "sight fixture"
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       },
       "rounds": [
@@ -71123,7 +72014,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {},
         "seed": 3,
         "rng_state": [
@@ -71459,7 +72350,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_south",
@@ -71498,7 +72390,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_gun",
@@ -71538,6 +72431,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -71577,7 +72471,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_edge",
@@ -71616,7 +72511,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_deep",
@@ -71655,7 +72551,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_ridge",
@@ -71694,7 +72591,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "w_slope",
@@ -71733,7 +72631,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "e_low",
@@ -71772,7 +72671,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           }
         ],
         "contacts": [],
@@ -74205,6 +75105,12 @@
           "meta": {
             "preset": "sight fixture"
           }
+        },
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
         }
       }
     },
@@ -74213,7 +75119,7 @@
       "seed": 7,
       "start": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -74550,7 +75456,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -74582,7 +75489,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -74615,6 +75523,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           },
           {
@@ -74647,7 +75556,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -74679,7 +75589,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -74711,7 +75622,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -74744,13 +75656,20 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
         "contacts": [],
         "history": [],
         "result": null,
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       },
       "rounds": [
         {
@@ -74860,7 +75779,7 @@
       "field_held_by": "auto",
       "final": {
         "format": "imperial-generals-battle",
-        "version": 2,
+        "version": 3,
         "meta": {
           "name": "Example Ridge",
           "date": "1863-07-02",
@@ -75197,7 +76116,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_15ma",
@@ -75229,7 +76149,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "us_bat",
@@ -75262,6 +76183,7 @@
             },
             "broke_time": 97.33893142949832,
             "meta": {},
+            "org": {},
             "guns": 7
           },
           {
@@ -75294,7 +76216,8 @@
               "rallied": false
             },
             "broke_time": 125.0,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_10al",
@@ -75326,7 +76249,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_11al",
@@ -75358,7 +76282,8 @@
               "rallied": false
             },
             "broke_time": null,
-            "meta": {}
+            "meta": {},
+            "org": {}
           },
           {
             "id": "cs_bat",
@@ -75391,6 +76316,7 @@
             },
             "broke_time": null,
             "meta": {},
+            "org": {},
             "guns": 8
           }
         ],
@@ -79404,7 +80330,13 @@
             "standing": null
           }
         },
-        "terrain": null
+        "terrain": null,
+        "plan": {
+          "rounds_planned": null,
+          "start_clock": null,
+          "phase": "battle",
+          "zones": {}
+        }
       }
     }
   ]

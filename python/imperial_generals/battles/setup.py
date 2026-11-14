@@ -12,6 +12,8 @@ with where it is ("Unit 3 (cs_cav): ...").
       Confederate: {fire: -0.1, note: poor supply}   # side 0, 1 or a name; fire / melee / morale fractions
     params: {combat: {ranged_kill_rate: 0.005}}    # optional overrides on the defaults
     terrain: {cell: 20, columns: 100, ...}         # optional, the ground as the client saves it (battles.terrain)
+    plan: {rounds_planned: 4, start_clock: '13:00', phase: deployment, zones: {0: {x: 0, y: 800, w: 2000, h: 400}}}
+                                                   # optional: the admin's plan (Battle.validate_plan)
     units:
       - id: us_1mn                                 # id and name default to each other
         name: 1st Minnesota
@@ -22,6 +24,7 @@ with where it is ("Unit 3 (cs_cav): ...").
         stats: 6/6/1/0                             # experience/morale/weapon/melee-only
         front_size: 450                            # optional
         meta: {player: p1}                         # optional, free-form
+        org: {corps: II, division: Gibbon, brigade: Harrow}   # optional names, for organising lists only
         position: {x: 400, y: 900, facing: 0}      # optional, yards on open ground; facing in compass degrees
 
 A scenario is a setup plus a script of ``rounds`` (and optionally ``finish``); see ``imperial_generals.api``.
@@ -35,7 +38,7 @@ from pathlib import Path
 
 import yaml
 
-from imperial_generals.battles.battle import Battle, validate_side_modifiers
+from imperial_generals.battles.battle import Battle, validate_org, validate_plan, validate_side_modifiers
 from imperial_generals.battles.terrain import Terrain
 from imperial_generals.params import BattleParams
 from imperial_generals.units import ArtilleryBattery, CavalryRegiment, InfantryRegiment, Regiment
@@ -43,9 +46,10 @@ from imperial_generals.units.Regiment import _parse_stats
 from imperial_generals.utils import Position, Rng
 from imperial_generals.utils.unit_types import UNIT_SUBTYPES
 
-TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'rounds', 'seed', 'side_modifiers', 'sides', 'terrain',
-            'units')
-UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'position', 'side', 'size', 'stats', 'subtype', 'type')
+TOP_KEYS = ('expect', 'feedback', 'finish', 'meta', 'params', 'plan', 'rounds', 'seed', 'side_modifiers', 'sides',
+            'terrain', 'units')
+UNIT_KEYS = ('front_size', 'guns', 'id', 'meta', 'name', 'org', 'position', 'side', 'size', 'stats', 'subtype',
+             'type')
 POSITION_KEYS = ('facing', 'x', 'y')
 MAX_SEED = 2 ** 32 - 1
 
@@ -256,10 +260,16 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
             options = f'0, 1 or a name from "sides" ({", ".join(sides)})' if sides else '0 or 1'
             problems.append(f"side must be {options}; got {unit['side']!r}.")
         regiment = _build_unit(unit, problems)
+        org = {}
+        try:
+            org = validate_org(unit.get('org', {}))
+        except ValueError as exc:
+            problems.append(str(exc))
         if problems:
             errors.extend(f'{where}: {p}' for p in problems)
             continue
-        units[uid] = {'side': side, 'regiment': regiment, 'name': name, 'meta': dict(unit.get('meta', {}))}
+        units[uid] = {'side': side, 'regiment': regiment, 'name': name, 'meta': dict(unit.get('meta', {})),
+                      'org': org}
 
     params = BattleParams()
     if isinstance(data.get('params', {}), dict):
@@ -281,6 +291,12 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
         except ValueError as exc:
             errors.append(str(exc) if str(exc).startswith('"terrain"') else f'terrain: {exc}')
 
+    plan = None
+    try:
+        plan = validate_plan(data.get('plan'))
+    except ValueError as exc:
+        errors.append(f'plan: {exc}')
+
     if not errors:
         for side in (0, 1):
             if not any(u['side'] == side for u in units.values()):
@@ -295,7 +311,8 @@ def battle_from_setup(data, seed: int | None = None, overrides: dict | None = No
     meta = dict(data.get('meta', {}))
     if sides is not None:
         meta['sides'] = list(sides)
-    return Battle(units, rng=Rng(seed), params=params, meta=meta, side_modifiers=side_modifiers, terrain=terrain)
+    return Battle(units, rng=Rng(seed), params=params, meta=meta, side_modifiers=side_modifiers, terrain=terrain,
+                  plan=plan)
 
 
 def side_modifiers_by_number(mods, sides: list | None) -> dict:

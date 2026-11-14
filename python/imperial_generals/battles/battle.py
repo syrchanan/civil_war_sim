@@ -201,6 +201,96 @@ def validate_side_modifiers(modifiers) -> dict:
     return dict(sorted(checked.items()))
 
 
+ORG_KEYS = ('corps', 'division', 'brigade')
+PHASES = ('deployment', 'battle')
+PLAN_KEYS = ('rounds_planned', 'start_clock', 'phase', 'zones')
+ZONE_KEYS = ('x', 'y', 'w', 'h')
+
+
+def validate_org(org) -> dict:
+    """
+    Check a unit's place in its army, ``{'corps', 'division', 'brigade'}``: each optional text. They are names for
+    organising lists only; the engine never uses them. Empty names are left out.
+
+    Raises
+    ------
+    ValueError
+        Naming what is wrong.
+    """
+    if not isinstance(org, dict):
+        raise ValueError(f"org must be a mapping of corps, division and brigade to names, got {type(org).__name__}.")
+    unknown = sorted(k for k in org if k not in ORG_KEYS)
+    if unknown:
+        raise ValueError(f"Unknown org key(s) {unknown}; use corps, division, brigade.")
+    out = {}
+    for key in ORG_KEYS:
+        value = org.get(key)
+        if value is None or value == '':
+            continue
+        if not isinstance(value, str):
+            raise ValueError(f"org {key} must be text, got {value!r}.")
+        out[key] = value
+    return out
+
+
+def _is_clock(value) -> bool:
+    return (isinstance(value, str) and len(value) == 5 and value[2] == ':' and value[:2].isdigit()
+            and value[3:].isdigit() and int(value[:2]) < 24 and int(value[3:]) < 60)
+
+
+def _check_zone(side: int, zone) -> dict:
+    if not isinstance(zone, dict) or sorted(zone) != sorted(ZONE_KEYS):
+        raise ValueError(f"side {side}'s deployment zone must be {{x, y, w, h}} in yards.")
+    for key in ZONE_KEYS:
+        value = zone[key]
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+            raise ValueError(f"side {side}'s deployment zone {key} must be a number of yards, got {value!r}.")
+    if not (zone['w'] > 0 and zone['h'] > 0):
+        raise ValueError(f"side {side}'s deployment zone needs a width and a height above 0.")
+    return {key: zone[key] for key in ZONE_KEYS}
+
+
+def validate_plan(plan) -> dict:
+    """
+    Check a battle's plan, set by the admin and never part of the combat: ``rounds_planned`` (a whole number, 1 or
+    more; None: open-ended), ``start_clock`` (the time the first round begins, 'HH:MM'; None: not given),
+    ``phase`` ('deployment' while the sides place their units; else 'battle') and
+    ``zones`` (``{side: {x, y, w, h}}`` in yards, where each side may deploy; a side left out may deploy anywhere).
+    Returns it complete, zones keyed 0 / 1.
+
+    Raises
+    ------
+    ValueError
+        Naming what is wrong.
+    """
+    if plan is None:
+        plan = {}
+    if not isinstance(plan, dict):
+        raise ValueError(f"The plan must be a mapping, got {type(plan).__name__}.")
+    unknown = sorted(k for k in plan if k not in PLAN_KEYS)
+    if unknown:
+        raise ValueError(f"Unknown plan key(s) {unknown}; use {', '.join(PLAN_KEYS)}.")
+    rounds = plan.get('rounds_planned')
+    if rounds is not None and (isinstance(rounds, bool) or not isinstance(rounds, int) or rounds < 1):
+        raise ValueError(f"rounds_planned must be a whole number, 1 or more, or left out; got {rounds!r}.")
+    clock = plan.get('start_clock')
+    if clock is not None and not _is_clock(clock):
+        raise ValueError(f"start_clock must be a time 'HH:MM' (24-hour clock), got {clock!r}.")
+    phase = plan.get('phase', 'battle')
+    if phase not in PHASES:
+        raise ValueError(f"phase must be 'deployment' or 'battle', got {phase!r}.")
+    zones = plan.get('zones') or {}
+    if not isinstance(zones, dict):
+        raise ValueError(f"zones must be a mapping of side to {{x, y, w, h}}, got {type(zones).__name__}.")
+    checked = {}
+    for key, zone in zones.items():
+        side = {0: 0, 1: 1, '0': 0, '1': 1}.get(key) if not isinstance(key, bool) else None
+        if side is None:
+            raise ValueError(f"A deployment zone's side must be 0 or 1, got {key!r}.")
+        checked[side] = _check_zone(side, zone)
+    return {'rounds_planned': rounds, 'start_clock': clock, 'phase': phase, 'zones': dict(sorted(checked.items()))}
+
+
 def _check_modifier(label: str, mod) -> dict:
     """One set of modifiers (fire, melee, morale as fractions from -1 to 1, and a note), made complete."""
     if not isinstance(mod, dict):
@@ -299,6 +389,7 @@ class BattleUnit:
     melee_rating: float = 0.0
     name: str = ''
     meta: dict = field(default_factory=dict)     # free-form, round-tripped untouched (player, army ids, ...)
+    org: dict = field(default_factory=dict)      # corps / division / brigade names, for organising lists only
     initial_stats: tuple = ()
     losses: int = 0
     inflicted: int = 0
@@ -329,9 +420,9 @@ class Battle:
     Parameters
     ----------
     units : dict[str, tuple | dict]
-        Unit id -> ``(side, regiment)`` or ``{'side', 'regiment', 'name'?, 'meta'?}``. Side is 0 or 1; name
-        defaults to the id; meta is free-form and round-tripped untouched. Dict order is the unit order used for
-        tie-breaking and draws.
+        Unit id -> ``(side, regiment)`` or ``{'side', 'regiment', 'name'?, 'meta'?, 'org'?}``. Side is 0 or 1;
+        name defaults to the id; meta is free-form and round-tripped untouched; org names the unit's corps,
+        division and brigade (``validate_org``). Dict order is the unit order used for tie-breaking and draws.
     rng : Rng, optional
         Seeded generator; defaults to a randomly seeded Rng.
     params : BattleParams, optional
@@ -344,10 +435,15 @@ class Battle:
         ``set_side_modifiers`` and multiply with each round's unit modifiers.
     terrain : Terrain, optional
         The ground (``battles.terrain``); None is an open field.
+    plan : dict, optional
+        The admin's plan for the battle (``validate_plan``): rounds planned, the start clock, the phase
+        (deployment or battle) and the deployment zones. Kept and saved for the web client, which runs the game
+        flow; the engine never acts on it.
     """
 
     def __init__(self, units: dict, rng: Rng | None = None, params: BattleParams | None = None,
-                 meta: dict | None = None, side_modifiers: dict | None = None, terrain=None) -> None:
+                 meta: dict | None = None, side_modifiers: dict | None = None, terrain=None,
+                 plan: dict | None = None) -> None:
         if rng is not None and not isinstance(rng, Rng):
             raise TypeError(f"rng must be an Rng instance, got {type(rng).__name__}.")
         if params is not None and not isinstance(params, BattleParams):
@@ -358,6 +454,7 @@ class Battle:
         self.meta: dict = dict(meta or {})
         self.side_modifiers: dict = validate_side_modifiers(side_modifiers or {})
         self.terrain = terrain
+        self.plan: dict = validate_plan(plan)
 
         self.units: dict[str, BattleUnit] = {}
         for index, (uid, spec) in enumerate(units.items()):
@@ -366,10 +463,11 @@ class Battle:
                     raise ValueError(f"{uid!r} needs 'side' and 'regiment'.")
                 side, regiment = spec['side'], spec['regiment']
                 name, unit_meta = spec.get('name', uid), dict(spec.get('meta', {}))
+                org = validate_org(spec.get('org', {}))
             else:
                 if len(spec) != 2:
                     raise ValueError(f"{uid!r} must be (side, regiment) or a dict.")
-                (side, regiment), name, unit_meta = spec, uid, {}
+                (side, regiment), name, unit_meta, org = spec, uid, {}, {}
             if side not in (0, 1):
                 raise ValueError(f"side must be 0 or 1, got {side!r} for {uid!r}.")
             if not isinstance(regiment, Regiment):
@@ -382,7 +480,7 @@ class Battle:
             key = (getattr(regiment, 'unit_type', 'inf'), getattr(regiment, 'subtype', None))
             self.units[uid] = BattleUnit(uid, side, regiment, morale, regiment.size, index, key=key,
                                          melee_rating=self.params.matchups.melee_rating(key),
-                                         name=name, meta=unit_meta, initial_stats=regiment.stats)
+                                         name=name, meta=unit_meta, org=org, initial_stats=regiment.stats)
 
         self.time: float = 0.0
         self.round: int = 0

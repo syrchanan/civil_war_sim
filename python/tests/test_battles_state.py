@@ -68,7 +68,7 @@ def test_dict_form_unit_needs_side_and_regiment():
 def test_to_dict_is_json_and_versioned():
     data = json.loads(build().to_json())
     assert data['format'] == 'imperial-generals-battle'
-    assert data['version'] == 2
+    assert data['version'] == 3
     assert [u['id'] for u in data['units']] == ['inf', 'gun', 'cav', 'foe', 'green']   # unit order kept
     inf = data['units'][0]
     assert (inf['name'], inf['type'], inf['subtype'], inf['side']) == ('1st Minnesota', 'inf', 'line', 0)
@@ -85,7 +85,7 @@ def test_round_trip_before_any_round():
 @pytest.mark.parametrize("change", [
     {'format': 'something-else'},
     {'version': 1},
-    {'version': 3},
+    {'version': 4},
 ])
 def test_wrong_format_or_version_raises(change):
     data = build().to_dict()
@@ -182,7 +182,8 @@ def test_finished_battle_stays_finished():
         r.resolve_round(60, {})
 
 
-EXAMPLE = os.path.join(os.path.dirname(__file__), '../../test_cases/battle_state_v2.json')
+EXAMPLE = os.path.join(os.path.dirname(__file__), '../../test_cases/battle_state_v3.json')
+EXAMPLE_V2 = os.path.join(os.path.dirname(__file__), '../../test_cases/battle_state_v2.json')
 
 
 def test_reference_file_loads_and_round_trips_unchanged():
@@ -194,6 +195,20 @@ def test_reference_file_loads_and_round_trips_unchanged():
     assert b.to_dict() == data
     assert b.units['us_1mn'].name == '1st Minnesota'
     assert b.round == 1 and len(b.history) == 1
+
+
+def test_version_2_file_loads_with_no_org_and_an_open_plan():
+    # files saved before version 3 still load: units with no org, a plan with nothing set, already in battle
+    with open(EXAMPLE_V2, encoding='utf-8') as f:
+        data = json.load(f)
+    upgraded = Battle.from_dict(data).to_dict()
+    assert upgraded['version'] == 3
+    assert all(u['org'] == {} for u in upgraded['units'])
+    assert upgraded['plan'] == {'rounds_planned': None, 'start_clock': None, 'phase': 'battle', 'zones': {}}
+    for unit in upgraded['units']:
+        del unit['org']
+    del upgraded['plan']
+    assert upgraded == {**data, 'version': 3}
 
 
 def test_reference_file_resumes_deterministically():
