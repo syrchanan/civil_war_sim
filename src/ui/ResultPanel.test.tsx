@@ -10,7 +10,7 @@ afterEach(cleanup);
 const fought = () => {
   const store = createStore(1863);
   render(<App store={store} />);
-  expect(screen.getByText('Start the battle, fight its rounds, then finish it here.')).toBeTruthy();
+  expect(screen.queryByRole('tab', { name: 'Result' })).toBeNull(); // no result before the battle
   fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
   fireEvent.change(screen.getByLabelText('1st Minnesota action'), { target: { value: 'ranged' } });
   fireEvent.change(screen.getByLabelText('8th Alabama action'), { target: { value: 'ranged' } });
@@ -29,7 +29,7 @@ describe('result panel', () => {
     expect(within(summary).getByText('Exchange ratio (inflicted / taken)')).toBeTruthy();
     const units = screen.getByRole('table', { name: 'Casualties by unit' });
     expect(within(units).getAllByRole('row')).toHaveLength(1 + 7);
-    expect(screen.getByText('The battle is over.')).toBeTruthy();
+    expect(screen.queryByRole('tab', { name: 'Orders' })).toBeNull(); // the battle is over: no more orders
     expect(screen.queryByRole('table', { name: 'Orders' })).toBeNull();
   });
 

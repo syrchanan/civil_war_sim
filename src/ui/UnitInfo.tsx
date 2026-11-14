@@ -5,6 +5,7 @@
  * that round began.
  */
 
+import { unitState } from './dispatch';
 import defaults from '../engine/defaults.json';
 import { ArtilleryBattery, type Order, parseStats } from '../engine';
 import { rangeText } from './format';
@@ -82,7 +83,9 @@ export function unitInfoOf(store: Store): UnitInfoView | null {
     const n = store.mapRound.value;
     const resolve = n === null ? live.morale.resolve
       : n === 1 ? 1 : b!.history[n - 2].units[unit.uid].morale / live.morale.initialMorale;
-    const steady = foe ? 'steady' : `steady, ${Math.round(resolve * 100)}% morale left`;
+    // the same words as the dispatch: steady, shaken or wavering by the morale left
+    const standing = unitState(1, false, resolve);
+    const steady = foe ? 'steady' : `${standing}, ${Math.round(resolve * 100)}% morale left`;
     const rallied = live.rallied && !foe && n === null;
     const state = unit.wiped ? 'wiped out' : unit.broken ? 'broken' : rallied ? `rallied, ${steady}` : steady;
     rows.push(['Status', cap(state)]);

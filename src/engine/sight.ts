@@ -49,7 +49,8 @@ export interface Sighting {
  * everything, and without terrain everything is seen, as for fire (Battle.lineOfSight). Contact also reveals: an
  * enemy unit that charged or was charged by one of `side`'s units, or traded fire with one, during a round is seen
  * as that round began, whatever stood between them: where it was when it came at them. (Not where it stands now,
- * which may since have changed out of sight.)
+ * which may since have changed out of sight.) An enemy unit
+ * locked in melee with one of `side`'s units now is seen now.
  */
 export function sightings(state: StateData, side: number): Map<string, Sighting> {
   const terrain = state.terrain === null ? null : new Terrain(state.terrain);
@@ -80,6 +81,8 @@ export function sightings(state: StateData, side: number): Map<string, Sighting>
     for (const c of r.charges) meet(c.charger, c.target, r.round);
     for (const e of r.engagements) if (e.rate > 0) meet(e.attacker, e.target, r.round);
   }
+  // locked in melee with one of `side`'s units now: seen now
+  for (const [a, b] of state.contacts) meet(a, b, now);
   const result = new Map<string, Sighting>();
   for (const enemy of state.units.filter((u) => u.side !== side)) {
     const seen = new Set<number>();

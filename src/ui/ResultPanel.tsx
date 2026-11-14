@@ -51,8 +51,8 @@ function FinishControls({ store }: { store: Store }) {
 }
 
 export function ResultPanel({ store }: { store: Store }) {
-  const battle = store.battle.value;
-  if (battle === null) return <p class="note">Start the battle, fight its rounds, then finish it here.</p>;
+  // shown once the battle has begun (the Result tab exists only then)
+  const battle = store.battle.value!;
   const summary = store.summary.value;
   if (summary === null) {
     return store.mode.value === 'player' ? <p class="note">Not finished yet.</p> : <FinishControls store={store} />;

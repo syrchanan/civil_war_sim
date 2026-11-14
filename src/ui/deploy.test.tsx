@@ -109,8 +109,8 @@ describe('the deployment panel', () => {
     });
     const union = playerOf(deploying(), 0);
     render(<App store={union} />);
-    expect(screen.getByRole('tab', { name: 'Orders' }).getAttribute('aria-selected')).toBe('true');
-    const panel = within(document.getElementById('panel-orders')!);
+    expect(screen.getByRole('tab', { name: 'Deploy' }).getAttribute('aria-selected')).toBe('true');
+    const panel = within(document.getElementById('panel-deploy')!);
     const total = [...union.battle.value!.units.values()].length;
     expect(panel.getByText(`${total} of ${total} regiments inside your zone.`)).toBeTruthy();
     const uid = ownUnit(union, 0);
@@ -139,7 +139,7 @@ describe('the deployment panel', () => {
     const admin = deploying();
     const union = playerOf(admin, 0);
     render(<App store={admin} />);
-    const panel = within(document.getElementById('panel-orders')!);
+    const panel = within(document.getElementById('panel-deploy')!);
     const statuses = () => panel.getAllByRole('listitem').map((li) => li.textContent);
     expect(statuses()).toEqual(['UnionWaiting for the deployment', 'ConfederateWaiting for the deployment']);
     act(() => {

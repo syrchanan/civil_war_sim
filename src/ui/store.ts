@@ -27,6 +27,36 @@ import { clockText } from './format';
 
 export type UnitType = 'inf' | 'cav' | 'art';
 
+/** Where the battle stands: being set up, being deployed, being fought, or over. */
+export type Phase = 'setup' | 'deployment' | 'battle' | 'end';
+/** The sidebar's tabs. */
+export type Tab = 'setup' | 'deploy' | 'unit' | 'orders' | 'armies' | 'dispatches' | 'result';
+/** The tabs each phase shows, the one it opens on first. */
+export const PHASE_TABS: Record<Phase, Tab[]> = {
+  setup: ['setup', 'armies', 'unit'],
+  deployment: ['deploy', 'unit', 'armies'],
+  battle: ['unit', 'orders', 'armies', 'dispatches', 'result'],
+  end: ['result', 'dispatches', 'armies', 'unit'],
+};
+const WIDE_KEY = 'imperial-generals:sidebar-wide';
+
+/** The viewer's sidebar width choice (wide or not); false when storage is blocked or holds anything else. */
+export function loadWide(): boolean {
+  try {
+    return localStorage.getItem(WIDE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function saveWide(wide: boolean): void {
+  try {
+    localStorage.setItem(WIDE_KEY, String(wide));
+  } catch {
+    // blocked storage: the choice lasts for this page only
+  }
+}
+
 /** A unit as typed into the army builder (checked when the battle starts). */
 export interface UnitDraft {
   id: string;
@@ -592,6 +622,30 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   function selectUnit(uid: string | null): void {
     selected.value = uid;
+    if (uid !== null) setTab('unit');
+  }
+
+  const phase = computed<Phase>(() => {
+    revision.value; // the battle opens and finishes in place
+    const b = battle.value;
+    if (b === null) return 'setup';
+    if (b.finished) return 'end';
+    return b.plan.phase === 'deployment' ? 'deployment' : 'battle';
+  });
+  const tabPicked = signal<{ tab: Tab; phase: Phase } | null>(null);
+  /** The sidebar's open tab: the one picked in this phase, else the phase's first. */
+  const sidebarTab = computed<Tab>(() => {
+    const p = phase.value;
+    const picked = tabPicked.value;
+    return picked !== null && picked.phase === p && PHASE_TABS[p].includes(picked.tab) ? picked.tab : PHASE_TABS[p][0];
+  });
+  function setTab(tab: Tab): void {
+    tabPicked.value = { tab, phase: phase.value };
+  }
+  const sidebarWide = signal(loadWide());
+  function setWide(wide: boolean): void {
+    sidebarWide.value = wide;
+    saveWide(wide);
   }
 
   const MELEE_REACH = 100; // yards: how far a melee-only unit's front arc is drawn
@@ -654,7 +708,10 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
     targetChoice.value = null;
     if (uid === from) aiming.value = null;
-    else if (b.units.get(uid)!.active && !isEnemy(uid) && actionsFor(uid).length > 0) aiming.value = uid;
+    else if (b.units.get(uid)!.active && !isEnemy(uid) && actionsFor(uid).length > 0) {
+      aiming.value = uid;
+      setTab('unit');
+    }
   }
 
   /** Confirm the picked target: the aiming unit fires on or charges it. */
@@ -829,6 +886,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }));
     dispatchRound.value = b.round;
     touch();
+    setTab('dispatches');
     return null;
   }
 
@@ -916,6 +974,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (file !== null) playerSide.value = file.side;
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
     touch();
+    if (dispatchRound.value !== null) setTab('dispatches');
     return null;
   }
 
@@ -1112,7 +1171,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   return {
-    dispatchRound, dispatchOf,
+    dispatchRound, dispatchOf, phase, sidebarTab, setTab, sidebarWide, setWide,
     battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,
     review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack, outsideZone, openBattle,
     openDeployment, setupDownload,

@@ -1,6 +1,7 @@
 /**
- * Every round fought so far, latest first: its dispatch, and under it the full report (per unit losses, inflicted,
- * men left, morale and breaks; charges, target switches, modifiers, flights and rallies).
+ * Every round fought so far: its dispatch, and under it the full report (per unit losses, inflicted, men left,
+ * morale and breaks; charges, target switches, modifiers, flights and rallies). The dispatch just fought or picked
+ * on the round strip comes first, with the way on to the next orders; then the rest, latest first.
  */
 
 import type { RoundReport } from '../engine';
@@ -82,12 +83,14 @@ function Round({ store, report }: { store: Store; report: RoundReport }) {
 export function RoundsPanel({ store }: { store: Store }) {
   const history = store.history.value;
   if (history.length === 0) return <p class="note">No rounds fought yet.</p>;
+  const picked = store.dispatchRound.value;
+  const rounds = [...history].reverse().sort((a, b) => Number(b.round === picked) - Number(a.round === picked));
   return (
     <div class="rounds">
       <StrengthCharts store={store} />
-      {[...history].reverse().map((report) => (
-        <div class="dispatch-entry">
-          <DispatchCard store={store} round={report.round} />
+      {rounds.map((report) => (
+        <div class={`dispatch-entry${report.round === picked ? ' picked' : ''}`}>
+          <DispatchCard store={store} round={report.round} docked={report.round === picked} />
           <Round store={store} report={report} />
         </div>
       ))}

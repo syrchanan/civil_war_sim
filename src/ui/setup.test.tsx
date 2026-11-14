@@ -203,7 +203,7 @@ describe('store: the setup file', () => {
 });
 
 describe('the setup panel', () => {
-  const panel = () => screen.getByRole('complementary', { name: 'Setting up' });
+  const panel = () => document.getElementById('panel-setup')!;
 
   it('sets the day, the ground and the zones', () => {
     const s = createStore(1863);
@@ -269,7 +269,7 @@ describe('the setup panel', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open round 0: deployment' }));
     expect(s.battle.value!.plan.phase).toBe('deployment');
     expect(document.querySelector('.standing')!.textContent).toBe('Round 0 · deployment');
-    expect(screen.queryByRole('complementary', { name: 'Setting up' })).toBeNull();
+    expect(document.getElementById('panel-setup')).toBeNull();
   });
 
   it('saves the setup', async () => {

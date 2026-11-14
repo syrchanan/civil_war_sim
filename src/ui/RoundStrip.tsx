@@ -16,6 +16,7 @@ export function RoundStrip({ store }: { store: Store }) {
     store.cancelTargeting();
     store.mapRound.value = n;
     store.dispatchRound.value = n;
+    if (n !== null) store.setTab('dispatches');
   };
   const deploying = b.plan.phase === 'deployment';
   const planned = b.plan.rounds_planned;

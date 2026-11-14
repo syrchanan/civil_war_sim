@@ -138,13 +138,14 @@ describe('the player file', () => {
     r.charges.push({ charger: 'cs_10al', target: 'cs_8al' } as never, { charger: 'us_1mn', target: 'cs_bat' } as never);
     r.flights.push({ unit: 'cs_8al', escaped_from: [] } as never, { unit: 'cs_bat', escaped_from: ['us_1mn', 'cs_8al'] } as never);
     r.retargets.push({ unit: 'us_1mn', old_target: 'cs_8al', new_target: 'cs_bat' } as never);
-    real.contacts.push(['us_1mn', 'cs_8al'], ['us_bat', 'cs_bat'], ['us_15ma', 'cs_10al']);
+    real.contacts.push(['us_bat', 'cs_bat'], ['us_15ma', 'cs_10al']);
     const f = playerFile(real, 0).state;
     expect(f.history[0].engagements.some((e) => e.target === 'cs_8al')).toBe(false);
     expect(f.history[0].charges.map((c) => c.target)).toEqual(['cs_bat']); // not between two enemy units
     expect(f.history[0].flights).toEqual([{ unit: 'cs_bat', escaped_from: ['us_1mn'] }]);
     expect(f.history[0].retargets).toEqual([]);
-    expect(f.contacts).toEqual([['us_bat', 'cs_bat']]);  // not with a unit out of sight now
+    // locked in melee, the 10th Alabama is seen now, though it pulled back behind the ridge
+    expect(f.contacts).toEqual([['us_bat', 'cs_bat'], ['us_15ma', 'cs_10al']]);
   });
 });
 
@@ -161,6 +162,12 @@ describe('contact reveals', () => {
     const back = overTheRidge(1).battle.value!.toDict();
     back.history[0].charges.push({ charger: 'us_1mn', target: 'cs_8al' } as never);
     expect(sightings(back, 0).get('cs_8al')!.seen).toEqual(new Set([1]));
+  });
+
+  it('an enemy unit locked in melee with the side now is seen now', () => {
+    const data = overTheRidge().battle.value!.toDict();
+    data.contacts.push(['cs_8al', 'us_1mn']);
+    expect(sightings(data, 0).get('cs_8al')).toEqual({ now: true, seen: new Set([2]), last: 2 });
   });
 
   it('the player file then keeps the charge, and the dispatch tells it', () => {

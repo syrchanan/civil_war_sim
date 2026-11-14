@@ -1,7 +1,7 @@
 /**
  * A round's dispatch as a newspaper report: headline, what happened, each side's regiments, the charges and what was
- * seen of the enemy. Docked beside the field after a round (with the way on to the next orders), and listed under
- * the Dispatches tab.
+ * seen of the enemy. Listed under the Dispatches tab; the one just fought (or picked on the round strip) comes
+ * first, with the way on to the next orders.
  */
 
 import type { DispatchRow } from './dispatch';
@@ -23,6 +23,7 @@ export function DispatchCard({ store, round, docked = false }: { store: Store; r
   const close = () => {
     store.dispatchRound.value = null;
     store.mapRound.value = null;
+    store.setTab('unit');
   };
   return (
     <article class="dispatch" aria-label={`Dispatch, round ${round}`}>
