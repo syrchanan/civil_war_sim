@@ -82,8 +82,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 |---|---|---|
 | D1 | File formats v3: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones); deployment and opening the battle (web engine); player file v3; army CSV with org | ✓ (2026-11-13) |
 | D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ✓ (2026-11-14) |
-| D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ► next |
-| D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ○ |
+| D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ✓ (2026-11-14) |
+| D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ► next |
 | D5 | Round results as a dispatch | ○ |
 | D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
 | D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
@@ -127,6 +127,16 @@ TypeScript. The game flow and the web experience live in the web engine only; Py
     on Armies, battle on Orders, nightfall on Result). A tab picked stays until the phase changes. Every panel stays
     on the page, hidden by style when not chosen.
 - Phones: everything stacks. The header's buttons are still one per line; D8 tidies them.
+
+**D3, built:**
+- **Orders from the card** (`OrderCard.tsx`): under the selected unit's card while a round is being ordered, for a
+  unit the viewer commands (the admin any, a player their own). It has a segmented Fire / Charge / Hold (Hold /
+  Rally when broken; only what the unit can do), the target (broken targets marked), the range and effect (marked
+  when fire can't tell: out of range, outside the front arc or no line of sight), a battery's ammunition, and "if
+  the target breaks". The orders table under the Orders tab stays, for the whole army at once.
+- **The round strip** (`RoundStrip.tsx`) under the field: rounds fought with their clock (click to see one on the
+  map as it began), the round being ordered, the rounds still planned (dashed), nightfall.
+- **The map** takes the theme's colours and gains a compass rose.
 
 ### Phase C — Later
 | Item | Status |
