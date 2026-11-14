@@ -1,6 +1,6 @@
 /**
- * The day at a glance under the field: each round fought (click to see it on the map as it began), the round being
- * ordered now, the rounds still planned, and nightfall.
+ * The day at a glance under the field: each round fought (click to see it on the map as it began, and its dispatch
+ * in the dock), the round being ordered now, the rounds still planned, and nightfall.
  */
 
 import { clockText } from './format';
@@ -11,9 +11,11 @@ export function RoundStrip({ store }: { store: Store }) {
   const b = store.battle.value;
   if (b === null) return null;
   const replaying = store.mapRound.value;
+  // a round fought shows on the map as it began, with its dispatch in the dock; now closes the dispatch
   const show = (n: number | null) => {
     store.cancelTargeting();
     store.mapRound.value = n;
+    store.dispatchRound.value = n;
   };
   const deploying = b.plan.phase === 'deployment';
   const planned = b.plan.rounds_planned;

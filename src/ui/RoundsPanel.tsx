@@ -1,18 +1,22 @@
-/** Every round fought so far: per unit losses, inflicted, men left, morale and breaks; charges and target switches. */
+/**
+ * Every round fought so far, latest first: its dispatch, and under it the full report (per unit losses, inflicted,
+ * men left, morale and breaks; charges, target switches, modifiers, flights and rallies).
+ */
 
 import type { RoundReport } from '../engine';
+import { DispatchCard } from './DispatchCard';
 import { chargeText, flightText, modifierText, rallyText, status } from './format';
 import type { Store } from './store';
 import { StrengthCharts } from './StrengthCharts';
 
-function Round({ store, report, open }: { store: Store; report: RoundReport; open: boolean }) {
+function Round({ store, report }: { store: Store; report: RoundReport }) {
   const units = store.battle.value!.units;
   const name = (uid: string) => units.get(uid)!.name;
   // a player sees only their own units' figures (fog of war)
   const rows = Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.fogSide.value);
   return (
-    <details open={open}>
-      <summary>Round {report.round} ({report.start.toFixed(0)}–{report.end.toFixed(0)} min)</summary>
+    <details class="full-report">
+      <summary>The full report: Round {report.round} ({report.start.toFixed(0)}–{report.end.toFixed(0)} min)</summary>
       <div class="table-wrap">
         <table aria-label={`Round ${report.round}`}>
           <thead>
@@ -81,7 +85,12 @@ export function RoundsPanel({ store }: { store: Store }) {
   return (
     <div class="rounds">
       <StrengthCharts store={store} />
-      {history.map((report, i) => <Round store={store} report={report} open={i === history.length - 1} />)}
+      {[...history].reverse().map((report) => (
+        <div class="dispatch-entry">
+          <DispatchCard store={store} round={report.round} />
+          <Round store={store} report={report} />
+        </div>
+      ))}
     </div>
   );
 }

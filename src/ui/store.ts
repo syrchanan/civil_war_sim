@@ -15,6 +15,7 @@ import {
   type RoundReport, roughly, sideSummary, sightings, type SideSummary, Terrain, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
+import { type Dispatch, dispatch } from './dispatch';
 import {
   blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, FIELD, type Place, type Point, turned,
   zoneBand, type ZoneRect,
@@ -22,6 +23,7 @@ import {
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
 import { NEW_REVIEW, readSetup, type Review, SETUP_FORMAT, SETUP_VERSION, type Setup } from './setupFile';
 import { generateTerrain, TERRAIN_PRESETS } from './terrainGen';
+import { clockText } from './format';
 
 export type UnitType = 'inf' | 'cav' | 'art';
 
@@ -218,6 +220,26 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (u.side !== fogSide.value) return true;
     if (practiceSight.value !== null) return practiceSight.value.get(uid)!.seen.has(n);
     return uid in b.history[n - 1].positions || u.regiment.position === null;
+  }
+
+  const dispatchRound = signal<number | null>(null); // the round whose dispatch the dock shows
+
+  /** A round's dispatch, as the viewer sees it (a player: their side, and only what they saw of the enemy). */
+  function dispatchOf(round: number): Dispatch {
+    const b = battle.value!;
+    const reports = history.value;
+    const report = reports[round - 1];
+    return dispatch(report, round === 1 ? null : reports[round - 2], {
+      side: modeSignal.value === 'player' ? playerSide.value : null,
+      sides: sides.value,
+      unit: (uid) => {
+        const u = b.units.get(uid)!;
+        return { name: u.name, side: u.side, initialMorale: u.morale.initialMorale };
+      },
+      clock: (minutes) => clockText(b.plan.start_clock, minutes) ?? `${Math.round(minutes)} min`,
+      seenStart: (uid) => seenAt(uid, round),
+      seenEnd: (uid) => (round < reports.length ? seenAt(uid, round + 1) : seenNow(uid)),
+    });
   }
 
   const history = computed<RoundReport[]>(() => {
@@ -805,6 +827,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       const keep = o.target !== null && b.units.get(uid)!.active && b.units.get(o.target)!.size > 0;
       return [uid, keep ? o : IDLE];
     }));
+    dispatchRound.value = b.round;
     touch();
     return null;
   }
@@ -887,6 +910,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     mapRound.value = null;
     newRound();
     playerFileInfo.value = file;
+    // a new file from the admin opens on what happened in the last round
+    dispatchRound.value = b.history.length ? b.history.length : null;
     guesses.value = {};
     if (file !== null) playerSide.value = file.side;
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
@@ -1080,12 +1105,14 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   /** Back to editing the armies (the battle is dropped). */
   function reset(): void {
     battle.value = null;
+    dispatchRound.value = null;
     mapRound.value = null;
     newRound();
     touch();
   }
 
   return {
+    dispatchRound, dispatchOf,
     battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,
     review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack, outsideZone, openBattle,
     openDeployment, setupDownload,

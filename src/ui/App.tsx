@@ -9,6 +9,7 @@ import { useState } from 'preact/hooks';
 
 import { ArmyBuilder } from './ArmyBuilder';
 import { DeployPanel } from './DeployPanel';
+import { DispatchCard } from './DispatchCard';
 import { FileBar } from './FileBar';
 import { clockText } from './format';
 import { MapView } from './MapView';
@@ -98,9 +99,14 @@ export function App({ store = defaultStore }: { store?: Store }) {
         </section>
         <aside class="dock" aria-label={phase === 'setup' ? 'Setting up' : 'Selected unit'}>
           {phase === 'setup' ? <>{store.focusedUnit.value !== null && <UnitInfo store={store} />}<SetupPanel store={store} /></>
-            : store.focusedUnit.value === null
-              ? <p class="note dock-hint">Select a regiment on the map to see it here.</p>
-              : <><UnitInfo store={store} /><OrderCard store={store} /></>}
+            : <>
+              {store.dispatchRound.value !== null && (
+                <DispatchCard store={store} round={store.dispatchRound.value} docked />
+              )}
+              {store.focusedUnit.value !== null ? <><UnitInfo store={store} /><OrderCard store={store} /></>
+                : store.dispatchRound.value === null
+                && <p class="note dock-hint">Select a regiment on the map to see it here.</p>}
+            </>}
         </aside>
       </div>
       <section class="tabs-panel" aria-label="Orders, armies, dispatches and result">
