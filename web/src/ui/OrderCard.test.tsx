@@ -144,7 +144,11 @@ describe('the round strip', () => {
   });
 
   it('with no clock or plan; deploying; at nightfall', () => {
-    const s = inBattle();
+    const s = createStore(1863);
+    closeRanks(s);
+    s.startClock.value = null;
+    s.roundsPlanned.value = null;
+    s.start();
     s.resolve();
     render(<App store={s} />);
     expect([...strip().children].map((e) => e.textContent)).toEqual(['The day', 'Round 1', 'Round 2 · orders', 'Nightfall']);

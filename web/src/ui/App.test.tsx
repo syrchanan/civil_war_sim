@@ -30,7 +30,8 @@ describe('where the battle stands', () => {
     expect([phaseOf(s), standingText(s)]).toEqual(['setup', 'Setting up']);
     closeRanks(s);
     s.start();
-    expect([phaseOf(s), standingText(s)]).toEqual(['battle', 'Round 1']);
+    // the day's plan set up before the battle (the defaults: four rounds from 1 pm)
+    expect([phaseOf(s), standingText(s)]).toEqual(['battle', 'Round 1 of 4 · 1:00 pm']);
     const b = s.battle.value!;
     b.plan = { ...b.plan, rounds_planned: 3, start_clock: '13:00' };
     s.resolve();

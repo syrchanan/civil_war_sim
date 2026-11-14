@@ -1,16 +1,14 @@
 /**
- * Two side-by-side tables of units, a seed, and the button that starts the battle. Each side's army can be saved
- * as a CSV file and loaded again (see armyCsv).
+ * Two side-by-side tables of units, with each unit's corps, division and brigade. Each side's army can be saved as
+ * a CSV file and loaded again (see armyCsv). The day, the ground and starting the battle are in the setup panel.
  */
 
 import { useState } from 'preact/hooks';
 
+import { ORG_KEYS } from '../engine';
 import defaults from '../engine/defaults.json';
 import { save } from './FileBar';
 import type { Store, UnitDraft, UnitType } from './store';
-import { TERRAIN_PRESETS } from './terrainGen';
-
-const presetName = (p: string) => p[0].toUpperCase() + p.slice(1);
 
 const SUBTYPES: Record<string, string[]> = defaults.unit_subtypes;
 const TYPE_LABELS: [UnitType | '', string][] = [['inf', 'Infantry'], ['cav', 'Cavalry'], ['art', 'Artillery'],
@@ -21,9 +19,10 @@ const weaponNames = (type: UnitType | null): [number, string][] =>
   Object.entries(type === 'art' ? defaults.names.artillery_weapons : defaults.names.weapons)
     .map(([name, code]) => [code, name] as [number, string]);
 
-const toNumber = (text: string): number => (text.trim() === '' ? NaN : Number(text));
+export const toNumber = (text: string): number => (text.trim() === '' ? NaN : Number(text));
 /** What a number box shows: an emptied box holds NaN until something is typed. */
-const numberText = (n: number | null): string => (Number.isFinite(n) ? String(n) : '');
+export const numberText = (n: number | null): string => (Number.isFinite(n) ? String(n) : '');
+const ORG_LABELS = { corps: 'Corps', division: 'Division', brigade: 'Brigade' };
 
 function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
   const [xp, morale, weapon, meleeOnly] = unit.stats.split('/');
@@ -72,6 +71,14 @@ function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
             onInput={(e) => set({ guns: toNumber(e.currentTarget.value) })} />
           : '—'}
       </td>
+      {ORG_KEYS.map((key) => (
+        <td data-label={ORG_LABELS[key]}><input class="org" aria-label={label(key)} value={unit.org?.[key] ?? ''}
+          onInput={(e) => {
+            const org = { ...unit.org, [key]: e.currentTarget.value };
+            if (org[key] === '') delete org[key];
+            set({ org });
+          }} /></td>
+      ))}
       <td class="card-action"><button aria-label={`Remove ${unit.name}`} onClick={() => store.removeUnit(unit.id)}>×</button></td>
     </tr>
   );
@@ -96,7 +103,8 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
           <thead>
             <tr>
               <th>Name</th><th>Type</th><th>Subtype</th><th class="num">Men</th><th>Exp</th><th>Morale</th>
-              <th>Weapon</th><th>Melee only</th><th class="num">Guns</th><th />
+              <th>Weapon</th><th>Melee only</th><th class="num">Guns</th><th>Corps</th><th>Division</th>
+              <th>Brigade</th><th />
             </tr>
           </thead>
           <tbody>{units.map((u) => <UnitRow key={u.id} store={store} unit={u} />)}</tbody>
@@ -120,7 +128,6 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
 }
 
 export function ArmyBuilder({ store }: { store: Store }) {
-  const [problems, setProblems] = useState<string[]>([]);
   return (
     <div class="army-builder">
       <div class="sides">
@@ -128,26 +135,8 @@ export function ArmyBuilder({ store }: { store: Store }) {
         <SideTable store={store} side={1} />
       </div>
       <div class="controls">
-        <label>
-          Seed{' '}
-          <input aria-label="Seed" type="number" min="0" class="num" value={numberText(store.seed.value)}
-            onInput={(e) => { store.seed.value = toNumber(e.currentTarget.value); }} />
-        </label>
-        <button onClick={() => store.newSeed()}>New seed</button>
-        <label>
-          Ground{' '}
-          <select aria-label="Ground" value={store.terrainPreset.value}
-            onChange={(e) => { store.terrainPreset.value = e.currentTarget.value; }}>
-            <option value="none">Open field</option>
-            {TERRAIN_PRESETS.map((p) => <option value={p}>{presetName(p)}</option>)}
-          </select>
-        </label>
         <button onClick={() => store.clearUnits()}>Clear all units</button>
-        <button class="primary" onClick={() => setProblems(store.start())}>Start battle</button>
       </div>
-      {problems.length > 0 && (
-        <ul role="alert" class="problems">{problems.map((p) => <li>{p}</li>)}</ul>
-      )}
     </div>
   );
 }

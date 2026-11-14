@@ -314,6 +314,27 @@ function LayersPanel({ store }: { store: Store }) {
   );
 }
 
+/** Where each side deploys: while setting up (both) and deploying (with the fog on, only the viewer's own). */
+function ZoneLayer({ store }: { store: Store }) {
+  store.revision.value; // the battle opens in place
+  const b = store.battle.value;
+  if (b !== null && b.plan.phase !== 'deployment') return null;
+  const zones = b === null ? store.zones.value : b.plan.zones;
+  const hidden = store.fogSide.value;
+  return (
+    <g class="zones">
+      {Object.entries(zones).filter(([side]) => Number(side) !== hidden).map(([side, z]) => (
+        <g class={`zone side-${side}`}>
+          <rect x={z.x} y={z.y} width={z.w} height={z.h} />
+          <text x={z.x + 24} y={side === '0' ? z.y + z.h - 24 : z.y + 44}>
+            {store.sides.value[Number(side)]} deployment zone
+          </text>
+        </g>
+      ))}
+    </g>
+  );
+}
+
 export function MapView({ store }: { store: Store }) {
   const units = store.mapUnits.value;
   const byId = Object.fromEntries(units.map((u) => [u.uid, u]));
@@ -373,6 +394,7 @@ export function MapView({ store }: { store: Store }) {
             )}
             {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
             {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
+            <ZoneLayer store={store} />
             {/* a compass rose: north is the top of the map */}
             <g class="compass" aria-hidden="true" transform={`translate(${FIELD.width - 70} 80)`}>
               <circle r="34" />

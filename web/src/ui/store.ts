@@ -15,8 +15,12 @@ import {
   type RoundReport, roughly, sideSummary, sightings, type SideSummary, Terrain, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
-import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
+import {
+  blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, FIELD, type Place, type Point, turned,
+  zoneBand, type ZoneRect,
+} from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
+import { readSetup, SETUP_FORMAT, SETUP_VERSION, type Setup } from './setupFile';
 import { generateTerrain, TERRAIN_PRESETS } from './terrainGen';
 
 export type UnitType = 'inf' | 'cav' | 'art';
@@ -146,6 +150,15 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const playerFileInfo = signal<{ side: 0 | 1; tag: string } | null>(null);
   const guesses = signal<Record<string, { size: number; stats: string }>>({}); // player: guesses about enemy units
   const terrainPreset = signal<string>('none'); // the ground for a new battle: 'none' (an open field) or a preset
+  // the admin's plan for the day, set up before the battle
+  const battleName = signal('');
+  const startClock = signal<string | null>('13:00');
+  const roundsPlanned = signal<number | null>(4);
+  const zoneDepth = signal<[number, number]>([DEFAULT_ZONE_DEPTH, DEFAULT_ZONE_DEPTH]);
+  /** Where each side deploys: a band along its own edge of the field, as deep as the admin set. */
+  const zones = computed<Record<string, ZoneRect>>(() => ({
+    0: zoneBand(0, finite(zoneDepth.value[0])), 1: zoneBand(1, finite(zoneDepth.value[1])),
+  }));
 
   /** The ground on the map: the battle's own; before the battle, generated from the preset and the seed. */
   const terrain = computed<Terrain | null>(() => {
@@ -323,7 +336,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       ? shown.map((u) => (u.side === fogSide.value ? { ...u, men: roughly(u.men), front: roughly(u.front) } : u))
       : shown;
     const sized = seen.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
-    const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
+    const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })),
+      b === null ? zones.value : b.plan.zones);
     // fog of war: an enemy unit out of sight is left out, unless a player file shows where it was last seen
     const visible = (uid: string) => b === null || fogSide.value === null
       || (n !== null ? seenAt(uid, n) : seenNow(uid) || lastSeenRound(uid) !== null);
@@ -630,41 +644,88 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     seedSignal.value = Math.floor(random() * 2 ** 32);
   }
 
-  /** Build the battle from the drafts; returns the problems found (none: the battle has started). */
-  function start(): string[] {
+  /** What is wrong with one side's drafts: units that can't be built, or no units at all. */
+  function draftProblems(side: 0 | 1): string[] {
     const problems: string[] = [];
-    const specs: Record<string, UnitSpec> = {};
-    for (const u of units.value) {
-      if (!wholeAtLeast(u.size, 1)) {
-        problems.push(`${u.name}: men must be a whole number, 1 or more.`);
-        continue;
-      }
-      if (u.type === 'art' && !wholeAtLeast(u.guns, 0)) {
-        problems.push(`${u.name}: guns must be a whole number, 0 or more.`);
-        continue;
-      }
-      try {
-        specs[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, org: u.org ?? {} };
-      } catch (error) {
-        problems.push(`${u.name}: ${(error as Error).message}`);
+    const drafts = units.value.filter((u) => u.side === side);
+    for (const u of drafts) {
+      if (!wholeAtLeast(u.size, 1)) problems.push(`${u.name}: men must be a whole number, 1 or more.`);
+      else if (u.type === 'art' && !wholeAtLeast(u.guns, 0)) problems.push(`${u.name}: guns must be a whole number, 0 or more.`);
+      else {
+        try {
+          buildRegiment(u);
+        } catch (error) {
+          problems.push(`${u.name}: ${(error as Error).message}`);
+        }
       }
     }
-    for (const side of [0, 1] as const) {
-      if (!units.value.some((u) => u.side === side)) problems.push(`${sides.value[side]} has no units.`);
-    }
+    if (drafts.length === 0) problems.push(`${sides.value[side]} has no units.`);
+    return problems;
+  }
+
+  /** What stops the battle being built: the armies, the seed, the day's plan. */
+  function setupProblems(): string[] {
+    const problems = [...draftProblems(0), ...draftProblems(1)];
     const s = seedSignal.value;
     if (!(Number.isInteger(s) && s >= 0 && s < 2 ** 32)) {
       problems.push(`The seed must be a whole number from 0 to ${2 ** 32 - 1}.`);
     }
+    if (!(duration.value > 0)) problems.push('The round length must be more than 0 minutes.');
+    const r = roundsPlanned.value;
+    if (r !== null && !wholeAtLeast(r, 1)) problems.push('Rounds planned must be a whole number, 1 or more.');
+    for (const side of [0, 1] as const) {
+      const d = zoneDepth.value[side];
+      if (!(Number.isFinite(d) && d > 0 && d <= FIELD.height / 2)) {
+        problems.push(`${sides.value[side]}'s zone must be 1 to ${FIELD.height / 2} yards deep.`);
+      }
+    }
+    return problems;
+  }
+
+  /** Build the battle from the drafts, each unit where the map shows it, in the phase given. */
+  function build(phase: 'deployment' | 'battle'): string[] {
+    const problems = setupProblems();
     if (problems.length) return problems;
+    const specs: Record<string, UnitSpec> = {};
+    for (const u of units.value) {
+      specs[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, org: u.org ?? {} };
+    }
     for (const u of mapUnits.value) specs[u.uid].regiment.position = onOpenGround(u);
-    battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] }, {},
-      terrain.value);
+    const meta: Record<string, unknown> = { sides: [...sides.value] };
+    if (battleName.value.trim() !== '') meta.name = battleName.value.trim();
+    const plan = {
+      rounds_planned: roundsPlanned.value, start_clock: startClock.value, phase,
+      zones: phase === 'deployment' ? structuredClone(zones.value) : {},
+    };
+    battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, meta, {}, terrain.value, plan);
     mapRound.value = null;
     newRound();
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return [];
+  }
+
+  /** Build the battle and start fighting it now, each unit where the admin placed it; returns the problems. */
+  function start(): string[] {
+    return build('battle');
+  }
+
+  /**
+   * Admin: open round 0, the deployment: each unit starts drawn up in its side's zone, and the players place their
+   * own. Returns the problems (none: opened).
+   */
+  function openDeployment(): string[] {
+    const problems = setupProblems();
+    if (problems.length) return problems;
+    positions.value = {}; // drawn up afresh in the zones
+    return build('deployment');
+  }
+
+  /** Admin: change how deep a side's deployment zone is (yards from its own edge). */
+  function setZoneDepth(side: 0 | 1, depth: number): void {
+    const next: [number, number] = [...zoneDepth.value];
+    next[side] = depth;
+    zoneDepth.value = next;
   }
 
   /**
@@ -698,12 +759,45 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return { name: `battle-${b.seed}-${when}.json`, text: b.toJson(2) };
   }
 
-  /** Open a saved battle (from this client or the Python engine); returns what is wrong with it, or null. */
+  /** Admin: the setup file, to carry on setting up later. */
+  function setupDownload(): { name: string; text: string } {
+    const setup: Setup & { format: string; version: number } = {
+      format: SETUP_FORMAT, version: SETUP_VERSION, name: battleName.value, sides: [...sides.value],
+      seed: seedSignal.value, ground: terrainPreset.value, round_length: duration.value,
+      rounds_planned: roundsPlanned.value, start_clock: startClock.value, zone_depth: [...zoneDepth.value],
+      units: structuredClone(units.value),
+    };
+    const name = battleName.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'battle';
+    return { name: `setup-${name}.json`, text: JSON.stringify(setup, null, 2) };
+  }
+
+  /** Carry on setting up from a setup file (any battle open is dropped). */
+  function openSetup(setup: Setup): void {
+    battleName.value = setup.name;
+    sides.value = setup.sides;
+    seedSignal.value = setup.seed;
+    terrainPreset.value = setup.ground === 'none' || TERRAIN_PRESETS.includes(setup.ground) ? setup.ground : 'none';
+    duration.value = setup.round_length;
+    roundsPlanned.value = setup.rounds_planned;
+    startClock.value = setup.start_clock;
+    zoneDepth.value = setup.zone_depth;
+    units.value = setup.units;
+    positions.value = {};
+    playerFileInfo.value = null;
+    reset();
+  }
+
+  /** Open a saved battle (from this client or the Python engine), or a setup; returns what is wrong, or null. */
   function open(text: string): string | null {
     let b: Battle;
     let file: { side: 0 | 1; tag: string } | null = null;
     try {
       const data = JSON.parse(text);
+      if (data?.format === SETUP_FORMAT) {
+        if (modeSignal.value === 'player') return 'This is the admin\'s setup file; open your player file instead.';
+        openSetup(readSetup(data));
+        return null;
+      }
       if (data?.format === PLAYER_FORMAT) {
         if (modeSignal.value === 'admin') {
           return `This is the ${data.state.meta.sides[data.side]} player's file; open the full battle file instead.`;
@@ -904,6 +998,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   return {
+    battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems,
+    openDeployment, setupDownload,
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,

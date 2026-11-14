@@ -17,6 +17,7 @@ import { OrdersPanel } from './OrdersPanel';
 import { ResultPanel } from './ResultPanel';
 import { RoundStrip } from './RoundStrip';
 import { RoundsPanel } from './RoundsPanel';
+import { SetupPanel } from './SetupPanel';
 import { createStore, type Store } from './store';
 import { UnitInfo } from './UnitInfo';
 
@@ -93,10 +94,11 @@ export function App({ store = defaultStore }: { store?: Store }) {
           <MapView store={store} />
           <RoundStrip store={store} />
         </section>
-        <aside class="dock" aria-label="Selected unit">
-          {store.focusedUnit.value === null
-            ? <p class="note dock-hint">Select a regiment on the map to see it here.</p>
-            : <><UnitInfo store={store} /><OrderCard store={store} /></>}
+        <aside class="dock" aria-label={phase === 'setup' ? 'Setting up' : 'Selected unit'}>
+          {phase === 'setup' ? <>{store.focusedUnit.value !== null && <UnitInfo store={store} />}<SetupPanel store={store} /></>
+            : store.focusedUnit.value === null
+              ? <p class="note dock-hint">Select a regiment on the map to see it here.</p>
+              : <><UnitInfo store={store} /><OrderCard store={store} /></>}
         </aside>
       </div>
       <section class="tabs-panel" aria-label="Orders, armies, dispatches and result">

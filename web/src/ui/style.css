@@ -338,3 +338,31 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
 .compass circle { fill: none; stroke: var(--text); stroke-width: 2; }
 .compass .needle { fill: var(--text); }
 .compass text { fill: var(--text); font-family: var(--display); font-size: 22px; }
+
+/* --- setting up: the admin's setup panel in the dock, the deployment zones on the map --- */
+.setup-panel { display: flex; flex-direction: column; gap: 12px; }
+.setup-card { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.setup-card h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.25rem; }
+.setup-card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.setup-card label.inline { flex-direction: row; align-items: center; gap: 6px; }
+.setup-card input:not([type=checkbox]), .setup-card select { min-height: 40px; font-size: 15px; color: var(--text); }
+.setup-card .pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: end; }
+.setup-card .pair input.num { width: 100%; }
+.setup-card .note { margin: 0; }
+.stepper-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--muted); }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); }
+.stepper button { border: 0; min-width: 40px; min-height: 40px; background: transparent; }
+.stepper-value { min-width: 3em; text-align: center; font-weight: 600; color: var(--text); }
+.army-status { list-style: none; margin: 0; padding: 0; }
+.army-status li { display: flex; flex-direction: column; padding: 8px 0 8px 10px; border-left: 3px solid var(--side-0); }
+.army-status li.side-1 { border-left-color: var(--side-1); }
+.army-status li + li { margin-top: 8px; }
+.setup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.setup-actions .primary { flex-basis: 100%; min-height: 44px; }
+.army-builder td input.org { width: 8em; }
+.zone rect { fill-opacity: 0.08; stroke-width: 3; stroke-dasharray: 16 10; pointer-events: none; }
+.zone.side-0 rect { fill: var(--side-0); stroke: var(--side-0); }
+.zone.side-1 rect { fill: var(--side-1); stroke: var(--side-1); }
+.zone text { font-family: var(--display); font-size: 30px; pointer-events: none; }
+.zone.side-0 text { fill: var(--side-0); }
+.zone.side-1 text { fill: var(--side-1); }

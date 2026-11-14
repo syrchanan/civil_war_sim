@@ -35,21 +35,44 @@ export function blockSize(type: string | null, men: number, front: number, guns:
   return { width, depth };
 }
 
+/** A side's deployment zone, in yards (as in the battle's plan). */
+export interface ZoneRect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** How far inside its zone's front edge a side's first line stands. */
+export const ZONE_INSET = 60;
+/** The default zone depth: its first line then stands where the zoneless layout puts it (300 / 900 yd). */
+export const DEFAULT_ZONE_DEPTH = 360;
+
+/** A band along a side's own edge of the field: side 0 the bottom, side 1 the top. */
+export function zoneBand(side: 0 | 1, depth: number): ZoneRect {
+  return { x: 0, y: side === 0 ? FIELD.height - depth : 0, w: FIELD.width, h: depth };
+}
+
 /**
  * Where units start: side 0 in a line across the lower part of the field, side 1 across the upper part, each
- * line centred, wrapping to a second line behind the first when it runs out of room.
+ * line centred, wrapping to a second line behind the first when it runs out of room. With a side's zone, its first
+ * line stands just inside the zone's edge towards the enemy, centred on the zone.
  */
-export function defaultLayout(units: { id: string; side: 0 | 1; width: number }[]): Record<string, Point> {
+export function defaultLayout(units: { id: string; side: 0 | 1; width: number }[],
+  zones: Partial<Record<string, ZoneRect>> = {}): Record<string, Point> {
   const layout: Record<string, Point> = {};
   for (const side of [0, 1] as const) {
-    const front = side === 0 ? FIELD.height * 0.75 : FIELD.height * 0.25;
+    const zone = zones[String(side)] ?? zoneBand(side, DEFAULT_ZONE_DEPTH);
+    const inset = Math.min(ZONE_INSET, zone.h / 2);
+    const front = side === 0 ? zone.y + inset : zone.y + zone.h - inset;
     const back = side === 0 ? LINE_GAP : -LINE_GAP;
+    const room = zone.w > 2 * MARGIN ? zone.w - 2 * MARGIN : zone.w;
     const lines: { id: string; width: number }[][] = [[]];
     let used = 0; // yards taken in the current line
     for (const u of units.filter((u) => u.side === side)) {
       const line = lines[lines.length - 1];
       const need = line.length ? used + GAP + u.width : u.width;
-      if (line.length && need > FIELD.width - 2 * MARGIN) {
+      if (line.length && need > room) {
         lines.push([u]);
         used = u.width;
       } else {
@@ -59,7 +82,7 @@ export function defaultLayout(units: { id: string; side: 0 | 1; width: number }[
     }
     lines.forEach((line, n) => {
       const total = line.reduce((s, u) => s + u.width, 0) + GAP * Math.max(0, line.length - 1);
-      let left = (FIELD.width - total) / 2;
+      let left = zone.x + (zone.w - total) / 2;
       for (const u of line) {
         layout[u.id] = { x: Math.round(left + u.width / 2), y: front + n * back }; // whole yards
         left += u.width + GAP;
