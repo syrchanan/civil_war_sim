@@ -133,17 +133,43 @@ describe('the player file', () => {
   it('records naming a unit never seen are dropped: charges, engagements, flights, target switches, contacts', () => {
     const real = overTheRidge().battle.value!.toDict();
     const r = real.history[0];
-    r.engagements.push({ attacker: 'us_1mn', target: 'cs_8al', mode: 'ranged' } as never);
-    r.charges.push({ charger: 'us_1mn', target: 'cs_8al' } as never, { charger: 'us_1mn', target: 'cs_bat' } as never);
+    // fire that couldn't tell (no rate) is no contact, so it reveals nothing
+    r.engagements.push({ attacker: 'us_1mn', target: 'cs_8al', mode: 'ranged', rate: 0 } as never);
+    r.charges.push({ charger: 'cs_10al', target: 'cs_8al' } as never, { charger: 'us_1mn', target: 'cs_bat' } as never);
     r.flights.push({ unit: 'cs_8al', escaped_from: [] } as never, { unit: 'cs_bat', escaped_from: ['us_1mn', 'cs_8al'] } as never);
     r.retargets.push({ unit: 'us_1mn', old_target: 'cs_8al', new_target: 'cs_bat' } as never);
     real.contacts.push(['us_1mn', 'cs_8al'], ['us_bat', 'cs_bat'], ['us_15ma', 'cs_10al']);
     const f = playerFile(real, 0).state;
     expect(f.history[0].engagements.some((e) => e.target === 'cs_8al')).toBe(false);
-    expect(f.history[0].charges.map((c) => c.target)).toEqual(['cs_bat']);
+    expect(f.history[0].charges.map((c) => c.target)).toEqual(['cs_bat']); // not between two enemy units
     expect(f.history[0].flights).toEqual([{ unit: 'cs_bat', escaped_from: ['us_1mn'] }]);
     expect(f.history[0].retargets).toEqual([]);
     expect(f.contacts).toEqual([['us_bat', 'cs_bat']]);  // not with a unit out of sight now
+  });
+});
+
+describe('contact reveals', () => {
+  it('an enemy unit that charged, was charged, or traded fire with the side is seen as that round began', () => {
+    const data = overTheRidge(2).battle.value!.toDict();
+    expect(sightings(data, 0).get('cs_8al')!.last).toBeNull();
+    data.history[1].charges.push({ charger: 'cs_8al', target: 'us_1mn' } as never);
+    expect(sightings(data, 0).get('cs_8al')).toEqual({ now: false, seen: new Set([2]), last: 2 });
+    const fire = overTheRidge(2).battle.value!.toDict();
+    fire.history[0].engagements.push({ attacker: 'us_bat', target: 'cs_11al', mode: 'ranged', rate: 3 } as never);
+    expect(sightings(fire, 0).get('cs_11al')!.seen).toEqual(new Set([1]));
+    // and the other side learns of the unit that came at it too
+    const back = overTheRidge(1).battle.value!.toDict();
+    back.history[0].charges.push({ charger: 'us_1mn', target: 'cs_8al' } as never);
+    expect(sightings(back, 0).get('cs_8al')!.seen).toEqual(new Set([1]));
+  });
+
+  it('the player file then keeps the charge, and the dispatch tells it', () => {
+    const real = overTheRidge().battle.value!.toDict();
+    real.history[0].charges.push({ charger: 'cs_8al', target: 'us_1mn', start: 5, resolved_at: 10, outcome: 'faltered',
+      p_home: 0.5, p_falter: 0.3, p_defender_breaks: 0.2 } as never);
+    const f = playerFile(real, 0).state;
+    expect(f.history[0].charges.map((c) => c.charger)).toEqual(['cs_8al']);
+    expect(f.units.some((u) => u.id === 'cs_8al')).toBe(true);
   });
 });
 

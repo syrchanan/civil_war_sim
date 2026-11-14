@@ -124,6 +124,17 @@ describe('the deployment panel', () => {
     await waitFor(() => expect(saved).toEqual(['deployment-1863-Union.json']));
   });
 
+  it('the day strip counts round 1 still to come, and the map says to place regiments in the zone', () => {
+    const admin = deploying();
+    render(<App store={admin} />);
+    const strip = screen.getByRole('navigation', { name: 'The day' });
+    expect([...strip.children].map((e) => e.textContent)).toEqual(
+      ['The day', 'Round 0 · deployment', 'Round 1', 'Round 2', 'Round 3', 'Round 4', 'Nightfall']);
+    const hint = document.querySelector('.map > .note')!.textContent!;
+    expect(hint).toMatch(/^Round 0: place each regiment inside its side's deployment zone\. /);
+    expect(hint).not.toMatch(/give it a target/);
+  });
+
   it('the admin sees whose deployment is in, and opens round 1', () => {
     const admin = deploying();
     const union = playerOf(admin, 0);

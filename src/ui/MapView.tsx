@@ -419,7 +419,10 @@ export function MapView({ store }: { store: Store }) {
       </div>
       <p class="note">
         {aiming !== null ? `Pick a target for ${byId[aiming].name}: click an enemy (Escape to stop). ` : ''}
-        {selectable && aiming === null ? 'Click a unit, then an enemy, to give it a target. ' : ''}
+        {selectable && aiming === null && battle.plan.phase !== 'deployment'
+          ? 'Click a unit, then an enemy, to give it a target. ' : ''}
+        {battle !== null && battle.plan.phase === 'deployment' && replaying === null
+          ? 'Round 0: place each regiment inside its side\'s deployment zone. ' : ''}
         {replaying !== null
           ? `Round ${replaying} as it began: where units stood, their men and the orders given. Pick Now to move units. `
           : ''}

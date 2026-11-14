@@ -78,8 +78,13 @@ export function unitInfoOf(store: Store): UnitInfoView | null {
   }
 
   if (live !== undefined) {
-    const steady = foe ? 'steady' : `steady, ${Math.round(live.morale.resolve * 100)}% morale left`;
-    const state = unit.wiped ? 'wiped out' : unit.broken ? 'broken' : live.rallied && !foe ? `rallied, ${steady}` : steady;
+    // replaying a round: morale as it began (after the round before), not as it is now
+    const n = store.mapRound.value;
+    const resolve = n === null ? live.morale.resolve
+      : n === 1 ? 1 : b!.history[n - 2].units[unit.uid].morale / live.morale.initialMorale;
+    const steady = foe ? 'steady' : `steady, ${Math.round(resolve * 100)}% morale left`;
+    const rallied = live.rallied && !foe && n === null;
+    const state = unit.wiped ? 'wiped out' : unit.broken ? 'broken' : rallied ? `rallied, ${steady}` : steady;
     rows.push(['Status', cap(state)]);
   }
 

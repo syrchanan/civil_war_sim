@@ -80,6 +80,30 @@ describe('the dispatch in the dock', () => {
   });
 });
 
+describe('the unit card while replaying', () => {
+  it('gives morale as the round began, not as it is now', () => {
+    const s = fought();
+    s.setOrder('cs_8al', { mode: 'melee', target: 'us_1mn' });
+    s.resolve();
+    const b = s.battle.value!;
+    const al = b.units.get('cs_8al')!;
+    render(<App store={s} />);
+    const status = () => [...document.querySelectorAll('.dock .unit-info dd')].map((d) => d.textContent)
+      .find((t) => /morale left|^Broken|^Wiped/.test(t!));
+    act(() => s.selectUnit('cs_8al'));
+    act(() => {
+      s.mapRound.value = 1;
+    });
+    expect(status()).toBe('Steady, 100% morale left');
+    act(() => {
+      s.mapRound.value = 2;
+    });
+    const began = b.history[0].units.cs_8al;
+    expect(status()).toBe(began.broken ? 'Broken'
+      : `Steady, ${Math.round((began.morale / al.morale.initialMorale) * 100)}% morale left`);
+  });
+});
+
 describe('a player\'s dispatch', () => {
   it('opening the new player file shows what happened: their own regiments and what was seen of the enemy', () => {
     const admin = fought();

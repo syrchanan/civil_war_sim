@@ -94,7 +94,11 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
     const file = input.files![0];
     input.value = '';
     if (!file) return;
-    setProblems(store.loadArmy(side, await file.text(), file.name).map((p) => `${file.name}: ${p}`));
+    const before = store.units.value;
+    const problems = store.loadArmy(side, await file.text(), file.name);
+    // once a file loads, the admin's review lists the lines left out; the alert is for a file that loaded nothing
+    const reviewed = store.mode.value === 'admin' && store.units.value !== before;
+    setProblems(reviewed ? [] : problems.map((p) => `${file.name}: ${p}`));
   };
   return (
     <div class={`side side-${side}`}>

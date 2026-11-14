@@ -128,6 +128,24 @@ describe('an army at a glance', () => {
   });
 });
 
+describe('loading a file with bad lines', () => {
+  it('the admin reads them in the review, not twice; a player gets the alert', async () => {
+    const admin = createStore(1);
+    render(<App store={admin} />);
+    const input = screen.getByLabelText('Load Union army (CSV)');
+    fireEvent.change(input, { target: { files: [new File([CSV], 'union.csv')] } });
+    await waitFor(() => expect(admin.review.value[0].file).toBe('union.csv'));
+    const side = screen.getByLabelText('Side 1 name').closest('.side') as HTMLElement;
+    expect(within(side).queryByRole('alert')).toBeNull();
+    cleanup();
+
+    const player = createStore(1, 'player');
+    render(<App store={player} />);
+    fireEvent.change(screen.getByLabelText('Load Union army (CSV)'), { target: { files: [new File([CSV], 'mine.csv')] } });
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toMatch(/^mine\.csv: Line 3: /));
+  });
+});
+
 describe('the review under each army', () => {
   const review = (name: string) => within(screen.getByRole('region', { name: `Review: ${name}` }));
 

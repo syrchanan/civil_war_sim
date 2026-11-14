@@ -46,7 +46,10 @@ export interface Sighting {
 /**
  * Which of the enemy's units `side` can see, at the start of each round fought (from the saved positions) and now.
  * A viewer is any unit of `side` not wiped out at that moment. An unplaced unit, on either side, is seen and sees
- * everything, and without terrain everything is seen, as for fire (Battle.lineOfSight).
+ * everything, and without terrain everything is seen, as for fire (Battle.lineOfSight). Contact also reveals: an
+ * enemy unit that charged or was charged by one of `side`'s units, or traded fire with one, during a round is seen
+ * as that round began, whatever stood between them: where it was when it came at them. (Not where it stands now,
+ * which may since have changed out of sight.)
  */
 export function sightings(state: StateData, side: number): Map<string, Sighting> {
   const terrain = state.terrain === null ? null : new Terrain(state.terrain);
@@ -66,6 +69,17 @@ export function sightings(state: StateData, side: number): Map<string, Sighting>
   moments.push({ n: now, at: (uid) => current.get(uid)!.position, standing: (uid) => current.get(uid)!.size > 0 });
 
   const own = state.units.filter((u) => u.side === side).map((u) => u.id);
+  const mine = new Set(own);
+  // enemy units in contact with `side` during each round: seen as it began
+  const met = new Map<string, number[]>();
+  const meet = (a: string, b: string, n: number) => {
+    const enemy = mine.has(a) && !mine.has(b) ? b : mine.has(b) && !mine.has(a) ? a : null;
+    if (enemy !== null) met.set(enemy, [...(met.get(enemy) ?? []), n]);
+  };
+  for (const r of state.history) {
+    for (const c of r.charges) meet(c.charger, c.target, r.round);
+    for (const e of r.engagements) if (e.rate > 0) meet(e.attacker, e.target, r.round);
+  }
   const result = new Map<string, Sighting>();
   for (const enemy of state.units.filter((u) => u.side !== side)) {
     const seen = new Set<number>();
@@ -78,6 +92,7 @@ export function sightings(state: StateData, side: number): Map<string, Sighting>
       });
       if (visible) seen.add(m.n);
     }
+    for (const n of met.get(enemy.id) ?? []) seen.add(n);
     result.set(enemy.id, { now: seen.has(now), seen, last: seen.size === 0 ? null : Math.max(...seen) });
   }
   return result;

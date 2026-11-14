@@ -20,7 +20,9 @@ export function RoundStrip({ store }: { store: Store }) {
   const deploying = b.plan.phase === 'deployment';
   const planned = b.plan.rounds_planned;
   const now = b.round + 1;
-  const later = b.finished || planned === null ? [] : Array.from({ length: Math.max(0, planned - now) }, (_, i) => now + 1 + i);
+  // deploying, the button is round 0 and round 1 is still to come
+  const next = deploying ? 1 : now + 1;
+  const later = b.finished || planned === null ? [] : Array.from({ length: Math.max(0, planned - next + 1) }, (_, i) => next + i);
   return (
     <nav class="round-strip" aria-label="The day">
       <span class="strip-title display">The day</span>
