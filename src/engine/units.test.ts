@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import defaults from './defaults.json';
-import fixture from '../../../test_cases/parity/units.json';
+import fixture from './fixtures/units.json';
 import { ValueError } from './errors';
 import {
   ArtilleryBattery, CavalryRegiment, closestMoraleStat, InfantryRegiment, parseStats, Regiment,

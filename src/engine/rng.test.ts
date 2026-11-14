@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/rng.json';
+import fixture from './fixtures/rng.json';
 import { ValueError } from './errors';
 import { Rng } from './rng';
 

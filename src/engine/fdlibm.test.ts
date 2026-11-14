@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/fdlibm.json';
+import fixture from './fixtures/fdlibm.json';
 import { exp, log } from './fdlibm';
 
 // rows: [x, expected] or [x, expected, note]

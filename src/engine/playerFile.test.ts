@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/battles.json';
+import fixture from './fixtures/battles.json';
 import { Battle } from './battle';
 import { ValueError } from './errors';
 import { PLAYER_FORMAT, playerFile, roughly } from './playerFile';

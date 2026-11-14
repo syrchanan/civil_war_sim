@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/morale.json';
+import fixture from './fixtures/morale.json';
 import { ValueError } from './errors';
 import { breakFraction, breakScale, MoraleState } from './morale';
 import { BattleParams, type Overrides } from './params';

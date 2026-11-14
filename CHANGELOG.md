@@ -9,8 +9,12 @@ Design decisions and status live in `docs/ROADMAP.md`.
 ### Removed
 - The Python engine, CLI and tuning tools (`python/`), its config (`config/*.yaml`), scenarios, the players'
   spreadsheet workflow and the Python-only test cases. The TypeScript engine is the only engine: its defaults are
-  edited in `web/src/engine/defaults.json`, and `test_cases/parity/` is kept as frozen golden fixtures. Git history
-  keeps everything; tools are to be rebuilt in TypeScript when needed.
+  edited in `src/engine/defaults.json`, and the parity fixtures are kept as frozen golden fixtures in
+  `src/engine/fixtures/`. Git history keeps everything; tools are to be rebuilt in TypeScript when needed.
+
+### Changed
+- The project is TypeScript only and lives at the repository root (formerly `web/`). `npm run check` runs the
+  typecheck and the tests with coverage, for CI and the pre-push hook alike; the Node version is in `.nvmrc`.
 
 ### Added
 - Range (positions pass P1): fire falls off with distance from each weapon's and ammo's close range to its maximum

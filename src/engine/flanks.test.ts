@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/params.json';
+import fixture from './fixtures/params.json';
 import { Battle, type Engagement, type OrderInput } from './battle';
 import defaults from './defaults.json';
 import { ValueError } from './errors';

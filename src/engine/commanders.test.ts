@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import battles from '../../../test_cases/parity/battles.json';
-import fixture from '../../../test_cases/parity/summaries.json';
+import battles from './fixtures/battles.json';
+import fixture from './fixtures/summaries.json';
 import { expectedShare, general, ratings, resultShares, unitPower } from './commanders';
 import defaults from './defaults.json';
 import type { StateData } from './state';

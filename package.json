@@ -1,15 +1,19 @@
 {
-  "name": "imperial-generals-web",
+  "name": "imperial-generals",
   "private": true,
   "version": "0.1.0-alpha",
   "type": "module",
-  "description": "TypeScript port of the Imperial Generals combat engine and its browser client.",
+  "description": "Imperial Generals: the combat engine and its browser client.",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "check": "tsc --noEmit && vitest run --coverage"
   },
   "devDependencies": {
     "@testing-library/preact": "3.2.4",

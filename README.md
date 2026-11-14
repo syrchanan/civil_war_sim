@@ -6,8 +6,8 @@ prisoners and who held the field. Same seed, same battle, every time.
 
 **Try it:** https://syrchanan.github.io/civil_war_sim/ (published from `main` after CI passes).
 
-- `web/`: the engine (TypeScript) and the browser client
-- `test_cases/parity/`: golden fixtures the engine must match (recorded from the former Python engine, now frozen)
+- `src/engine/`: the battle engine (TypeScript), its defaults (`defaults.json`) and golden fixtures (`fixtures/`)
+- `src/ui/`: the browser client (Preact)
 - `docs/ROADMAP.md`: goals, design decisions and status
 - `CHANGELOG.md`: what changed
 
@@ -33,17 +33,21 @@ The site opens in the **player view**; the admin uses **`?mode=admin`**
 The admin's battle file (Download battle) holds everything and resumes the battle later. Each
 round can be replayed on the map ("Show on the map").
 
-## Web
+## Development
+
+Node 22 or later (`.nvmrc`).
 
 ```
-cd web
-npm install
+npm ci
 npm run dev         # the battle client at http://localhost:5173
-npm test            # or: npm run coverage (100% required, as in CI)
+npm test            # the tests
+npm run check       # the typecheck, then the tests with 100% coverage (as CI runs it)
+npm run build       # the site, in dist/
 ```
 
-The engine's tunable defaults live in `web/src/engine/defaults.json`; edit them there. The golden fixtures are frozen:
-a change that alters battle results has to re-record them, with a TS tool to be built when the tuning work needs it.
+The engine's tunable defaults live in `src/engine/defaults.json`; edit them there. The golden fixtures in
+`src/engine/fixtures/` were recorded from the former Python engine and are frozen: a change that alters battle
+results has to re-record them, with a TS tool to be built when the tuning work needs it.
 
 ## Checks before pushing
 

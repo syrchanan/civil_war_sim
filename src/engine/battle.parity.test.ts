@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/battles.json';
+import fixture from './fixtures/battles.json';
 import { Battle, type FieldHolder, type ModifierInput, type OrderInput } from './battle';
 import type { StateData } from './state';
 import type { Position } from './units';
