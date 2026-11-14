@@ -83,8 +83,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D1 | File formats v3: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones); deployment and opening the battle (web engine); player file v3; army CSV with org | ✓ (2026-11-13) |
 | D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ✓ (2026-11-14) |
 | D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ✓ (2026-11-14) |
-| D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ► next |
-| D5 | Round results as a dispatch | ○ |
+| D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ✓ (2026-11-14) |
+| D5 | Round results as a dispatch | ► next |
 | D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
 | D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
 | D8 | Phones, cleanup, merge | ○ |
@@ -137,6 +137,38 @@ TypeScript. The game flow and the web experience live in the web engine only; Py
 - **The round strip** (`RoundStrip.tsx`) under the field: rounds fought with their clock (click to see one on the
   map as it began), the round being ordered, the rounds still planned (dashed), nightfall.
 - **The map** takes the theme's colours and gains a compass rose.
+
+**D4, built** (decided with the user: CSV in and a note out; setup saveable; zones as bands; players' own table):
+- **Setup** (`SetupPanel.tsx`, docked beside the field before the battle):
+  - the admin sets the day (battle name, first round's clock, round length, rounds planned or open-ended), the
+    ground and seed, and how deep each side's zone is: a band along its own edge (default 360 yd, which draws the
+    armies up where the zoneless layout did). The zones are drawn on the map.
+  - **Open round 0** builds the battle in deployment, with the plan and zones, each side drawn up inside its
+    own zone (`defaultLayout` takes the zones). It needs both armies approved. **Start battle** still fights at once
+    (practice, or admin-placed) and carries the day's plan and name.
+  - A player's dock explains how to send an army and keeps a practice battle.
+- **Setup file** (`setupFile.ts`, `imperial-generals-setup` v1, web only): name, sides, seed, ground, round length,
+  rounds planned, start clock, zone depths, the unit drafts (with org) and each side's review. Saved from the setup
+  panel and opened with the same button as a battle (admins only).
+- **Army review** (`ArmyReview.tsx`, under each army's table while setting up):
+  - an army CSV loads the lines it can read; the others are left out and listed (a wrong header or no readable
+    line still loads nothing);
+  - the review lists the problems (each linked to its highlighted row), shows the army at a glance against the
+    other side, and takes a note;
+  - **Send back** puts the note and the problems together, copied when the browser allows and shown either way;
+  - **Approve** only works once no problems are left (the left-out lines can be let go);
+  - any change to a side takes its approval away;
+  - the army tables gain corps, division and brigade per unit;
+  - players see their own army first and pick their side there, with the other side folded away to practise
+    against.
+- **Round 0** (`DeployPanel.tsx`, under Orders while deploying):
+  - a player sees how many regiments stand in their zone (any outside are listed and marked on the map) and
+    sends the file (Send deployment);
+  - the admin sees whose deployment is in and opens round 1 once every unit stands in its zone;
+  - a deployment is an orders file for round 0 with places and no orders; player files are named for round 0;
+  - loading checks the round and refuses orders in a deployment;
+  - nothing is aimed while deploying.
+- Not done: dragging zone edges on the map (D8); brigade-at-a-time placement and org-grouped lists (D6).
 
 ### Phase C — Later
 | Item | Status |
