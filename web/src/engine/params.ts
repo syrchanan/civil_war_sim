@@ -2,7 +2,7 @@
  * Per-battle tunable parameters (port of python/imperial_generals/params.py).
  *
  * Field names are snake_case on purpose: they are the battle state file's format, so `toDict` / `fromDict` need
- * no mapping. Defaults come from defaults.json, generated from config/*.yaml by the Python side.
+ * no mapping. Defaults come from defaults.json, edited by hand (it was generated from the former Python config).
  */
 
 import defaults from './defaults.json';

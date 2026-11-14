@@ -3,6 +3,11 @@
 > Single source of truth for goals, priorities, and design decisions.
 > Status: ✓ done · ► next · ○ backlog · ⏸ parked
 
+> **2026-11-14: the Python engine is removed.** The TypeScript engine in `web/` is the only engine; its defaults are
+> edited in `web/src/engine/defaults.json`, and `test_cases/parity/` holds golden fixtures recorded from the former
+> Python engine. Sections below that mention Python, `config/*.yaml`, scenarios or the CLI are history (git keeps the
+> code). Tuning (A13) and any tools it needs are built in TypeScript.
+
 ---
 
 ## What we're optimising for

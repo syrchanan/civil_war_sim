@@ -690,7 +690,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return null;
   }
 
-  /** The battle state file to download: everything needed to resume it, or replay it in Python. */
+  /** The battle state file to download: everything needed to resume it. */
   function download(): { name: string; text: string } {
     const b = battle.value!;
     const when = b.finished ? 'finished' : `round-${b.round}`;
