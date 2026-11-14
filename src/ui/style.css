@@ -480,3 +480,21 @@ button.link { border: 0; padding: 0; background: none; color: var(--accent); tex
 .recon table { font-size: 0.9rem; }
 .recon tr.recon-group td { background: var(--bg); font-weight: 600; }
 .recon tr.down td:last-child { color: var(--accent); }
+/* brigades and divisions outlined on the map, and the switch for them */
+.map-groups { position: absolute; top: 8px; right: 8px; z-index: 2; display: flex; }
+.map-groups button { min-height: 36px; padding: 2px 10px; background: var(--surface); border-radius: 0; }
+.map-groups button + button { border-left: 0; }
+.map-groups button.active { background: var(--text); border-color: var(--text); color: var(--surface); font-weight: 600; }
+.group rect { fill: none; stroke-width: calc(2px * var(--k, 1)); stroke-dasharray: 12 8; pointer-events: none; }
+.group.side-0 rect { stroke: var(--side-0); }
+.group.side-1 rect { stroke: var(--side-1); }
+.group.selected rect { stroke: var(--accent); stroke-width: calc(4px * var(--k, 1)); stroke-dasharray: none; }
+.group text { font-size: calc(22px * var(--k, 1)); font-weight: 600; cursor: pointer; }
+.group.side-0 text { fill: var(--side-0); }
+.group.side-1 text { fill: var(--side-1); }
+.group text:focus-visible { outline: none; text-decoration: underline; }
+.group-card { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.group-card h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.3rem; }
+.group-card .note { margin: 0; }
+.group-card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.group-card select { min-height: 40px; font-size: 15px; color: var(--text); }

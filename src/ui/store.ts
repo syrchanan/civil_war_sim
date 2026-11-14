@@ -40,6 +40,37 @@ export const PHASE_TABS: Record<Phase, Tab[]> = {
   end: ['result', 'dispatches', 'recon', 'armies', 'unit'],
 };
 const WIDE_KEY = 'imperial-generals:sidebar-wide';
+const GROUPS_KEY = 'imperial-generals:map-groups';
+
+/** What the map outlines: nothing (regiments only), brigades, or divisions. */
+export type GroupLevel = 'brigade' | 'division';
+export type MapGroups = 'regiment' | GroupLevel;
+
+/** A brigade or division of one side, named by its org path ('Gibbon's Division' / 'Harrow's Brigade'). */
+export interface GroupRef {
+  side: 0 | 1;
+  level: GroupLevel;
+  division: string;
+  brigade: string | null; // null for a division
+}
+
+/** The group a unit belongs to at a level; null if its org doesn't reach that level. */
+export function groupOf(side: 0 | 1, org: Org, level: GroupLevel): GroupRef | null {
+  if (org.division === undefined || (level === 'brigade' && org.brigade === undefined)) return null;
+  return { side, level, division: org.division, brigade: level === 'brigade' ? org.brigade! : null };
+}
+export const groupKey = (g: GroupRef): string => `${g.side}|${g.division}|${g.brigade ?? ''}`;
+export const groupName = (g: GroupRef): string => g.brigade ?? g.division;
+
+/** The viewer's map grouping; regiments only when storage is blocked or holds anything else. */
+export function loadGroups(): MapGroups {
+  try {
+    const v = localStorage.getItem(GROUPS_KEY);
+    return v === 'brigade' || v === 'division' ? v : 'regiment';
+  } catch {
+    return 'regiment';
+  }
+}
 
 /** A part of the field the map shows, in yards. */
 export interface MapViewBox {
@@ -689,7 +720,94 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   function selectUnit(uid: string | null): void {
     selected.value = uid;
-    if (uid !== null) setTab('unit');
+    if (uid !== null) {
+      selectedGroup.value = null;
+      setTab('unit');
+    }
+  }
+
+  const mapGroups = signal<MapGroups>(loadGroups());
+  function setMapGroups(groups: MapGroups): void {
+    mapGroups.value = groups;
+    try {
+      localStorage.setItem(GROUPS_KEY, groups);
+    } catch {
+      // blocked storage: the choice lasts for this page only
+    }
+  }
+  const selectedGroup = signal<GroupRef | null>(null);
+  /** Select a brigade or division (its card opens in the Unit tab); a regiment selected gives way to it. */
+  function selectGroup(group: GroupRef | null): void {
+    selectedGroup.value = group;
+    if (group !== null) {
+      selected.value = null;
+      aiming.value = null;
+      targetChoice.value = null;
+      setTab('unit');
+    }
+  }
+  /** The battle's units in a group (any, standing or not). */
+  function unitsOfGroup(group: GroupRef): BattleUnit[] {
+    return [...battle.value!.units.values()].filter((u) => {
+      const g = groupOf(u.side as 0 | 1, u.org, group.level);
+      return g !== null && groupKey(g) === groupKey(group);
+    });
+  }
+  /** The orders the last group order gave, per unit: to tell which have since been changed by hand. */
+  const groupOrdered = signal<Record<string, { mode: string; target: string | null }>>({});
+
+  /** Enemy brigades a group could be ordered against: those with a standing regiment that can be seen. */
+  function enemyBrigades(group: GroupRef): GroupRef[] {
+    const found = new Map<string, GroupRef>();
+    for (const u of battle.value!.units.values()) {
+      if (u.side === group.side || u.size === 0 || !seenNow(u.uid)) continue;
+      const g = groupOf(u.side as 0 | 1, u.org, 'brigade');
+      if (g !== null) found.set(groupKey(g), g);
+    }
+    return [...found.values()];
+  }
+
+  /**
+   * Order a whole group: each standing regiment fires on (or charges) the nearest regiment of the target brigade it
+   * can reach (fire: in range, in its front arc and in sight; a charge: any it can see), or holds. A regiment
+   * that can't, holds. Returns how many were given the target, of how many standing.
+   */
+  function orderGroup(group: GroupRef, mode: 'ranged' | 'melee' | 'idle', target: GroupRef | null): { reached: number; of: number } {
+    const b = battle.value!;
+    const standing = unitsOfGroup(group).filter((u) => u.active);
+    const aims = target === null ? [] : unitsOfGroup(target).filter((t) => t.size > 0);
+    const given: Record<string, { mode: string; target: string | null }> = { ...groupOrdered.value };
+    let reached = 0;
+    for (const u of standing) {
+      const can = actionsFor(u.uid);
+      const visible = new Set(targetsFor(u.uid).map((t) => t.uid));
+      const battery = u.regiment instanceof ArtilleryBattery;
+      const ammo = battery ? b.params.combat.artillery_default_ammo : null;
+      const fits = (t: BattleUnit) => visible.has(t.uid) && (mode === 'melee'
+        || ((b.reach(u.uid, t.uid, ammo) ?? 1) > 0 && b.inArc(u.uid, t.uid) && b.lineOfSight(u.uid, t.uid)));
+      const options = mode === 'idle' || !can.includes(mode) ? [] : aims.filter(fits);
+      const far = (t: BattleUnit) => b.distance(u.uid, t.uid) ?? 0;
+      const best = options.sort((x, y) => far(x) - far(y))[0];
+      if (best === undefined) {
+        setOrder(u.uid, { mode: 'idle' });
+        given[u.uid] = { mode: 'idle', target: null };
+      } else {
+        setOrder(u.uid, { mode, target: best.uid });
+        given[u.uid] = { mode, target: best.uid };
+        reached += 1;
+      }
+    }
+    groupOrdered.value = given;
+    return { reached, of: standing.length };
+  }
+
+  /** Units of a group whose order was set by the last group order and has since been changed by hand. */
+  function changedByHand(group: GroupRef): number {
+    const eff = effectiveOrders.value;
+    return unitsOfGroup(group).filter((u) => {
+      const was = groupOrdered.value[u.uid];
+      return was !== undefined && (eff[u.uid].mode !== was.mode || eff[u.uid].target !== was.target);
+    }).length;
   }
 
   const phase = computed<Phase>(() => {
@@ -900,6 +1018,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     };
     battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, meta, {}, terrain.value, plan);
     mapRound.value = null;
+    selectedGroup.value = null;
+    groupOrdered.value = {};
     newRound();
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
@@ -1040,6 +1160,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     newRound();
     playerFileInfo.value = file;
     mapView.value = null; // the whole of its field
+    selectedGroup.value = null;
+    groupOrdered.value = {};
     // a new file from the admin opens on what happened in the last round
     dispatchRound.value = b.history.length ? b.history.length : null;
     guesses.value = {};
@@ -1243,6 +1365,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   return {
+    mapGroups, setMapGroups, selectedGroup, selectGroup, unitsOfGroup, enemyBrigades, orderGroup, changedByHand,
+    groupOrdered,
     field, fieldSize, setField, view, zoomMap, panMap, centreMap, fitMap,
     dispatchRound, dispatchOf, phase, sidebarTab, setTab, sidebarWide, setWide,
     battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,

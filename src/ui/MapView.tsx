@@ -14,7 +14,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import defaults from '../engine/defaults.json';
 import type { Terrain, TerrainData } from '../engine';
 import { arcPath, bearing, FIELD, type Point, turned } from './field';
-import type { MapViewBox } from './store';
+import { groupKey, groupName, groupOf, type GroupRef, type MapGroups, type MapViewBox } from './store';
 import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
 
@@ -288,7 +288,7 @@ function Block({ store, unit, movable, selectable, aim }:
       {layers.symbols && <g transform={`scale(${k})`}><NatoSymbol type={unit.type} /></g>}
       {/* out of sight: drawn where it was last seen, marked with a question mark */}
       {unit.lastSeen !== null && <text class="lost-mark" text-anchor="middle" dominant-baseline="central">?</text>}
-      {layers.labels && (
+      {layers.labels && store.mapGroups.value === 'regiment' && (
         <text y={labelY} text-anchor="middle">
           <tspan class="unit-name">{unit.name}</tspan>
           <tspan class="unit-men" x="0" dy="1.1em">{shown}</tspan>
@@ -324,6 +324,54 @@ function LayersPanel({ store }: { store: Store }) {
 }
 
 /** Where each side deploys: while setting up (both) and deploying (with the fog on, only the viewer's own). */
+const GROUP_PAD = 30; // yards between a group's regiments and its outline
+
+/** Brigades or divisions outlined around their regiments (those shown), each labelled; a label selects its group. */
+function GroupLayer({ store, level }: { store: Store; level: 'brigade' | 'division' }) {
+  const b = store.battle.value;
+  const k = furniture(store.view.value);
+  const orgOf = (uid: string) => (b === null ? store.units.value.find((u) => u.id === uid)!.org ?? {}
+    : b.units.get(uid)!.org);
+  const groups = new Map<string, { ref: GroupRef; units: MapUnit[] }>();
+  for (const u of store.mapUnits.value) {
+    const ref = groupOf(u.side, orgOf(u.uid), level);
+    if (ref === null) continue;
+    const key = groupKey(ref);
+    groups.set(key, { ref, units: [...(groups.get(key)?.units ?? []), u] });
+  }
+  const picked = store.selectedGroup.value;
+  return (
+    <g class="groups">
+      {[...groups.entries()].map(([key, { ref, units }]) => {
+        // each block's extent along x and y, turned as it faces
+        const ext = (u: MapUnit) => {
+          const r = (u.facing * Math.PI) / 180;
+          const [c, s] = [Math.abs(Math.cos(r)), Math.abs(Math.sin(r))];
+          return { x: (c * u.width + s * u.depth) / 2, y: (s * u.width + c * u.depth) / 2 };
+        };
+        const x0 = Math.min(...units.map((u) => u.x - ext(u).x)) - GROUP_PAD;
+        const x1 = Math.max(...units.map((u) => u.x + ext(u).x)) + GROUP_PAD;
+        const y0 = Math.min(...units.map((u) => u.y - ext(u).y)) - GROUP_PAD;
+        const y1 = Math.max(...units.map((u) => u.y + ext(u).y)) + GROUP_PAD;
+        const men = units.reduce((sum, u) => sum + u.men, 0);
+        const rough = units.some((u) => u.rough);
+        const text = `${groupName(ref)} · ${units.length} regt${units.length === 1 ? '' : 's'} · ${rough ? '~' : ''}`
+          + men.toLocaleString('en-US');
+        const select = () => store.selectGroup(ref);
+        return (
+          <g class={`group side-${ref.side}${picked !== null && groupKey(picked) === key ? ' selected' : ''}`}>
+            <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} />
+            <text x={x0} y={y0 - 8 * k} role="button" tabindex={0} aria-label={`Select ${groupName(ref)}`}
+              onClick={select} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') select(); }}>{text}</text>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+const GROUPINGS: [MapGroups, string][] = [['regiment', 'Regiments'], ['brigade', 'Brigades'], ['division', 'Divisions']];
+
 function ZoneLayer({ store }: { store: Store }) {
   store.revision.value; // the battle opens in place
   const b = store.battle.value;
@@ -400,6 +448,12 @@ export function MapView({ store }: { store: Store }) {
             <button aria-label="Show the whole field" disabled={view.w >= field.width} onClick={() => store.fitMap()}>
               Whole field</button>
           </div>
+          <div class="map-groups" role="group" aria-label="Outline">
+            {GROUPINGS.map(([key, label]) => (
+              <button aria-pressed={store.mapGroups.value === key} class={store.mapGroups.value === key ? 'active' : ''}
+                onClick={() => store.setMapGroups(key)}>{label}</button>
+            ))}
+          </div>
           <svg viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`} role="img" style={{ '--k': k }}
             aria-label={`Battlefield, ${field.width} by ${field.height} yards`}
             onWheel={(e) => {
@@ -437,6 +491,7 @@ export function MapView({ store }: { store: Store }) {
             {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={field.height} />)}
             {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={field.width} y1={y} y2={y} />)}
             <ZoneLayer store={store} />
+            {store.mapGroups.value !== 'regiment' && <GroupLayer store={store} level={store.mapGroups.value} />}
             {/* a compass rose: north is the top of the map */}
             <g class="compass" aria-hidden="true"
               transform={`translate(${view.x + view.w - 70 * k} ${view.y + 80 * k}) scale(${k})`}>

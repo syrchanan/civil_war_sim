@@ -9,6 +9,7 @@
 import { ArmyBuilder } from './ArmyBuilder';
 import { DeployPanel } from './DeployPanel';
 import { FileBar } from './FileBar';
+import { GroupCard } from './GroupCard';
 import { clockText } from './format';
 import { MapView } from './MapView';
 import { OrderCard } from './OrderCard';
@@ -62,6 +63,8 @@ function Armies({ store }: { store: Store }) {
 }
 
 function UnitTab({ store }: { store: Store }) {
+  const group = store.selectedGroup.value;
+  if (group !== null && store.battle.value !== null) return <GroupCard store={store} group={group} />;
   if (store.focusedUnit.value === null) {
     return <p class="note dock-hint">Select a regiment on the map to see it here.</p>;
   }
