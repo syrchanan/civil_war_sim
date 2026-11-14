@@ -90,8 +90,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ✓ (2026-11-14) |
 | D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ✓ (2026-11-14) |
 | D5 | Round results as a dispatch | ✓ (2026-11-14) |
-| D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ► next |
-| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
+| D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ✓ (2026-11-14) |
+| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ► next |
 | D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
 | D8 | Phones, cleanup, merge | ○ |
 
@@ -204,6 +204,20 @@ everything is TypeScript, and D1's Python side below is a record.
 - Fixed: the round strip while deploying (round 1 was missing); the map's hint while deploying; morale on the unit
   card while replaying; the dispatch tables in the dock; a loaded army file's problems shown twice; the army tables
   overflowing at 1440 px.
+
+**D5b, built** (the layout):
+- **Map + sidebar**: under the header, the field on the left and one tabbed sidebar on the right, filling the
+  window. Each column scrolls on its own, so selecting a unit or reading a dispatch never moves the map (checked in
+  the browser: the map's box is unchanged after a selection). Below 900 px wide the page stacks (phones: D8).
+- **Tabs by phase** (`PHASE_TABS`, store): setup Setup / Armies / Unit; deployment Deploy / Unit / Armies; battle
+  Unit / Orders / Armies / Dispatches / Result; nightfall Result / Dispatches / Armies / Unit. The open tab is a store
+  signal: a unit selected or aimed opens Unit; a round fought, a file opened with rounds in it, or a fought round
+  clicked on the strip opens Dispatches (that dispatch first, with the way on); "On to round N orders" goes to Unit.
+- **Widen / Narrow** in the tab bar: the sidebar takes 60% of the width for the wide tables, remembered per viewer.
+  The sidebar is a CSS size container: while it is narrow, the tables you edit (armies, orders, guesses, modifiers)
+  become cards, as on phones; widened, they are tables again.
+- Also: a unit locked in melee with one of a side's units is seen by that side now (`sight.ts`); the unit card
+  words morale as the dispatch does (steady / shaken / wavering).
 
 ### Phase C — Later
 | Item | Status |
