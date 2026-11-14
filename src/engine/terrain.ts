@@ -1,5 +1,5 @@
 /**
- * Terrain (port of python/imperial_generals/battles/terrain.py): the ground a battle is fought on, as a grid saved in
+ * Terrain (port of the former Python engine's battles/terrain.py): the ground a battle is fought on, as a grid saved in
  * the state file. Heights (yards above the lowest ground) are taken at cell centres and interpolated between them;
  * ground is the letter of the containing cell (o open, f forest, r rough). Points off the grid take the nearest edge.
  */

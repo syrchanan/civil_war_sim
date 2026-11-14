@@ -37,7 +37,7 @@ export interface UnitDraft {
 export const DEFAULT_SUBTYPE: Record<UnitType, string> = { inf: 'line', cav: 'light', art: 'battery' };
 export const STANDARD_BATTERY = { size: 72, guns: 8 };
 
-/** The Example Ridge armies (scenarios/example_ridge.yaml), so a first visit can go straight to the orders. */
+/** The Example Ridge armies (from the former example scenario), so a first visit can go straight to the orders. */
 export const EXAMPLE_ARMIES: { sides: [string, string]; units: UnitDraft[] } = {
   sides: ['Union', 'Confederate'],
   units: [

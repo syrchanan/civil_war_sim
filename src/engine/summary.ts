@@ -1,6 +1,6 @@
 /**
  * Battle summaries from a state file (port of api.order_of_battle / api.side_summary in
- * python/imperial_generals/api.py), for the client's tables and for players' feedback.
+ * the former Python engine's api.py), for the client's tables and for players' feedback.
  */
 
 import { ValueError } from './errors';
@@ -52,7 +52,7 @@ export type Verdict = 'draw' | 'victory' | 'decisive victory' | 'Pyrrhic victory
 /**
  * How the result reads for each side (port of api.verdicts): 'draw' when nobody held the field; otherwise the
  * winner's 'Pyrrhic victory', 'decisive victory' or 'victory', and the loser's 'decisive defeat' or 'defeat'.
- * Thresholds in config/aftermath.yaml.
+ * Thresholds: `params.aftermath` in defaults.json.
  */
 export function verdicts(holder: number | null, decidedBy: string, casualties: number[], started: number[],
   params: AftermathParams): [Verdict, Verdict] {

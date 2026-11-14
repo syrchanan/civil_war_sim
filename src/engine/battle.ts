@@ -1,5 +1,5 @@
 /**
- * Round-based battle engine with per-regiment orders (port of python/imperial_generals/battles/battle.py).
+ * Round-based battle engine with per-regiment orders (port of the former Python engine's battles/battle.py).
  *
  * Each round every regiment gets one order: a target and a mode (ranged / melee / idle). Ranged fire is one-way
  * along the arrow; melee is mutual and forcing. A melee order on a unit not already in contact is a charge: the

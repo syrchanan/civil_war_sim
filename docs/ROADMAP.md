@@ -4,9 +4,10 @@
 > Status: ✓ done · ► next · ○ backlog · ⏸ parked
 
 > **2026-11-14: the Python engine is removed.** The TypeScript engine is the only engine, and the project lives at
-> the repository root (formerly `web/`). Its defaults are edited in `src/engine/defaults.json`, and
-> `src/engine/fixtures/` holds golden fixtures recorded from the former Python engine. Sections below that mention Python, `config/*.yaml`, scenarios or the CLI are history (git keeps the
-> code). Tuning (A13) and any tools it needs are built in TypeScript.
+> the repository root (formerly `web/`). Its defaults are edited in `src/engine/defaults.json` (they were
+> `config/*.yaml`), and `src/engine/fixtures/` holds golden fixtures recorded from the former Python engine, now
+> frozen. Phase A and the build notes below describe what was built in Python at the time and are kept as a record
+> (git keeps the code). Tuning (A13) and any tools it needs are built in TypeScript.
 
 ---
 
@@ -23,15 +24,14 @@ with no formula. The goal is a **combat resolver** that admins trust:
 - The Lanchester structure is correct. The work is to **tune it** so each stat and unit-type combination performs
   sensibly, including rock-paper-scissors advantages between unit types.
 
-Two audiences, two languages:
+One language, two audiences:
 
-| Audience | Surface | Language |
-|---|---|---|
-| Developer tuning the math (RL / parameter search) | Plain step API + CLI | Python |
-| Players and admins trying it out | Static client-side page on GitHub Pages | TypeScript |
+| Audience | Surface |
+|---|---|
+| Players and admins | Static client-side page on GitHub Pages: a **player mode** (fuzzy estimates) and an **admin mode** (exact seeded result) |
+| Developer tuning the math | The TypeScript engine (`src/engine/`) and its tests; tuning tools are rebuilt in TypeScript as needed (A13) |
 
-Long term the whole battle system lives in TypeScript, with a **player mode** (fuzzy estimates) and an **admin mode**
-(exact seeded result).
+Until 2026-11-14 a Python engine was the reference implementation, with the tuning CLI; it has been removed.
 
 Out of scope for now: movement, cover, weather. Since the positions pass (P1–P5), the engine uses range, facing and
 flanks, flight, elevation and line of sight over a terrain grid; without one, a battle is on flat, open ground.
@@ -40,7 +40,7 @@ flanks, flight, elevation and line of sight over a terrain grid; without one, a 
 
 ## Status Summary
 
-### Phase A — Tunable Python core
+### Phase A — Tunable Python core (removed 2026-11-14; its engine design lives on in TypeScript)
 | # | Item | Status |
 |---|---|---|
 | A1 | Cross-language seeded RNG | ✓ |
@@ -51,24 +51,24 @@ flanks, flight, elevation and line of sight over a terrain grid; without one, a 
 | A6 | Morale break / retreat: rout captures, wounded | ✓ |
 | A7 | Unit-type matchup matrix | ✓ |
 | A8 | Battle state serialization (JSON contract) | ✓ |
-| A9 | Setup file + step API + CLI | ✓ |
-| A10 | Tuning harness: batch runner + matchup stats | ✓ |
-| A11 | Player-made validation scenarios (expectations + feedback) | ✓ |
-| A13 | Tuning pass on the A10 findings | ⏸ (parked 2026-10-23; larger pass later) |
+| A9 | Setup file + step API + CLI | ✓ (removed 2026-11-14) |
+| A10 | Tuning harness: batch runner + matchup stats | ✓ (removed 2026-11-14; to rebuild in TS for A13) |
+| A11 | Player-made validation scenarios (expectations + feedback) | ✓ (removed 2026-11-14) |
+| A13 | Tuning pass on the A10 findings | ► next, in TypeScript (see the positions pass) |
 | A12 | Field holder from battle performance (`finish` 'auto') | ✓ |
 
 ### Phase B — Playable web client
 | # | Item | Status |
 |---|---|---|
 | B1 | TypeScript port of the round engine (replaces stale v0.2 port) | ✓ |
-| B2 | Parity fixtures: Python ↔ TS identical results | ✓ |
+| B2 | Parity fixtures: Python ↔ TS identical results | ✓ (frozen as golden fixtures 2026-11-14) |
 | B3 | GitHub Pages client: place units, set round length, resolve; the map | ✓ (deploys from main) |
 | B4 | Player mode (Monte Carlo estimate ranges) vs admin mode (exact) | ✓ (2026-10-23) |
 | B5 | One side per player (player files), admin rounds and modifiers, army files, phones | ✓ (2026-10-24) |
 
 ### Positions pass (2026-11-13 →)
-The engine starts using where units stand. Each stage Python first (red/green TDD), then the TS port with exact
-parity, then the client. Tuning waits until the pass is done.
+The engine starts using where units stand. Each stage was built Python first (red/green TDD), then the TS port with
+exact parity, then the client. Tuning waited until the pass was done.
 
 | # | Stage | Status |
 |---|---|---|
@@ -77,7 +77,7 @@ parity, then the client. Tuning waits until the pass is done.
 | P3 | Flight: broken units flee during the round, slowing; pursuit and fire can catch them | ✓ (2026-11-13) |
 | P4 | Terrain map: ported to TS, saved in the state file as a grid both engines read | ✓ (2026-11-13) |
 | P5 | Elevation and line of sight from the terrain | ✓ (2026-11-13) |
-| Then | Tuning pass (A13), now that the engine has settled | ► next |
+| Then | Tuning pass (A13), now that the engine has settled, in TypeScript | ► next |
 
 ### Phase C — Later
 | Item | Status |
@@ -102,10 +102,10 @@ parity, then the client. Tuning waits until the pass is done.
 ### Done
 | Item | Status |
 |---|---|
-| Admin YAML config (`ConfigLoader`) | ✓ |
+| Admin YAML config (`ConfigLoader`) | ✓ (removed 2026-11-14: defaults are `src/engine/defaults.json`) |
 | Units: Infantry/Cavalry/Artillery, Army, Position, subtypes | ✓ |
 | Regiment combat modes (idle / ranged / melee, Lanchester law dispatch) | ✓ |
-| Map pipeline stages 1–3 (Voronoi, biome/elevation, rivers) | ✓ |
+| Map pipeline stages 1–3 (Voronoi, biome/elevation, rivers) | ✓ (Python, removed 2026-11-14; elevation and woods ported in P4) |
 | Streamlit prototype v1 (removed 2026-10-24; the web client replaces it) | ✓ |
 
 ---
@@ -456,6 +456,7 @@ deliberate; it's also the starting fixture for the TypeScript parity tests (B2).
 affect combat until range/terrain effects return.
 
 ### A9. Setup file + step API + CLI ✓
+*Removed with the Python engine on 2026-11-14; kept as a record of what was built.*
 **Setup file** (`battles/setup.py`, `Battle.from_setup`): how a new battle is described by hand. The A8 state file
 is for saving and resuming; it holds RNG words and live morale that nobody should write by hand.
 - **YAML or JSON** (`load_setup_file`; JSON if the name ends in `.json`). YAML is easier to write by hand, and its
@@ -501,6 +502,7 @@ stay strict.
 - Orders with unknown keys (`{'aim': ...}`) now raise a clear error naming the unit.
 
 ### A10. Tuning harness ✓
+*Removed with the Python engine on 2026-11-14; kept as a record of what was built.*
 **Built** (`imperial_generals/tuning.py`):
 - `run_batch(scenario, seeds, seed_start=, overrides=, workers=)` runs a scenario once per seed, spread over
   worker processes. Results are identical for any number of workers, since each seed is independent. Every run
@@ -538,7 +540,11 @@ stay strict.
    seed (median 50 min) under counter-battery shell. 1st Minnesota breaks only 14% of the time with 31% hit,
    which may be the morale-gain pinning noted under A2.
 
-### A13. Tuning pass ⏸
+### A13. Tuning pass ► (in TypeScript)
+*The work below used the Python harness (A10), since removed; the findings stand, and section names such as
+`config/charge.yaml` now live under the same keys in `src/engine/defaults.json`. To start: a TS harness (batch runs
+over seeds, matchup grids) and a tool to re-record the golden fixtures when results change on purpose.*
+
 **Harness facets** (2026-10-01): `matchups` runs several grids. Each answers a different question:
 - **ranged**: everyone fires. Melee-only units (stats flag `x/x/x/1`, not the subtype) inflict nothing.
 - **melee**: everyone fights hand to hand. Both sides hold melee orders, so they meet head on.
@@ -641,9 +647,10 @@ The tables add the defender's hit share.
 - Elite break target (above).
 - Dragoons skirmish from horseback (decided 2026-10-01): tune them with everything else.
 - Equal-numbers grids, so cavalry isn't judged at half the infantry's size.
-- Day totals with `batch`: loser 25–35%, winner 12–25%.
+- Day totals over many seeds: loser 25–35%, winner 12–25%.
 
 ### A11. Player-made validation scenarios ✓
+*Removed with the Python engine on 2026-11-14; kept as a record of what was built.*
 Players describe battles and expectations in a **spreadsheet** (decided 2026-10-01: no accounts or installs, and
 familiar to them). The admin grades the engine against their expectations with one command. Admin guide and a
 message for players: `players/README.md`. Blank template: `players/battle_template.xlsx`.
@@ -745,14 +752,15 @@ Casualty totals don't change (captured wounded were already counted once, as cas
 Port the Phase A engine (RNG, params, round engine, engagements, morale, matchups, serialization) to TypeScript,
 built together with B2: each piece lands with its parity fixture. The stale v0.2 `typescript/` port is deleted.
 
-**Set up (2026-10-23)**: one Vite project in `web/`, with the engine in `web/src/engine/` (no DOM) and later the
-client in `web/src/ui/` (B3). Vitest for tests, `tsc --noEmit` for types. Pinned to releases at least two weeks old
+**Set up (2026-10-23)**: one Vite project in `web/`, with the engine in `src/engine/` (no DOM) and later the
+client in `src/ui/` (B3). Vitest for tests, `tsc --noEmit` for types. Pinned to releases at least two weeks old
 (vite 8.3.4, vitest 5.0.3, typescript 7.0.2). `web/.npmrc` sets `legacy-peer-deps`, because npm 10 crashes on
-vite 8's optional devtools peers.
+vite 8's optional devtools peers. Since 2026-11-14 the project sits at the repository root (`src/engine/`,
+`src/ui/`), and the `.npmrc` is gone: a clean `npm ci` (npm 10.9.4) resolves without it.
 
 **Ported** (each matches its parity fixture exactly):
 - fdlibm `log` / `exp` (shared V8 goldens, plus 200k random inputs against V8's own `Math.log` / `Math.exp`), `Rng`.
-- Engine defaults: `web/src/engine/defaults.json`, generated from `config/*.yaml` with the fixtures.
+- Engine defaults: `src/engine/defaults.json`, generated from `config/*.yaml` with the fixtures.
 - Params: every section, validation, `withOverrides` / `toDict` / `fromDict`. Python's `round()` is half-to-even:
   ported as `roundHalfEven` (half-up fails 251 fixture rows).
 - Morale model, units (without Python's legacy 1-v-1 helpers and distances; positions round-trip as data).
@@ -769,7 +777,9 @@ Python's (`ValueError`, `RuntimeError`, built-in `TypeError`).
 tuning batch, needed for B4's Monte Carlo player mode.
 
 ### B2. Parity fixtures ✓
-Shared JSON in `test_cases/parity/`, asserted in both test suites. `imperial_generals.parity` builds them from the
+*Since 2026-11-14 the fixtures are frozen golden fixtures in `src/engine/fixtures/`, checked by the TS tests alone;
+CI runs `npm run check`. Below is how they were built.*
+Shared JSON in `src/engine/fixtures/`, asserted in both test suites. `imperial_generals.parity` builds them from the
 Python engine (`python -m imperial_generals.parity` rewrites them), and a Python test fails if a committed fixture
 is stale, so CI catches drift. `fdlibm.json` is the exception: V8 reference values, not generated.
 Done: `rng`, `fdlibm`, `params`, `morale`, `units`, `battles` (whole battles: the example and calibration
@@ -848,7 +858,7 @@ for now players submit their plans as downloads and the admin runs the rounds.
   falters), so the ranges matter more than the typical value.
 - **Orders file** (`imperial-generals-orders`, version 1): one side's orders and unit places for a battle's next
   round (seed and round checked). The admin view loads several at once; Python's `resolve` / `preview` take several
-  `--orders` files (`api.merge_plans`), plans or plain mappings. `test_cases/parity/plan_example.json`, written by the
+  `--orders` files (`api.merge_plans`), plans or plain mappings. `src/engine/fixtures/plan_example.json`, written by the
   client, is loaded by Python in a test.
 - Fog of war: done in B5 (player files).
 
@@ -949,7 +959,7 @@ Built 2026-11-13 (`config/flanks.yaml`, `FlankParams`, `Battle.zone` / `Battle.i
   match the port are added in a plain loop.
 - The client's orders table says "outside its front arc", or "on its flank" / "from its rear".
 
-**Map layers** (user, 2026-11-13): every map option is one entry in `web/src/ui/mapLayers.ts` (key, label, group,
+**Map layers** (user, 2026-11-13): every map option is one entry in `src/ui/mapLayers.ts` (key, label, group,
 default), shown in a grouped "Map layers" panel and remembered per viewer in the browser. Now: NATO symbols, names
 and men, front arcs of all units, order arrows, grid, scale bar. The selected unit (clicked or tabbed to) always
 shows its front arc: a wedge out to its maximum range, darker within close range. Units carry simplified APP-6 symbols
@@ -1110,26 +1120,20 @@ Elevation, line of sight (P5) and facing and flanks (P2) are built. Still to do:
 - **Charging uphill** is harder: height affects fire but not charges or melee yet (noted in P5).
 
 ### Weather ⏸
-Static, map-wide, randomised by season (weights in `weather.yaml`). Multiplies `max_range`: clear 1.0, overcast 0.9,
+Static, map-wide, randomised by season (first weights were in the former `config/weather.yaml`; see git history). Multiplies `max_range`: clear 1.0, overcast 0.9,
 light rain 0.75, heavy rain 0.6, fog 0.4, storm 0.5, snow 0.65. River/lake cells amplify fog/rain (TBD).
 
 ### Map stages 4–6 ⏸
-`MapGenerator.generate_map()` runs stages in order, mutating cells in place. Stages 1–3 are done.
-- **Lakes**: contiguous low-elevation clusters; `num_lakes`; lakes don't touch; `terrain_type='lake'`, impassable.
-  Then update `RiverGenerator` to terminate at lake cells.
-- **Roads**: edge-to-edge paths; `num_roads`; multiple roads intersect; route around lakes; `Cell.has_road`.
-- **Fences**: auto-generated on edges between `open` and non-open cells; `Cell.fenced_edges`; feeds cover.
-- **Before porting the map to TS**: `voronoi.py` still uses global `np.random`, and `river.py` uses `random.Random`. Move both to `Rng`.
-
-Map API:
-```python
-MapGenerator.from_config(preset='mixed_battlefield')
-MapGenerator.from_preset('mixed_battlefield', seed=42, width=200, height=200, min_distance=3)
-MapGenerator(MapConfig(...)).generate_map()
-```
+The ground is generated in TypeScript (`src/ui/terrainGen.ts`: elevation presets, woods and rough ground on the P4
+grid). The Python map pipeline (Voronoi cells, rivers) was removed on 2026-11-14 without its rivers being ported.
+To add, on the terrain grid:
+- **Rivers and lakes**: lakes as contiguous low-elevation clusters (impassable), rivers ending in them.
+- **Roads**: edge-to-edge paths that cross and route around lakes.
+- **Fences**: on edges between open and non-open ground; they feed cover.
+Generation must stay seeded through `Rng`, so a battle's ground is the same every time.
 
 ### Movement ⏸
-Superseded by admins placing units. Terrain speed modifiers kept in `movement.yaml` for reference.
+Superseded by admins placing units. Terrain speed modifiers were in the former `config/movement.yaml` (git history).
 
 **Broken units' flight** (user, 2026-10-23), once positions exist: a broken unit moves away and can be reached by
 units with the range to target it until it is out of range, and by melee pursuit fast enough to catch it. Its
@@ -1152,7 +1156,7 @@ files (user, 2026-11-13). Checked as feasible, not planned yet. **Must stay free
 - **Flow**: the admin creates a room and assigns seats → players plan and **Submit orders** (they can unlock them
   until the round is resolved) → the admin sees who has submitted, reviews, applies modifiers and resolves →
   results and map replay go out to both sides → the next round opens. Downloading the state file stays as the
-  backup, and Python still replays it exactly.
+  backup.
 - Open: "your turn" notifications for async play; resolving rounds without the admin online would need the
   engine on a server (Cloudflare Workers are free; Firebase Cloud Functions are not).
 

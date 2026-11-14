@@ -1,5 +1,5 @@
 /**
- * Battle state file (port of python/imperial_generals/battles/state.py): the full state of a battle as JSON, so a
+ * Battle state file (port of the former Python engine's battles/state.py): the full state of a battle as JSON, so a
  * battle can be saved after any round and resumed later, in either language, with exactly the same results.
  *
  * Version 2: melee contacts, charges in the round history, charge params. Added since, within version 2 (absent in

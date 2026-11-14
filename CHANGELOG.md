@@ -18,20 +18,20 @@ Design decisions and status live in `docs/ROADMAP.md`.
 
 ### Added
 - Range (positions pass P1): fire falls off with distance from each weapon's and ammo's close range to its maximum
-  range (`config/range.yaml`); a charge's approach takes as long as the distance needs. Setup files and scenario
-  rounds take unit positions. The orders table shows each firing unit's distance and effect.
+  range (`range` in `src/engine/defaults.json`); a charge's approach takes as long as the distance needs. The
+  orders table shows each firing unit's distance and effect.
 - Facing and flanks (positions pass P2): a unit fires only within its front arc; fire, melee and charges from a
-  unit's flank or rear hit harder and shake it more (`config/flanks.yaml`). The orders table says so.
+  unit's flank or rear hit harder and shake it more (`flanks` in the defaults). The orders table says so.
 - Map layers: one grouped panel for what the map shows (NATO symbols, names and men, all front arcs, order arrows,
   grid, scale bar), remembered per viewer; the selected unit's front arc is drawn out to its range. Units are shown
   with NATO symbols.
 - Flight (positions pass P3): broken units flee from the nearest enemy, slowing round after round, until safe or at
-  the field's edge; fire fades as they get away, and slower pursuers lose them (`config/flight.yaml`).
+  the field's edge; fire fades as they get away, and slower pursuers lose them (`flight` in the defaults).
 - Terrain (positions pass P4): a battle can be fought on generated ground (flat, hills, forest, badlands,
-  mountains; `config/terrain.yaml`), saved in the state file as a height and ground grid both engines read; drawn as
+  mountains; `terrain` in the defaults), saved in the state file as a height and ground grid; drawn as
   relief and woods layers on the map.
 - Elevation and line of sight (positions pass P5): on terrain, fire needs a clear line (ridges and woods block it;
-  units at a wood's edge see out) and fire from higher ground tells more, up to ±15% (`config/sight.yaml`). The
+  units at a wood's edge see out) and fire from higher ground tells more, up to ±15% (`sight` in the defaults). The
   orders table says so, and fire that can't tell is drawn faded on the map.
 
 ### Fixed

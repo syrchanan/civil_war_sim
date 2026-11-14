@@ -1,5 +1,5 @@
 {
-  "description": "BattleParams: defaults (see web/src/engine/defaults.json) and what each section computes; overrides that are accepted (with the resulting params) or rejected.",
+  "description": "BattleParams: defaults (see src/engine/defaults.json) and what each section computes; overrides that are accepted (with the resulting params) or rejected.",
   "combat": {
     "efficiency": [
       [

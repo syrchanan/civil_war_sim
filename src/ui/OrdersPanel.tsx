@@ -12,7 +12,7 @@ import { EstimatePanel } from './EstimatePanel';
 import { rangeText } from './format';
 import type { Store } from './store';
 
-/** Action word -> engine mode (config/sheets.yaml: fire, charge, hold). */
+/** Action word -> engine mode (`names.actions` in defaults.json: fire, charge, hold). */
 const ACTIONS = Object.entries(defaults.names.actions) as [string, string][];
 /** What a broken unit can be ordered: hold, or try to rally. */
 const BROKEN_ACTIONS: [string, string][] = [['hold', 'idle'], ['rally', 'rally']];

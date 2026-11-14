@@ -1,5 +1,5 @@
 /**
- * Units on the field (port of python/imperial_generals/units).
+ * Units on the field (port of the former Python engine's units).
  *
  * Only what the round engine and the state file use: Python's legacy 1-v-1 coefficient helpers and the distance
  * methods are not ported. A position is carried as plain data so state files round-trip; the map draws it, but no
@@ -167,7 +167,7 @@ export class ArtilleryBattery extends Regiment {
     this.subtype = subtype;
   }
 
-  /** A battery from the standard template in config/artillery.yaml (8 guns × 9 crew). */
+  /** A battery from the standard template (`artillery` in defaults.json) (8 guns × 9 crew). */
   static standard(stats: string, subtype: string, options: RegimentOptions = {}): ArtilleryBattery {
     const { guns, crew_per_gun: crew } = defaults.artillery;
     return new ArtilleryBattery(guns * crew, stats, guns, subtype, options);
