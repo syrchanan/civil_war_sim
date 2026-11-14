@@ -1,0 +1,491 @@
+{
+  "description": "Engine defaults, edited by hand (first generated from the former Python config).",
+  "params": {
+    "combat": {
+      "weapon_multipliers": {
+        "-2": 0.2,
+        "-1": 0.5,
+        "0": 1.0,
+        "1": 1.5,
+        "2": 2.5
+      },
+      "xp_boost_per_level": 0.08,
+      "morale_boost_per_level": 0.04,
+      "melee_penalty_factor": 0.7,
+      "ranged_kill_rate": 0.00438,
+      "melee_kill_rate": 0.01564,
+      "broken_fire_multiplier": 0.5,
+      "broken_melee_multiplier": 0.75,
+      "artillery_ammo": {
+        "round_shot": 0.164,
+        "shell": 0.274,
+        "canister": 0.493
+      },
+      "artillery_default_ammo": "round_shot"
+    },
+    "morale": {
+      "break_fraction_min": 0.15,
+      "break_fraction_max": 0.75,
+      "experience_weight": 0.5,
+      "break_curve": 1.5,
+      "break_point_spread": 0.12,
+      "break_fraction_ceiling": 0.95,
+      "size_reference": 500,
+      "size_exponent": 0.0,
+      "acceleration": 1.0,
+      "shock_weight": 4.0,
+      "shock_half_life": 15.0,
+      "helpless_weight": 0.5,
+      "drain_per_hour": 0.05,
+      "gain_weight": 0.5
+    },
+    "aftermath": {
+      "rout_capture_share": 0.1,
+      "cavalry_capture_multiplier": 2.0,
+      "killed_share": 0.22,
+      "walking_wounded_share": 0.4,
+      "wounded_captured_share": 0.6,
+      "wounded_return_share": 0.4,
+      "share_spread": 0.25,
+      "field_exchange_ratio": 1.5,
+      "field_rout_gap": 0.25,
+      "field_standing_ratio": 1.5,
+      "field_votes_needed": 2,
+      "decisive_ratio": 2.0,
+      "decisive_share": 0.25,
+      "pyrrhic_share": 0.25,
+      "pyrrhic_ratio": 1.0
+    },
+    "matchups": {
+      "ranged": {
+        "inf": {
+          "inf": 1.0,
+          "cav": 1.2,
+          "art": 0.1
+        },
+        "cav": {
+          "inf": 0.6,
+          "cav": 0.6,
+          "art": 0.1
+        },
+        "art": {
+          "inf": 1.0,
+          "cav": 1.2,
+          "art": 0.6
+        }
+      },
+      "melee": {
+        "inf": {
+          "inf": 1.0,
+          "cav": 1.0,
+          "art": 1.2
+        },
+        "cav": {
+          "inf": 0.5,
+          "cav": 1.0,
+          "art": 2.0
+        },
+        "art": {
+          "inf": 1.0,
+          "cav": 1.0,
+          "art": 1.0
+        }
+      },
+      "overrides": [
+        {
+          "attacker": "inf/pikes",
+          "target": "cav",
+          "mode": "melee",
+          "multiplier": 2.0
+        },
+        {
+          "attacker": "cav/dragoons",
+          "target": "*",
+          "mode": "ranged",
+          "multiplier": 0.9
+        },
+        {
+          "attacker": "cav/dragoons",
+          "target": "art",
+          "mode": "ranged",
+          "multiplier": 0.15
+        }
+      ],
+      "melee_ratings": {
+        "default": 0.7,
+        "inf/line": 0.7,
+        "inf/light": 0.6,
+        "inf/marine": 0.8,
+        "inf/pikes": 1.0,
+        "inf/irregulars": 0.5,
+        "cav/light": 1.0,
+        "cav/heavy": 1.4,
+        "cav/dragoons": 0.9,
+        "art/battery": 0.25,
+        "art/horse battery": 0.3,
+        "art/siege battery": 0.2
+      }
+    },
+    "charge": {
+      "approach_minutes": {
+        "inf": 5.0,
+        "cav": 2.0,
+        "art": 5.0
+      },
+      "closing_fire_multiplier": 3.0,
+      "battery_closing_ammo": "canister",
+      "numbers_weight": 1.0,
+      "steadiness_weight": 3.0,
+      "veterancy_weight": 0.5,
+      "shock_weight": 2.0,
+      "break_threshold": 1.0,
+      "falter_threshold": 0.5,
+      "spread": 0.5,
+      "falter_cost": 0.15,
+      "shock_bonus": [
+        {
+          "charger": "cav",
+          "target": "inf",
+          "bonus": 0.5
+        },
+        {
+          "charger": "cav/heavy",
+          "target": "inf",
+          "bonus": 0.3
+        },
+        {
+          "charger": "cav",
+          "target": "inf/pikes",
+          "bonus": -2.0
+        },
+        {
+          "charger": "cav",
+          "target": "art",
+          "bonus": 1.0
+        },
+        {
+          "charger": "inf",
+          "target": "art",
+          "bonus": 0.5
+        },
+        {
+          "charger": "art",
+          "target": "inf",
+          "bonus": -1.0
+        },
+        {
+          "charger": "art",
+          "target": "cav",
+          "bonus": -1.0
+        }
+      ],
+      "speed": {
+        "inf": 120.0,
+        "cav": 350.0,
+        "art": 100.0
+      }
+    },
+    "rally": {
+      "attempts": 1,
+      "chance_min": 0.15,
+      "chance_max": 0.75,
+      "experience_weight": 0.5,
+      "men_exponent": 1.0,
+      "resolve": 0.3,
+      "effectiveness": 0.75,
+      "exposure": 1.25
+    },
+    "range": {
+      "falloff_exponent": 1.0,
+      "small_arms": {
+        "-2": {
+          "close": 10,
+          "max": 40
+        },
+        "-1": {
+          "close": 50,
+          "max": 150
+        },
+        "0": {
+          "close": 80,
+          "max": 250
+        },
+        "1": {
+          "close": 150,
+          "max": 500
+        },
+        "2": {
+          "close": 200,
+          "max": 600
+        }
+      },
+      "artillery": {
+        "round_shot": {
+          "close": 500,
+          "max": 1600
+        },
+        "shell": {
+          "close": 500,
+          "max": 1500
+        },
+        "canister": {
+          "close": 100,
+          "max": 400
+        }
+      }
+    },
+    "flanks": {
+      "front_arc": 120,
+      "rear_arc": 90,
+      "casualties": {
+        "flank": 1.5,
+        "rear": 2.0
+      },
+      "shock": {
+        "flank": 1.5,
+        "rear": 2.0
+      },
+      "charge_bonus": {
+        "flank": 1.0,
+        "rear": 2.0
+      }
+    },
+    "flight": {
+      "speed": {
+        "inf": 80.0,
+        "cav": 250.0,
+        "art": 40.0
+      },
+      "half_life": 15.0,
+      "step_minutes": 1.0,
+      "safe_distance": 1000.0,
+      "field": {
+        "width": 2000.0,
+        "height": 1200.0
+      }
+    },
+    "sight": {
+      "eye_height": {
+        "inf": 2.0,
+        "cav": 3.0,
+        "art": 2.0
+      },
+      "forest_height": 12.0,
+      "sample_step": 10.0,
+      "edge_clear": 30.0,
+      "elevation_scale": 100.0,
+      "elevation_max": 0.15
+    }
+  },
+  "morale_scale": {
+    "min_raw": 10,
+    "max_raw": 100,
+    "raw_scale_factor": 10
+  },
+  "unit_subtypes": {
+    "inf": [
+      "irregulars",
+      "light",
+      "line",
+      "marine",
+      "pikes"
+    ],
+    "cav": [
+      "dragoons",
+      "heavy",
+      "light"
+    ],
+    "art": [
+      "battery",
+      "horse battery",
+      "siege battery"
+    ]
+  },
+  "artillery": {
+    "guns": 8,
+    "crew_per_gun": 9,
+    "min_crew_per_gun": 7
+  },
+  "names": {
+    "weapons": {
+      "unarmed / pikes": -2,
+      "matchlock": -1,
+      "smoothbore musket": 0,
+      "rifled musket": 1,
+      "needle rifle": 2
+    },
+    "artillery_weapons": {
+      "old smoothbore guns": -1,
+      "smoothbore guns": 0,
+      "rifled guns": 1,
+      "breech-loading guns": 2
+    },
+    "actions": {
+      "fire": "ranged",
+      "charge": "melee",
+      "hold": "idle"
+    },
+    "ammo": {
+      "round shot": "round_shot",
+      "shell": "shell",
+      "canister": "canister"
+    }
+  },
+  "commanders": {
+    "power_exponent": 1.5,
+    "gun_value": 20,
+    "weights": {
+      "casualties": 0.5,
+      "field": 0.3,
+      "routs": 0.2
+    },
+    "ladder": [
+      {
+        "name": "Varro",
+        "battle": "Cannae (216 BC)",
+        "from": -1
+      },
+      {
+        "name": "Crassus",
+        "battle": "Carrhae (53 BC)",
+        "from": -0.45
+      },
+      {
+        "name": "Mack",
+        "battle": "Ulm (1805)",
+        "from": -0.35
+      },
+      {
+        "name": "Burnside",
+        "battle": "Fredericksburg (1862)",
+        "from": -0.26
+      },
+      {
+        "name": "Hooker",
+        "battle": "Chancellorsville (1863)",
+        "from": -0.18
+      },
+      {
+        "name": "McClellan",
+        "battle": "the Seven Days (1862)",
+        "from": -0.1
+      },
+      {
+        "name": "Meade",
+        "battle": "Gettysburg (1863)",
+        "from": -0.03
+      },
+      {
+        "name": "Wellington",
+        "battle": "Waterloo (1815)",
+        "from": 0.03
+      },
+      {
+        "name": "Marlborough",
+        "battle": "Blenheim (1704)",
+        "from": 0.1
+      },
+      {
+        "name": "Scipio Africanus",
+        "battle": "Zama (202 BC)",
+        "from": 0.18
+      },
+      {
+        "name": "Khalid ibn al-Walid",
+        "battle": "Yarmouk (636)",
+        "from": 0.26
+      },
+      {
+        "name": "Subutai",
+        "battle": "Mohi (1241)",
+        "from": 0.33
+      },
+      {
+        "name": "Alexander",
+        "battle": "Gaugamela (331 BC)",
+        "from": 0.4
+      },
+      {
+        "name": "Napoleon",
+        "battle": "Austerlitz (1805)",
+        "from": 0.46
+      },
+      {
+        "name": "Hannibal",
+        "battle": "Cannae (216 BC)",
+        "from": 0.52
+      }
+    ]
+  },
+  "terrain": {
+    "cell": 20,
+    "yards_per_unit": 6.67,
+    "feet_per_yard": 3,
+    "presets": {
+      "flat": {
+        "forest_share": 0.1
+      },
+      "hills": {
+        "forest_share": 0.15
+      },
+      "forest": {
+        "forest_share": 0.4
+      },
+      "badlands": {
+        "forest_share": 0.03
+      },
+      "mountains": {
+        "forest_share": 0.2
+      }
+    },
+    "forest_scale": 260,
+    "rough_slope": 0.12,
+    "elevation": {
+      "flat": {
+        "octaves": 2,
+        "persistence": 0.3,
+        "lacunarity": 2.0,
+        "scale": 150.0,
+        "base_elevation": 50.0,
+        "elevation_range": 20.0,
+        "exponent": 1.0
+      },
+      "hills": {
+        "octaves": 4,
+        "persistence": 0.45,
+        "lacunarity": 2.0,
+        "scale": 70.0,
+        "base_elevation": 50.0,
+        "elevation_range": 60.0,
+        "exponent": 1.2
+      },
+      "forest": {
+        "octaves": 3,
+        "persistence": 0.45,
+        "lacunarity": 2.0,
+        "scale": 75.0,
+        "base_elevation": 50.0,
+        "elevation_range": 40.0,
+        "exponent": 1.0
+      },
+      "badlands": {
+        "octaves": 5,
+        "persistence": 0.7,
+        "lacunarity": 3.0,
+        "scale": 35.0,
+        "base_elevation": 50.0,
+        "elevation_range": 100.0,
+        "exponent": 2.2
+      },
+      "mountains": {
+        "octaves": 6,
+        "persistence": 0.6,
+        "lacunarity": 2.5,
+        "scale": 40.0,
+        "base_elevation": 50.0,
+        "elevation_range": 150.0,
+        "exponent": 1.8
+      }
+    }
+  }
+}
