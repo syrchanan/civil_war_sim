@@ -2,15 +2,12 @@
 
 A battle resolver for the admin-run game [Imperial Generals](https://imperial-generals.connorhanan.com/). Admins place
 units and give orders; the engine fights the battle in rounds of game time and reports casualties, morale, breaks,
-prisoners and who held the field. Same seed, same battle, in Python and in the browser.
+prisoners and who held the field. Same seed, same battle, every time.
 
 **Try it:** https://syrchanan.github.io/civil_war_sim/ (published from `main` after CI passes).
 
-- `python/`: the engine, CLI and tuning tools (Python, the reference implementation)
-- `web/`: the TypeScript port and the browser client
-- `config/`: every tunable number, as YAML
-- `scenarios/`: example and calibration battles
-- `test_cases/`: shared fixtures that both languages must match
+- `web/`: the engine (TypeScript) and the browser client
+- `test_cases/parity/`: golden fixtures the engine must match (recorded from the former Python engine, now frozen)
 - `docs/ROADMAP.md`: goals, design decisions and status
 - `CHANGELOG.md`: what changed
 
@@ -33,24 +30,8 @@ The site opens in the **player view**; the admin uses **`?mode=admin`**
 5. Repeat from step 2 with fresh player files. At the end, the admin finishes the battle: killed, wounded,
    prisoners, and who held the field.
 
-The admin's battle file (Download battle) holds everything and resumes the battle later, here or in Python. Each
+The admin's battle file (Download battle) holds everything and resumes the battle later. Each
 round can be replayed on the map ("Show on the map").
-
-## Python
-
-```
-python -m venv .venv
-.venv/Scripts/pip install -r python/requirements.txt     # .venv/bin/pip on macOS / Linux
-.venv/Scripts/python -m pytest
-
-.venv/Scripts/python -m imperial_generals run scenarios/example_ridge.yaml
-```
-
-`python -m imperial_generals --help` lists the other commands (step-by-step battles, batches, matchup grids,
-player spreadsheets). From code, `imperial_generals.api` offers the same steps on JSON-safe dicts.
-
-A battle saved from the site replays in Python with
-`python -m imperial_generals scenario-from-state battle.json`, then `run`, `batch` or `check` on the scenario.
 
 ## Web
 
@@ -61,14 +42,14 @@ npm run dev         # the battle client at http://localhost:5173
 npm test            # or: npm run coverage (100% required, as in CI)
 ```
 
-After changing the Python engine or `config/`, regenerate the shared fixtures and defaults with
-`python -m imperial_generals.parity`; tests on both sides fail while they are stale.
+The engine's tunable defaults live in `web/src/engine/defaults.json`; edit them there. The golden fixtures are frozen:
+a change that alters battle results has to re-record them, with a TS tool to be built when the tuning work needs it.
 
 ## Checks before pushing
 
 CI runs only on `main` (where a pass deploys the site) and on pull requests into `main`. Work branches are checked
-on your machine instead: a pre-push hook runs the same checks as CI (Python and web tests, both at 100% coverage,
-and the web typecheck; a minute or two). Turn it on once per clone:
+on your machine instead: a pre-push hook runs the same checks as CI (the web typecheck and tests at 100% coverage;
+a minute or two). Turn it on once per clone:
 
 ```
 git config core.hooksPath .githooks

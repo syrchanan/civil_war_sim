@@ -1,7 +1,5 @@
 /**
- * Save and open battles, and pass orders between players and the admin. The battle download resumes here, and in
- * Python `python -m imperial_generals scenario-from-state battle.json` turns it into a scenario that replays it
- * exactly. A player downloads their orders file for the next round; the admin loads one per player. The admin
+ * Save and open battles, and pass orders between players and the admin. The battle download resumes here. A player downloads their orders file for the next round; the admin loads one per player. The admin
  * also downloads a player file per side (the battle as that side sees it) to send to each player.
  */
 

@@ -1,5 +1,5 @@
 {
-  "description": "Engine defaults from config/*.yaml. Generated: python -m imperial_generals.parity",
+  "description": "Engine defaults, edited by hand (first generated from the former Python config).",
   "params": {
     "combat": {
       "weapon_multipliers": {
