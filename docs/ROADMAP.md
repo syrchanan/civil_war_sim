@@ -89,8 +89,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ✓ (2026-11-14) |
 | D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ✓ (2026-11-14) |
 | D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ✓ (2026-11-14) |
-| D5 | Round results as a dispatch | ► next |
-| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
+| D5 | Round results as a dispatch | ✓ (2026-11-14) |
+| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ► next |
 | D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
 | D8 | Phones, cleanup, merge | ○ |
 
@@ -174,6 +174,27 @@ everything is TypeScript, and D1's Python side below is a record.
   - loading checks the round and refuses orders in a deployment;
   - nothing is aimed while deploying.
 - Not done: dragging zone edges on the map (D8); brigade-at-a-time placement and org-grouped lists (D6).
+
+**D5, built:**
+- **The dispatch** (`dispatch.ts`, pure; `DispatchCard.tsx`): each round told as a newspaper report.
+  - **Headline**, from the most notable event: a battery overrun or a regiment wiped out, then charges that
+    broke their target or went home, then charges thrown back, then breaks ("Three regiments break"), then a rally;
+    else how many fell ("A quiet round along the line").
+  - **Summary**: up to three sentences in the order things happened (charges, breaks with their clock time,
+    rallies, flights); a unit broken by a charge is told with the charge.
+  - **Regiments**: lost, left and state per regiment. The state is steady (morale ≥ 60% of its start), shaken
+    (≥ 30%), wavering, broken or wiped out. The admin sees both sides; a player sees "Your regiments".
+  - **Charges** with their clock time.
+  - **Of the enemy** (players only): prisoners taken (roughly), enemy regiments seen to break, and those that moved
+    out of sight.
+- **Where it shows:**
+  - in the dock after the admin fights a round, and when a player opens a new file with rounds in it;
+  - **On to round N orders** closes it (**Close** for an earlier round, or at nightfall); **Replay on the map**
+    shows the round as it began;
+  - clicking a fought round in the round strip opens its dispatch with the replay, and the round being ordered
+    closes it.
+- **The Dispatches tab** lists every round's dispatch, latest first, each with **The full report** (the old
+  per-unit table, charges, target switches, modifiers, flights and rallies) folded underneath.
 
 ### Phase C — Later
 | Item | Status |
