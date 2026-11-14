@@ -74,6 +74,23 @@ parity, then the client. Tuning waits until the pass is done.
 | P5 | Elevation and line of sight from the terrain | ✓ (2026-11-13) |
 | Then | Tuning pass (A13), now that the engine has settled | ► next |
 
+### Phase D — Game flow and UI overhaul (branch `ui-overhaul`, 2026-11-13 →)
+Decided with the user and the admins over the style A mockups (https://claude.ai/artifact/U3DDr5zsH8ssS1yQdAGqS2).
+Built on one long-lived branch, merged when complete, so players never see a half-built UI.
+
+| # | Stage | Status |
+|---|---|---|
+| D1 | File formats v3, both engines: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones), `open_battle`; player file v3, orders file v2, army CSV and setup file with org | ► next |
+| D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ○ |
+| D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ○ |
+| D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ○ |
+| D5 | Round results as a dispatch | ○ |
+| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
+| D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
+| D8 | Phones, cleanup, merge | ○ |
+
+Later: roads, fences and railways (map stages 4–6); a dark "lamplight" theme; pixel cutscenes.
+
 ### Phase C — Later
 | Item | Status |
 |---|---|
