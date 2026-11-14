@@ -19,8 +19,8 @@ export type {
   ShockBonus, Stats, Unit,
 } from './params';
 export { Rng } from './rng';
-export { inside, ORG_KEYS, PHASES, validateOrg, validatePlan } from './plan';
-export type { DeployZone, Org, OrgKey, Phase, Plan } from './plan';
+export { DEFAULT_FIELD, fieldOf, inside, ORG_KEYS, PHASES, validateOrg, validatePlan } from './plan';
+export type { DeployZone, FieldSize, Org, OrgKey, Phase, Plan } from './plan';
 export { sightBetween, sightings } from './sight';
 export type { Sighting } from './sight';
 export {

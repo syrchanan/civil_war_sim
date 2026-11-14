@@ -1,10 +1,19 @@
 /**
- * The map: a plain field in yards, and how big each unit is drawn on it. Display only: the engine ignores
- * positions (no range, cover or elevation yet).
+ * The map: the field in yards (its size chosen per battle), how big each unit is drawn on it, where units start,
+ * and the geometry of facings and front arcs.
  */
 
-/** The field, in yards. */
-export const FIELD = { width: 2000, height: 1200 };
+import { DEFAULT_FIELD, type FieldSize } from '../engine';
+
+/** The default field, in yards: a battle's own size is in its plan (fieldOf). */
+export const FIELD: FieldSize = DEFAULT_FIELD;
+
+/** The field sizes offered in setup, smallest first. */
+export const FIELD_PRESETS: [string, FieldSize][] = [
+  ['Small', { width: 2000, height: 1200 }],
+  ['Medium', { width: 4000, height: 2400 }],
+  ['Large', { width: 8000, height: 4800 }],
+];
 
 const MIN_WIDTH = 20; // yards: even a tiny unit stays visible
 const GAP = 60; // yards between neighbouring units in the default layout
@@ -45,12 +54,37 @@ export interface ZoneRect {
 
 /** How far inside its zone's front edge a side's first line stands. */
 export const ZONE_INSET = 60;
-/** The default zone depth: its first line then stands where the zoneless layout puts it (300 / 900 yd). */
+/** The default zone depth on the default field: its first line then stands where the zoneless layout puts it. */
 export const DEFAULT_ZONE_DEPTH = 360;
+/** The default zone depth on any field: the same share of its height (360 yd of 1,200). */
+export const defaultZoneDepth = (field: FieldSize): number => Math.round(field.height * 0.3);
 
 /** A band along a side's own edge of the field: side 0 the bottom, side 1 the top. */
-export function zoneBand(side: 0 | 1, depth: number): ZoneRect {
-  return { x: 0, y: side === 0 ? FIELD.height - depth : 0, w: FIELD.width, h: depth };
+export function zoneBand(side: 0 | 1, depth: number, field: FieldSize = FIELD): ZoneRect {
+  return { x: 0, y: side === 0 ? field.height - depth : 0, w: field.width, h: depth };
+}
+
+/** How many lines a side's units would stand in across a field (the default layout's wrapping). */
+export function linesNeeded(widths: number[], field: FieldSize): number {
+  const room = field.width - 2 * MARGIN;
+  let lines = widths.length ? 1 : 0;
+  let used = 0;
+  for (const w of widths) {
+    const need = used ? used + GAP + w : w;
+    if (used && need > room) {
+      lines += 1;
+      used = w;
+    } else {
+      used = need;
+    }
+  }
+  return lines;
+}
+
+/** The smallest preset field on which each side's units stand in at most three lines (else the largest). */
+export function suggestField(widths: [number[], number[]]): string {
+  const fits = FIELD_PRESETS.find(([, f]) => widths.every((w) => linesNeeded(w, f) <= 3));
+  return (fits ?? FIELD_PRESETS[FIELD_PRESETS.length - 1])[0];
 }
 
 /**
@@ -59,10 +93,10 @@ export function zoneBand(side: 0 | 1, depth: number): ZoneRect {
  * line stands just inside the zone's edge towards the enemy, centred on the zone.
  */
 export function defaultLayout(units: { id: string; side: 0 | 1; width: number }[],
-  zones: Partial<Record<string, ZoneRect>> = {}): Record<string, Point> {
+  zones: Partial<Record<string, ZoneRect>> = {}, field: FieldSize = FIELD): Record<string, Point> {
   const layout: Record<string, Point> = {};
   for (const side of [0, 1] as const) {
-    const zone = zones[String(side)] ?? zoneBand(side, DEFAULT_ZONE_DEPTH);
+    const zone = zones[String(side)] ?? zoneBand(side, defaultZoneDepth(field), field);
     const inset = Math.min(ZONE_INSET, zone.h / 2);
     const front = side === 0 ? zone.y + inset : zone.y + zone.h - inset;
     const back = side === 0 ? LINE_GAP : -LINE_GAP;
@@ -93,10 +127,10 @@ export function defaultLayout(units: { id: string; side: 0 | 1; width: number }[
 }
 
 /** A point kept on the field, in whole yards. */
-export function clampToField(p: Point): Point {
+export function clampToField(p: Point, field: FieldSize = FIELD): Point {
   return {
-    x: Math.round(Math.min(FIELD.width, Math.max(0, p.x))),
-    y: Math.round(Math.min(FIELD.height, Math.max(0, p.y))),
+    x: Math.round(Math.min(field.width, Math.max(0, p.x))),
+    y: Math.round(Math.min(field.height, Math.max(0, p.y))),
   };
 }
 

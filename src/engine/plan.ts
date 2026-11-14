@@ -13,7 +13,7 @@ export type Org = Partial<Record<OrgKey, string>>;
 export const PHASES = ['deployment', 'battle'] as const;
 export type Phase = (typeof PHASES)[number];
 
-const PLAN_KEYS = ['rounds_planned', 'start_clock', 'phase', 'zones'];
+const PLAN_KEYS = ['rounds_planned', 'start_clock', 'phase', 'zones', 'field'];
 const ZONE_KEYS = ['x', 'y', 'w', 'h'] as const;
 
 /** Where a side may deploy: a rectangle in yards. */
@@ -24,12 +24,25 @@ export interface DeployZone {
   h: number;
 }
 
+/** The field's size in yards. */
+export interface FieldSize {
+  width: number;
+  height: number;
+}
+
+/** The field when a battle names none: as every battle was before the size could be chosen. */
+export const DEFAULT_FIELD: FieldSize = { width: 2000, height: 1200 };
+
 export interface Plan {
   rounds_planned: number | null;
   start_clock: string | null;
   phase: Phase;
   zones: Record<string, DeployZone>; // '0' / '1'; a side left out may deploy anywhere
+  field?: FieldSize; // left out: DEFAULT_FIELD (so files without it, and the default, save as before)
 }
+
+/** A plan's field, the default when it names none. */
+export const fieldOf = (plan: Pick<Plan, 'field'>): FieldSize => plan.field ?? DEFAULT_FIELD;
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const repr = (v: unknown): string => (typeof v === 'string' ? `'${v}'` : String(v));
@@ -93,7 +106,20 @@ export function validatePlan(plan: unknown): Plan {
     if (key !== '0' && key !== '1') throw new ValueError(`A deployment zone's side must be 0 or 1, got ${repr(key)}.`);
     checked[key] = checkZone(key, zone);
   }
-  return { rounds_planned: rounds as number | null, start_clock: clock as string | null, phase: phase as Phase, zones: checked };
+  const checkedPlan: Plan = {
+    rounds_planned: rounds as number | null, start_clock: clock as string | null, phase: phase as Phase, zones: checked,
+  };
+  const field = p.field;
+  if (field !== undefined && field !== null) {
+    const f = field as Record<string, unknown>;
+    const ok = isObject(field) && Object.keys(field).sort().join() === 'height,width'
+      && [f.width, f.height].every((v) => typeof v === 'number' && Number.isFinite(v) && v >= 500 && v <= 20000);
+    if (!ok) throw new ValueError('The field must be {width, height} in yards, each 500 to 20000.');
+    const size = { width: f.width as number, height: f.height as number };
+    // the default is left out, so a battle on it saves as before
+    if (size.width !== DEFAULT_FIELD.width || size.height !== DEFAULT_FIELD.height) checkedPlan.field = size;
+  }
+  return checkedPlan;
 }
 
 /** Is the point inside the zone (edges included)? */

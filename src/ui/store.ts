@@ -9,7 +9,7 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, BattleParams, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
+  ArtilleryBattery, Battle, BattleParams, battleTag, DEFAULT_FIELD, fieldOf, type FieldSize, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
   PLAYER_VERSION, playerFile, type Order, type OrderInput, type Org, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, roughly, sideSummary, sightings, type SideSummary, Terrain, type UnitSpec, type Zone,
@@ -17,7 +17,8 @@ import {
 import { armyFromCsv, armyToCsv } from './armyCsv';
 import { type Dispatch, dispatch } from './dispatch';
 import {
-  blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, FIELD, type Place, type Point, turned,
+  blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, defaultZoneDepth, type Place, type Point,
+  turned,
   zoneBand, type ZoneRect,
 } from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
@@ -39,6 +40,27 @@ export const PHASE_TABS: Record<Phase, Tab[]> = {
   end: ['result', 'dispatches', 'armies', 'unit'],
 };
 const WIDE_KEY = 'imperial-generals:sidebar-wide';
+
+/** A part of the field the map shows, in yards. */
+export interface MapViewBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+/** The narrowest view, in yards across: about a brigade's front. */
+export const MIN_VIEW = 400;
+
+/** A view kept within the field: no narrower than MIN_VIEW nor wider than the field, the field's shape, inside it. */
+export function fitInField(v: MapViewBox, f: FieldSize): MapViewBox {
+  const w = Math.min(f.width, Math.max(Math.min(MIN_VIEW, f.width), v.w));
+  const h = (w * f.height) / f.width;
+  const cx = v.x + v.w / 2;
+  const cy = v.y + v.h / 2;
+  return {
+    x: Math.min(f.width - w, Math.max(0, cx - w / 2)), y: Math.min(f.height - h, Math.max(0, cy - h / 2)), w, h,
+  };
+}
 
 /** The viewer's sidebar width choice (wide or not); false when storage is blocked or holds anything else. */
 export function loadWide(): boolean {
@@ -187,6 +209,51 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const startClock = signal<string | null>('13:00');
   const roundsPlanned = signal<number | null>(4);
   const zoneDepth = signal<[number, number]>([DEFAULT_ZONE_DEPTH, DEFAULT_ZONE_DEPTH]);
+  const fieldSize = signal<FieldSize>(DEFAULT_FIELD); // the field for a new battle
+  /** The field: the battle's own, else the one chosen in setup. */
+  const field = computed<FieldSize>(() => {
+    revision.value;
+    return battle.value === null ? fieldSize.value : fieldOf(battle.value.plan);
+  });
+  /** The part of the field the map shows (yards); null: all of it. */
+  const mapView = signal<MapViewBox | null>(null);
+  const view = computed<MapViewBox>(() => {
+    const f = field.value;
+    const v = mapView.value;
+    return v === null ? { x: 0, y: 0, w: f.width, h: f.height } : fitInField(v, f);
+  });
+  /** Zoom the map by `factor` (above 1: closer), keeping `about` (yards) where it is on screen; the centre if none. */
+  function zoomMap(factor: number, about?: Point): void {
+    const v = view.value;
+    const at = about ?? { x: v.x + v.w / 2, y: v.y + v.h / 2 };
+    const w = v.w / factor;
+    const h = v.h / factor;
+    mapView.value = fitInField({ x: at.x - ((at.x - v.x) * w) / v.w, y: at.y - ((at.y - v.y) * h) / v.h, w, h }, field.value);
+  }
+  /** Move the map's view by some yards. */
+  function panMap(dx: number, dy: number): void {
+    const v = view.value;
+    mapView.value = fitInField({ ...v, x: v.x + dx, y: v.y + dy }, field.value);
+  }
+  /** Bring a point (yards) to the middle of the map, closer in if the whole field is shown. */
+  function centreMap(at: Point): void {
+    const f = field.value;
+    const v = view.value;
+    const w = v.w >= f.width ? Math.min(f.width, MIN_VIEW * 3) : v.w;
+    const h = (w * f.height) / f.width;
+    mapView.value = fitInField({ x: at.x - w / 2, y: at.y - h / 2, w, h }, f);
+  }
+  function fitMap(): void {
+    mapView.value = null;
+  }
+
+  /** Admin: a new battle's field; the zones take their default depth on it. */
+  function setField(size: FieldSize): void {
+    fieldSize.value = size;
+    zoneDepth.value = [defaultZoneDepth(size), defaultZoneDepth(size)];
+    positions.value = {};
+    mapView.value = null;
+  }
   const review = signal<[Review, Review]>([{ ...NEW_REVIEW }, { ...NEW_REVIEW }]);
 
   function setReview(side: 0 | 1, change: Partial<Review>): void {
@@ -199,7 +266,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const changed = (side: 0 | 1) => setReview(side, { approved: false, sentBack: false });
   /** Where each side deploys: a band along its own edge of the field, as deep as the admin set. */
   const zones = computed<Record<string, ZoneRect>>(() => ({
-    0: zoneBand(0, finite(zoneDepth.value[0])), 1: zoneBand(1, finite(zoneDepth.value[1])),
+    0: zoneBand(0, finite(zoneDepth.value[0]), fieldSize.value), 1: zoneBand(1, finite(zoneDepth.value[1]), fieldSize.value),
   }));
 
   /** The ground on the map: the battle's own; before the battle, generated from the preset and the seed. */
@@ -207,7 +274,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     revision.value;
     if (battle.value !== null) return battle.value.terrain;
     if (terrainPreset.value === 'none') return null;
-    return new Terrain(generateTerrain(terrainPreset.value, seedSignal.value));
+    return new Terrain(generateTerrain(terrainPreset.value, seedSignal.value, fieldSize.value));
   });
 
   /** The side whose details are hidden: the enemy, when planning from a player file. */
@@ -399,7 +466,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       : shown;
     const sized = seen.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
     const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })),
-      b === null ? zones.value : b.plan.zones);
+      b === null ? zones.value : b.plan.zones, field.value);
     // fog of war: an enemy unit out of sight is left out, unless a player file shows where it was last seen
     const visible = (uid: string) => b === null || fogSide.value === null
       || (n !== null ? seenAt(uid, n) : seenNow(uid) || lastSeenRound(uid) !== null);
@@ -808,8 +875,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (r !== null && !wholeAtLeast(r, 1)) problems.push('Rounds planned must be a whole number, 1 or more.');
     for (const side of [0, 1] as const) {
       const d = zoneDepth.value[side];
-      if (!(Number.isFinite(d) && d > 0 && d <= FIELD.height / 2)) {
-        problems.push(`${sides.value[side]}'s zone must be 1 to ${FIELD.height / 2} yards deep.`);
+      const most = fieldSize.value.height / 2;
+      if (!(Number.isFinite(d) && d > 0 && d <= most)) {
+        problems.push(`${sides.value[side]}'s zone must be 1 to ${most} yards deep.`);
       }
     }
     return problems;
@@ -828,7 +896,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (battleName.value.trim() !== '') meta.name = battleName.value.trim();
     const plan = {
       rounds_planned: roundsPlanned.value, start_clock: startClock.value, phase,
-      zones: phase === 'deployment' ? structuredClone(zones.value) : {},
+      zones: phase === 'deployment' ? structuredClone(zones.value) : {}, field: { ...fieldSize.value },
     };
     battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, meta, {}, terrain.value, plan);
     mapRound.value = null;
@@ -903,6 +971,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       format: SETUP_FORMAT, version: SETUP_VERSION, name: battleName.value, sides: [...sides.value],
       seed: seedSignal.value, ground: terrainPreset.value, round_length: duration.value,
       rounds_planned: roundsPlanned.value, start_clock: startClock.value, zone_depth: [...zoneDepth.value],
+      field: { ...fieldSize.value },
       units: structuredClone(units.value), review: structuredClone(review.value),
     };
     const name = battleName.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'battle';
@@ -918,6 +987,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     duration.value = setup.round_length;
     roundsPlanned.value = setup.rounds_planned;
     startClock.value = setup.start_clock;
+    fieldSize.value = setup.field;
+    mapView.value = null;
     zoneDepth.value = setup.zone_depth;
     units.value = setup.units;
     review.value = setup.review;
@@ -968,6 +1039,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     mapRound.value = null;
     newRound();
     playerFileInfo.value = file;
+    mapView.value = null; // the whole of its field
     // a new file from the admin opens on what happened in the last round
     dispatchRound.value = b.history.length ? b.history.length : null;
     guesses.value = {};
@@ -1104,7 +1176,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       const moves = (plan.positions ?? {}) as Record<string, Point & { facing?: number }>;
       for (const [uid, place] of Object.entries(moves)) {
         const unit = battle.value!.units.get(uid)!;
-        unit.regiment.position = onOpenGround({ ...clampToField(place), facing: place.facing ?? facingOf(unit) });
+        unit.regiment.position = onOpenGround({ ...clampToField(place, field.value), facing: place.facing ?? facingOf(unit) });
       }
     }
     orders.value = merged;
@@ -1128,7 +1200,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   /** Move a unit on the map (kept on the field), facing the same way. */
   function moveUnit(uid: string, point: Point): void {
-    placeUnit(uid, { ...clampToField(point), facing: mapUnit(uid).facing });
+    placeUnit(uid, { ...clampToField(point, field.value), facing: mapUnit(uid).facing });
   }
 
   /** Turn a unit to face a compass bearing (degrees clockwise from the top of the map), where it stands. */
@@ -1171,6 +1243,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   return {
+    field, fieldSize, setField, view, zoomMap, panMap, centreMap, fitMap,
     dispatchRound, dispatchOf, phase, sidebarTab, setTab, sidebarWide, setWide,
     battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,
     review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack, outsideZone, openBattle,

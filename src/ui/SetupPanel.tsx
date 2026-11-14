@@ -8,7 +8,7 @@ import { useState } from 'preact/hooks';
 
 import { numberText, toNumber } from './ArmyBuilder';
 import { save } from './FileBar';
-import { FIELD } from './field';
+import { blockSize, FIELD_PRESETS, suggestField } from './field';
 import { clockText } from './format';
 import type { Store } from './store';
 import { TERRAIN_PRESETS } from './terrainGen';
@@ -81,6 +81,61 @@ function TheGround({ store }: { store: Store }) {
   );
 }
 
+const presetOf = (w: number, h: number) => FIELD_PRESETS.find(([, f]) => f.width === w && f.height === h)?.[0] ?? 'Custom';
+const yards = (n: number) => n.toLocaleString('en-US');
+
+/** The field's size: a preset or a custom width and height, with the size the armies suggest. */
+function TheField({ store }: { store: Store }) {
+  const f = store.fieldSize.value;
+  const [custom, setCustom] = useState(false);
+  const preset = custom ? 'Custom' : presetOf(f.width, f.height);
+  const widths = ([0, 1] as const).map((side) => store.units.value.filter((u) => u.side === side)
+    .map((u) => blockSize(u.type, Number.isFinite(u.size) ? u.size : 0, Number.isFinite(u.size) ? u.size : 0,
+      u.guns).width)) as [number[], number[]];
+  const suggested = suggestField(widths);
+  const set = (width: number, height: number) => store.setField({ width, height });
+  return (
+    <section class="setup-card">
+      <h3>Field size</h3>
+      <label>Size
+        <select aria-label="Field size" value={preset} onChange={(e) => {
+          const chosen = FIELD_PRESETS.find(([name]) => name === e.currentTarget.value);
+          setCustom(chosen === undefined); // custom: the same size, to edit
+          if (chosen !== undefined) store.setField({ ...chosen[1] });
+        }}>
+          {FIELD_PRESETS.map(([name, size]) => (
+            <option value={name}>{name}: {yards(size.width)} × {yards(size.height)} yd</option>
+          ))}
+          <option value="Custom">Custom</option>
+        </select>
+      </label>
+      {preset === 'Custom' && (
+        <div class="pair">
+          <label>Width (yd)
+            <input type="number" min="500" max="20000" class="num" value={f.width}
+              onChange={(e) => set(Number(e.currentTarget.value) || f.width, f.height)} />
+          </label>
+          <label>Height (yd)
+            <input type="number" min="500" max="20000" class="num" value={f.height}
+              onChange={(e) => set(f.width, Number(e.currentTarget.value) || f.height)} />
+          </label>
+        </div>
+      )}
+      <p class="note">
+        {suggested === preset ? 'Right for these armies: each side draws up in three lines or fewer.'
+          : `For these armies: ${suggested} (each side in three lines or fewer).`}
+        {suggested !== preset && (
+          <>{' '}<button class="link" onClick={() => {
+            setCustom(false);
+            store.setField({ ...FIELD_PRESETS.find(([n]) => n === suggested)![1] });
+          }}>
+            Use {suggested}</button></>
+        )}
+      </p>
+    </section>
+  );
+}
+
 function Zones({ store }: { store: Store }) {
   return (
     <section class="setup-card">
@@ -88,7 +143,7 @@ function Zones({ store }: { store: Store }) {
       <div class="pair">
         {([0, 1] as const).map((side) => (
           <label>{store.sides.value[side]} (yd deep)
-            <input type="number" min="1" max={FIELD.height / 2} class="num" value={numberText(store.zoneDepth.value[side])}
+            <input type="number" min="1" max={store.fieldSize.value.height / 2} class="num" value={numberText(store.zoneDepth.value[side])}
               aria-label={`${store.sides.value[side]} zone depth (yards)`}
               onInput={(e) => store.setZoneDepth(side, toNumber(e.currentTarget.value))} />
           </label>
@@ -147,6 +202,7 @@ export function SetupPanel({ store }: { store: Store }) {
     <div class="setup-panel">
       <TheDay store={store} />
       <TheGround store={store} />
+      <TheField store={store} />
       <Zones store={store} />
       <Armies store={store} />
       <div class="setup-actions">

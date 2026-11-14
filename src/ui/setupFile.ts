@@ -4,7 +4,7 @@
  * takes over.
  */
 
-import { validateOrg } from '../engine';
+import { DEFAULT_FIELD, type FieldSize, validatePlan, validateOrg } from '../engine';
 import type { UnitDraft, UnitType } from './store';
 
 export const SETUP_FORMAT = 'imperial-generals-setup';
@@ -29,6 +29,7 @@ export interface Setup {
   rounds_planned: number | null;
   start_clock: string | null;
   zone_depth: [number, number]; // yards from each side's own edge
+  field: FieldSize; // left out of older setups: the default field
   units: UnitDraft[];
   review: [Review, Review];
 }
@@ -82,11 +83,13 @@ export function readSetup(data: Record<string, unknown>): Setup {
     throw new Error('The setup needs a zone depth for each side.');
   }
   if (!Array.isArray(units)) throw new Error('The setup needs a list of units.');
+  // the plan's own check: {width, height}, each 500 to 20000 yards
+  const field = data.field === undefined ? DEFAULT_FIELD : validatePlan({ field: data.field }).field ?? DEFAULT_FIELD;
   const review = (data.review ?? []) as unknown[];
   if (!Array.isArray(review)) throw new Error('The setup\'s review must be a list, one per side.');
   return {
     name, sides: [sides[0], sides[1]], seed, ground, round_length: length, rounds_planned: rounds, start_clock: clock,
-    zone_depth: [depth[0], depth[1]], units: units.map((u, n) => readUnit(u as Record<string, unknown>, n)),
+    zone_depth: [depth[0], depth[1]], field: { ...field }, units: units.map((u, n) => readUnit(u as Record<string, unknown>, n)),
     review: [readReview(review[0]), readReview(review[1])],
   };
 }

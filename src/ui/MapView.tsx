@@ -14,6 +14,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import defaults from '../engine/defaults.json';
 import type { Terrain, TerrainData } from '../engine';
 import { arcPath, bearing, FIELD, type Point, turned } from './field';
+import type { MapViewBox } from './store';
 import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
 
@@ -27,13 +28,17 @@ const ARROW_OFFSET = 12; // yards
 const HANDLE_GAP = 18; // yards from a block's front edge to its turn handle
 const TURNS: Record<string, number> = { q: -15, e: 15 }; // degrees; three times as much with Shift
 
-function toYards(svg: SVGSVGElement, clientX: number, clientY: number): Point {
+/** Where on the field (yards) a point on screen is, through the part of the field shown. */
+function toYards(svg: SVGSVGElement, clientX: number, clientY: number, view: MapViewBox): Point {
   const r = svg.getBoundingClientRect();
   // before layout (width 0) treat one pixel as one yard
-  const sx = r.width ? FIELD.width / r.width : 1;
-  const sy = r.height ? FIELD.height / r.height : 1;
-  return { x: (clientX - r.left) * sx, y: (clientY - r.top) * sy };
+  const sx = r.width ? view.w / r.width : 1;
+  const sy = r.height ? view.h / r.height : 1;
+  return { x: view.x + (clientX - r.left) * sx, y: view.y + (clientY - r.top) * sy };
 }
+
+/** How much the map's furniture (symbols, labels, compass) is scaled to keep its size on screen: 1 on the default field. */
+const furniture = (view: MapViewBox): number => view.w / FIELD.width;
 
 function Arrow({ from, to, mode, side, blocked }:
   { from: MapUnit; to: MapUnit; mode: string; side: number; blocked: boolean }) {
@@ -57,9 +62,10 @@ function TargetMenu({ store, choice, at }: { store: Store; choice: TargetChoice;
   const first = useRef<HTMLButtonElement>(null);
   useEffect(() => first.current!.focus(), [choice.from, choice.to]);
   const name = (uid: string) => store.battle.value!.units.get(uid)!.name;
+  const v = store.view.value;
   return (
     <div class="target-menu" role="dialog" aria-label={`${name(choice.from)} against ${name(choice.to)}`}
-      style={{ left: `${(at.x / FIELD.width) * 100}%`, top: `${(at.y / FIELD.height) * 100}%` }}
+      style={{ left: `${((at.x - v.x) / v.w) * 100}%`, top: `${((at.y - v.y) / v.h) * 100}%` }}
       onKeyDown={(e) => { if (e.key === 'Escape') store.cancelTargeting(); }}>
       {choice.actions.map((mode, i) => (
         <button ref={i === 0 ? first : undefined} class={mode === 'melee' ? 'charge' : 'fire'}
@@ -188,6 +194,8 @@ class TerrainLayer extends Component<{ terrain: Terrain; relief: boolean; woods:
 function Block({ store, unit, movable, selectable, aim }:
   { store: Store; unit: MapUnit; movable: boolean; selectable: boolean; aim: '' | ' aiming' | ' can-target' }) {
   const layers = store.layers.value;
+  const view = store.view.value;
+  const k = furniture(view);
   const grab = useRef<Point | null>(null);
   const dragged = useRef(false); // a drag ends in a click, which is not a click on the unit
   const turning = useRef(false);
@@ -203,12 +211,12 @@ function Block({ store, unit, movable, selectable, aim }:
   const label = `${unit.name}, ${men} men${seen}, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°${standing}`;
   // two text lines (name, men): below the block for side 0, above it for side 1
   // labels and the turn handle stay clear of the symbol (drawn upright, echelon bars on top) when it is shown
-  const below = Math.max(unit.depth / 2, layers.symbols ? SYMBOL.height / 2 : 0);
-  const above = Math.max(unit.depth / 2, layers.symbols ? SYMBOL.height / 2 + ECHELON : 0);
-  const labelY = unit.side === 0 ? below + 30 : -above - 36;
+  const below = Math.max(unit.depth / 2, layers.symbols ? (SYMBOL.height / 2) * k : 0);
+  const above = Math.max(unit.depth / 2, layers.symbols ? (SYMBOL.height / 2 + ECHELON) * k : 0);
+  const labelY = unit.side === 0 ? below + 30 * k : -above - 36 * k;
   // the handle turns with the block: out past the symbol's corner whichever way it faces
-  const handle = layers.symbols ? Math.max(unit.depth / 2, Math.hypot(SYMBOL.width / 2, SYMBOL.height / 2 + ECHELON))
-    : unit.depth / 2;
+  const handle = layers.symbols
+    ? Math.max(unit.depth / 2, Math.hypot(SYMBOL.width / 2, SYMBOL.height / 2 + ECHELON) * k) : unit.depth / 2;
   return (
     <g class={`map-unit side-${unit.side}${unit.broken ? ' broken' : ''}${unit.wiped ? ' wiped' : ''}${unit.lastSeen !== null ? ' lost' : ''}${store.outsideZone(unit.uid) ? ' outside' : ''}${aim}`}
       transform={`translate(${unit.x} ${unit.y})`} role="button" aria-label={label}
@@ -220,14 +228,15 @@ function Block({ store, unit, movable, selectable, aim }:
       }}
       onPointerDown={(e) => {
         if (!movable) return;
-        const p = toYards(svgOf(e.currentTarget), e.clientX, e.clientY);
+        e.stopPropagation(); // moving the unit, not the map
+        const p = toYards(svgOf(e.currentTarget), e.clientX, e.clientY, view);
         grab.current = { x: unit.x - p.x, y: unit.y - p.y };
         e.currentTarget.setPointerCapture?.(e.pointerId);
       }}
       onPointerMove={(e) => {
         if (grab.current === null) return;
         dragged.current = true;
-        const p = toYards(svgOf(e.currentTarget), e.clientX, e.clientY);
+        const p = toYards(svgOf(e.currentTarget), e.clientX, e.clientY, view);
         store.moveUnit(unit.uid, { x: p.x + grab.current.x, y: p.y + grab.current.y });
       }}
       onPointerUp={() => { grab.current = null; }}
@@ -263,7 +272,7 @@ function Block({ store, unit, movable, selectable, aim }:
           </>
         )}
         {movable && (
-          <circle class="turn-handle" cx="0" cy={-handle - HANDLE_GAP} r="8"
+          <circle class="turn-handle" cx="0" cy={-handle - HANDLE_GAP * k} r={8 * k}
             onPointerDown={(e) => {
               e.stopPropagation(); // turning, not moving
               turning.current = true;
@@ -271,12 +280,12 @@ function Block({ store, unit, movable, selectable, aim }:
             }}
             onPointerMove={(e) => {
               if (!turning.current) return;
-              store.faceUnit(unit.uid, bearing(unit, toYards(svgOf(e.currentTarget), e.clientX, e.clientY)));
+              store.faceUnit(unit.uid, bearing(unit, toYards(svgOf(e.currentTarget), e.clientX, e.clientY, view)));
             }}
             onPointerUp={() => { turning.current = false; }} />
         )}
       </g>
-      {layers.symbols && <NatoSymbol type={unit.type} />}
+      {layers.symbols && <g transform={`scale(${k})`}><NatoSymbol type={unit.type} /></g>}
       {/* out of sight: drawn where it was last seen, marked with a question mark */}
       {unit.lastSeen !== null && <text class="lost-mark" text-anchor="middle" dominant-baseline="central">?</text>}
       {layers.labels && (
@@ -350,8 +359,15 @@ export function MapView({ store }: { store: Store }) {
   const targets = new Set(aiming === null ? [] : store.targetsFor(aiming).map((t) => t.uid));
   const aimOf = (uid: string) => (uid === aiming ? ' aiming' : targets.has(uid) ? ' can-target' : '');
   const choice = store.targetChoice.value;
-  const gridX = Array.from({ length: FIELD.width / GRID - 1 }, (_, i) => (i + 1) * GRID);
-  const gridY = Array.from({ length: FIELD.height / GRID - 1 }, (_, i) => (i + 1) * GRID);
+  const field = store.field.value;
+  const view = store.view.value;
+  const k = furniture(view);
+  // zoomed out over a large field, a coarser grid and a longer scale bar
+  const grid = GRID * (k >= 2 ? 5 : 1);
+  const bar = SCALE_BAR * (k >= 2 ? 4 : 1);
+  const gridX = Array.from({ length: Math.ceil(field.width / grid) - 1 }, (_, i) => (i + 1) * grid);
+  const gridY = Array.from({ length: Math.ceil(field.height / grid) - 1 }, (_, i) => (i + 1) * grid);
+  const pan = useRef<{ x: number; y: number; moved: boolean } | null>(null);
   const layers = store.layers.value;
   const focused = store.focusedUnit.value;
   // no arc for a unit only last seen: where it faces now is unknown
@@ -378,8 +394,18 @@ export function MapView({ store }: { store: Store }) {
       )}
       <div class="field-scroll">
         <div class="field-wrap">
-          <svg viewBox={`0 0 ${FIELD.width} ${FIELD.height}`} role="img"
-            aria-label={`Battlefield, ${FIELD.width} by ${FIELD.height} yards`}>
+          <div class="map-zoom" role="group" aria-label="Zoom">
+            <button aria-label="Zoom in" onClick={() => store.zoomMap(1.5)}>+</button>
+            <button aria-label="Zoom out" disabled={view.w >= field.width} onClick={() => store.zoomMap(1 / 1.5)}>−</button>
+            <button aria-label="Show the whole field" disabled={view.w >= field.width} onClick={() => store.fitMap()}>
+              Whole field</button>
+          </div>
+          <svg viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`} role="img" style={{ '--k': k }}
+            aria-label={`Battlefield, ${field.width} by ${field.height} yards`}
+            onWheel={(e) => {
+              e.preventDefault();
+              store.zoomMap(e.deltaY < 0 ? 1.25 : 1 / 1.25, toYards(e.currentTarget, e.clientX, e.clientY, view));
+            }}>
             <defs>
               {[0, 1].map((side) => (
                 <marker id={`arrowhead-${side}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5"
@@ -388,23 +414,40 @@ export function MapView({ store }: { store: Store }) {
                 </marker>
               ))}
             </defs>
-            <rect class="field" width={FIELD.width} height={FIELD.height} />
+            {/* drag the open ground to move the map */}
+            <rect class="field" width={field.width} height={field.height}
+              onPointerDown={(e) => {
+                pan.current = { x: e.clientX, y: e.clientY, moved: false };
+                e.currentTarget.setPointerCapture?.(e.pointerId);
+              }}
+              onPointerMove={(e) => {
+                const p = pan.current;
+                if (p === null) return;
+                const svg = e.currentTarget.closest('svg') as SVGSVGElement;
+                const a = toYards(svg, p.x, p.y, view);
+                const b = toYards(svg, e.clientX, e.clientY, view);
+                if (a.x === b.x && a.y === b.y) return;
+                pan.current = { x: e.clientX, y: e.clientY, moved: true };
+                store.panMap(a.x - b.x, a.y - b.y);
+              }}
+              onPointerUp={() => { pan.current = null; }} />
             {store.terrain.value !== null && (
               <TerrainLayer terrain={store.terrain.value} relief={layers.relief} woods={layers.woods} />
             )}
-            {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
-            {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
+            {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={field.height} />)}
+            {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={field.width} y1={y} y2={y} />)}
             <ZoneLayer store={store} />
             {/* a compass rose: north is the top of the map */}
-            <g class="compass" aria-hidden="true" transform={`translate(${FIELD.width - 70} 80)`}>
+            <g class="compass" aria-hidden="true"
+              transform={`translate(${view.x + view.w - 70 * k} ${view.y + 80 * k}) scale(${k})`}>
               <circle r="34" />
               <path class="needle" d="M0 -28 L 8 0 L 0 28 L -8 0 Z" />
               <text y="-42" text-anchor="middle">N</text>
             </g>
             {layers.scale && (
-              <g class="scale-bar" transform={`translate(40 ${FIELD.height - 40})`}>
-                <line x1={0} x2={SCALE_BAR} y1={0} y2={0} />
-                <text x={SCALE_BAR / 2} y={-12} text-anchor="middle">{SCALE_BAR} yards</text>
+              <g class="scale-bar" transform={`translate(${view.x + 40 * k} ${view.y + view.h - 40 * k})`}>
+                <line x1={0} x2={bar} y1={0} y2={0} />
+                <text x={bar / 2} y={-12 * k} text-anchor="middle">{bar.toLocaleString('en-US')} yards</text>
               </g>
             )}
             {arcs.map((uid) => <FrontArc store={store} uid={uid} side={byId[uid].side} />)}
@@ -426,6 +469,7 @@ export function MapView({ store }: { store: Store }) {
         {replaying !== null
           ? `Round ${replaying} as it began: where units stood, their men and the orders given. Pick Now to move units. `
           : ''}
+        Scroll or use + and − to zoom; drag open ground to move the map.{' '}
         {movable
           ? 'Drag a unit, or select it and use the arrow keys, to place it; drag the handle in front of it, or use '
             + 'Q and E, to turn it (Shift for bigger steps). '
