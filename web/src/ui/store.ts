@@ -623,7 +623,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
    */
   function clickUnit(uid: string): void {
     const b = battle.value;
-    if (b === null || b.finished || mapRound.value !== null) return;
+    // deploying, there is nothing to aim at: units are only placed
+    if (b === null || b.finished || b.plan.phase === 'deployment' || mapRound.value !== null) return;
     const from = aiming.value;
     if (from !== null && targetsFor(from).some((t) => t.uid === uid)) {
       targetChoice.value = { from, to: uid, actions: actionsFor(from) };
@@ -893,7 +894,14 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return null;
   }
 
-  /** Player mode: the orders file for the admin: this side's orders for the next round, and where its units stand. */
+  const deploying = () => battle.value!.plan.phase === 'deployment';
+  /** The round an orders file is for: 0 while deploying (places only), else the next to be fought. */
+  const nextRound = () => (deploying() ? 0 : battle.value!.round + 1);
+
+  /**
+   * Player mode: the orders file for the admin: this side's orders for the next round, and where its units stand.
+   * While deploying (round 0) it holds only where they stand.
+   */
   function planDownload(): { name: string; text: string } {
     const b = battle.value!;
     const side = playerSide.value;
@@ -905,14 +913,15 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const plan = {
       format: PLAN_FORMAT, version: PLAN_VERSION,
       battle: {
-        seed: b.seed, round: b.round + 1, time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()),
+        seed: b.seed, round: nextRound(), time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()),
       },
       side, side_name: sides.value[side],
-      orders: Object.fromEntries(actingUnits.value.filter((u) => u.side === side)
+      orders: deploying() ? {} : Object.fromEntries(actingUnits.value.filter((u) => u.side === side)
         .map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
       positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
     };
-    const name = `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
+    const name = deploying() ? `deployment-${b.seed}-${sides.value[side]}.json`
+      : `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
     return { name, text: JSON.stringify(plan, null, 2) };
   }
 
@@ -920,7 +929,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   function playerFileDownload(side: 0 | 1): { name: string; text: string } {
     const b = battle.value!;
     return {
-      name: `player-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`,
+      name: `player-${b.seed}-round-${nextRound()}-${sides.value[side]}.json`,
       text: JSON.stringify(playerFile(b.toDict(), side), null, 2),
     };
   }
@@ -959,7 +968,11 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (plan.version !== PLAN_VERSION) return `unsupported orders file version ${plan.version} (expected ${PLAN_VERSION}).`;
     const meta = plan.battle as { seed: number; round: number; tag?: string };
     if (meta.seed !== b.seed) return `these orders are for another battle (seed ${meta.seed}, this one ${b.seed}).`;
-    if (meta.round !== b.round + 1) return `these orders are for round ${meta.round}; the next round is ${b.round + 1}.`;
+    if (meta.round !== nextRound()) {
+      return deploying() ? `these orders are for round ${meta.round}; the armies are still deploying (round 0).`
+        : `these orders are for round ${meta.round}; the next round is ${b.round + 1}.`;
+    }
+    if (deploying() && Object.keys(plan.orders as object).length) return 'a deployment gives no orders, only places.';
     // files from before tags have none
     if (meta.tag !== undefined && meta.tag !== battleTag(b.toDict())) {
       return 'these orders were made from an older copy of the battle; send the player the latest.';
@@ -1040,6 +1053,24 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     placeUnit(uid, { x, y, facing: turned(facing, 0) });
   }
 
+  /** Deploying: does this unit stand outside its side's zone? */
+  function outsideZone(uid: string): boolean {
+    const b = battle.value;
+    return b !== null && b.plan.phase === 'deployment' && !b.inZone(uid);
+  }
+
+  /** Admin: end the deployment and open round 1; returns what stops it (units outside their zone), or null. */
+  function openBattle(): string | null {
+    try {
+      battle.value!.openBattle();
+    } catch (error) {
+      return (error as Error).message;
+    }
+    newRound();
+    touch();
+    return null;
+  }
+
   /** End the battle: settle killed, wounded and prisoners; `holder` 'auto' lets the engine decide the field. */
   function finish(holder: FieldHolder): void {
     battle.value!.finish(holder);
@@ -1056,7 +1087,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   return {
     battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,
-    review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack,
+    review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack, outsideZone, openBattle,
     openDeployment, setupDownload,
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,

@@ -388,3 +388,10 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
 tr.has-problem td { background: var(--warn-bg, rgba(122, 42, 32, 0.08)); }
 tr.has-problem td:first-child { border-left: 3px solid var(--accent); }
 .you-command { display: inline-block; margin-bottom: 12px; }
+/* round 0: units outside their zone, and the deployment panel */
+.map-unit.outside .block rect { stroke: var(--accent); stroke-width: 5; stroke-dasharray: 10 6; }
+.deploy-panel { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
+.deploy-panel h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.25rem; }
+.deploy-panel p { margin: 0; }
+.deploy-panel .primary { align-self: flex-start; min-height: 44px; }
+button.link { border: 0; padding: 0; background: none; color: var(--accent); text-decoration: underline; min-height: 0; }

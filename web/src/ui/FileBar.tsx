@@ -77,7 +77,7 @@ export function FileBar({ store }: { store: Store }) {
         <button disabled={battle === null || battle.finished} onClick={() => {
           const { name, text } = store.planDownload();
           save(name, text);
-        }}>Download my orders</button>
+        }}>{battle?.plan.phase === 'deployment' ? 'Send deployment' : 'Download my orders'}</button>
       ) : (
         <label class="button">
           Load players' orders

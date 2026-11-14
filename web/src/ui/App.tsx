@@ -8,6 +8,7 @@
 import { useState } from 'preact/hooks';
 
 import { ArmyBuilder } from './ArmyBuilder';
+import { DeployPanel } from './DeployPanel';
 import { FileBar } from './FileBar';
 import { clockText } from './format';
 import { MapView } from './MapView';
@@ -28,7 +29,7 @@ type Tab = 'orders' | 'armies' | 'dispatches' | 'result';
 
 const TABS: [Tab, string][] = [['orders', 'Orders'], ['armies', 'Armies'], ['dispatches', 'Dispatches'],
   ['result', 'Result']];
-const FIRST_TAB: Record<Phase, Tab> = { setup: 'armies', deployment: 'armies', battle: 'orders', end: 'result' };
+const FIRST_TAB: Record<Phase, Tab> = { setup: 'armies', deployment: 'orders', battle: 'orders', end: 'result' };
 
 /** Where the battle stands: being set up, being deployed, being fought, or over. */
 export function phaseOf(store: Store): Phase {
@@ -73,7 +74,8 @@ export function App({ store = defaultStore }: { store?: Store }) {
   const name = typeof battle?.meta.name === 'string' ? battle.meta.name : null;
   const panels: Record<Tab, preact.JSX.Element> = {
     orders: battle === null ? <p class="note">Start the battle to give orders.</p>
-      : battle.finished ? <p class="note">The battle is over.</p> : <OrdersPanel store={store} />,
+      : battle.finished ? <p class="note">The battle is over.</p>
+        : phase === 'deployment' ? <DeployPanel store={store} /> : <OrdersPanel store={store} />,
     armies: <Armies store={store} />,
     dispatches: battle === null ? <p class="note">No rounds fought yet.</p> : <RoundsPanel store={store} />,
     result: <ResultPanel store={store} />,

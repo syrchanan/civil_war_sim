@@ -210,7 +210,7 @@ function Block({ store, unit, movable, selectable, aim }:
   const handle = layers.symbols ? Math.max(unit.depth / 2, Math.hypot(SYMBOL.width / 2, SYMBOL.height / 2 + ECHELON))
     : unit.depth / 2;
   return (
-    <g class={`map-unit side-${unit.side}${unit.broken ? ' broken' : ''}${unit.wiped ? ' wiped' : ''}${unit.lastSeen !== null ? ' lost' : ''}${aim}`}
+    <g class={`map-unit side-${unit.side}${unit.broken ? ' broken' : ''}${unit.wiped ? ' wiped' : ''}${unit.lastSeen !== null ? ' lost' : ''}${store.outsideZone(unit.uid) ? ' outside' : ''}${aim}`}
       transform={`translate(${unit.x} ${unit.y})`} role="button" aria-label={label}
       tabindex={movable || selectable ? 0 : undefined}
       onFocus={() => store.selectUnit(unit.uid)}
