@@ -13,11 +13,11 @@ import { rangeText } from './format';
 import type { Store } from './store';
 
 /** Action word -> engine mode (config/sheets.yaml: fire, charge, hold). */
-const ACTIONS = Object.entries(defaults.names.actions) as [string, string][];
+export const ACTIONS = Object.entries(defaults.names.actions) as [string, string][];
 /** What a broken unit can be ordered: hold, or try to rally. */
-const BROKEN_ACTIONS: [string, string][] = [['hold', 'idle'], ['rally', 'rally']];
-const AMMO = Object.entries(defaults.names.ammo) as [string, string][];
-const ON_BREAK_LABELS: Record<string, string> = {
+export const BROKEN_ACTIONS: [string, string][] = [['hold', 'idle'], ['rally', 'rally']];
+export const AMMO = Object.entries(defaults.names.ammo) as [string, string][];
+export const ON_BREAK_LABELS: Record<string, string> = {
   keep: 'keep firing', strongest: 'switch to the strongest', weakest: 'switch to the weakest',
   fall_back: 'fall back', pursue: 'pursue',
 };

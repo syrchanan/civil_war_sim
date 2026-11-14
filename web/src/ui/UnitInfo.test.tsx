@@ -221,7 +221,7 @@ describe('on the map', () => {
       fireEvent.focus(enemy); // clicking a unit focuses it first
       fireEvent.click(enemy);
     });
-    act(() => { fireEvent.click(screen.getByRole('button', { name: 'Fire' })); });
+    act(() => { fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Fire' })); });
     expect(s.focusedUnit.value).toBe('us_1mn');
     expect(screen.getByRole('region', { name: '1st Minnesota: details' })).toBeTruthy();
 
@@ -231,7 +231,7 @@ describe('on the map', () => {
       fireEvent.focus(enemy);
       fireEvent.click(enemy);
     });
-    act(() => { fireEvent.click(screen.getByRole('button', { name: 'Cancel' })); });
+    act(() => { fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' })); });
     expect(s.focusedUnit.value).toBe('us_1mn');
   });
 });

@@ -319,3 +319,22 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
   .dock { max-width: none; }
   .tabs-panel { margin: 16px; }
 }
+
+/* --- the battle screen: orders in the card, the round strip, the compass --- */
+.order-card { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.order-card h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.25rem; }
+.order-card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.order-card select { min-height: 44px; font-size: 15px; color: var(--text); }
+.segmented { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 6px; }
+.segmented button { min-height: 44px; }
+.segmented button.active { background: var(--side-0); border-color: var(--side-0); color: var(--side-ink); font-weight: 600; }
+.range-note { margin: 0; padding: 8px 10px; background: var(--bg); font-size: 0.9rem; }
+.range-note.problems { border-left: 0; color: var(--accent); }
+.round-strip { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; }
+.strip-title { font-size: 1.1rem; margin-right: 4px; }
+.round-strip button { min-height: 40px; }
+.round-strip button.active { border: 2px solid var(--accent); color: var(--accent); font-weight: 600; }
+.round-strip .planned { padding: 6px 12px; border: 1px dashed var(--border); color: var(--muted); }
+.compass circle { fill: none; stroke: var(--text); stroke-width: 2; }
+.compass .needle { fill: var(--text); }
+.compass text { fill: var(--text); font-family: var(--display); font-size: 22px; }

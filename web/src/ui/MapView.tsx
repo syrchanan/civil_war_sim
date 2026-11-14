@@ -373,6 +373,12 @@ export function MapView({ store }: { store: Store }) {
             )}
             {layers.grid && gridX.map((x) => <line class="field-grid" x1={x} x2={x} y1={0} y2={FIELD.height} />)}
             {layers.grid && gridY.map((y) => <line class="field-grid" x1={0} x2={FIELD.width} y1={y} y2={y} />)}
+            {/* a compass rose: north is the top of the map */}
+            <g class="compass" aria-hidden="true" transform={`translate(${FIELD.width - 70} 80)`}>
+              <circle r="34" />
+              <path class="needle" d="M0 -28 L 8 0 L 0 28 L -8 0 Z" />
+              <text y="-42" text-anchor="middle">N</text>
+            </g>
             {layers.scale && (
               <g class="scale-bar" transform={`translate(40 ${FIELD.height - 40})`}>
                 <line x1={0} x2={SCALE_BAR} y1={0} y2={0} />

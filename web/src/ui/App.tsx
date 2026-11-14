@@ -11,9 +11,11 @@ import { ArmyBuilder } from './ArmyBuilder';
 import { FileBar } from './FileBar';
 import { clockText } from './format';
 import { MapView } from './MapView';
+import { OrderCard } from './OrderCard';
 import { OrderOfBattle } from './OrderOfBattle';
 import { OrdersPanel } from './OrdersPanel';
 import { ResultPanel } from './ResultPanel';
+import { RoundStrip } from './RoundStrip';
 import { RoundsPanel } from './RoundsPanel';
 import { createStore, type Store } from './store';
 import { UnitInfo } from './UnitInfo';
@@ -89,11 +91,12 @@ export function App({ store = defaultStore }: { store?: Store }) {
         <section class="field-panel" aria-labelledby="map">
           <h2 id="map">The field</h2>
           <MapView store={store} />
+          <RoundStrip store={store} />
         </section>
         <aside class="dock" aria-label="Selected unit">
           {store.focusedUnit.value === null
             ? <p class="note dock-hint">Select a regiment on the map to see it here.</p>
-            : <UnitInfo store={store} />}
+            : <><UnitInfo store={store} /><OrderCard store={store} /></>}
         </aside>
       </div>
       <section class="tabs-panel" aria-label="Orders, armies, dispatches and result">
