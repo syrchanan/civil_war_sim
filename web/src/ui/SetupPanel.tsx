@@ -107,12 +107,14 @@ function Armies({ store }: { store: Store }) {
         {([0, 1] as const).map((side) => {
           const drafts = store.units.value.filter((u) => u.side === side);
           const men = drafts.reduce((sum, u) => sum + (Number.isFinite(u.size) ? u.size : 0), 0);
-          const problems = store.draftProblems(side).length;
+          const problems = store.sideProblems(side).length;
+          const r = store.review.value[side];
           return (
             <li class={`side-${side}`}>
               <strong>{store.sides.value[side]}</strong>
               <span class="note">{drafts.length} regiment{drafts.length === 1 ? '' : 's'}, {men.toLocaleString('en-US')} men</span>
               {problems > 0 && <span class="note warn">{problems} problem{problems === 1 ? '' : 's'} to check</span>}
+              <span class="note">{r.approved ? '✓ Approved' : r.sentBack ? 'Sent back' : 'Not approved yet'}</span>
             </li>
           );
         })}
@@ -156,7 +158,7 @@ export function SetupPanel({ store }: { store: Store }) {
         }}>Save setup</button>
       </div>
       <p class="note">Round 0 has the players place their own regiments; Start battle fights at once, each unit where
-        it stands on the map.</p>
+        it stands on the map. Approve each army under Armies first.</p>
       {problems.length > 0 && <ul role="alert" class="problems">{problems.map((p) => <li>{p}</li>)}</ul>}
     </div>
   );

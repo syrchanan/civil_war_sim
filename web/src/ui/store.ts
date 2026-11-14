@@ -20,7 +20,7 @@ import {
   zoneBand, type ZoneRect,
 } from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
-import { readSetup, SETUP_FORMAT, SETUP_VERSION, type Setup } from './setupFile';
+import { NEW_REVIEW, readSetup, type Review, SETUP_FORMAT, SETUP_VERSION, type Setup } from './setupFile';
 import { generateTerrain, TERRAIN_PRESETS } from './terrainGen';
 
 export type UnitType = 'inf' | 'cav' | 'art';
@@ -155,6 +155,16 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const startClock = signal<string | null>('13:00');
   const roundsPlanned = signal<number | null>(4);
   const zoneDepth = signal<[number, number]>([DEFAULT_ZONE_DEPTH, DEFAULT_ZONE_DEPTH]);
+  const review = signal<[Review, Review]>([{ ...NEW_REVIEW }, { ...NEW_REVIEW }]);
+
+  function setReview(side: 0 | 1, change: Partial<Review>): void {
+    const next: [Review, Review] = [...review.value];
+    next[side] = { ...next[side], ...change };
+    review.value = next;
+  }
+
+  /** A change to a side's army: whatever was approved or sent back must be looked at again. */
+  const changed = (side: 0 | 1) => setReview(side, { approved: false, sentBack: false });
   /** Where each side deploys: a band along its own edge of the field, as deep as the admin set. */
   const zones = computed<Record<string, ZoneRect>>(() => ({
     0: zoneBand(0, finite(zoneDepth.value[0])), 1: zoneBand(1, finite(zoneDepth.value[1])),
@@ -397,9 +407,11 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     units.value = [...units.value, {
       id: `u${n}`, name: `Unit ${n}`, side, type: 'inf', subtype: 'line', size: 500, stats: '5/5/0/0', guns: null,
     }];
+    changed(side);
   }
 
   function updateUnit(id: string, change: Partial<UnitDraft>): void {
+    changed(units.value.find((u) => u.id === id)!.side);
     units.value = units.value.map((u) => {
       if (u.id !== id) return u;
       const next = { ...u, ...change };
@@ -414,6 +426,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   function removeUnit(id: string): void {
+    changed(units.value.find((u) => u.id === id)!.side);
     units.value = units.value.filter((u) => u.id !== id);
   }
 
@@ -422,11 +435,13 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return { name: `army-${sides.value[side]}.csv`, text: armyToCsv(units.value.filter((u) => u.side === side)) };
   }
 
-  /** Replace one side's units with those in an army file; returns the problems (none: loaded). */
-  function loadArmy(side: 0 | 1, text: string): string[] {
+  /**
+   * Replace one side's units with those in an army file. Lines that can't be read are left out, and kept for the
+   * review; a file with no readable unit (or a wrong header) changes nothing. Returns the problems.
+   */
+  function loadArmy(side: 0 | 1, text: string, file: string | null = null): string[] {
     const { units: read, problems } = armyFromCsv(text, side);
-    if (problems.length) return problems;
-    if (read.length === 0) return ['The file has no units.'];
+    if (read.length === 0) return problems.length ? problems : ['The file has no units.'];
     const others = units.value.filter((u) => u.side !== side);
     const used = new Set(others.map((u) => u.id));
     let n = 0;
@@ -435,17 +450,20 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       return { ...u, id: `s${side}u${n}` };
     });
     units.value = side === 0 ? [...fresh, ...others] : [...others, ...fresh];
-    return [];
+    setReview(side, { ...NEW_REVIEW, file, lineProblems: problems });
+    return problems;
   }
 
   function clearUnits(): void {
     units.value = [];
+    review.value = [{ ...NEW_REVIEW }, { ...NEW_REVIEW }];
   }
 
   function renameSide(side: 0 | 1, name: string): void {
     const next: [string, string] = [...sides.value];
     next[side] = name;
     sides.value = next;
+    changed(side);
   }
 
   /** Enemy units a unit can target: any not wiped out (broken ones can still be fired on or pursued). */
@@ -644,23 +662,58 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     seedSignal.value = Math.floor(random() * 2 ** 32);
   }
 
+  /** What is wrong with one unit's draft (it can't be built), or null. */
+  function unitProblem(u: UnitDraft): string | null {
+    if (!wholeAtLeast(u.size, 1)) return 'men must be a whole number, 1 or more.';
+    if (u.type === 'art' && !wholeAtLeast(u.guns, 0)) return 'guns must be a whole number, 0 or more.';
+    try {
+      buildRegiment(u);
+    } catch (error) {
+      return (error as Error).message;
+    }
+    return null;
+  }
+
   /** What is wrong with one side's drafts: units that can't be built, or no units at all. */
   function draftProblems(side: 0 | 1): string[] {
-    const problems: string[] = [];
     const drafts = units.value.filter((u) => u.side === side);
-    for (const u of drafts) {
-      if (!wholeAtLeast(u.size, 1)) problems.push(`${u.name}: men must be a whole number, 1 or more.`);
-      else if (u.type === 'art' && !wholeAtLeast(u.guns, 0)) problems.push(`${u.name}: guns must be a whole number, 0 or more.`);
-      else {
-        try {
-          buildRegiment(u);
-        } catch (error) {
-          problems.push(`${u.name}: ${(error as Error).message}`);
-        }
-      }
-    }
+    const problems = drafts.flatMap((u) => {
+      const problem = unitProblem(u);
+      return problem === null ? [] : [`${u.name}: ${problem}`];
+    });
     if (drafts.length === 0) problems.push(`${sides.value[side]} has no units.`);
     return problems;
+  }
+
+  /** Everything the admin must settle before approving a side: lines left out of its file, and its drafts. */
+  const sideProblems = (side: 0 | 1): string[] => [...review.value[side].lineProblems, ...draftProblems(side)];
+
+  /** Admin: approve a side's army; refused (returns the problems) while it has any. */
+  function approve(side: 0 | 1): string[] {
+    const problems = sideProblems(side);
+    if (problems.length === 0) setReview(side, { approved: true, sentBack: false });
+    return problems;
+  }
+
+  /** Admin: leave out the lines of a side's file that couldn't be read (the player can send them again). */
+  function dropUnreadLines(side: 0 | 1): void {
+    setReview(side, { lineProblems: [] });
+  }
+
+  function setReviewNote(side: 0 | 1, note: string): void {
+    setReview(side, { note });
+  }
+
+  /** Admin: send a side's army back: what to tell the player (its problems and the admin's note). */
+  function sendBack(side: 0 | 1): string {
+    setReview(side, { approved: false, sentBack: true });
+    const r = review.value[side];
+    const problems = sideProblems(side);
+    return [
+      `${sides.value[side]} army${r.file === null ? '' : ` (${r.file})`}: sent back.`,
+      ...(problems.length ? ['', 'Problems:', ...problems.map((p) => `- ${p}`)] : []),
+      ...(r.note.trim() === '' ? [] : ['', r.note.trim()]),
+    ].join('\n');
   }
 
   /** What stops the battle being built: the armies, the seed, the day's plan. */
@@ -716,6 +769,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
    */
   function openDeployment(): string[] {
     const problems = setupProblems();
+    for (const side of [0, 1] as const) {
+      if (!review.value[side].approved) problems.push(`${sides.value[side]}'s army has not been approved.`);
+    }
     if (problems.length) return problems;
     positions.value = {}; // drawn up afresh in the zones
     return build('deployment');
@@ -765,7 +821,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       format: SETUP_FORMAT, version: SETUP_VERSION, name: battleName.value, sides: [...sides.value],
       seed: seedSignal.value, ground: terrainPreset.value, round_length: duration.value,
       rounds_planned: roundsPlanned.value, start_clock: startClock.value, zone_depth: [...zoneDepth.value],
-      units: structuredClone(units.value),
+      units: structuredClone(units.value), review: structuredClone(review.value),
     };
     const name = battleName.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'battle';
     return { name: `setup-${name}.json`, text: JSON.stringify(setup, null, 2) };
@@ -782,6 +838,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     startClock.value = setup.start_clock;
     zoneDepth.value = setup.zone_depth;
     units.value = setup.units;
+    review.value = setup.review;
     positions.value = {};
     playerFileInfo.value = null;
     reset();
@@ -998,7 +1055,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   return {
-    battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems,
+    battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,
+    review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack,
     openDeployment, setupDownload,
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,

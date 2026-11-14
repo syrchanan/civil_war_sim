@@ -91,7 +91,9 @@ describe('the client', () => {
     fireEvent.click(within(layers).getByLabelText('Woods and rough ground'));
     expect(document.querySelector('.woods')).toBeNull();
     act(() => { store.setLayer('relief', true); });
-    fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
+    // scoped: a role query over the whole page walks every relief cell, too slow under coverage
+    const setup = document.querySelector('.setup-panel') as HTMLElement;
+    fireEvent.click(within(setup).getByRole('button', { name: 'Start battle' }));
     expect(screen.queryByLabelText('Ground')).toBeNull();               // fixed once the battle starts
     expect(document.querySelectorAll('.relief rect').length).toBeGreaterThan(0);
   });

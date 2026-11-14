@@ -10,6 +10,16 @@ import type { UnitDraft, UnitType } from './store';
 export const SETUP_FORMAT = 'imperial-generals-setup';
 export const SETUP_VERSION = 1;
 
+/** The admin's review of one side's army, before round 0 opens. */
+export interface Review {
+  file: string | null; // the army file loaded last
+  lineProblems: string[]; // its lines that couldn't be read (left out)
+  approved: boolean;
+  sentBack: boolean;
+  note: string; // to the player, sent with the problems
+}
+export const NEW_REVIEW: Review = { file: null, lineProblems: [], approved: false, sentBack: false, note: '' };
+
 export interface Setup {
   name: string;
   sides: [string, string];
@@ -20,6 +30,7 @@ export interface Setup {
   start_clock: string | null;
   zone_depth: [number, number]; // yards from each side's own edge
   units: UnitDraft[];
+  review: [Review, Review];
 }
 
 const TYPES: (UnitType | null)[] = ['inf', 'cav', 'art', null];
@@ -39,6 +50,16 @@ function readUnit(u: Record<string, unknown>, n: number): UnitDraft {
     id: u.id, name: u.name, side: u.side, type: u.type as UnitType | null, subtype: u.subtype, size: u.size,
     stats: u.stats, guns: u.guns, org: validateOrg(u.org ?? {}),
   };
+}
+
+function readReview(r: unknown): Review {
+  if (r === undefined) return { ...NEW_REVIEW };
+  const v = (r ?? {}) as Record<string, unknown>;
+  if (!(v.file === null || isText(v.file)) || !Array.isArray(v.lineProblems) || !v.lineProblems.every(isText)
+    || typeof v.approved !== 'boolean' || typeof v.sentBack !== 'boolean' || !isText(v.note)) {
+    throw new Error('A side\'s review is not readable.');
+  }
+  return { file: v.file, lineProblems: v.lineProblems, approved: v.approved, sentBack: v.sentBack, note: v.note };
 }
 
 /** Read a setup file's contents (already parsed); throws what is wrong with it. */
@@ -61,8 +82,11 @@ export function readSetup(data: Record<string, unknown>): Setup {
     throw new Error('The setup needs a zone depth for each side.');
   }
   if (!Array.isArray(units)) throw new Error('The setup needs a list of units.');
+  const review = (data.review ?? []) as unknown[];
+  if (!Array.isArray(review)) throw new Error('The setup\'s review must be a list, one per side.');
   return {
     name, sides: [sides[0], sides[1]], seed, ground, round_length: length, rounds_planned: rounds, start_clock: clock,
     zone_depth: [depth[0], depth[1]], units: units.map((u, n) => readUnit(u as Record<string, unknown>, n)),
+    review: [readReview(review[0]), readReview(review[1])],
   };
 }

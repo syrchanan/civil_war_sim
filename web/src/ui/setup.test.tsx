@@ -11,6 +11,13 @@ import { SETUP_FORMAT, SETUP_VERSION } from './setupFile';
 import { createStore } from './store';
 
 beforeEach(() => localStorage.clear());
+
+/** Both armies approved, as the admin does before opening round 0. */
+function approved(s: ReturnType<typeof createStore>) {
+  s.approve(0);
+  s.approve(1);
+  return s;
+}
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -52,6 +59,7 @@ describe('store: opening round 0', () => {
     s.battleName.value = '  Example Ridge ';
     s.setZoneDepth(1, 200);
     s.moveUnit(s.units.value[0].id, { x: 50, y: 50 }); // placed by hand: drawn up afresh
+    approved(s);
     expect(s.openDeployment()).toEqual([]);
     const b = s.battle.value!;
     expect(b.meta.name).toBe('Example Ridge');
@@ -94,6 +102,8 @@ describe('store: opening round 0', () => {
       'Rounds planned must be a whole number, 1 or more.',
       `Union's zone must be 1 to ${FIELD.height / 2} yards deep.`,
       `Confederate's zone must be 1 to ${FIELD.height / 2} yards deep.`,
+      "Union's army has not been approved.",
+      "Confederate's army has not been approved.",
     ]);
     expect(s.battle.value).toBeNull();
     expect(s.mapUnits.value.find((u) => u.uid === uid)).toMatchObject({ x: 50, y: 50 });
@@ -231,19 +241,26 @@ describe('the setup panel', () => {
     const s = createStore(1863);
     render(<App store={s} />);
     const items = () => within(panel()).getAllByRole('listitem').map((li) => li.textContent);
-    expect(items()[0]).toMatch(/^Union\d+ regiments, [\d,]+ men$/);
+    expect(items()[0]).toMatch(/^Union\d+ regiments, [\d,]+ menNot approved yet$/);
+    act(() => {
+      s.approve(0);
+      s.sendBack(1);
+    });
+    expect(items().map((t) => t.replace(/^.*men/, ''))).toEqual(['✓ Approved', 'Sent back']);
     act(() => {
       s.units.value = [{ ...s.units.value[0], size: NaN }];
     });
-    expect(items()).toEqual(['Union1 regiment, 0 men1 problem to check', 'Confederate0 regiments, 0 men1 problem to check']);
+    // set directly (no edit through the store), so the review stands
+    expect(items()).toEqual(['Union1 regiment, 0 men1 problem to check✓ Approved',
+      'Confederate0 regiments, 0 men1 problem to checkSent back']);
     act(() => {
       s.units.value = [{ ...s.units.value[0], size: NaN, stats: 'x/5/0/0' }, { ...s.units.value[0], id: 'x', size: NaN }];
     });
-    expect(items()[0]).toBe('Union2 regiments, 0 men2 problems to check');
+    expect(items()[0]).toBe('Union2 regiments, 0 men2 problems to check✓ Approved');
   });
 
   it('opens round 0, or names what stops it', () => {
-    const s = createStore(1863);
+    const s = approved(createStore(1863));
     render(<App store={s} />);
     fireEvent.input(screen.getByLabelText('Seed'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Open round 0: deployment' }));
@@ -289,7 +306,7 @@ describe('the zones on the map', () => {
     render(<App store={s} />);
     expect(zoneLabels()).toEqual(['Union deployment zone', 'Confederate deployment zone']);
     act(() => {
-      s.openDeployment();
+      approved(s).openDeployment();
     });
     expect(zoneLabels()).toEqual(['Union deployment zone', 'Confederate deployment zone']);
     act(() => {
@@ -300,7 +317,7 @@ describe('the zones on the map', () => {
   });
 
   it('a player deploying sees only their own zone', () => {
-    const admin = createStore(1863);
+    const admin = approved(createStore(1863));
     admin.openDeployment();
     const player = createStore(1, 'player');
     player.open(admin.playerFileDownload(1).text);

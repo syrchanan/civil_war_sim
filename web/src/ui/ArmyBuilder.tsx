@@ -7,6 +7,7 @@ import { useState } from 'preact/hooks';
 
 import { ORG_KEYS } from '../engine';
 import defaults from '../engine/defaults.json';
+import { ArmyReview } from './ArmyReview';
 import { save } from './FileBar';
 import type { Store, UnitDraft, UnitType } from './store';
 
@@ -34,8 +35,9 @@ function UnitRow({ store, unit }: { store: Store; unit: UnitDraft }) {
   };
   const label = (what: string) => `${unit.name} ${what}`;
   const weapons = weaponNames(unit.type);
+  const problem = store.unitProblem(unit);
   return (
-    <tr>
+    <tr id={`unit-${unit.id}`} class={problem === null ? undefined : 'has-problem'} title={problem ?? undefined}>
       <td data-label="Name"><input aria-label={label('name')} value={unit.name}
         onInput={(e) => set({ name: e.currentTarget.value })} /></td>
       <td data-label="Type">
@@ -92,7 +94,7 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
     const file = input.files![0];
     input.value = '';
     if (!file) return;
-    setProblems(store.loadArmy(side, await file.text()).map((p) => `${file.name}: ${p}`));
+    setProblems(store.loadArmy(side, await file.text(), file.name).map((p) => `${file.name}: ${p}`));
   };
   return (
     <div class={`side side-${side}`}>
@@ -123,11 +125,36 @@ function SideTable({ store, side }: { store: Store; side: 0 | 1 }) {
         </label>
       </div>
       {problems.length > 0 && <ul role="alert" class="problems">{problems.map((p) => <li>{p}</li>)}</ul>}
+      {store.mode.value === 'admin' && <ArmyReview store={store} side={side} />}
+    </div>
+  );
+}
+
+/** A player builds their own side's army; the other side's table is there to practise against. */
+function PlayerArmy({ store }: { store: Store }) {
+  const own = store.playerSide.value;
+  const other = (1 - own) as 0 | 1;
+  return (
+    <div class="army-builder">
+      <label class="you-command">
+        You command{' '}
+        <select aria-label="You command" value={String(own)}
+          onChange={(e) => { store.playerSide.value = Number(e.currentTarget.value) as 0 | 1; }}>
+          <option value="0">{store.sides.value[0]}</option>
+          <option value="1">{store.sides.value[1]}</option>
+        </select>
+      </label>
+      <SideTable store={store} side={own} />
+      <details>
+        <summary>{store.sides.value[other]}, to practise against</summary>
+        <SideTable store={store} side={other} />
+      </details>
     </div>
   );
 }
 
 export function ArmyBuilder({ store }: { store: Store }) {
+  if (store.mode.value === 'player') return <PlayerArmy store={store} />;
   return (
     <div class="army-builder">
       <div class="sides">
