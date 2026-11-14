@@ -18,7 +18,7 @@ import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
 import { UnitInfo } from './UnitInfo';
 
-/** Engine mode -> action word, capitalised (config/sheets.yaml: fire, charge). */
+/** Engine mode -> action word, capitalised (`names.actions` in defaults.json: fire, charge). */
 const ACTION_WORDS: Record<string, string> = Object.fromEntries(Object.entries(defaults.names.actions)
   .map(([word, mode]) => [mode, word[0].toUpperCase() + word.slice(1)]));
 

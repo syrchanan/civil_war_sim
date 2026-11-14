@@ -1,5 +1,5 @@
 /**
- * Cosine and sine of an angle in degrees, bit-identical with python/imperial_generals/utils/trig.py.
+ * Cosine and sine of an angle in degrees, bit-identical with the former Python engine's utils/trig.py.
  *
  * Library Math.sin / Math.cos may differ in the last bit between engines, so these use only + - * /: the angle is
  * reduced exactly to [-45, 45] degrees, turned into radians, and fed to fixed-order Taylor polynomials, in the

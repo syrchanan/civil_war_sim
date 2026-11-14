@@ -1,7 +1,7 @@
 /**
- * Commander rating (port of python/imperial_generals/commanders.py): each side's commander as a historical general,
- * by how the battle's result compares with what the armies' strength led to expect. Formulas and the ladder are in
- * config/commanders.yaml (copied into defaults.json).
+ * Commander rating (port of the former Python engine's commanders.py): each side's commander as a historical general,
+ * by how the battle's result compares with what the armies' strength led to expect. Formulas and the ladder are
+ * `commanders` in defaults.json.
  */
 
 import defaults from './defaults.json';

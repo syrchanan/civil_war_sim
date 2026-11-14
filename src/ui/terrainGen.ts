@@ -1,13 +1,13 @@
 /**
  * The client's terrain generator (positions pass P4): the ground for a new battle, as the grid saved in the state
- * file (engine/terrain.ts reads it, in both languages). Generated once, here only; a saved battle carries its
+ * file (engine/terrain.ts reads it). Generated once, here only; a saved battle carries its
  * terrain, so replays never regenerate it.
  *
- * Elevation follows the map pipeline (python/imperial_generals/map/elevation.py) with its presets (config/map.yaml
- * terrain_presets): fractal Brownian motion over gradient noise, normalised, raised to the preset's exponent,
+ * Elevation follows the former Python map pipeline's elevation stage, with its presets (`terrain.presets` in
+ * defaults.json): fractal Brownian motion over gradient noise, normalised, raised to the preset's exponent,
  * base + (shaped − 0.5) × range feet; positions are converted from yards to map units and heights from feet to
  * yards above the lowest ground. Woods come from a second noise field (the preset's share of the field); steep open
- * ground is rough (config/terrain.yaml).
+ * ground is rough (`terrain` in defaults.json).
  */
 
 import defaults from '../engine/defaults.json';
@@ -80,7 +80,7 @@ export function threshold(values: number[], share: number): number {
   return sorted[Math.max(0, Math.round(share * values.length) - 1)];
 }
 
-/** A new battle's ground from a preset (config/terrain.yaml presets) and a seed. */
+/** A new battle's ground from a preset (`terrain.presets` in defaults.json) and a seed. */
 export function generateTerrain(preset: string, seed: number): TerrainData {
   if (!(preset in cfg.presets)) throw new Error(`Unknown terrain preset ${preset}; one of ${TERRAIN_PRESETS.join(', ')}.`);
   const elevation = cfg.elevation[preset as Preset];

@@ -1,5 +1,5 @@
 /**
- * Per-battle tunable parameters (port of python/imperial_generals/params.py).
+ * Per-battle tunable parameters (port of the former Python engine's params.py).
  *
  * Field names are snake_case on purpose: they are the battle state file's format, so `toDict` / `fromDict` need
  * no mapping. Defaults come from defaults.json, edited by hand (it was generated from the former Python config).
@@ -416,7 +416,7 @@ export interface ChargeData {
 
 const sigmoid = (z: number): number => 1.0 / (1.0 + exp(-z));
 
-/** Charges: the approach under close-range fire and the contact test (formulas in config/charge.yaml). */
+/** Charges: the approach under close-range fire and the contact test (`params.charge` in defaults.json). */
 export class ChargeParams implements ChargeData {
   readonly approach_minutes: Record<string, number>;
   readonly closing_fire_multiplier: number;
@@ -541,7 +541,7 @@ function checkRanges(name: string, table: unknown, keys: readonly string[] | nul
   }
 }
 
-/** Fire falling off with distance in yards (config/range.yaml). */
+/** Fire falling off with distance in yards (`params.range` in defaults.json). */
 export class RangeParams {
   readonly falloff_exponent: number;
   readonly small_arms: Record<string, RangeBand>;
@@ -591,7 +591,7 @@ export interface SightData {
 
 export interface SightParams extends Readonly<SightData> {}
 
-/** Line of sight and the elevation bonus on a battle's terrain (config/sight.yaml). */
+/** Line of sight and the elevation bonus on a battle's terrain (`params.sight` in defaults.json). */
 export class SightParams {
   constructor(data: SightData) {
     if (!isObject(data.eye_height) || !sameKeys(data.eye_height, UNIT_TYPES)) {
@@ -635,7 +635,7 @@ export interface FlightData {
 
 export interface FlightParams extends Readonly<FlightData> {}
 
-/** Broken units fleeing: speeds, how fast they slow, when they stop (config/flight.yaml). */
+/** Broken units fleeing: speeds, how fast they slow, when they stop (`params.flight` in defaults.json). */
 export class FlightParams {
   constructor(data: FlightData) {
     if (!isObject(data.speed) || !sameKeys(data.speed, UNIT_TYPES)) {
@@ -688,7 +688,7 @@ export interface FlankData {
 
 export interface FlankParams extends Readonly<FlankData> {}
 
-/** Front, flank and rear: arcs (degrees) and what attacks from the flank or rear do (config/flanks.yaml). */
+/** Front, flank and rear: arcs (degrees) and what attacks from the flank or rear do (`params.flanks` in defaults.json). */
 export class FlankParams {
   constructor(data: FlankData) {
     if (!(data.front_arc > 0 && data.front_arc <= 360)) throw new ValueError('front_arc must be in (0, 360] degrees.');
@@ -731,7 +731,7 @@ export interface RallyData {
 
 export interface RallyParams extends Readonly<RallyData> {}
 
-/** Rallying broken units: the odds, tries per battle and the penalties after (config/rally.yaml). */
+/** Rallying broken units: the odds, tries per battle and the penalties after (`params.rally` in defaults.json). */
 export class RallyParams {
   constructor(data: RallyData) {
     if (!Number.isInteger(data.attempts) || data.attempts < 1) {

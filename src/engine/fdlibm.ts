@@ -1,5 +1,5 @@
 /**
- * Pure-arithmetic ports of fdlibm `log` and `exp` (port of python/imperial_generals/utils/fdlibm.py).
+ * Pure-arithmetic ports of fdlibm `log` and `exp` (port of the former Python engine's utils/fdlibm.py).
  *
  * V8's Math.log / Math.exp are fdlibm too, but the engine uses these ports on both sides so that results never
  * depend on a platform's libm: only IEEE-754 +, -, *, / and bit manipulation.

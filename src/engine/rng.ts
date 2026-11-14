@@ -1,5 +1,5 @@
 /**
- * Seeded generator shared with the Python engine (port of python/imperial_generals/utils/rng.py).
+ * Seeded generator (port of the former Python engine's utils/rng.py).
  *
  * - Seeding: a 32-bit seed is expanded to four state words with splitmix32.
  * - Core: xoshiro128** (32-bit operations only: Math.imul and >>> 0).

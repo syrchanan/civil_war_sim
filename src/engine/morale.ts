@@ -1,5 +1,5 @@
 /**
- * Per-unit morale model (port of python/imperial_generals/battles/morale.py).
+ * Per-unit morale model (port of the former Python engine's battles/morale.py).
  *
  * A unit's live morale is `initialMorale × resolve`, where `resolve` is the share of its morale budget left
  * (1 = fresh, 0 = broken). The budget is sized so that pure attrition breaks a unit at `breakFraction` of its

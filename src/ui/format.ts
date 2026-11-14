@@ -1,4 +1,4 @@
-/** How the client words a battle: the same phrases as the Python CLI (python/imperial_generals/cli.py). */
+/** How the client words a battle: the same phrases as the former Python CLI. */
 
 import type { BattleResult, Charge, Flight, Modifier, Rally, Zone } from '../engine';
 
