@@ -81,8 +81,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | # | Stage | Status |
 |---|---|---|
 | D1 | File formats v3: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones); deployment and opening the battle (web engine); player file v3; army CSV with org | ✓ (2026-11-13) |
-| D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ► next |
-| D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ○ |
+| D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ✓ (2026-11-14) |
+| D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ► next |
 | D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ○ |
 | D5 | Round results as a dispatch | ○ |
 | D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ○ |
@@ -112,6 +112,21 @@ TypeScript. The game flow and the web experience live in the web engine only; Py
 - **Army CSV:** optional `corps`, `division` and `brigade` columns, carried into the battle.
 - Not done (Python, for players' validation workbooks): the xlsx template gets no org columns; it isn't needed for
   the game flow.
+
+**D2, built:**
+- **Theme** (`style.css`): style A tokens (parchment, ink, rules, oxblood accent, Union blue, Confederate brown-gray,
+  field colours), square corners, restyled buttons and inputs, focus rings. Light only; the old dark-mode block is
+  gone until the lamplight theme.
+- **Fonts, bundled** (no requests to Google): IM Fell English SC for display, Source Serif 4 for body, from the
+  `@fontsource` packages (OFL, pinned).
+- **Shell** (`App.tsx`):
+  - a header bar with the battle's name, where it stands ("Round 2 of 4 · 2:00 pm", "Round 0 · deployment",
+    "Nightfall · 3 rounds fought", from `plan` and `clockText`) and the file actions;
+  - the field, with the selected unit's card docked beside it (a hint when none is selected);
+  - a tabbed panel (Orders, Armies, Dispatches, Result) that opens on the tab the phase needs (setup and deployment
+    on Armies, battle on Orders, nightfall on Result). A tab picked stays until the phase changes. Every panel stays
+    on the page, hidden by style when not chosen.
+- Phones: everything stacks. The header's buttons are still one per line; D8 tidies them.
 
 ### Phase C — Later
 | Item | Status |
