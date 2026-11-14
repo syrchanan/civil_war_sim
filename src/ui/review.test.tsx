@@ -154,14 +154,14 @@ describe('the review under each army', () => {
     render(<App store={s} />);
     act(() => {
       s.loadArmy(0, CSV, 'union.csv');
-      s.updateUnit(s.units.value[0].id, { size: NaN });
+      s.updateUnit(s.units.value[0].id, { size: NaN, org: { brigade: 'Harrow\'s Brigade' } });
     });
     const r = review('Union');
     expect(r.getByText('3 problems to check')).toBeTruthy();
     expect(r.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
       'union.csv: Line 3: men must be a whole number, 1 or more. (left out)',
       'union.csv: Line 4: experience must be a whole number from 1 to 10. (left out)',
-      'Iron Brigade: men must be a whole number, 1 or more.',
+      "Iron Brigade (Harrow's Brigade): men must be a whole number, 1 or more.", // its brigade, to find it
     ]);
     const uid = s.units.value[0].id;
     expect(r.getByRole('link').getAttribute('href')).toBe(`#unit-${uid}`);

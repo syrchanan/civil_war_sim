@@ -458,3 +458,14 @@ button.link { border: 0; padding: 0; background: none; color: var(--accent); tex
 .map-zoom { position: absolute; top: 8px; left: 8px; z-index: 2; display: flex; gap: 4px; }
 .map-zoom button { min-width: 36px; min-height: 36px; padding: 2px 8px; background: var(--surface); }
 .map svg { cursor: grab; }
+/* rosters: each side by corps, division and brigade */
+.rosters { display: grid; gap: 12px; margin-top: 12px; }
+.roster { margin: 0; border-top: 3px solid var(--side-0); }
+.roster.side-1 { border-top-color: var(--side-1); }
+.roster h3 { margin: 0 0 6px; font-family: var(--display); font-weight: 400; font-size: 1.2rem; }
+.roster-group { margin: 2px 0 0; border-top: 0; padding: 2px 0 0 12px; }
+.roster-group.corps { padding-left: 0; }
+.roster-group summary { font-weight: 400; }
+.roster-group.division > summary .roster-name, .roster-group.corps > summary .roster-name { font-family: var(--display); }
+.roster-units { margin: 2px 0 6px; padding-left: 18px; list-style: none; }
+.roster-units li { padding: 1px 0; }

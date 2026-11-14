@@ -15,6 +15,7 @@ import { OrderCard } from './OrderCard';
 import { OrderOfBattle } from './OrderOfBattle';
 import { OrdersPanel } from './OrdersPanel';
 import { ResultPanel } from './ResultPanel';
+import { Rosters } from './Rosters';
 import { RoundStrip } from './RoundStrip';
 import { RoundsPanel } from './RoundsPanel';
 import { SetupPanel } from './SetupPanel';
@@ -51,6 +52,7 @@ function Armies({ store }: { store: Store }) {
   return (
     <>
       <OrderOfBattle sides={store.orderOfBattle.value!} hidden={store.fogSide.value} />
+      <Rosters store={store} />
       {store.playerFileInfo.value === null && (
         <button onClick={() => store.reset()}>Change the armies (starts over)</button>
       )}

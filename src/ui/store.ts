@@ -1254,7 +1254,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, fogSide, guesses, setGuess,
     modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier, rangeOf,
-    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain, seenNow,
+    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain, seenNow, lastSeenRound,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

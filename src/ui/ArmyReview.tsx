@@ -63,7 +63,9 @@ export function ArmyReview({ store, side }: { store: Store; side: 0 | 1 }) {
   const drafts = store.units.value.filter((u) => u.side === side);
   const broken = drafts.flatMap((u) => {
     const problem = store.unitProblem(u);
-    return problem === null ? [] : [{ id: u.id, text: `${u.name}: ${problem}` }];
+    // in a large army, which brigade it is in helps to find it
+    const where = u.org?.brigade ? ` (${u.org.brigade})` : '';
+    return problem === null ? [] : [{ id: u.id, text: `${u.name}${where}: ${problem}` }];
   });
   const problems = store.sideProblems(side);
   const onSendBack = () => {
