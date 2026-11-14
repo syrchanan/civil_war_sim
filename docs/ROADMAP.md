@@ -80,8 +80,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 
 | # | Stage | Status |
 |---|---|---|
-| D1 | File formats v3, both engines: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones), `open_battle`; player file v3, orders file v2, army CSV and setup file with org | ► next |
-| D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ○ |
+| D1 | File formats v3: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones); deployment and opening the battle (web engine); player file v3; army CSV with org | ✓ (2026-11-13) |
+| D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ► next |
 | D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ○ |
 | D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ○ |
 | D5 | Round results as a dispatch | ○ |
@@ -90,6 +90,28 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D8 | Phones, cleanup, merge | ○ |
 
 Later: roads, fences and railways (map stages 4–6); a dark "lamplight" theme; pixel cutscenes.
+
+**Parity (user, 2026-11-13):** only the core engine (combat resolution) is kept in parity between Python and
+TypeScript. The game flow and the web experience live in the web engine only; Python carries their data through
+(state, setup and scenario files) so it can still read and replay what the client saves.
+
+**D1, built:**
+- **State file version 3** (both engines; version 2 still loads):
+  - each unit's `org` (`{corps, division, brigade}`, optional names: they organise lists and never affect combat);
+  - the battle's `plan` (`rounds_planned`, `start_clock` 'HH:MM', `phase` deployment / battle, `zones` per side
+    `{x, y, w, h}` in yards).
+  - Both are validated (`validate_org` / `validate_plan`, `plan.ts`) and accepted in setup files. Python's
+    `scenario_from_state` carries them through. A v3 reference file is `test_cases/battle_state_v3.json`.
+- **The game flow (web engine only):**
+  - no round is fought while deploying;
+  - `openBattle` checks every standing unit is placed inside its side's zone (problems named), then opens round 1;
+  - `setRoundsPlanned` (at least the rounds fought; null is open-ended); `inZone`, `deploymentProblems`.
+- **Player file version 3:** carries org (the enemy's for units seen). While deploying it holds no enemy unit at
+  all. Versions 1 and 2 still open.
+- **Orders files are unchanged:** a round 0 deployment is an orders file with places and no orders.
+- **Army CSV:** optional `corps`, `division` and `brigade` columns, carried into the battle.
+- Not done (Python, for players' validation workbooks): the xlsx template gets no org columns; it isn't needed for
+  the game flow.
 
 ### Phase C — Later
 | Item | Status |
