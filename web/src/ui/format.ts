@@ -90,3 +90,12 @@ export function chargeText(c: Charge, name: (uid: string) => string): string {
   }
   return text;
 }
+
+/** '1:00 pm': the clock `minutes` after the battle's start ('HH:MM', 24-hour); null when no start was given. */
+export function clockText(start: string | null, minutes: number): string | null {
+  if (start === null) return null;
+  const total = Number(start.slice(0, 2)) * 60 + Number(start.slice(3)) + Math.round(minutes);
+  const h = Math.floor(total / 60) % 24;
+  const m = total % 60;
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`;
+}

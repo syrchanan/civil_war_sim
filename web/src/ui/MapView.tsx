@@ -16,7 +16,6 @@ import type { Terrain, TerrainData } from '../engine';
 import { arcPath, bearing, FIELD, type Point, turned } from './field';
 import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
-import { UnitInfo } from './UnitInfo';
 
 /** Engine mode -> action word, capitalised (config/sheets.yaml: fire, charge). */
 const ACTION_WORDS: Record<string, string> = Object.fromEntries(Object.entries(defaults.names.actions)
@@ -390,7 +389,6 @@ export function MapView({ store }: { store: Store }) {
           {choice !== null && <TargetMenu store={store} choice={choice} at={byId[choice.to]} />}
         </div>
       </div>
-      <UnitInfo store={store} />
       <p class="note">
         {aiming !== null ? `Pick a target for ${byId[aiming].name}: click an enemy (Escape to stop). ` : ''}
         {selectable && aiming === null ? 'Click a unit, then an enemy, to give it a target. ' : ''}

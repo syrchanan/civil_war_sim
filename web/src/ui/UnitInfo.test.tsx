@@ -7,7 +7,7 @@ import { Terrain } from '../engine';
 import { App } from './App';
 import { createStore, type Store } from './store';
 import { closeRanks } from './testing';
-import { STATS_LABEL, unitInfoOf } from './UnitInfo';
+import { STATS_LABEL, UnitInfo, unitInfoOf } from './UnitInfo';
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
@@ -181,6 +181,15 @@ describe('unitInfoOf', () => {
     });
     s.touch();
     expect(rows(s).Ground).toBe('Open ground'); // heights are above the lowest ground: 0 says nothing
+  });
+});
+
+describe('the card', () => {
+  it('draws nothing for a unit no longer on the map (an enemy gone out of sight)', () => {
+    const s = inBattle();
+    s.selectUnit('gone');
+    const { container } = render(<UnitInfo store={s} />);
+    expect(container.innerHTML).toBe('');
   });
 });
 
