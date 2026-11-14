@@ -498,3 +498,6 @@ button.link { border: 0; padding: 0; background: none; color: var(--accent); tex
 .group-card .note { margin: 0; }
 .group-card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
 .group-card select { min-height: 40px; font-size: 15px; color: var(--text); }
+.group rect.drag { pointer-events: all; fill: transparent; cursor: move; }
+.deploy-brigades { list-style: none; margin: 0; padding: 0; }
+.deploy-brigades li { padding: 3px 0; }

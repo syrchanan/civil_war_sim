@@ -5,7 +5,7 @@
 
 import { useState } from 'preact/hooks';
 
-import type { Store } from './store';
+import { groupKey, groupOf, type GroupRef, type Store } from './store';
 
 function Outside({ store, uids }: { store: Store; uids: string[] }) {
   const b = store.battle.value!;
@@ -23,6 +23,33 @@ function Outside({ store, uids }: { store: Store; uids: string[] }) {
 }
 
 // each reads the revision itself: with signals, a child whose props are unchanged re-renders only on its own reads
+/** One side's brigades, each with where its regiments stand; a brigade picked opens its card to draw it up. */
+function Brigades({ store, side }: { store: Store; side: 0 | 1 }) {
+  store.revision.value; // regiments moved in or out of the zone
+  const b = store.battle.value!;
+  const groups = new Map<string, GroupRef>();
+  for (const u of b.units.values()) {
+    const g = u.side === side ? groupOf(side, u.org, 'brigade') : null;
+    if (g !== null) groups.set(groupKey(g), g);
+  }
+  if (groups.size === 0) return null;
+  return (
+    <ul class="deploy-brigades" aria-label={`${store.sides.value[side]} brigades`}>
+      {[...groups.values()].map((g) => {
+        const members = store.unitsOfGroup(g);
+        const out = members.filter((u) => store.outsideZone(u.uid)).length;
+        return (
+          <li>
+            <button class="link" onClick={() => store.selectGroup(g)}>{g.brigade}</button>
+            <span class="note"> ({g.division}) · {members.length} regiment{members.length === 1 ? '' : 's'} · </span>
+            <span class={out ? 'note warn' : 'note'}>{out ? `${out} outside the zone` : '✓ in the zone'}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function PlayerDeploy({ store }: { store: Store }) {
   store.revision.value; // units placed
   const b = store.battle.value!;
@@ -34,6 +61,7 @@ function PlayerDeploy({ store }: { store: Store }) {
       <h3>Round 0: draw up your lines</h3>
       <p>{own.length - outside.length} of {own.length} regiments inside your zone.</p>
       <Outside store={store} uids={outside} />
+      <Brigades store={store} side={side} />
       <p class="note">Drag each regiment into your zone and turn it to face the enemy, who is not seen until round 1.
         Then Send deployment, and send the file to the admin.</p>
     </div>
@@ -61,6 +89,8 @@ function AdminDeploy({ store }: { store: Store }) {
         })}
       </ul>
       <Outside store={store} uids={outside} />
+      <Brigades store={store} side={0} />
+      <Brigades store={store} side={1} />
       <button class="primary" disabled={outside.length > 0} onClick={() => setProblem(store.openBattle())}>
         Open round 1
       </button>

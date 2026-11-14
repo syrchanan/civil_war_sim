@@ -171,3 +171,37 @@ export function arcPath(at: Point, facing: number, half: number, radius: number)
   return `M${tenth(at.x)} ${tenth(at.y)} L${corner(facing - half)} A${r} ${r} 0 ${half > 90 ? 1 : 0} 1 `
     + `${corner(facing + half)} Z`;
 }
+
+export type Formation = 'line' | 'lines' | 'column';
+
+/**
+ * Where a group's regiments stand drawn up around a point, facing the enemy (side 0 up the map, side 1 down it):
+ * in one line, side by side; in two lines, the second behind the first; or in column, one behind another.
+ */
+export function formation(units: { id: string; width: number; depth: number }[], centre: Point, side: 0 | 1,
+  kind: Formation): Record<string, Point> {
+  const back = side === 0 ? 1 : -1; // towards the side's own edge
+  const row = (members: typeof units, y: number): Record<string, Point> => {
+    const total = members.reduce((s, u) => s + u.width, 0) + GAP * Math.max(0, members.length - 1);
+    let left = centre.x - total / 2;
+    return Object.fromEntries(members.map((u) => {
+      const at = { x: Math.round(left + u.width / 2), y: Math.round(y) };
+      left += u.width + GAP;
+      return [u.id, at];
+    }));
+  };
+  if (kind === 'line') return row(units, centre.y);
+  if (kind === 'lines') {
+    const first = Math.ceil(units.length / 2);
+    return { ...row(units.slice(0, first), centre.y - (back * LINE_GAP) / 2),
+      ...row(units.slice(first), centre.y + (back * LINE_GAP) / 2) };
+  }
+  // a column, its head towards the enemy
+  const length = units.reduce((s, u) => s + u.depth, 0) + 40 * Math.max(0, units.length - 1);
+  let at = centre.y - (back * length) / 2;
+  return Object.fromEntries(units.map((u) => {
+    const y = at + (back * u.depth) / 2;
+    at += back * (u.depth + 40);
+    return [u.id, { x: Math.round(centre.x), y: Math.round(y) }];
+  }));
+}

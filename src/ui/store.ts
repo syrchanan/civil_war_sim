@@ -17,8 +17,8 @@ import {
 import { armyFromCsv, armyToCsv } from './armyCsv';
 import { type Dispatch, dispatch } from './dispatch';
 import {
-  blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, defaultZoneDepth, type Place, type Point,
-  turned,
+  blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, defaultZoneDepth, type Formation, formation,
+  type Place, type Point, turned,
   zoneBand, type ZoneRect,
 } from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
@@ -801,6 +801,38 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return { reached, of: standing.length };
   }
 
+  /** The ids of a group's units: the battle's, or before it the drafts'. */
+  function groupMembers(group: GroupRef): string[] {
+    const b = battle.value;
+    const all = b === null ? units.value.map((u) => ({ id: u.id, side: u.side, org: u.org ?? {} }))
+      : [...b.units.values()].map((u) => ({ id: u.uid, side: u.side as 0 | 1, org: u.org }));
+    return all.filter((u) => {
+      const g = groupOf(u.side, u.org, group.level);
+      return g !== null && groupKey(g) === groupKey(group);
+    }).map((u) => u.id);
+  }
+
+  /** Move a whole group by some yards, each regiment keeping its place in it and its facing. */
+  function moveGroup(group: GroupRef, dx: number, dy: number): void {
+    const f = field.value;
+    for (const uid of groupMembers(group)) {
+      const m = mapUnit(uid);
+      placeUnit(uid, { ...clampToField({ x: m.x + dx, y: m.y + dy }, f), facing: m.facing });
+    }
+  }
+
+  /** Draw a group up around where it stands: one line, two lines, or a column, facing the enemy. */
+  function formGroup(group: GroupRef, kind: Formation): void {
+    const members = groupMembers(group).map(mapUnit);
+    const centre = {
+      x: members.reduce((sum, m) => sum + m.x, 0) / members.length,
+      y: members.reduce((sum, m) => sum + m.y, 0) / members.length,
+    };
+    const places = formation(members.map((m) => ({ id: m.uid, width: m.width, depth: m.depth })), centre, group.side, kind);
+    const f = field.value;
+    for (const [uid, at] of Object.entries(places)) placeUnit(uid, { ...clampToField(at, f), facing: defaultFacing(group.side) });
+  }
+
   /** Units of a group whose order was set by the last group order and has since been changed by hand. */
   function changedByHand(group: GroupRef): number {
     const eff = effectiveOrders.value;
@@ -1365,6 +1397,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   return {
+    groupMembers, moveGroup, formGroup,
     mapGroups, setMapGroups, selectedGroup, selectGroup, unitsOfGroup, enemyBrigades, orderGroup, changedByHand,
     groupOrdered,
     field, fieldSize, setField, view, zoomMap, panMap, centreMap, fitMap,

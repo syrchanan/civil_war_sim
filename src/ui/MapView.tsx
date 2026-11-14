@@ -340,6 +340,10 @@ function GroupLayer({ store, level }: { store: Store; level: 'brigade' | 'divisi
     groups.set(key, { ref, units: [...(groups.get(key)?.units ?? []), u] });
   }
   const picked = store.selectedGroup.value;
+  const view = store.view.value;
+  // before the battle, or deploying: a group's outline drags the whole group (a player's own only)
+  const placing = (b === null || (b.plan.phase === 'deployment' && store.mapRound.value === null));
+  const canDrag = (ref: GroupRef) => placing && (store.mode.value === 'admin' || ref.side === store.playerSide.value);
   return (
     <g class="groups">
       {[...groups.entries()].map(([key, { ref, units }]) => {
@@ -360,13 +364,36 @@ function GroupLayer({ store, level }: { store: Store; level: 'brigade' | 'divisi
         const select = () => store.selectGroup(ref);
         return (
           <g class={`group side-${ref.side}${picked !== null && groupKey(picked) === key ? ' selected' : ''}`}>
-            <rect x={x0} y={y0} width={x1 - x0} height={y1 - y0} />
+            <GroupOutline store={store} ref_={ref} drag={canDrag(ref)} view={view}
+              box={{ x: x0, y: y0, w: x1 - x0, h: y1 - y0 }} />
             <text x={x0} y={y0 - 8 * k} role="button" tabindex={0} aria-label={`Select ${groupName(ref)}`}
               onClick={select} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') select(); }}>{text}</text>
           </g>
         );
       })}
     </g>
+  );
+}
+
+/** A group's outline; while placing, dragging it moves the whole group. */
+function GroupOutline({ store, ref_, drag, view, box }:
+  { store: Store; ref_: GroupRef; drag: boolean; view: MapViewBox; box: MapViewBox }) {
+  const from = useRef<Point | null>(null);
+  if (!drag) return <rect x={box.x} y={box.y} width={box.w} height={box.h} />;
+  return (
+    <rect class="drag" x={box.x} y={box.y} width={box.w} height={box.h}
+      onPointerDown={(e) => {
+        e.stopPropagation(); // the group, not the map
+        from.current = toYards(e.currentTarget.closest('svg') as SVGSVGElement, e.clientX, e.clientY, view);
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+      }}
+      onPointerMove={(e) => {
+        if (from.current === null) return;
+        const p = toYards(e.currentTarget.closest('svg') as SVGSVGElement, e.clientX, e.clientY, view);
+        store.moveGroup(ref_, p.x - from.current.x, p.y - from.current.y);
+        from.current = p;
+      }}
+      onPointerUp={() => { from.current = null; }} />
   );
 }
 

@@ -7,10 +7,12 @@
 import { useState } from 'preact/hooks';
 
 import { roughly } from '../engine';
+import type { Formation } from './field';
 import { type GroupRef, groupKey, groupName, type Store } from './store';
 
 const count = (n: number) => n.toLocaleString('en-US');
 const MODES: ['ranged' | 'melee' | 'idle', string][] = [['ranged', 'Fire'], ['melee', 'Charge'], ['idle', 'Hold']];
+const FORMATIONS: [Formation, string][] = [['line', 'One line'], ['lines', 'Two lines'], ['column', 'Column']];
 
 export function GroupCard({ store, group }: { store: Store; group: GroupRef }) {
   store.revision.value; // rounds fought, regiments broken
@@ -26,6 +28,10 @@ export function GroupCard({ store, group }: { store: Store; group: GroupRef }) {
   const ordering = !foe && !b.finished && b.plan.phase === 'battle' && store.mapRound.value === null
     && (store.mode.value === 'admin' || group.side === store.playerSide.value);
   const targets = ordering ? store.enemyBrigades(group) : [];
+  // deploying, the viewer's own group is drawn up as one
+  const placing = !foe && b.plan.phase === 'deployment' && store.mapRound.value === null
+    && (store.mode.value === 'admin' || group.side === store.playerSide.value);
+  const outside = units.filter((u) => store.outsideZone(u.uid)).length;
   const [target, setTarget] = useState<string | null>(null);
   const aim = targets.find((t) => groupKey(t) === target) ?? targets[0] ?? null;
   const key = groupKey(group);
@@ -55,6 +61,15 @@ export function GroupCard({ store, group }: { store: Store; group: GroupRef }) {
           </div>
         </>
       ))}
+      {placing && (
+        <>
+          <div class="segmented" role="group" aria-label={`Draw up ${groupName(group)}`}>
+            {FORMATIONS.map(([kind, word]) => <button onClick={() => store.formGroup(group, kind)}>{word}</button>)}
+          </div>
+          <p class="note">{outside === 0 ? 'All inside the zone.' : `${outside} outside the zone.`} Drag the outline on the
+            map to move the whole {group.level}; each regiment can still be moved on its own.</p>
+        </>
+      )}
       {shown !== null && (
         <p class="note" role="status">
           {shown.mode === 'idle' ? `All ${shown.of} holding.`
