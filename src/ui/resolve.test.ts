@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import battles from '../../../test_cases/parity/battles.json';
+import battles from '../engine/fixtures/battles.json';
 import { chargeText, status } from './format';
 import { createStore } from './store';
 import { closeRanks } from './testing';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/battles.json';
+import fixture from './fixtures/battles.json';
 import { Battle, makeOrder, type RoundReport } from './battle';
 import { RuntimeError, ValueError } from './errors';
 import { Rng } from './rng';

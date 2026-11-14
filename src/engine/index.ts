@@ -1,5 +1,5 @@
 // The battle engine, first ported from the former Python engine. Same seed, same battle: every piece is checked
-// against golden fixtures recorded from it (test_cases/parity/, now frozen).
+// against golden fixtures recorded from it (./fixtures/, now frozen).
 export { ValueError } from './errors';
 export { exp, log } from './fdlibm';
 export { breakFraction, breakScale, MoraleState } from './morale';

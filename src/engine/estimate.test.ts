@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import battles from '../../../test_cases/parity/battles.json';
+import battles from './fixtures/battles.json';
 import { Battle } from './battle';
 import { estimateRound, quantile } from './estimate';
 import type { StateData } from './state';

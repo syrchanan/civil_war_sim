@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import fixture from '../../../test_cases/parity/terrain.json';
-import battles from '../../../test_cases/parity/battles.json';
+import fixture from './fixtures/terrain.json';
+import battles from './fixtures/battles.json';
 import { Battle } from './battle';
 import { ValueError } from './errors';
 import type { StateData } from './state';

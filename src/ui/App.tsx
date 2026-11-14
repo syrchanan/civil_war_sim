@@ -17,7 +17,7 @@ export function App({ store = defaultStore }: { store?: Store }) {
     <div class="app">
       <header>
         <h1>Imperial Generals</h1>
-        <p class="lede">Battle resolver: same seed, same battle as the Python engine.</p>
+        <p class="lede">Battle resolver: same seed, same battle, every time.</p>
         <FileBar store={store} />
       </header>
       <main>

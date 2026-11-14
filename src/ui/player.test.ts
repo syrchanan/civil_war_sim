@@ -211,9 +211,9 @@ describe('player mode: edge cases', () => {
 });
 
 describe('the orders file format is shared with Python', () => {
-  it('the client still writes test_cases/parity/plan_example.json exactly', async () => {
-    const battles = (await import('../../../test_cases/parity/battles.json')).default;
-    const expected = (await import('../../../test_cases/parity/plan_example.json')).default;
+  it('the client still writes the plan_example.json fixture exactly', async () => {
+    const battles = (await import('../engine/fixtures/battles.json')).default;
+    const expected = (await import('../engine/fixtures/plan_example.json')).default;
     const c = battles.cases.find((x) => x.name === 'example_ridge' && x.seed === 1)!;
     const s = createStore(1, 'player');
     s.open(JSON.stringify(c.start));

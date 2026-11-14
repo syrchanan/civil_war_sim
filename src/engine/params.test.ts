@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import defaults from './defaults.json';
-import fixture from '../../../test_cases/parity/params.json';
+import fixture from './fixtures/params.json';
 import { ValueError } from './errors';
 import {
   AftermathParams, type AftermathData, BattleParams, ChargeParams, type ChargeData, CombatParams, type CombatData, MatchupParams,
