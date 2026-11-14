@@ -469,3 +469,14 @@ button.link { border: 0; padding: 0; background: none; color: var(--accent); tex
 .roster-group.division > summary .roster-name, .roster-group.corps > summary .roster-name { font-family: var(--display); }
 .roster-units { margin: 2px 0 6px; padding-left: 18px; list-style: none; }
 .roster-units li { padding: 1px 0; }
+/* reconnaissance: search, the filter chips and the grouped list */
+.recon { display: flex; flex-direction: column; gap: 10px; }
+.recon .note { margin: 0; }
+.recon-search { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.recon-search input { min-height: 40px; font-size: 15px; color: var(--text); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { min-height: 36px; font-size: 0.9rem; }
+.chips button.active { background: var(--text); border-color: var(--text); color: var(--surface); font-weight: 600; }
+.recon table { font-size: 0.9rem; }
+.recon tr.recon-group td { background: var(--bg); font-weight: 600; }
+.recon tr.down td:last-child { color: var(--accent); }

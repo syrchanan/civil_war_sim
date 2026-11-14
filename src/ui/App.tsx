@@ -15,6 +15,7 @@ import { OrderCard } from './OrderCard';
 import { OrderOfBattle } from './OrderOfBattle';
 import { OrdersPanel } from './OrdersPanel';
 import { ResultPanel } from './ResultPanel';
+import { Recon } from './Recon';
 import { Rosters } from './Rosters';
 import { RoundStrip } from './RoundStrip';
 import { RoundsPanel } from './RoundsPanel';
@@ -27,7 +28,7 @@ const defaultStore = createStore();
 export type { Phase } from './store';
 
 const TAB_LABELS: Record<Tab, string> = {
-  setup: 'Setup', deploy: 'Deploy', unit: 'Unit', orders: 'Orders', armies: 'Armies', dispatches: 'Dispatches',
+  setup: 'Setup', deploy: 'Deploy', unit: 'Unit', orders: 'Orders', recon: 'Recon', armies: 'Armies', dispatches: 'Dispatches',
   result: 'Result',
 };
 
@@ -82,6 +83,7 @@ export function App({ store = defaultStore }: { store?: Store }) {
     deploy: () => <DeployPanel store={store} />,
     unit: () => <UnitTab store={store} />,
     orders: () => <OrdersPanel store={store} />,
+    recon: () => <Recon store={store} />,
     armies: () => <Armies store={store} />,
     dispatches: () => <RoundsPanel store={store} />,
     result: () => <ResultPanel store={store} />,

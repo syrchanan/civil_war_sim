@@ -77,11 +77,11 @@ describe('App', () => {
       s.battle.value!.openBattle();
       s.touch();
     });
-    expect([tabs(), open()]).toEqual([['Unit', 'Orders', 'Armies', 'Dispatches', 'Result'], 'Unit']);
+    expect([tabs(), open()]).toEqual([['Unit', 'Orders', 'Recon', 'Armies', 'Dispatches', 'Result'], 'Unit']);
     fireEvent.click(tab('Orders'));
     expect(open()).toBe('Orders');
     act(() => s.finish(null));
-    expect([tabs(), open()]).toEqual([['Result', 'Dispatches', 'Armies', 'Unit'], 'Result']);
+    expect([tabs(), open()]).toEqual([['Result', 'Dispatches', 'Recon', 'Armies', 'Unit'], 'Result']);
   });
 
   it('a unit selected opens the Unit tab; a round fought opens its dispatch', () => {

@@ -31,13 +31,13 @@ export type UnitType = 'inf' | 'cav' | 'art';
 /** Where the battle stands: being set up, being deployed, being fought, or over. */
 export type Phase = 'setup' | 'deployment' | 'battle' | 'end';
 /** The sidebar's tabs. */
-export type Tab = 'setup' | 'deploy' | 'unit' | 'orders' | 'armies' | 'dispatches' | 'result';
+export type Tab = 'setup' | 'deploy' | 'unit' | 'orders' | 'recon' | 'armies' | 'dispatches' | 'result';
 /** The tabs each phase shows, the one it opens on first. */
 export const PHASE_TABS: Record<Phase, Tab[]> = {
   setup: ['setup', 'armies', 'unit'],
   deployment: ['deploy', 'unit', 'armies'],
-  battle: ['unit', 'orders', 'armies', 'dispatches', 'result'],
-  end: ['result', 'dispatches', 'armies', 'unit'],
+  battle: ['unit', 'orders', 'recon', 'armies', 'dispatches', 'result'],
+  end: ['result', 'dispatches', 'recon', 'armies', 'unit'],
 };
 const WIDE_KEY = 'imperial-generals:sidebar-wide';
 
