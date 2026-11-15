@@ -93,7 +93,7 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ✓ (2026-11-14) |
 | D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ✓ (2026-11-14) |
 | D7 | Battle end: verdict, ledger, generals, regiments ranked | ✓ (2026-11-14) |
-| D8 | Phones, cleanup, merge | ► next |
+| D8 | Phones, cleanup, merge | ✓ (2026-11-14; the merge is the user's) |
 
 Later: roads, fences and railways (map stages 4–6); a dark "lamplight" theme; pixel cutscenes.
 
@@ -280,6 +280,21 @@ everything is TypeScript, and D1's Python side below is a record.
   "Wiped out in round 2", "Shaken at nightfall"); a name selects it and centres the map. Over ten regiments: the
   best five, the worst five and all of them folded.
 - **The full ledger**, folded: the former side-summary and casualties-by-unit tables, unchanged.
+
+**D8, built** (phones; user, 2026-11-14: the phone mockup's layout, pinch to zoom, zone edges on the map):
+- **Phones** (≤ 640 px; 641–900 px still stack as one page): the header, the field and the sidebar at the window's
+  height, each scrolling on its own; the tabs in a bar along the bottom. The header holds the battle's name, where
+  it stands and the one main action (a player's orders out, the admin's orders in); the other file actions fold
+  behind **Files** (CSS only: on a wider screen they all show). The map fits the width (no more sideways scroll),
+  its zoom buttons top left and the outline switch bottom right; the rounds of the day in one sideways row; the long
+  map hint is left out.
+- **Pinch to zoom**: two fingers zoom about their middle; a second finger stops a pan or a unit being dragged, and
+  a finger left over does nothing until all are lifted. The map takes `touch-action: none`.
+- **Zone edges**: in setup the admin drags a zone's inner edge on the map (or focuses it and uses ↑ / ↓, Shift for
+  50 yd) to set its depth, from a yard to half the field.
+- **Cleanup**: the phone-only sideways-scroll note and rules removed (a sweep found no unused classes or exports);
+  the README tells the new game flow; the changelog lists Phase D.
+- **The merge**: the branch is pushed and a pull request opened into `main`; the user merges it.
 
 ### Phase C — Later
 | Item | Status |
