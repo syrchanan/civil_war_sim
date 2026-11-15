@@ -91,8 +91,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ✓ (2026-11-14) |
 | D5 | Round results as a dispatch | ✓ (2026-11-14) |
 | D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ✓ (2026-11-14) |
-| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ► next |
-| D7 | Battle end: verdict, ledger, generals, regiments ranked | ○ |
+| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ✓ (2026-11-14) |
+| D7 | Battle end: verdict, ledger, generals, regiments ranked | ► next |
 | D8 | Phones, cleanup, merge | ○ |
 
 Later: roads, fences and railways (map stages 4–6); a dark "lamplight" theme; pixel cutscenes.
@@ -218,6 +218,34 @@ everything is TypeScript, and D1's Python side below is a record.
   become cards, as on phones; widened, they are tables again.
 - Also: a unit locked in melee with one of a side's units is seen by that side now (`sight.ts`); the unit card
   words morale as the dispatch does (steady / shaken / wavering).
+
+**D6, built** (large battles: 60 to 80 regiments a side):
+- **Field size per battle** (setup): Small 2,000 × 1,200 yd (as before), Medium 4,000 × 2,400, Large 8,000 × 4,800,
+  or custom; the setup suggests the smallest on which each side draws up in three lines or fewer. Saved as
+  `plan.field` (left out at the default, so older and default battles save as before). Zones take 30% of the
+  field's height by default; generated ground keeps about a hundred cells across.
+- **Map zoom and pan**: wheel, + and -, drag open ground; "Whole field" shows it all. Symbols, labels, the compass
+  and the scale bar keep their size on screen.
+- **Big test armies** (`bigBattle.ts`): `bigArmies(seed)`, two seeded armies of seventy (a corps of three divisions
+  of four brigades, batteries and cavalry); `groupByOrg` for lists by corps, division and brigade. At this size a
+  round takes about 20 ms and both sides' sight about 50 ms.
+- **Grouped rosters** (Armies tab, `Rosters.tsx`): each side by corps, division and brigade, with regiments and men
+  (now of at the start), folding open to its regiments; a regiment clicked is selected. The enemy only as far as
+  known (seen or last seen, men roughly). The admin's army review names each problem's brigade.
+- **Reconnaissance** (Recon tab in battle and at nightfall, `Recon.tsx`): everything known of both armies as of the
+  battle's clock, grouped by division and brigade, with a search and filter chips with counts. A player sees Ours
+  (exactly), In sight (roughly) and Lost from sight ("? last seen round N"); the admin sees each side whole. A
+  regiment clicked is selected and brought to the middle of the map.
+- **Brigades and divisions on the map**: a Regiments / Brigades / Divisions switch (remembered per viewer). Grouped,
+  each is outlined and labelled with its regiments and men (roughly for the enemy, counting only what is shown).
+  A label selects the group (`GroupCard.tsx`).
+- **Group orders**: for the viewer's own group while ordering, pick an enemy brigade in sight and Fire / Charge /
+  Hold. Each standing regiment takes the nearest regiment of that brigade it can reach (fire: in range, front arc
+  and sight); the rest hold. The card says how many reached and how many were changed by hand since. The engine
+  stays per regiment.
+- **Placing brigades** (deployment): the Deploy tab lists brigades with whether all stand inside the zone; a
+  brigade's card draws it up around where it stands (One line, Two lines, Column), facing the enemy. Dragging a
+  brigade's or division's outline moves all of it; each regiment can still be moved on its own.
 
 ### Phase C — Later
 | Item | Status |
