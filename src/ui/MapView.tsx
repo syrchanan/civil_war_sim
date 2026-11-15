@@ -8,12 +8,12 @@
  * symbols, labels, all arcs, arrows, grid) is chosen in the layers panel (mapLayers.ts).
  */
 
-import { Component } from 'preact';
+import { Component, type JSX } from 'preact';
 import { useEffect, useRef } from 'preact/hooks';
 
 import defaults from '../engine/defaults.json';
 import type { Terrain, TerrainData } from '../engine';
-import { arcPath, bearing, FIELD, type Point, turned } from './field';
+import { arcPath, bearing, declutter, FIELD, type LabelBox, type Point, turned } from './field';
 import { groupKey, groupName, groupOf, type GroupRef, type MapGroups, type MapViewBox } from './store';
 import { LAYERS, natoSymbol } from './mapLayers';
 import type { MapUnit, Store, TargetChoice } from './store';
@@ -191,8 +191,29 @@ class TerrainLayer extends Component<{ terrain: Terrain; relief: boolean; woods:
   }
 }
 
-function Block({ store, unit, movable, selectable, aim }:
-  { store: Store; unit: MapUnit; movable: boolean; selectable: boolean; aim: '' | ' aiming' | ' can-target' }) {
+const EM = 0.5; // a label glyph's rough width, in ems: enough to tell which labels would overlap
+/** A unit's second label line: its men ('~' when rough), and when it was last seen. */
+const menText = (unit: MapUnit): string => `${unit.rough ? '~' : ''}${unit.men.toLocaleString('en-US')}`
+  + `${unit.lastSeen === null ? '' : `, last seen round ${unit.lastSeen}`}`;
+
+/**
+ * Where a unit's two label lines (name, men) start, from its centre: below the block for side 0, above it for side
+ * 1, clear of the symbol (drawn upright, echelon bars on top) when it is shown.
+ */
+function labelY(unit: MapUnit, symbols: boolean, k: number): number {
+  const below = Math.max(unit.depth / 2, symbols ? (SYMBOL.height / 2) * k : 0);
+  const above = Math.max(unit.depth / 2, symbols ? (SYMBOL.height / 2 + ECHELON) * k : 0);
+  return unit.side === 0 ? below + 30 * k : -above - 36 * k;
+}
+
+/** The box a unit's label takes on the map (22 px name over 18 px men, at the furniture scale). */
+function unitLabelBox(unit: MapUnit, symbols: boolean, k: number): LabelBox {
+  const w = Math.max(unit.name.length * 22, menText(unit).length * 18) * EM * k;
+  return { id: unit.uid, x: unit.x - w / 2, y: unit.y + labelY(unit, symbols, k) - 18 * k, w, h: 42 * k };
+}
+
+function Block({ store, unit, movable, selectable, aim, labelled }:
+  { store: Store; unit: MapUnit; movable: boolean; selectable: boolean; aim: '' | ' aiming' | ' can-target'; labelled: boolean }) {
   const layers = store.layers.value;
   const view = store.view.value;
   const k = furniture(view);
@@ -201,19 +222,12 @@ function Block({ store, unit, movable, selectable, aim }:
   const turning = useRef(false);
   const svgOf = (el: Element) => el.closest('svg') as SVGSVGElement;
   // rough numbers read '~800' on the map and 'about 800' to a screen reader
-  const count = unit.men.toLocaleString('en-US');
-  const men = `${unit.rough ? 'about ' : ''}${count}`;
-  const shown = `${unit.rough ? '~' : ''}${count}${unit.lastSeen === null ? '' : `, last seen round ${unit.lastSeen}`}`;
+  const men = `${unit.rough ? 'about ' : ''}${unit.men.toLocaleString('en-US')}`;
   const ground = store.terrain.value;
   const standing = ground === null ? ''
     : `, ${Math.round(ground.heightAt(unit.x, unit.y))} yd up on ${ground.groundAt(unit.x, unit.y)} ground`;
   const seen = unit.lastSeen === null ? '' : `, last seen as round ${unit.lastSeen} began`;
   const label = `${unit.name}, ${men} men${seen}, at ${unit.x}, ${unit.y} yd, facing ${unit.facing}°${standing}`;
-  // two text lines (name, men): below the block for side 0, above it for side 1
-  // labels and the turn handle stay clear of the symbol (drawn upright, echelon bars on top) when it is shown
-  const below = Math.max(unit.depth / 2, layers.symbols ? (SYMBOL.height / 2) * k : 0);
-  const above = Math.max(unit.depth / 2, layers.symbols ? (SYMBOL.height / 2 + ECHELON) * k : 0);
-  const labelY = unit.side === 0 ? below + 30 * k : -above - 36 * k;
   // the handle turns with the block: out past the symbol's corner whichever way it faces
   const handle = layers.symbols
     ? Math.max(unit.depth / 2, Math.hypot(SYMBOL.width / 2, SYMBOL.height / 2 + ECHELON) * k) : unit.depth / 2;
@@ -288,10 +302,10 @@ function Block({ store, unit, movable, selectable, aim }:
       {layers.symbols && <g transform={`scale(${k})`}><NatoSymbol type={unit.type} /></g>}
       {/* out of sight: drawn where it was last seen, marked with a question mark */}
       {unit.lastSeen !== null && <text class="lost-mark" text-anchor="middle" dominant-baseline="central">?</text>}
-      {layers.labels && store.mapGroups.value === 'regiment' && (
-        <text y={labelY} text-anchor="middle">
+      {labelled && (
+        <text y={labelY(unit, layers.symbols, k)} text-anchor="middle">
           <tspan class="unit-name">{unit.name}</tspan>
-          <tspan class="unit-men" x="0" dy="1.1em">{shown}</tspan>
+          <tspan class="unit-men" x="0" dy="1.1em">{menText(unit)}</tspan>
         </text>
       )}
     </g>
@@ -344,30 +358,47 @@ function GroupLayer({ store, level }: { store: Store; level: 'brigade' | 'divisi
   // before the battle, or deploying: a group's outline drags the whole group (a player's own only)
   const placing = (b === null || (b.plan.phase === 'deployment' && store.mapRound.value === null));
   const canDrag = (ref: GroupRef) => placing && (store.mode.value === 'admin' || ref.side === store.playerSide.value);
+  // each block's extent along x and y, turned as it faces
+  const ext = (u: MapUnit) => {
+    const r = (u.facing * Math.PI) / 180;
+    const [c, s] = [Math.abs(Math.cos(r)), Math.abs(Math.sin(r))];
+    return { x: (c * u.width + s * u.depth) / 2, y: (s * u.width + c * u.depth) / 2 };
+  };
+  const drawn = [...groups.entries()].map(([key, { ref, units }]) => {
+    const x0 = Math.min(...units.map((u) => u.x - ext(u).x)) - GROUP_PAD;
+    const x1 = Math.max(...units.map((u) => u.x + ext(u).x)) + GROUP_PAD;
+    const y0 = Math.min(...units.map((u) => u.y - ext(u).y)) - GROUP_PAD;
+    const y1 = Math.max(...units.map((u) => u.y + ext(u).y)) + GROUP_PAD;
+    const men = units.reduce((sum, u) => sum + u.men, 0);
+    const rough = units.some((u) => u.rough);
+    const text = `${groupName(ref)} · ${units.length} regt${units.length === 1 ? '' : 's'} · ${rough ? '~' : ''}`
+      + men.toLocaleString('en-US');
+    return { key, ref, men, text, box: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } };
+  });
+  // labels that would overlap give way: the selected group's first, then the biggest; zoomed in, more fit
+  const isPicked = (key: string) => picked !== null && groupKey(picked) === key;
+  const labelled = declutter([...drawn]
+    .sort((a, b) => Number(isPicked(b.key)) - Number(isPicked(a.key)) || b.men - a.men)
+    .map((g) => ({ id: g.key, x: g.box.x, y: g.box.y - 26 * k, w: g.text.length * 22 * 0.55 * k, h: 24 * k })));
   return (
     <g class="groups">
-      {[...groups.entries()].map(([key, { ref, units }]) => {
-        // each block's extent along x and y, turned as it faces
-        const ext = (u: MapUnit) => {
-          const r = (u.facing * Math.PI) / 180;
-          const [c, s] = [Math.abs(Math.cos(r)), Math.abs(Math.sin(r))];
-          return { x: (c * u.width + s * u.depth) / 2, y: (s * u.width + c * u.depth) / 2 };
-        };
-        const x0 = Math.min(...units.map((u) => u.x - ext(u).x)) - GROUP_PAD;
-        const x1 = Math.max(...units.map((u) => u.x + ext(u).x)) + GROUP_PAD;
-        const y0 = Math.min(...units.map((u) => u.y - ext(u).y)) - GROUP_PAD;
-        const y1 = Math.max(...units.map((u) => u.y + ext(u).y)) + GROUP_PAD;
-        const men = units.reduce((sum, u) => sum + u.men, 0);
-        const rough = units.some((u) => u.rough);
-        const text = `${groupName(ref)} · ${units.length} regt${units.length === 1 ? '' : 's'} · ${rough ? '~' : ''}`
-          + men.toLocaleString('en-US');
+      {drawn.map(({ key, ref, text, box }) => {
         const select = () => store.selectGroup(ref);
         return (
-          <g class={`group side-${ref.side}${picked !== null && groupKey(picked) === key ? ' selected' : ''}`}>
-            <GroupOutline store={store} ref_={ref} drag={canDrag(ref)} view={view}
-              box={{ x: x0, y: y0, w: x1 - x0, h: y1 - y0 }} />
-            <text x={x0} y={y0 - 8 * k} role="button" tabindex={0} aria-label={`Select ${groupName(ref)}`}
-              onClick={select} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') select(); }}>{text}</text>
+          <g class={`group side-${ref.side}${isPicked(key) ? ' selected' : ''}`}>
+            <GroupDrag store={store} ref_={ref} drag={canDrag(ref)} view={view}>
+              {(handlers) => <rect class={handlers ? 'drag' : undefined} x={box.x} y={box.y} width={box.w} height={box.h}
+                {...handlers} />}
+            </GroupDrag>
+            {labelled.has(key) && (
+              <GroupDrag store={store} ref_={ref} drag={canDrag(ref)} view={view}>
+                {(handlers) => (
+                  <text class={handlers ? 'drag' : undefined} x={box.x} y={box.y - 8 * k} role="button" tabindex={0}
+                    aria-label={`Select ${groupName(ref)}`} {...handlers}
+                    onClick={select} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') select(); }}>{text}</text>
+                )}
+              </GroupDrag>
+            )}
           </g>
         );
       })}
@@ -375,26 +406,32 @@ function GroupLayer({ store, level }: { store: Store; level: 'brigade' | 'divisi
   );
 }
 
-/** A group's outline; while placing, dragging it moves the whole group. */
-function GroupOutline({ store, ref_, drag, view, box }:
-  { store: Store; ref_: GroupRef; drag: boolean; view: MapViewBox; box: MapViewBox }) {
+type DragHandlers = Pick<JSX.HTMLAttributes<SVGElement>, 'onPointerDown' | 'onPointerMove' | 'onPointerUp'>;
+
+/**
+ * While placing, a group's outline and its label drag the whole group (the label too, as the regiments drawn over
+ * the outline leave little of it to grab); otherwise no handlers.
+ */
+function GroupDrag({ store, ref_, drag, view, children }: {
+  store: Store; ref_: GroupRef; drag: boolean; view: MapViewBox; children: (handlers: DragHandlers | null) => JSX.Element;
+}) {
   const from = useRef<Point | null>(null);
-  if (!drag) return <rect x={box.x} y={box.y} width={box.w} height={box.h} />;
-  return (
-    <rect class="drag" x={box.x} y={box.y} width={box.w} height={box.h}
-      onPointerDown={(e) => {
-        e.stopPropagation(); // the group, not the map
-        from.current = toYards(e.currentTarget.closest('svg') as SVGSVGElement, e.clientX, e.clientY, view);
-        e.currentTarget.setPointerCapture?.(e.pointerId);
-      }}
-      onPointerMove={(e) => {
-        if (from.current === null) return;
-        const p = toYards(e.currentTarget.closest('svg') as SVGSVGElement, e.clientX, e.clientY, view);
-        store.moveGroup(ref_, p.x - from.current.x, p.y - from.current.y);
-        from.current = p;
-      }}
-      onPointerUp={() => { from.current = null; }} />
-  );
+  if (!drag) return children(null);
+  const at = (e: PointerEvent) => toYards((e.currentTarget as Element).closest('svg') as SVGSVGElement, e.clientX, e.clientY, view);
+  return children({
+    onPointerDown: (e) => {
+      e.stopPropagation(); // the group, not the map
+      from.current = at(e);
+      (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+    },
+    onPointerMove: (e) => {
+      if (from.current === null) return;
+      const p = at(e);
+      store.moveGroup(ref_, p.x - from.current.x, p.y - from.current.y);
+      from.current = p;
+    },
+    onPointerUp: () => { from.current = null; },
+  });
 }
 
 const GROUPINGS: [MapGroups, string][] = [['regiment', 'Regiments'], ['brigade', 'Brigades'], ['division', 'Divisions']];
@@ -446,6 +483,11 @@ export function MapView({ store }: { store: Store }) {
   const layers = store.layers.value;
   const focused = store.focusedUnit.value;
   // no arc for a unit only last seen: where it faces now is unknown
+  // regiment labels that would overlap give way (the selected unit's first); zoomed in, more fit
+  const labelled = layers.labels && store.mapGroups.value === 'regiment'
+    ? declutter([...units].sort((a, b) => Number(b.uid === focused) - Number(a.uid === focused))
+      .map((u) => unitLabelBox(u, layers.symbols, k)))
+    : new Set<string>();
   const arcs = (layers.allArcs ? units.filter((u) => !u.wiped).map((u) => u.uid)
     : focused !== null && byId[focused] !== undefined ? [focused] : []).filter((uid) => byId[uid].lastSeen === null);
   return (
@@ -536,7 +578,8 @@ export function MapView({ store }: { store: Store }) {
             {layers.arrows && store.orderArrows.value
               .map((a) => <Arrow from={byId[a.from]} to={byId[a.to]} mode={a.mode} side={a.side} blocked={a.blocked} />)}
             {units.map((u) => (
-              <Block key={u.uid} store={store} unit={u} movable={canMove(u)} selectable={selectable} aim={aimOf(u.uid)} />
+              <Block key={u.uid} store={store} unit={u} movable={canMove(u)} selectable={selectable} aim={aimOf(u.uid)}
+                labelled={labelled.has(u.uid)} />
             ))}
           </svg>
           {choice !== null && <TargetMenu store={store} choice={choice} at={byId[choice.to]} />}

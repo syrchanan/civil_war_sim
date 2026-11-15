@@ -18,7 +18,7 @@ import { armyFromCsv, armyToCsv } from './armyCsv';
 import { type Dispatch, dispatch } from './dispatch';
 import {
   blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, defaultZoneDepth, type Formation, formation,
-  type Place, type Point, turned,
+  type Place, type Point, shiftInto, turned,
   zoneBand, type ZoneRect,
 } from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
@@ -769,8 +769,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   /**
    * Order a whole group: each standing regiment fires on (or charges) the nearest regiment of the target brigade it
-   * can reach (fire: in range, in its front arc and in sight; a charge: any it can see), or holds. A regiment
-   * that can't, holds. Returns how many were given the target, of how many standing.
+   * can reach (fire: in range, in its front arc and in sight; a charge: one it can see and get to within the round,
+   * at its charging pace), or holds. A regiment that can't, holds. Returns how many were given the target, of how
+   * many standing.
    */
   function orderGroup(group: GroupRef, mode: 'ranged' | 'melee' | 'idle', target: GroupRef | null): { reached: number; of: number } {
     const b = battle.value!;
@@ -783,8 +784,12 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       const visible = new Set(targetsFor(u.uid).map((t) => t.uid));
       const battery = u.regiment instanceof ArtilleryBattery;
       const ammo = battery ? b.params.combat.artillery_default_ammo : null;
+      // until units move, a charge from any distance would close by the round's end: one order for a whole
+      // brigade shouldn't send regiments further than they could charge in the round
+      const pace = b.params.charge.speed[u.key[0]];
       const fits = (t: BattleUnit) => visible.has(t.uid) && (mode === 'melee'
-        || ((b.reach(u.uid, t.uid, ammo) ?? 1) > 0 && b.inArc(u.uid, t.uid) && b.lineOfSight(u.uid, t.uid)));
+        ? (b.distance(u.uid, t.uid) ?? 0) <= pace * duration.value
+        : (b.reach(u.uid, t.uid, ammo) ?? 1) > 0 && b.inArc(u.uid, t.uid) && b.lineOfSight(u.uid, t.uid));
       const options = mode === 'idle' || !can.includes(mode) ? [] : aims.filter(fits);
       const far = (t: BattleUnit) => b.distance(u.uid, t.uid) ?? 0;
       const best = options.sort((x, y) => far(x) - far(y))[0];
@@ -821,14 +826,16 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
   }
 
-  /** Draw a group up around where it stands: one line, two lines, or a column, facing the enemy. */
+  /** Draw a group up around where it stands: one line, two lines, or a column, facing the enemy (deploying: in its zone). */
   function formGroup(group: GroupRef, kind: Formation): void {
     const members = groupMembers(group).map(mapUnit);
     const centre = {
       x: members.reduce((sum, m) => sum + m.x, 0) / members.length,
       y: members.reduce((sum, m) => sum + m.y, 0) / members.length,
     };
-    const places = formation(members.map((m) => ({ id: m.uid, width: m.width, depth: m.depth })), centre, group.side, kind);
+    const formed = formation(members.map((m) => ({ id: m.uid, width: m.width, depth: m.depth })), centre, group.side, kind);
+    const zone = battle.value?.plan.zones[String(group.side)];
+    const places = zone === undefined ? formed : shiftInto(formed, zone);
     const f = field.value;
     for (const [uid, at] of Object.entries(places)) placeUnit(uid, { ...clampToField(at, f), facing: defaultFacing(group.side) });
   }

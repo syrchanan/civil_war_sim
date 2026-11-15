@@ -61,10 +61,13 @@ describe('outlines on the map', () => {
 
   it('brigades or divisions outlined and labelled; regiment labels give way; units with no org have none', () => {
     const s = organised();
+    // stacked labels give way: brigades side by side have room for theirs
+    s.moveUnit('us_bat', { x: 1700, y: 630 });
+    s.moveUnit('cs_11al', { x: 1700, y: 570 });
     render(<App store={s} />);
     const outline = within(screen.getByRole('group', { name: 'Outline' }));
     expect(document.querySelectorAll('.group')).toHaveLength(0);
-    expect(document.querySelectorAll('.map-unit text .unit-name').length).toBe(7);
+    expect(document.querySelectorAll('.map-unit text .unit-name').length).toBe(4); // stacked: one a side, and the two moved
     fireEvent.click(outline.getByRole('button', { name: 'Brigades' }));
     expect(labels()).toEqual(['Harrow · 2 regts · 1,600', 'Artillery · 1 regt · 72', 'Kemper · 2 regts · 1,800',
       'Garnett · 1 regt · 600']);
@@ -179,6 +182,7 @@ describe('ordering a group', () => {
     s.battle.value!.units.get('us_1mn')!.regiment.position = null;
     s.touch();
     expect(s.orderGroup(HARROW, 'ranged', KEMPER)).toEqual({ reached: 2, of: 2 });
+    expect(s.orderGroup(HARROW, 'melee', KEMPER)).toEqual({ reached: 2, of: 2 });
   });
 
   it('no order: an enemy group, nothing in sight, while deploying or replaying, or once the battle is over', () => {

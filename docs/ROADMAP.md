@@ -247,6 +247,21 @@ everything is TypeScript, and D1's Python side below is a record.
   brigade's card draws it up around where it stands (One line, Two lines, Column), facing the enemy. Dragging a
   brigade's or division's outline moves all of it; each regiment can still be moved on its own.
 
+**After D6** (browser pass, 2026-11-14, Playwright on desktop, seventy a side on a Large field):
+- **Labels give way** (`declutter`, `field.ts`): regiment and group labels that would overlap are hidden, the
+  selected one's kept; zoomed in, more fit. A regiment's Unit card links to its brigade and division, the way to a
+  group whose label gave way.
+- **A brigade's label drags it** while deploying (its regiments cover most of its outline).
+- **Formations keep to the zone** (`shiftInto`): drawn up near the zone's edge, the whole group shifts back inside.
+- **A brigade's charge** takes only regiments it could reach within the round at its charge pace (until movement).
+- **The Dispatches tab** puts the dispatches before the strength charts, so the round just fought is in sight.
+- **Open, for later** (user, 2026-11-14):
+  - A fixed most charge distance until movement exists? At the default 60-minute round the charge pace reaches
+    7,200 yd (infantry), so the round-reach limit only bites in short rounds; the engine lets any charge land by the
+    round's end. Movement (a per-round budget per unit, deciding charges, getting into range and pursuit) is to
+    replace it.
+  - The player file does not carry the round length: players plan with 60 minutes whatever the admin set.
+
 ### Phase C — Later
 | Item | Status |
 |---|---|

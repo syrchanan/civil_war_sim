@@ -87,13 +87,14 @@ export function RoundsPanel({ store }: { store: Store }) {
   const rounds = [...history].reverse().sort((a, b) => Number(b.round === picked) - Number(a.round === picked));
   return (
     <div class="rounds">
-      <StrengthCharts store={store} />
+      {/* the dispatches first: the charts below would push the round just fought out of sight */}
       {rounds.map((report) => (
         <div class={`dispatch-entry${report.round === picked ? ' picked' : ''}`}>
           <DispatchCard store={store} round={report.round} docked={report.round === picked} />
           <Round store={store} report={report} />
         </div>
       ))}
+      <StrengthCharts store={store} />
     </div>
   );
 }

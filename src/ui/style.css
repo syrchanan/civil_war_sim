@@ -232,6 +232,7 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
 }
 .unit-info h3 { margin: 0; font-size: 1.05rem; }
 .unit-info .unit-kind { margin: 0 0 0.5rem; color: var(--muted); }
+.unit-info .unit-org { margin: -0.25rem 0 0.5rem; }
 .unit-info dl { margin: 0; display: grid; grid-template-columns: minmax(4.5rem, max-content) 1fr; gap: 0.2rem 0.75rem; }
 .unit-info dl div { display: contents; }
 .unit-info dt { color: var(--muted); max-width: 11rem; }
@@ -499,5 +500,6 @@ button.link { border: 0; padding: 0; background: none; color: var(--accent); tex
 .group-card label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
 .group-card select { min-height: 40px; font-size: 15px; color: var(--text); }
 .group rect.drag { pointer-events: all; fill: transparent; cursor: move; }
+.group text.drag { cursor: move; }
 .deploy-brigades { list-style: none; margin: 0; padding: 0; }
 .deploy-brigades li { padding: 3px 0; }

@@ -205,3 +205,38 @@ export function formation(units: { id: string; width: number; depth: number }[],
     return [u.id, { x: Math.round(centre.x), y: Math.round(y) }];
   }));
 }
+
+/**
+ * A formation's places shifted as one, the least that brings every place inside a zone (where the engine checks
+ * each unit's centre); one wider or deeper than the zone is centred on it along that way.
+ */
+export function shiftInto(places: Record<string, Point>, zone: ZoneRect): Record<string, Point> {
+  const pts = Object.values(places);
+  if (pts.length === 0) return places;
+  const along = (lo: number, hi: number, from: number, size: number) => {
+    if (hi - lo > size) return from + size / 2 - (lo + hi) / 2;
+    return Math.max(from - lo, 0) + Math.min(from + size - hi, 0);
+  };
+  const dx = along(Math.min(...pts.map((p) => p.x)), Math.max(...pts.map((p) => p.x)), zone.x, zone.w);
+  const dy = along(Math.min(...pts.map((p) => p.y)), Math.max(...pts.map((p) => p.y)), zone.y, zone.h);
+  return Object.fromEntries(Object.entries(places)
+    .map(([id, p]) => [id, { x: Math.round(p.x + dx), y: Math.round(p.y + dy) }]));
+}
+
+/** A label's box on the map (yards, top-left corner), to tell which would overlap. */
+export interface LabelBox {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** The labels that can be drawn without overlapping, taken in the order given (most wanted first). */
+export function declutter(boxes: LabelBox[]): Set<string> {
+  const kept: LabelBox[] = [];
+  for (const b of boxes) {
+    if (kept.every((k) => b.x >= k.x + k.w || k.x >= b.x + b.w || b.y >= k.y + k.h || k.y >= b.y + b.h)) kept.push(b);
+  }
+  return new Set(kept.map((b) => b.id));
+}
