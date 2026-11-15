@@ -211,20 +211,16 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
 .order-arrow.side-1, .arrowhead.side-1 { stroke: var(--side-1); fill: var(--side-1); }
 .note.warn { color: var(--side-1); }
 
-/* phones: roomier taps, 16px inputs (iOS zooms into smaller ones), and a map that scrolls at a readable size */
-.phone-only { display: none; }
+/* phones: roomier taps, 16px inputs (iOS zooms into smaller ones) */
 @media (max-width: 640px) {
-  .phone-only { display: inline; }
-  .app { padding: 16px 12px 48px; }
   section { padding: 12px; }
-  input, select, button, label.button { font-size: 16px; min-height: 40px; }
+  input, select, button, label.button { font-size: 16px; min-height: 44px; }
   label.button { display: inline-flex; align-items: center; }
   input[type=checkbox] { min-height: 0; width: 20px; height: 20px; }
-  .field-scroll { overflow-x: auto; }
-  .field-wrap { min-width: 960px; }
   .target-menu button { min-width: 72px; }
-
 }
+/* drags on the map pan it, move units or pinch it, never scroll the page */
+.field-wrap svg { touch-action: none; }
 /* the selected unit's details under the map, its pixel-art vignette first */
 .unit-info {
   margin-top: 0.75rem; padding: 0.75rem; display: flex; gap: 1rem; align-items: flex-start;
@@ -306,10 +302,49 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
   .field-panel { overflow: visible; margin-bottom: 16px; }
   .tab-bar .widen { display: none; }
 }
+/* the file actions: all in the bar on a wider screen; on a phone the main one, the rest behind Files */
+.files-toggle { display: none; }
+.file-more { display: contents; }
+/*
+ * phones: the header, the field and the panel stacked at the window's height, each part scrolling on its own, the
+ * tabs along the bottom
+ */
 @media (max-width: 640px) {
-  .topbar { padding: 10px 16px; }
-  .topbar .file-bar { margin-left: 0; }
-  .stage { padding: 16px; }
+  .app { height: 100vh; height: 100dvh; }
+  .topbar { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px;
+    padding: 8px 12px; }
+  .masthead h1 { font-size: 1.25rem; }
+  .masthead:has(.battle-name) h1 { display: none; }
+  .battle-name { font-family: var(--display); font-style: normal; color: var(--text); font-size: 1.25rem; }
+  .standing { grid-column: 1; justify-self: start; border: 0; padding: 0; font-size: 0.85rem; color: var(--muted); }
+  .topbar .file-bar { grid-column: 2; grid-row: 1 / span 2; margin: 0; flex-wrap: nowrap; gap: 6px; }
+  .files-toggle { display: inline-flex; align-items: center; }
+  .file-more { display: none; }
+  .file-more.open { display: flex; flex-direction: column; align-items: stretch; gap: 8px; position: absolute;
+    top: 100%; right: 12px; z-index: 10; padding: 10px; background: var(--surface); border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2); }
+  .topbar .file-bar .problems { position: absolute; top: 100%; left: 12px; right: 12px; z-index: 9;
+    background: var(--surface); }
+  .stage { display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 0; gap: 0; }
+  .field-panel { flex: none; max-height: 50dvh; overflow: auto; margin: 0; padding: 8px 12px;
+    border-width: 0 0 1px; }
+  .field-panel > h2, .map-hint { display: none; }
+  .sidebar { flex: 1; min-height: 0; }
+  .tab-bar { order: 2; padding: 0; background: var(--bar); border-top: 2px solid var(--text); border-bottom: 0; }
+  .tabs { flex-wrap: nowrap; }
+  .tabs button { flex: 1 1 0; min-width: 0; padding: 6px 2px; font-size: 0.8rem; border-bottom: 0;
+    border-top: 3px solid transparent; }
+  .tabs button.active { border-top-color: var(--accent); }
+  .tab-panel { padding: 12px; }
+  .standing { white-space: normal; }
+  .topbar .file-bar button, .topbar .file-bar label.button { font-size: 14px; padding: 0 10px; }
+  /* the map's controls: smaller, the zoom top left and the outline switch bottom right, clear of each other */
+  /* (.app: these come before the map's own rules in this file) */
+  .app .map-zoom button, .app .map-groups button { min-height: 36px; font-size: 13px; padding: 2px 8px; }
+  .app .map-groups { top: auto; bottom: 8px; }
+  /* the rounds in one row, scrolled sideways */
+  .app .round-strip { flex-wrap: nowrap; overflow-x: auto; margin-top: 8px; }
+  .app .round-strip > * { flex: none; }
 }
 
 /* in the sidebar while it is narrow (and on phones, where it is), tables you edit become cards */
@@ -403,6 +438,10 @@ label.button:focus-within { outline: 2px solid var(--accent); outline-offset: 2p
 .zone text { font-family: var(--display); font-size: calc(30px * var(--k, 1)); pointer-events: none; }
 .zone.side-0 text { fill: var(--side-0); }
 .zone.side-1 text { fill: var(--side-1); }
+.zone .zone-edge { fill: transparent; cursor: ns-resize; pointer-events: all; }
+.zone-edge:hover, .zone-edge:focus-visible { fill: currentColor; fill-opacity: 0.25; outline: none; }
+.zone.side-0 .zone-edge { color: var(--side-0); }
+.zone.side-1 .zone-edge { color: var(--side-1); }
 /* the admin's review of each army, under its table */
 .review { margin: 12px 0 0; display: flex; flex-direction: column; gap: 10px; }
 .review h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.25rem; }

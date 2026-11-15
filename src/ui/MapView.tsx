@@ -436,12 +436,53 @@ function GroupDrag({ store, ref_, drag, view, children }: {
 
 const GROUPINGS: [MapGroups, string][] = [['regiment', 'Regiments'], ['brigade', 'Brigades'], ['division', 'Divisions']];
 
+const EDGE = 60; // yards (at the furniture scale): how thick a zone's draggable edge is to grab, a finger's width on a phone
+
+/**
+ * A zone's inner edge (side 0's top, side 1's bottom), dragged or moved with the arrow keys to set how deep the
+ * zone is: in setup, for the admin, from 1 yard to half the field.
+ */
+function ZoneEdge({ store, side, zone }: { store: Store; side: 0 | 1; zone: { x: number; y: number; w: number; h: number } }) {
+  const dragging = useRef(false);
+  const view = store.view.value;
+  const k = furniture(view);
+  const height = store.field.value.height;
+  const set = (depth: number) => store.setZoneDepth(side, Math.round(Math.min(height / 2, Math.max(1, depth))));
+  const y = side === 0 ? zone.y : zone.y + zone.h;
+  const name = `${store.sides.value[side]} zone edge, ${zone.h} yards deep`;
+  return (
+    <rect class="zone-edge" x={zone.x} y={y - (EDGE * k) / 2} width={zone.w} height={EDGE * k} role="slider" tabindex={0}
+      aria-label={name} aria-valuenow={zone.h} aria-valuemin={1} aria-valuemax={height / 2} aria-orientation="vertical"
+      onPointerDown={(e) => {
+        e.stopPropagation(); // the zone, not the map
+        dragging.current = true;
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+      }}
+      onPointerMove={(e) => {
+        if (!dragging.current) return;
+        const at = toYards(e.currentTarget.closest('svg') as SVGSVGElement, e.clientX, e.clientY, view);
+        set(side === 0 ? height - at.y : at.y);
+      }}
+      onPointerUp={() => { dragging.current = false; }}
+      onKeyDown={(e) => {
+        const step = e.shiftKey ? 50 : 10;
+        // the edge moves the way the arrow points: up the map deepens side 0's zone, down deepens side 1's
+        const by = { ArrowUp: side === 0 ? step : -step, ArrowDown: side === 0 ? -step : step }[e.key];
+        if (by === undefined) return;
+        e.preventDefault();
+        set(zone.h + by);
+      }} />
+  );
+}
+
 function ZoneLayer({ store }: { store: Store }) {
   store.revision.value; // the battle opens in place
   const b = store.battle.value;
   if (b !== null && b.plan.phase !== 'deployment') return null;
   const zones = b === null ? store.zones.value : b.plan.zones;
   const hidden = store.fogSide.value;
+  // before the battle the admin sets how deep each zone is; once deploying, they are the battle's
+  const editable = b === null && store.mode.value === 'admin';
   return (
     <g class="zones">
       {Object.entries(zones).filter(([side]) => Number(side) !== hidden).map(([side, z]) => (
@@ -450,6 +491,7 @@ function ZoneLayer({ store }: { store: Store }) {
           <text x={z.x + 24} y={side === '0' ? z.y + z.h - 24 : z.y + 44}>
             {store.sides.value[Number(side)]} deployment zone
           </text>
+          {editable && <ZoneEdge store={store} side={Number(side) as 0 | 1} zone={z} />}
         </g>
       ))}
     </g>
@@ -480,6 +522,19 @@ export function MapView({ store }: { store: Store }) {
   const gridX = Array.from({ length: Math.ceil(field.width / grid) - 1 }, (_, i) => (i + 1) * grid);
   const gridY = Array.from({ length: Math.ceil(field.height / grid) - 1 }, (_, i) => (i + 1) * grid);
   const pan = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  // fingers on the map: two pinch it; until all are lifted, a finger left over does nothing
+  const touches = useRef(new Map<number, Point>());
+  const pinch = useRef<{ distance: number } | null>(null);
+  const pinched = useRef(false);
+  const spread = () => {
+    const [a, b] = [...touches.current.values()];
+    return { distance: Math.hypot(a.x - b.x, a.y - b.y), mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
+  };
+  const lift = (id: number) => {
+    touches.current.delete(id);
+    if (touches.current.size < 2) pinch.current = null;
+    if (touches.current.size === 0) pinched.current = false;
+  };
   const layers = store.layers.value;
   const focused = store.focusedUnit.value;
   // no arc for a unit only last seen: where it faces now is unknown
@@ -525,6 +580,29 @@ export function MapView({ store }: { store: Store }) {
           </div>
           <svg viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`} role="img" style={{ '--k': k }}
             aria-label={`Battlefield, ${field.width} by ${field.height} yards`}
+            onPointerDownCapture={(e) => {
+              touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+              if (touches.current.size < 2) return;
+              // a second finger: pinching, not panning or moving a unit
+              e.stopPropagation();
+              pan.current = null;
+              pinched.current = true;
+              pinch.current = { distance: spread().distance };
+            }}
+            onPointerMoveCapture={(e) => {
+              if (!touches.current.has(e.pointerId)) return;
+              touches.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+              if (!pinched.current) return;
+              e.stopPropagation();
+              if (touches.current.size < 2) return;
+              const { distance, mid } = spread();
+              if (distance > 0 && pinch.current!.distance > 0) {
+                store.zoomMap(distance / pinch.current!.distance, toYards(e.currentTarget, mid.x, mid.y, view));
+              }
+              pinch.current = { distance };
+            }}
+            onPointerUpCapture={(e) => lift(e.pointerId)}
+            onPointerCancelCapture={(e) => lift(e.pointerId)}
             onWheel={(e) => {
               e.preventDefault();
               store.zoomMap(e.deltaY < 0 ? 1.25 : 1 / 1.25, toYards(e.currentTarget, e.clientX, e.clientY, view));
@@ -585,7 +663,7 @@ export function MapView({ store }: { store: Store }) {
           {choice !== null && <TargetMenu store={store} choice={choice} at={byId[choice.to]} />}
         </div>
       </div>
-      <p class="note">
+      <p class="note map-hint">
         {aiming !== null ? `Pick a target for ${byId[aiming].name}: click an enemy (Escape to stop). ` : ''}
         {selectable && aiming === null && battle.plan.phase !== 'deployment'
           ? 'Click a unit, then an enemy, to give it a target. ' : ''}
@@ -594,7 +672,7 @@ export function MapView({ store }: { store: Store }) {
         {replaying !== null
           ? `Round ${replaying} as it began: where units stood, their men and the orders given. Pick Now to move units. `
           : ''}
-        Scroll or use + and − to zoom; drag open ground to move the map.{' '}
+        Scroll, pinch or use + and − to zoom; drag open ground to move the map.{' '}
         {movable
           ? 'Drag a unit, or select it and use the arrow keys, to place it; drag the handle in front of it, or use '
             + 'Q and E, to turn it (Shift for bigger steps). '
@@ -602,7 +680,6 @@ export function MapView({ store }: { store: Store }) {
         In battle, fire falls off with distance, a unit fires only within its front arc (drawn for the selected
         unit, out to its range: darker where fire tells in full) and only at what it can see; higher ground helps,
         and flank and rear attacks hit harder. Faded arrows are fire that can't tell from where the units stand.
-        <span class="phone-only"> On a small screen, scroll the map sideways.</span>
       </p>
     </div>
   );
