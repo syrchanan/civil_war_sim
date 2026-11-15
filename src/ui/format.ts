@@ -15,7 +15,7 @@ export function modifierText(mod: Modifier): string {
   return [changes, mod.note ? `(${mod.note})` : ''].filter(Boolean).join(' ');
 }
 
-const FIELD_TESTS: [string, string][] = [['exchange', 'casualty exchange'], ['routs', 'routs'],
+export const FIELD_TESTS: [string, string][] = [['exchange', 'casualty exchange'], ['routs', 'routs'],
   ['standing', 'strength standing']];
 
 /** Who held the field and how it was decided: the whole army out, the votes, or named by the admin. */

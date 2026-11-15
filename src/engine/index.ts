@@ -39,8 +39,8 @@ export { battleFromDict, battleTag, battleToDict, FORMAT, VERSION } from './stat
 export type { StateData, UnitData } from './state';
 export { orderOfBattle, sideSummary, verdicts } from './summary';
 export type { SideOrder, SideSummary, TypeTotal, Verdict } from './summary';
-export { expectedShare, general, ratings, resultShares, sidePower, unitPower } from './commanders';
-export type { CommandersConfig, General, Rating, SideResult } from './commanders';
+export { expectedShare, general, ratingParts, ratings, resultParts, resultShares, sidePower, unitPower } from './commanders';
+export type { CommandersConfig, General, Rating, ResultParts, SideResult } from './commanders';
 export { estimateRound, quantile } from './estimate';
 export type { ChargeEstimate, Range, RoundEstimate, UnitEstimate } from './estimate';
 export { PLAYER_FORMAT, PLAYER_VERSION, playerFile, roughly, UNKNOWN_STATS } from './playerFile';

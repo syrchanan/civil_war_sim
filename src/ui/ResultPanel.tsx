@@ -1,8 +1,12 @@
-/** Finishing the battle, then the result: who held the field and why, each side's toll, each unit's casualties. */
+/**
+ * Finishing the battle, then the result: the battle's end (BattleEnd.tsx), and under it the full ledger: who held
+ * the field and why, each side's toll in full, each unit's casualties.
+ */
 
 import { useState } from 'preact/hooks';
 
 import { type FieldHolder, ratings, type SideSummary } from '../engine';
+import { BattleEnd } from './BattleEnd';
 import { fieldText } from './format';
 import type { Store } from './store';
 
@@ -62,6 +66,9 @@ export function ResultPanel({ store }: { store: Store }) {
   const share = (x: number) => `${Math.round(x * 100)}%`;
   return (
     <div class="result">
+      <BattleEnd store={store} />
+      <details class="ledger">
+      <summary>The full ledger</summary>
       <p class="field">{fieldText(result, store.sides.value)}</p>
       <div class="table-wrap">
         <table aria-label="Side summary">
@@ -111,6 +118,7 @@ export function ResultPanel({ store }: { store: Store }) {
       <p class="note">Commander rating: each side's share of the result (enemy casualties, the field, enemy routs)
         against the share its strength led to expect (men, experience, morale and weapons as the battle began).
         Doing better than the odds rates higher; the ladder runs from Varro to Hannibal.</p>
+      </details>
     </div>
   );
 }

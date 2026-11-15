@@ -1207,8 +1207,15 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (file !== null) playerSide.value = file.side;
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
     touch();
-    if (dispatchRound.value !== null) setTab('dispatches');
+    if (b.finished) atNightfall();
+    else if (dispatchRound.value !== null) setTab('dispatches');
     return null;
+  }
+
+  /** The battle's end opens on its result, the sidebar widened for this page (not saved: a viewer's choice stays). */
+  function atNightfall(): void {
+    setTab('result');
+    sidebarWide.value = true;
   }
 
   const deploying = () => battle.value!.plan.phase === 'deployment';
@@ -1392,6 +1399,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   function finish(holder: FieldHolder): void {
     battle.value!.finish(holder);
     touch();
+    atNightfall();
   }
 
   /** Back to editing the armies (the battle is dropped). */

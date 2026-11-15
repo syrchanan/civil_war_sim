@@ -92,8 +92,8 @@ Built on one long-lived branch, merged when complete, so players never see a hal
 | D5 | Round results as a dispatch | ✓ (2026-11-14) |
 | D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ✓ (2026-11-14) |
 | D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ✓ (2026-11-14) |
-| D7 | Battle end: verdict, ledger, generals, regiments ranked | ► next |
-| D8 | Phones, cleanup, merge | ○ |
+| D7 | Battle end: verdict, ledger, generals, regiments ranked | ✓ (2026-11-14) |
+| D8 | Phones, cleanup, merge | ► next |
 
 Later: roads, fences and railways (map stages 4–6); a dark "lamplight" theme; pixel cutscenes.
 
@@ -261,6 +261,25 @@ everything is TypeScript, and D1's Python side below is a record.
     round's end. Movement (a per-round budget per unit, deciding charges, getting into range and pursuit) is to
     replace it.
   - The player file does not carry the round length: players plan with 60 minutes whatever the admin set.
+
+**D7, built** (the battle's end; user, 2026-11-14: in the Result tab, opened wide, the map beside it):
+- **At nightfall** (`finish`, or a finished battle opened from its file) the Result tab opens, the sidebar widened
+  for that page only (a viewer's Narrow choice is not overwritten). Players see it all by opening the admin's
+  battle file: the fog lifts once the battle is over.
+- **The verdict** (`ending.ts`, pure): who holds the field, the winner's verdict as a headline ("A Decisive Union
+  Victory", "A Pyrrhic …", "A Drawn Battle"), each side's casualties, and why the field went as it did.
+- **The butcher's bill**: went into battle, killed, wounded, captured or missing, casualties, wounded back, guns
+  lost, regiments broken; the men still in the ranks as bars.
+- **The generals**: each side's general from the ladder, "at Ulm (1805): the stronger army, and was beaten" (odds
+  from the expected share, outcome from the verdict); folded under it the odds against the day (expected and
+  achieved) and the three parts of the result with their weights (`resultParts` / `ratingParts` in
+  `commanders.ts`, the same numbers as before); the 15-general ladder with each side's marked.
+- **Regiments ranked**, both armies: by casualties inflicted per man lost (none lost counts as one, so a regiment
+  that never fought ranks low and reads "—"), inflicted, share of men kept, or time before breaking; ties to the one
+  that inflicted more. Each with what it inflicted and lost and its day ("Broke in rounds 1 and 2, rallied",
+  "Wiped out in round 2", "Shaken at nightfall"); a name selects it and centres the map. Over ten regiments: the
+  best five, the worst five and all of them folded.
+- **The full ledger**, folded: the former side-summary and casualties-by-unit tables, unchanged.
 
 ### Phase C — Later
 | Item | Status |

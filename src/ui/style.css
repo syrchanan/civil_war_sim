@@ -503,3 +503,51 @@ button.link { border: 0; padding: 0; background: none; color: var(--accent); tex
 .group text.drag { cursor: move; }
 .deploy-brigades { list-style: none; margin: 0; padding: 0; }
 .deploy-brigades li { padding: 3px 0; }
+
+/* the battle's end (D7): verdict, the butcher's bill, the generals, the regiments ranked */
+.battle-end { display: flex; flex-direction: column; gap: 22px; }
+.battle-end section { display: flex; flex-direction: column; gap: 8px; }
+.battle-end h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.35rem; }
+.battle-end h4 { margin: 6px 0 0; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+.battle-end p { margin: 0; }
+.end-verdict { text-align: center; border-top: 3px double var(--border); border-bottom: 3px double var(--border);
+  padding: 14px 8px; }
+.end-kicker { font-family: var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.end-verdict .end-headline { font-size: 2rem; color: var(--accent); }
+th.side-0 { color: var(--side-0); }
+th.side-1 { color: var(--side-1); }
+.end-bar { display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr 3rem; align-items: center; gap: 8px;
+  font-size: 0.9rem; }
+.end-bar-track { height: 12px; background: var(--surface-2); border: 1px solid var(--border-soft); }
+.end-bar-fill { display: block; height: 100%; background: var(--muted); }
+.end-bar-fill.side-0 { background: var(--side-0); }
+.end-bar-fill.side-1 { background: var(--side-1); }
+.end-general { border-left: 3px solid var(--side-0); padding: 4px 0 4px 12px; display: flex; flex-direction: column;
+  gap: 4px; }
+.end-general.side-1 { border-left-color: var(--side-1); }
+.end-general-name { font-family: var(--display); font-size: 1.6rem; }
+.end-general details { margin-top: 4px; }
+.end-general ul { margin: 6px 0 0; padding-left: 1.2rem; }
+.ladder { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); }
+.ladder li { border: 1px solid var(--border-soft); padding: 4px 6px; display: flex; flex-direction: column;
+  font-size: 0.85rem; }
+.ladder li .note { margin: 0; font-size: 0.75rem; }
+.ladder li.at { border-width: 2px; }
+.ladder li.at.side-0 { border-color: var(--side-0); }
+.ladder li.at.side-1 { border-color: var(--side-1); }
+.ladder li.at.side-0.side-1 { border-color: var(--accent); }
+.ladder-name { font-weight: 600; }
+.ladder-who { font-size: 0.75rem; font-weight: 600; color: var(--accent); }
+.battle-end label { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; color: var(--muted); }
+.ranked { list-style: none; margin: 0; padding: 0; }
+.ranked li { display: grid; grid-template-columns: 2rem 1fr auto; gap: 8px; align-items: baseline;
+  padding: 6px 0 6px 8px; border-bottom: 1px solid var(--border-soft); border-left: 3px solid var(--side-0); }
+.ranked li.side-1 { border-left-color: var(--side-1); }
+.ranked .rank { font-family: var(--display); font-size: 1.1rem; }
+.ranked-what { display: flex; flex-direction: column; align-items: flex-start; }
+.ranked-what button { text-align: left; }
+.ranked-what .note { margin: 0; }
+.ranked-figure { font-weight: 600; }
+.ledger { margin-top: 22px; }
+.ledger > summary { font-family: var(--display); font-size: 1.2rem; cursor: pointer; }
