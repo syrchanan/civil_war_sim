@@ -79,6 +79,223 @@ exact parity, then the client. Tuning waited until the pass was done.
 | P5 | Elevation and line of sight from the terrain | ✓ (2026-11-13) |
 | Then | Tuning pass (A13), now that the engine has settled, in TypeScript | ► next |
 
+### Phase D — Game flow and UI overhaul (branch `ui-overhaul`, 2026-11-13 →)
+Decided with the user and the admins over the style A mockups (https://claude.ai/artifact/U3DDr5zsH8ssS1yQdAGqS2).
+Built on one long-lived branch, merged when complete, so players never see a half-built UI.
+
+| # | Stage | Status |
+|---|---|---|
+| D1 | File formats v3: unit `org` (corps / division / brigade), battle `plan` (rounds planned, start clock, phase, deployment zones); deployment and opening the battle (web engine); player file v3; army CSV with org | ✓ (2026-11-13) |
+| D2 | Theme and shell: style A tokens, bundled fonts, map-centred layout with a docked unit card, phase router | ✓ (2026-11-14) |
+| D3 | Battle screen: restyled map, orders given in the unit card, tabs, round strip | ✓ (2026-11-14) |
+| D4 | Setup, army review (players submit, admins approve) and round 0 deployment | ✓ (2026-11-14) |
+| D5 | Round results as a dispatch | ✓ (2026-11-14) |
+| D5b | Layout: the map at viewport height on the left, one tabbed sidebar on the right (Unit, Orders, Armies, Dispatches, Result), each tab scrolling on its own (user, 2026-11-14: the unit card pushed the panels down the page) | ✓ (2026-11-14) |
+| D6 | Large battles: org-grouped lists, Reconnaissance lookup, optional brigade / division orders and placement | ✓ (2026-11-14) |
+| D7 | Battle end: verdict, ledger, generals, regiments ranked | ✓ (2026-11-14) |
+| D8 | Phones, cleanup, merge | ✓ (2026-11-14; the merge is the user's) |
+
+Later: roads, fences and railways (map stages 4–6); a dark "lamplight" theme; pixel cutscenes.
+
+**Parity (user, 2026-11-13):** only the core engine (combat resolution) was kept in parity between Python and
+TypeScript; the game flow and the web experience were web only. Since the Python engine's removal (2026-11-14)
+everything is TypeScript, and D1's Python side below is a record.
+
+**D1, built:**
+- **State file version 3** (version 2 still loads):
+  - each unit's `org` (`{corps, division, brigade}`, optional names: they organise lists and never affect combat);
+  - the battle's `plan` (`rounds_planned`, `start_clock` 'HH:MM', `phase` deployment / battle, `zones` per side
+    `{x, y, w, h}` in yards).
+  - Both are validated (`validateOrg` / `validatePlan`, `plan.ts`). Reference files for versions 2 and 3 are in
+    `src/engine/fixtures/` (`battle_state_v2.json`, `battle_state_v3.json`); the tests load both. (Python also
+    accepted them in setup files and carried them through `scenario_from_state`, until its removal.)
+- **The game flow (web engine only):**
+  - no round is fought while deploying;
+  - `openBattle` checks every standing unit is placed inside its side's zone (problems named), then opens round 1;
+  - `setRoundsPlanned` (at least the rounds fought; null is open-ended); `inZone`, `deploymentProblems`.
+- **Player file version 3:** carries org (the enemy's for units seen). While deploying it holds no enemy unit at
+  all. Versions 1 and 2 still open.
+- **Orders files are unchanged:** a round 0 deployment is an orders file with places and no orders.
+- **Army CSV:** optional `corps`, `division` and `brigade` columns, carried into the battle.
+- Not done: the players' xlsx template got no org columns (that Python workflow has since been removed).
+
+**D2, built:**
+- **Theme** (`style.css`): style A tokens (parchment, ink, rules, oxblood accent, Union blue, Confederate brown-gray,
+  field colours), square corners, restyled buttons and inputs, focus rings. Light only; the old dark-mode block is
+  gone until the lamplight theme.
+- **Fonts, bundled** (no requests to Google): IM Fell English SC for display, Source Serif 4 for body, from the
+  `@fontsource` packages (OFL, pinned).
+- **Shell** (`App.tsx`):
+  - a header bar with the battle's name, where it stands ("Round 2 of 4 · 2:00 pm", "Round 0 · deployment",
+    "Nightfall · 3 rounds fought", from `plan` and `clockText`) and the file actions;
+  - the field, with the selected unit's card docked beside it (a hint when none is selected);
+  - a tabbed panel (Orders, Armies, Dispatches, Result) that opens on the tab the phase needs (setup and deployment
+    on Armies, battle on Orders, nightfall on Result). A tab picked stays until the phase changes. Every panel stays
+    on the page, hidden by style when not chosen.
+- Phones: everything stacks. The header's buttons are still one per line; D8 tidies them.
+
+**D3, built:**
+- **Orders from the card** (`OrderCard.tsx`): under the selected unit's card while a round is being ordered, for a
+  unit the viewer commands (the admin any, a player their own). It has a segmented Fire / Charge / Hold (Hold /
+  Rally when broken; only what the unit can do), the target (broken targets marked), the range and effect (marked
+  when fire can't tell: out of range, outside the front arc or no line of sight), a battery's ammunition, and "if
+  the target breaks". The orders table under the Orders tab stays, for the whole army at once.
+- **The round strip** (`RoundStrip.tsx`) under the field: rounds fought with their clock (click to see one on the
+  map as it began), the round being ordered, the rounds still planned (dashed), nightfall.
+- **The map** takes the theme's colours and gains a compass rose.
+
+**D4, built** (decided with the user: CSV in and a note out; setup saveable; zones as bands; players' own table):
+- **Setup** (`SetupPanel.tsx`, docked beside the field before the battle):
+  - the admin sets the day (battle name, first round's clock, round length, rounds planned or open-ended), the
+    ground and seed, and how deep each side's zone is: a band along its own edge (default 360 yd, which draws the
+    armies up where the zoneless layout did). The zones are drawn on the map.
+  - **Open round 0** builds the battle in deployment, with the plan and zones, each side drawn up inside its
+    own zone (`defaultLayout` takes the zones). It needs both armies approved. **Start battle** still fights at once
+    (practice, or admin-placed) and carries the day's plan and name.
+  - A player's dock explains how to send an army and keeps a practice battle.
+- **Setup file** (`setupFile.ts`, `imperial-generals-setup` v1, web only): name, sides, seed, ground, round length,
+  rounds planned, start clock, zone depths, the unit drafts (with org) and each side's review. Saved from the setup
+  panel and opened with the same button as a battle (admins only).
+- **Army review** (`ArmyReview.tsx`, under each army's table while setting up):
+  - an army CSV loads the lines it can read; the others are left out and listed (a wrong header or no readable
+    line still loads nothing);
+  - the review lists the problems (each linked to its highlighted row), shows the army at a glance against the
+    other side, and takes a note;
+  - **Send back** puts the note and the problems together, copied when the browser allows and shown either way;
+  - **Approve** only works once no problems are left (the left-out lines can be let go);
+  - any change to a side takes its approval away;
+  - the army tables gain corps, division and brigade per unit;
+  - players see their own army first and pick their side there, with the other side folded away to practise
+    against.
+- **Round 0** (`DeployPanel.tsx`, under Orders while deploying):
+  - a player sees how many regiments stand in their zone (any outside are listed and marked on the map) and
+    sends the file (Send deployment);
+  - the admin sees whose deployment is in and opens round 1 once every unit stands in its zone;
+  - a deployment is an orders file for round 0 with places and no orders; player files are named for round 0;
+  - loading checks the round and refuses orders in a deployment;
+  - nothing is aimed while deploying.
+- Not done: dragging zone edges on the map (D8); brigade-at-a-time placement and org-grouped lists (D6).
+
+**D5, built:**
+- **The dispatch** (`dispatch.ts`, pure; `DispatchCard.tsx`): each round told as a newspaper report.
+  - **Headline**, from the most notable event: a battery overrun or a regiment wiped out, then charges that
+    broke their target or went home, then charges thrown back, then breaks ("Three regiments break"), then a rally;
+    else how many fell ("A quiet round along the line").
+  - **Summary**: up to three sentences in the order things happened (charges, breaks with their clock time,
+    rallies, flights); a unit broken by a charge is told with the charge.
+  - **Regiments**: lost, left and state per regiment. The state is steady (morale ≥ 60% of its start), shaken
+    (≥ 30%), wavering, broken or wiped out. The admin sees both sides; a player sees "Your regiments".
+  - **Charges** with their clock time.
+  - **Of the enemy** (players only): prisoners taken (roughly), enemy regiments seen to break, and those that moved
+    out of sight.
+- **Where it shows:**
+  - in the dock after the admin fights a round, and when a player opens a new file with rounds in it;
+  - **On to round N orders** closes it (**Close** for an earlier round, or at nightfall); **Replay on the map**
+    shows the round as it began;
+  - clicking a fought round in the round strip opens its dispatch with the replay, and the round being ordered
+    closes it.
+- **The Dispatches tab** lists every round's dispatch, latest first, each with **The full report** (the old
+  per-unit table, charges, target switches, modifiers, flights and rallies) folded underneath.
+
+**After D5** (browser pass, 2026-11-14, Playwright on desktop):
+- Contact reveals: an enemy unit that charges, is charged by, or trades fire with a side's unit is seen by that
+  side as that round began (where it came at them), so a player's file and dispatch tell of a charge from a unit
+  they couldn't see before. Not where it stands now, which could leak a move made since (`sight.ts`).
+- Fixed: the round strip while deploying (round 1 was missing); the map's hint while deploying; morale on the unit
+  card while replaying; the dispatch tables in the dock; a loaded army file's problems shown twice; the army tables
+  overflowing at 1440 px.
+
+**D5b, built** (the layout):
+- **Map + sidebar**: under the header, the field on the left and one tabbed sidebar on the right, filling the
+  window. Each column scrolls on its own, so selecting a unit or reading a dispatch never moves the map (checked in
+  the browser: the map's box is unchanged after a selection). Below 900 px wide the page stacks (phones: D8).
+- **Tabs by phase** (`PHASE_TABS`, store): setup Setup / Armies / Unit; deployment Deploy / Unit / Armies; battle
+  Unit / Orders / Armies / Dispatches / Result; nightfall Result / Dispatches / Armies / Unit. The open tab is a store
+  signal: a unit selected or aimed opens Unit; a round fought, a file opened with rounds in it, or a fought round
+  clicked on the strip opens Dispatches (that dispatch first, with the way on); "On to round N orders" goes to Unit.
+- **Widen / Narrow** in the tab bar: the sidebar takes 60% of the width for the wide tables, remembered per viewer.
+  The sidebar is a CSS size container: while it is narrow, the tables you edit (armies, orders, guesses, modifiers)
+  become cards, as on phones; widened, they are tables again.
+- Also: a unit locked in melee with one of a side's units is seen by that side now (`sight.ts`); the unit card
+  words morale as the dispatch does (steady / shaken / wavering).
+
+**D6, built** (large battles: 60 to 80 regiments a side):
+- **Field size per battle** (setup): Small 2,000 × 1,200 yd (as before), Medium 4,000 × 2,400, Large 8,000 × 4,800,
+  or custom; the setup suggests the smallest on which each side draws up in three lines or fewer. Saved as
+  `plan.field` (left out at the default, so older and default battles save as before). Zones take 30% of the
+  field's height by default; generated ground keeps about a hundred cells across.
+- **Map zoom and pan**: wheel, + and -, drag open ground; "Whole field" shows it all. Symbols, labels, the compass
+  and the scale bar keep their size on screen.
+- **Big test armies** (`bigBattle.ts`): `bigArmies(seed)`, two seeded armies of seventy (a corps of three divisions
+  of four brigades, batteries and cavalry); `groupByOrg` for lists by corps, division and brigade. At this size a
+  round takes about 20 ms and both sides' sight about 50 ms.
+- **Grouped rosters** (Armies tab, `Rosters.tsx`): each side by corps, division and brigade, with regiments and men
+  (now of at the start), folding open to its regiments; a regiment clicked is selected. The enemy only as far as
+  known (seen or last seen, men roughly). The admin's army review names each problem's brigade.
+- **Reconnaissance** (Recon tab in battle and at nightfall, `Recon.tsx`): everything known of both armies as of the
+  battle's clock, grouped by division and brigade, with a search and filter chips with counts. A player sees Ours
+  (exactly), In sight (roughly) and Lost from sight ("? last seen round N"); the admin sees each side whole. A
+  regiment clicked is selected and brought to the middle of the map.
+- **Brigades and divisions on the map**: a Regiments / Brigades / Divisions switch (remembered per viewer). Grouped,
+  each is outlined and labelled with its regiments and men (roughly for the enemy, counting only what is shown).
+  A label selects the group (`GroupCard.tsx`).
+- **Group orders**: for the viewer's own group while ordering, pick an enemy brigade in sight and Fire / Charge /
+  Hold. Each standing regiment takes the nearest regiment of that brigade it can reach (fire: in range, front arc
+  and sight); the rest hold. The card says how many reached and how many were changed by hand since. The engine
+  stays per regiment.
+- **Placing brigades** (deployment): the Deploy tab lists brigades with whether all stand inside the zone; a
+  brigade's card draws it up around where it stands (One line, Two lines, Column), facing the enemy. Dragging a
+  brigade's or division's outline moves all of it; each regiment can still be moved on its own.
+
+**After D6** (browser pass, 2026-11-14, Playwright on desktop, seventy a side on a Large field):
+- **Labels give way** (`declutter`, `field.ts`): regiment and group labels that would overlap are hidden, the
+  selected one's kept; zoomed in, more fit. A regiment's Unit card links to its brigade and division, the way to a
+  group whose label gave way.
+- **A brigade's label drags it** while deploying (its regiments cover most of its outline).
+- **Formations keep to the zone** (`shiftInto`): drawn up near the zone's edge, the whole group shifts back inside.
+- **A brigade's charge** takes only regiments it could reach within the round at its charge pace (until movement).
+- **The Dispatches tab** puts the dispatches before the strength charts, so the round just fought is in sight.
+- **Open, for later** (user, 2026-11-14):
+  - A fixed most charge distance until movement exists? At the default 60-minute round the charge pace reaches
+    7,200 yd (infantry), so the round-reach limit only bites in short rounds; the engine lets any charge land by the
+    round's end. Movement (a per-round budget per unit, deciding charges, getting into range and pursuit) is to
+    replace it.
+  - The player file does not carry the round length: players plan with 60 minutes whatever the admin set.
+
+**D7, built** (the battle's end; user, 2026-11-14: in the Result tab, opened wide, the map beside it):
+- **At nightfall** (`finish`, or a finished battle opened from its file) the Result tab opens, the sidebar widened
+  for that page only (a viewer's Narrow choice is not overwritten). Players see it all by opening the admin's
+  battle file: the fog lifts once the battle is over.
+- **The verdict** (`ending.ts`, pure): who holds the field, the winner's verdict as a headline ("A Decisive Union
+  Victory", "A Pyrrhic …", "A Drawn Battle"), each side's casualties, and why the field went as it did.
+- **The butcher's bill**: went into battle, killed, wounded, captured or missing, casualties, wounded back, guns
+  lost, regiments broken; the men still in the ranks as bars.
+- **The generals**: each side's general from the ladder, "at Ulm (1805): the stronger army, and was beaten" (odds
+  from the expected share, outcome from the verdict); folded under it the odds against the day (expected and
+  achieved) and the three parts of the result with their weights (`resultParts` / `ratingParts` in
+  `commanders.ts`, the same numbers as before); the 15-general ladder with each side's marked.
+- **Regiments ranked**, both armies: by casualties inflicted per man lost (none lost counts as one, so a regiment
+  that never fought ranks low and reads "—"), inflicted, share of men kept, or time before breaking; ties to the one
+  that inflicted more. Each with what it inflicted and lost and its day ("Broke in rounds 1 and 2, rallied",
+  "Wiped out in round 2", "Shaken at nightfall"); a name selects it and centres the map. Over ten regiments: the
+  best five, the worst five and all of them folded.
+- **The full ledger**, folded: the former side-summary and casualties-by-unit tables, unchanged.
+
+**D8, built** (phones; user, 2026-11-14: the phone mockup's layout, pinch to zoom, zone edges on the map):
+- **Phones** (≤ 640 px; 641–900 px still stack as one page): the header, the field and the sidebar at the window's
+  height, each scrolling on its own; the tabs in a bar along the bottom. The header holds the battle's name, where
+  it stands and the one main action (a player's orders out, the admin's orders in); the other file actions fold
+  behind **Files** (CSS only: on a wider screen they all show). The map fits the width (no more sideways scroll),
+  its zoom buttons top left and the outline switch bottom right; the rounds of the day in one sideways row; the long
+  map hint is left out.
+- **Pinch to zoom**: two fingers zoom about their middle; a second finger stops a pan or a unit being dragged, and
+  a finger left over does nothing until all are lifted. The map takes `touch-action: none`.
+- **Zone edges**: in setup the admin drags a zone's inner edge on the map (or focuses it and uses ↑ / ↓, Shift for
+  50 yd) to set its depth, from a yard to half the field.
+- **Cleanup**: the phone-only sideways-scroll note and rules removed (a sweep found no unused classes or exports);
+  the README tells the new game flow; the changelog lists Phase D.
+- **The merge**: the branch is pushed and a pull request opened into `main`; the user merges it.
+
 ### Phase C — Later
 | Item | Status |
 |---|---|
@@ -450,7 +667,7 @@ without saving** (tested mid-battle, including `finish()`).
 
 Units are built with names and meta via the dict form:
 `Battle({'reg_001': {'side': 0, 'regiment': ..., 'name': '1st Minnesota', 'meta': {...}}}, meta={...})`.
-Reference file: `test_cases/battle_state_v2.json` (version 2 since A13: contacts, charges, charge params). A test
+Reference file: `src/engine/fixtures/battle_state_v2.json` (formerly `test_cases/`) (version 2 since A13: contacts, charges, charge params). A test
 checks it round-trips unchanged, so format changes are
 deliberate; it's also the starting fixture for the TypeScript parity tests (B2). Positions are stored but don't
 affect combat until range/terrain effects return.

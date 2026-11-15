@@ -79,17 +79,44 @@ export function expectedShare(mine: number, other: number, exponent: number): nu
 
 const share = (mine: number, theirs: number): number => (mine + theirs === 0 ? 0.5 : mine / (mine + theirs));
 
+/** A side's share of each part of the result, before weighting: casualties inflicted (guns as men), field, routs. */
+export interface ResultParts {
+  casualties: number;
+  field: number;
+  routs: number;
+}
+
+/** Each side's share of each part of the result (`resultShares` weighs them). */
+export function resultParts(sides: SideResult[], holder: number | null, cfg: CommandersConfig): ResultParts[] {
+  const gun = cfg.gun_value;
+  const routed = sides.map((s) => s.units_out_men / s.started);
+  return [[0, 1], [1, 0]].map(([me, them]) => ({
+    casualties: share(sides[them].casualties + gun * sides[me].guns_taken,
+      sides[me].casualties + gun * sides[them].guns_taken),
+    field: holder === null ? 0.5 : holder === me ? 1.0 : 0.0,
+    routs: share(routed[them], routed[me]),
+  }));
+}
+
 /** Each side's share of the result, from its casualties, guns taken, routed men and start, and the field holder. */
 export function resultShares(sides: SideResult[], holder: number | null, cfg: CommandersConfig): number[] {
   const w = cfg.weights;
-  const gun = cfg.gun_value;
-  const routed = sides.map((s) => s.units_out_men / s.started);
-  return [[0, 1], [1, 0]].map(([me, them]) => {
-    const damage = share(sides[them].casualties + gun * sides[me].guns_taken,
-      sides[me].casualties + gun * sides[them].guns_taken);
-    const field = holder === null ? 0.5 : holder === me ? 1.0 : 0.0;
-    return w.casualties * damage + w.field * field + w.routs * share(routed[them], routed[me]);
-  });
+  return resultParts(sides, holder, cfg)
+    .map((p) => w.casualties * p.casualties + w.field * p.field + w.routs * p.routs);
+}
+
+/** What each side of a finished battle brings to the result: casualties, guns taken, routed men, start. */
+function sideResults(state: StateData, summary = sideSummary(state)): SideResult[] { // throws if not finished
+  return summary.map((s, side) => ({
+    casualties: s.casualties, guns_taken: s.guns_taken, started: s.started,
+    units_out_men: state.units.filter((u) => u.side === side && (u.morale.broken || u.size === 0))
+      .reduce((total, u) => total + u.initial_size, 0),
+  }));
+}
+
+/** Each side's share of each part of a finished battle's result; throws ValueError if it isn't finished. */
+export function ratingParts(state: StateData, cfg: CommandersConfig = defaults.commanders): ResultParts[] {
+  return resultParts(sideResults(state), state.result!.field_held_by, cfg);
 }
 
 /** The last general on the ladder whose 'from' the score reaches (the first if none). */
@@ -102,13 +129,9 @@ export function general(score: number, ladder: General[]): General {
 /** Each side's commander rating for a finished battle; throws ValueError if it isn't finished. */
 export function ratings(state: StateData, cfg: CommandersConfig = defaults.commanders): Rating[] {
   const summary = sideSummary(state); // throws if not finished
+  const sides = sideResults(state, summary);
   const params = BattleParams.fromDict(state.params as unknown as Overrides);
   const powers = [0, 1].map((s) => sidePower(state, s, params));
-  const sides = summary.map((s, side) => ({
-    casualties: s.casualties, guns_taken: s.guns_taken, started: s.started,
-    units_out_men: state.units.filter((u) => u.side === side && (u.morale.broken || u.size === 0))
-      .reduce((total, u) => total + u.initial_size, 0),
-  }));
   const results = resultShares(sides, state.result!.field_held_by, cfg);
   return [0, 1].map((side) => {
     const expected = expectedShare(powers[side], powers[1 - side], cfg.power_exponent);

@@ -7,7 +7,7 @@ import { Terrain } from '../engine';
 import { App } from './App';
 import { createStore, type Store } from './store';
 import { closeRanks } from './testing';
-import { STATS_LABEL, unitInfoOf } from './UnitInfo';
+import { STATS_LABEL, UnitInfo, unitInfoOf } from './UnitInfo';
 
 beforeEach(() => localStorage.clear());
 afterEach(cleanup);
@@ -184,6 +184,15 @@ describe('unitInfoOf', () => {
   });
 });
 
+describe('the card', () => {
+  it('draws nothing for a unit no longer on the map (an enemy gone out of sight)', () => {
+    const s = inBattle();
+    s.selectUnit('gone');
+    const { container } = render(<UnitInfo store={s} />);
+    expect(container.innerHTML).toBe('');
+  });
+});
+
 describe('on the map', () => {
   it('shows the selected unit\'s picture and details', () => {
     const s = inBattle();
@@ -212,7 +221,7 @@ describe('on the map', () => {
       fireEvent.focus(enemy); // clicking a unit focuses it first
       fireEvent.click(enemy);
     });
-    act(() => { fireEvent.click(screen.getByRole('button', { name: 'Fire' })); });
+    act(() => { fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Fire' })); });
     expect(s.focusedUnit.value).toBe('us_1mn');
     expect(screen.getByRole('region', { name: '1st Minnesota: details' })).toBeTruthy();
 
@@ -222,7 +231,7 @@ describe('on the map', () => {
       fireEvent.focus(enemy);
       fireEvent.click(enemy);
     });
-    act(() => { fireEvent.click(screen.getByRole('button', { name: 'Cancel' })); });
+    act(() => { fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' })); });
     expect(s.focusedUnit.value).toBe('us_1mn');
   });
 });

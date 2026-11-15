@@ -20,7 +20,7 @@ const order = (unit: string, action: string, target?: string) => {
 };
 
 describe('rounds panel', () => {
-  it('fights rounds and shows each one, the latest open', () => {
+  it('fights rounds and shows each one, latest first, with its full report folded away', () => {
     const store = started();
     expect(screen.getAllByText('No rounds fought yet.')).toHaveLength(1);
     order('1st Minnesota', 'ranged', 'cs_8al');
@@ -35,7 +35,7 @@ describe('rounds panel', () => {
 
     const table = screen.getByRole('table', { name: 'Round 1' });
     expect(within(table).getAllByRole('row')).toHaveLength(1 + 7);
-    expect(screen.getByText('Round 1 (0–120 min)')).toBeTruthy();
+    expect(screen.getByText('The full report: Round 1 (0–120 min)')).toBeTruthy();
     expect(within(screen.getByRole('list', { name: 'Round 1 charges' })).getByText(/^8th Alabama -> 1st Minnesota: /))
       .toBeTruthy();
     expect(screen.getByText(/casualties recorded one by one/)).toBeTruthy();
@@ -44,7 +44,10 @@ describe('rounds panel', () => {
     fireEvent.click(screen.getByLabelText(/Record every casualty/));
     fireEvent.click(screen.getByRole('button', { name: 'Fight round 2' }));
     const details = document.querySelectorAll<HTMLDetailsElement>('.rounds details');
-    expect([...details].map((d) => d.open)).toEqual([false, true]);
+    expect([...details].map((d) => [d.querySelector('summary')!.textContent, d.open])).toEqual([
+      ['The full report: Round 2 (120–240 min)', false], ['The full report: Round 1 (0–120 min)', false]]);
+    const cards = document.querySelectorAll('.rounds .dispatch');
+    expect([...cards].map((c) => c.getAttribute('aria-label'))).toEqual(['Dispatch, round 2', 'Dispatch, round 1']);
     expect(store.history.value).toHaveLength(2);
   });
 

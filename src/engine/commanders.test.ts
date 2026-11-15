@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import battles from './fixtures/battles.json';
 import fixture from './fixtures/summaries.json';
-import { expectedShare, general, ratings, resultShares, unitPower } from './commanders';
+import { expectedShare, general, ratingParts, ratings, resultParts, resultShares, unitPower } from './commanders';
 import defaults from './defaults.json';
 import type { StateData } from './state';
 import { sideSummary, verdicts } from './summary';
@@ -52,6 +52,27 @@ describe('commander rating parts', () => {
     const got = resultShares([{ ...side, casualties: 100 }, { ...side, casualties: 300, units_out_men: 500 }], 0, CFG);
     expect(got[0]).toBeCloseTo(CFG.weights.casualties * 0.75 + CFG.weights.field + CFG.weights.routs, 15);
     expect(got[0] + got[1]).toBeCloseTo(1, 15);
+  });
+
+  it('result parts: each side\'s share of casualties, field and routs, weighed into its result share', () => {
+    const side = { casualties: 0, guns_taken: 0, units_out_men: 0, started: 1000 };
+    const sides = [{ ...side, casualties: 100, guns_taken: 1 }, { ...side, casualties: 300, units_out_men: 500 }];
+    const parts = resultParts(sides, 1, CFG);
+    expect(parts[0]).toEqual({ casualties: (300 + CFG.gun_value) / (400 + CFG.gun_value), field: 0, routs: 1 });
+    expect(parts[1].field).toBe(1);
+    expect(resultParts([side, side], null, CFG).map((p) => p.field)).toEqual([0.5, 0.5]);
+    const w = CFG.weights;
+    expect(resultShares(sides, 1, CFG)).toEqual(parts.map((p) => w.casualties * p.casualties + w.field * p.field
+      + w.routs * p.routs));
+  });
+
+  it('a finished battle\'s parts match its ratings', () => {
+    for (const state of finals) {
+      const w = CFG.weights;
+      const parts = ratingParts(state);
+      expect(parts.map((p) => w.casualties * p.casualties + w.field * p.field + w.routs * p.routs))
+        .toEqual(ratings(state).map((r) => r.result));
+    }
   });
 
   it('the ladder: a score gets the last general it reaches, the first one below that', () => {

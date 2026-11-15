@@ -5,8 +5,9 @@ export default defineConfig({
   base: './',
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
-    // UI tests fight whole battles in jsdom; under coverage, in parallel, on CI they need more than the default 5 s
-    testTimeout: 20_000,
+    // UI tests fight whole battles in jsdom; under coverage with every worker busy, a test that takes ~1 s alone can
+    // take ~30 s, so they need far more than the default 5 s
+    testTimeout: 60_000,
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],

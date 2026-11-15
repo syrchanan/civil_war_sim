@@ -13,6 +13,9 @@ Design decisions and status live in `docs/ROADMAP.md`.
   `src/engine/fixtures/`. Git history keeps everything; tools are to be rebuilt in TypeScript when needed.
 
 ### Changed
+- **The client's new look and game flow** (Phase D, branch `ui-overhaul`): style A, a "period map table" (parchment
+  and ink, IM Fell English SC over Source Serif 4, bundled), the field on the left at the window's height and one
+  tabbed sidebar on the right whose tabs follow the battle's phase (setup, deployment, battle, nightfall).
 - The project is TypeScript only and lives at the repository root (formerly `web/`). `npm run check` runs the
   typecheck and the tests with coverage, for CI and the pre-push hook alike; the Node version is in `.nvmrc`.
 
@@ -33,6 +36,20 @@ Design decisions and status live in `docs/ROADMAP.md`.
 - Elevation and line of sight (positions pass P5): on terrain, fire needs a clear line (ridges and woods block it;
   units at a wood's edge see out) and fire from higher ground tells more, up to ±15% (`sight` in the defaults). The
   orders table says so, and fire that can't tell is drawn faded on the map.
+
+- The game flow (Phase D): file formats v3 (each unit's corps, division and brigade; the battle's plan: rounds
+  planned, first round's time, phase and deployment zones); a setup file; army files reviewed by the admin
+  (approved or sent back with a note); round 0, deployment, in each side's zone.
+- Orders given in the unit card on the map; a round strip for the day; the round told as a dispatch (headline,
+  summary, regiments, charges, what was seen of the enemy), every round's kept in the Dispatches tab.
+- Large battles: the field's size per battle (Small, Medium, Large or custom, suggested from the armies); map zoom
+  and pan; rosters by corps, division and brigade; Reconnaissance (all that is known of both armies, searchable);
+  brigades and divisions outlined on the map, ordered as one and drawn up and placed as one while deploying;
+  map labels that would overlap give way.
+- The battle's end: the verdict, the butcher's bill, the general each commander fought like (with the odds and
+  the ladder) and the regiments ranked; the former tables kept as the full ledger.
+- Phones: the tabs along the bottom, the file actions behind Files, pinch to zoom the map. A deployment zone's
+  edge is dragged on the map in setup.
 
 ### Fixed
 - Replaying a round with a rally order on the map no longer fails.

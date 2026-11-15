@@ -5,10 +5,11 @@
  * that round began.
  */
 
+import { unitState } from './dispatch';
 import defaults from '../engine/defaults.json';
 import { ArtilleryBattery, type Order, parseStats } from '../engine';
 import { rangeText } from './format';
-import type { Store } from './store';
+import { groupName, groupOf, type Store } from './store';
 import { Vignette } from './Vignette';
 
 const ARMS: Record<string, string> = { inf: 'infantry', cav: 'cavalry' };
@@ -78,8 +79,15 @@ export function unitInfoOf(store: Store): UnitInfoView | null {
   }
 
   if (live !== undefined) {
-    const steady = foe ? 'steady' : `steady, ${Math.round(live.morale.resolve * 100)}% morale left`;
-    const state = unit.wiped ? 'wiped out' : unit.broken ? 'broken' : live.rallied && !foe ? `rallied, ${steady}` : steady;
+    // replaying a round: morale as it began (after the round before), not as it is now
+    const n = store.mapRound.value;
+    const resolve = n === null ? live.morale.resolve
+      : n === 1 ? 1 : b!.history[n - 2].units[unit.uid].morale / live.morale.initialMorale;
+    // the same words as the dispatch: steady, shaken or wavering by the morale left
+    const standing = unitState(1, false, resolve);
+    const steady = foe ? 'steady' : `${standing}, ${Math.round(resolve * 100)}% morale left`;
+    const rallied = live.rallied && !foe && n === null;
+    const state = unit.wiped ? 'wiped out' : unit.broken ? 'broken' : rallied ? `rallied, ${steady}` : steady;
     rows.push(['Status', cap(state)]);
   }
 
@@ -106,6 +114,29 @@ export function unitInfoOf(store: Store): UnitInfoView | null {
   return { name: unit.name, kind: `${kind}, ${store.sides.value[unit.side]}`, rows };
 }
 
+/**
+ * The selected regiment's brigade and division, each opening its card: the way to a group whose label on the map
+ * gave way to others.
+ */
+function GroupLinks({ store }: { store: Store }) {
+  const b = store.battle.value;
+  const live = b === null ? undefined : b.units.get(store.focusedUnit.value!);
+  if (live === undefined) return null;
+  const groups = (['brigade', 'division'] as const).map((level) => groupOf(live.side as 0 | 1, live.org, level))
+    .filter((g) => g !== null);
+  if (groups.length === 0) return null;
+  return (
+    <p class="unit-org">
+      {groups.map((g, i) => (
+        <>
+          {i > 0 && ' · '}
+          <button class="link" onClick={() => store.selectGroup(g)}>{groupName(g)}</button>
+        </>
+      ))}
+    </p>
+  );
+}
+
 export function UnitInfo({ store }: { store: Store }) {
   const info = unitInfoOf(store);
   if (info === null) return null;
@@ -115,6 +146,7 @@ export function UnitInfo({ store }: { store: Store }) {
       <div class="unit-details">
         <h3>{info.name}</h3>
         <p class="unit-kind">{info.kind}</p>
+        <GroupLinks store={store} />
         <dl>
           {info.rows.map(([label, value]) => (
             <div><dt>{label}</dt><dd>{value}</dd></div>

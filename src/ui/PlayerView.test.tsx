@@ -87,10 +87,19 @@ describe('player view', () => {
     expect(store.aiming.value).toBeNull();                        // guesses are set in their own table
   });
 
-  it('before the battle there are no orders to download and no side to pick yet', () => {
-    render(<App store={createStore(1, 'player')} />);
+  it('before the battle there are no orders to download; the side is picked with the armies', () => {
+    const s = createStore(1, 'player');
+    render(<App store={s} />);
     expect((screen.getByRole('button', { name: 'Download my orders' }) as HTMLButtonElement).disabled).toBe(true);
-    expect(screen.queryByLabelText('You command')).toBeNull();
+    expect(screen.getAllByLabelText('You command')).toHaveLength(1);
+    expect(document.querySelector('.file-bar select')).toBeNull();
+    // your own army first; the other side's folded away, to practise against
+    expect(screen.getAllByRole('table').map((t) => t.getAttribute('aria-label'))[0]).toBe('Union units');
+    fireEvent.change(screen.getByLabelText('You command'), { target: { value: '1' } });
+    expect(s.playerSide.value).toBe(1);
+    expect(screen.getAllByRole('table').map((t) => t.getAttribute('aria-label'))[0]).toBe('Confederate units');
+    expect(screen.getByText('Union, to practise against')).toBeTruthy();
+    expect(screen.queryByRole('region', { name: /^Review: / })).toBeNull();
   });
 });
 

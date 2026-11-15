@@ -9,17 +9,106 @@
 import { computed, signal } from '@preact/signals';
 
 import {
-  ArtilleryBattery, Battle, BattleParams, battleTag, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
+  ArtilleryBattery, Battle, BattleParams, battleTag, DEFAULT_FIELD, fieldOf, type FieldSize, type BattleUnit, CavalryRegiment, type Engagement, estimateRound,
   type FieldHolder, InfantryRegiment, makeOrder, type Modifier, MoraleState, ON_BREAK, parseStats, PLAYER_FORMAT,
-  PLAYER_VERSION, playerFile, type Order, type OrderInput, orderOfBattle, Regiment, Rng, type RoundEstimate,
+  PLAYER_VERSION, playerFile, type Order, type OrderInput, type Org, orderOfBattle, Regiment, Rng, type RoundEstimate,
   type RoundReport, roughly, sideSummary, sightings, type SideSummary, Terrain, type UnitSpec, type Zone,
 } from '../engine';
 import { armyFromCsv, armyToCsv } from './armyCsv';
-import { blockSize, clampToField, defaultFacing, defaultLayout, type Place, type Point, turned } from './field';
+import { type Dispatch, dispatch } from './dispatch';
+import {
+  blockSize, clampToField, DEFAULT_ZONE_DEPTH, defaultFacing, defaultLayout, defaultZoneDepth, type Formation, formation,
+  type Place, type Point, shiftInto, turned,
+  zoneBand, type ZoneRect,
+} from './field';
 import { type LayerKey, type Layers, loadLayers, saveLayers } from './mapLayers';
+import { NEW_REVIEW, readSetup, type Review, SETUP_FORMAT, SETUP_VERSION, type Setup } from './setupFile';
 import { generateTerrain, TERRAIN_PRESETS } from './terrainGen';
+import { clockText } from './format';
 
 export type UnitType = 'inf' | 'cav' | 'art';
+
+/** Where the battle stands: being set up, being deployed, being fought, or over. */
+export type Phase = 'setup' | 'deployment' | 'battle' | 'end';
+/** The sidebar's tabs. */
+export type Tab = 'setup' | 'deploy' | 'unit' | 'orders' | 'recon' | 'armies' | 'dispatches' | 'result';
+/** The tabs each phase shows, the one it opens on first. */
+export const PHASE_TABS: Record<Phase, Tab[]> = {
+  setup: ['setup', 'armies', 'unit'],
+  deployment: ['deploy', 'unit', 'armies'],
+  battle: ['unit', 'orders', 'recon', 'armies', 'dispatches', 'result'],
+  end: ['result', 'dispatches', 'recon', 'armies', 'unit'],
+};
+const WIDE_KEY = 'imperial-generals:sidebar-wide';
+const GROUPS_KEY = 'imperial-generals:map-groups';
+
+/** What the map outlines: nothing (regiments only), brigades, or divisions. */
+export type GroupLevel = 'brigade' | 'division';
+export type MapGroups = 'regiment' | GroupLevel;
+
+/** A brigade or division of one side, named by its org path ('Gibbon's Division' / 'Harrow's Brigade'). */
+export interface GroupRef {
+  side: 0 | 1;
+  level: GroupLevel;
+  division: string;
+  brigade: string | null; // null for a division
+}
+
+/** The group a unit belongs to at a level; null if its org doesn't reach that level. */
+export function groupOf(side: 0 | 1, org: Org, level: GroupLevel): GroupRef | null {
+  if (org.division === undefined || (level === 'brigade' && org.brigade === undefined)) return null;
+  return { side, level, division: org.division, brigade: level === 'brigade' ? org.brigade! : null };
+}
+export const groupKey = (g: GroupRef): string => `${g.side}|${g.division}|${g.brigade ?? ''}`;
+export const groupName = (g: GroupRef): string => g.brigade ?? g.division;
+
+/** The viewer's map grouping; regiments only when storage is blocked or holds anything else. */
+export function loadGroups(): MapGroups {
+  try {
+    const v = localStorage.getItem(GROUPS_KEY);
+    return v === 'brigade' || v === 'division' ? v : 'regiment';
+  } catch {
+    return 'regiment';
+  }
+}
+
+/** A part of the field the map shows, in yards. */
+export interface MapViewBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+/** The narrowest view, in yards across: about a brigade's front. */
+export const MIN_VIEW = 400;
+
+/** A view kept within the field: no narrower than MIN_VIEW nor wider than the field, the field's shape, inside it. */
+export function fitInField(v: MapViewBox, f: FieldSize): MapViewBox {
+  const w = Math.min(f.width, Math.max(Math.min(MIN_VIEW, f.width), v.w));
+  const h = (w * f.height) / f.width;
+  const cx = v.x + v.w / 2;
+  const cy = v.y + v.h / 2;
+  return {
+    x: Math.min(f.width - w, Math.max(0, cx - w / 2)), y: Math.min(f.height - h, Math.max(0, cy - h / 2)), w, h,
+  };
+}
+
+/** The viewer's sidebar width choice (wide or not); false when storage is blocked or holds anything else. */
+export function loadWide(): boolean {
+  try {
+    return localStorage.getItem(WIDE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function saveWide(wide: boolean): void {
+  try {
+    localStorage.setItem(WIDE_KEY, String(wide));
+  } catch {
+    // blocked storage: the choice lasts for this page only
+  }
+}
 
 /** A unit as typed into the army builder (checked when the battle starts). */
 export interface UnitDraft {
@@ -31,6 +120,7 @@ export interface UnitDraft {
   size: number; // artillery: crew
   stats: string; // experience/morale/weapon/melee-only
   guns: number | null; // artillery only
+  org?: Org; // corps / division / brigade names, for organising lists only
 }
 
 /** The usual subtype when a unit's type is picked. */
@@ -145,13 +235,77 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   const playerFileInfo = signal<{ side: 0 | 1; tag: string } | null>(null);
   const guesses = signal<Record<string, { size: number; stats: string }>>({}); // player: guesses about enemy units
   const terrainPreset = signal<string>('none'); // the ground for a new battle: 'none' (an open field) or a preset
+  // the admin's plan for the day, set up before the battle
+  const battleName = signal('');
+  const startClock = signal<string | null>('13:00');
+  const roundsPlanned = signal<number | null>(4);
+  const zoneDepth = signal<[number, number]>([DEFAULT_ZONE_DEPTH, DEFAULT_ZONE_DEPTH]);
+  const fieldSize = signal<FieldSize>(DEFAULT_FIELD); // the field for a new battle
+  /** The field: the battle's own, else the one chosen in setup. */
+  const field = computed<FieldSize>(() => {
+    revision.value;
+    return battle.value === null ? fieldSize.value : fieldOf(battle.value.plan);
+  });
+  /** The part of the field the map shows (yards); null: all of it. */
+  const mapView = signal<MapViewBox | null>(null);
+  const view = computed<MapViewBox>(() => {
+    const f = field.value;
+    const v = mapView.value;
+    return v === null ? { x: 0, y: 0, w: f.width, h: f.height } : fitInField(v, f);
+  });
+  /** Zoom the map by `factor` (above 1: closer), keeping `about` (yards) where it is on screen; the centre if none. */
+  function zoomMap(factor: number, about?: Point): void {
+    const v = view.value;
+    const at = about ?? { x: v.x + v.w / 2, y: v.y + v.h / 2 };
+    const w = v.w / factor;
+    const h = v.h / factor;
+    mapView.value = fitInField({ x: at.x - ((at.x - v.x) * w) / v.w, y: at.y - ((at.y - v.y) * h) / v.h, w, h }, field.value);
+  }
+  /** Move the map's view by some yards. */
+  function panMap(dx: number, dy: number): void {
+    const v = view.value;
+    mapView.value = fitInField({ ...v, x: v.x + dx, y: v.y + dy }, field.value);
+  }
+  /** Bring a point (yards) to the middle of the map, closer in if the whole field is shown. */
+  function centreMap(at: Point): void {
+    const f = field.value;
+    const v = view.value;
+    const w = v.w >= f.width ? Math.min(f.width, MIN_VIEW * 3) : v.w;
+    const h = (w * f.height) / f.width;
+    mapView.value = fitInField({ x: at.x - w / 2, y: at.y - h / 2, w, h }, f);
+  }
+  function fitMap(): void {
+    mapView.value = null;
+  }
+
+  /** Admin: a new battle's field; the zones take their default depth on it. */
+  function setField(size: FieldSize): void {
+    fieldSize.value = size;
+    zoneDepth.value = [defaultZoneDepth(size), defaultZoneDepth(size)];
+    positions.value = {};
+    mapView.value = null;
+  }
+  const review = signal<[Review, Review]>([{ ...NEW_REVIEW }, { ...NEW_REVIEW }]);
+
+  function setReview(side: 0 | 1, change: Partial<Review>): void {
+    const next: [Review, Review] = [...review.value];
+    next[side] = { ...next[side], ...change };
+    review.value = next;
+  }
+
+  /** A change to a side's army: whatever was approved or sent back must be looked at again. */
+  const changed = (side: 0 | 1) => setReview(side, { approved: false, sentBack: false });
+  /** Where each side deploys: a band along its own edge of the field, as deep as the admin set. */
+  const zones = computed<Record<string, ZoneRect>>(() => ({
+    0: zoneBand(0, finite(zoneDepth.value[0]), fieldSize.value), 1: zoneBand(1, finite(zoneDepth.value[1]), fieldSize.value),
+  }));
 
   /** The ground on the map: the battle's own; before the battle, generated from the preset and the seed. */
   const terrain = computed<Terrain | null>(() => {
     revision.value;
     if (battle.value !== null) return battle.value.terrain;
     if (terrainPreset.value === 'none') return null;
-    return new Terrain(generateTerrain(terrainPreset.value, seedSignal.value));
+    return new Terrain(generateTerrain(terrainPreset.value, seedSignal.value, fieldSize.value));
   });
 
   /** The side whose details are hidden: the enemy, when planning from a player file. */
@@ -194,6 +348,26 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (u.side !== fogSide.value) return true;
     if (practiceSight.value !== null) return practiceSight.value.get(uid)!.seen.has(n);
     return uid in b.history[n - 1].positions || u.regiment.position === null;
+  }
+
+  const dispatchRound = signal<number | null>(null); // the round whose dispatch the dock shows
+
+  /** A round's dispatch, as the viewer sees it (a player: their side, and only what they saw of the enemy). */
+  function dispatchOf(round: number): Dispatch {
+    const b = battle.value!;
+    const reports = history.value;
+    const report = reports[round - 1];
+    return dispatch(report, round === 1 ? null : reports[round - 2], {
+      side: modeSignal.value === 'player' ? playerSide.value : null,
+      sides: sides.value,
+      unit: (uid) => {
+        const u = b.units.get(uid)!;
+        return { name: u.name, side: u.side, initialMorale: u.morale.initialMorale };
+      },
+      clock: (minutes) => clockText(b.plan.start_clock, minutes) ?? `${Math.round(minutes)} min`,
+      seenStart: (uid) => seenAt(uid, round),
+      seenEnd: (uid) => (round < reports.length ? seenAt(uid, round + 1) : seenNow(uid)),
+    });
   }
 
   const history = computed<RoundReport[]>(() => {
@@ -322,7 +496,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       ? shown.map((u) => (u.side === fogSide.value ? { ...u, men: roughly(u.men), front: roughly(u.front) } : u))
       : shown;
     const sized = seen.map((u) => ({ ...u, ...blockSize(u.type, u.men, u.front, u.guns) }));
-    const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })));
+    const layout = defaultLayout(sized.map((u) => ({ id: u.uid, side: u.side, width: u.width })),
+      b === null ? zones.value : b.plan.zones, field.value);
     // fog of war: an enemy unit out of sight is left out, unless a player file shows where it was last seen
     const visible = (uid: string) => b === null || fogSide.value === null
       || (n !== null ? seenAt(uid, n) : seenNow(uid) || lastSeenRound(uid) !== null);
@@ -382,9 +557,11 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     units.value = [...units.value, {
       id: `u${n}`, name: `Unit ${n}`, side, type: 'inf', subtype: 'line', size: 500, stats: '5/5/0/0', guns: null,
     }];
+    changed(side);
   }
 
   function updateUnit(id: string, change: Partial<UnitDraft>): void {
+    changed(units.value.find((u) => u.id === id)!.side);
     units.value = units.value.map((u) => {
       if (u.id !== id) return u;
       const next = { ...u, ...change };
@@ -399,6 +576,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   }
 
   function removeUnit(id: string): void {
+    changed(units.value.find((u) => u.id === id)!.side);
     units.value = units.value.filter((u) => u.id !== id);
   }
 
@@ -407,11 +585,13 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return { name: `army-${sides.value[side]}.csv`, text: armyToCsv(units.value.filter((u) => u.side === side)) };
   }
 
-  /** Replace one side's units with those in an army file; returns the problems (none: loaded). */
-  function loadArmy(side: 0 | 1, text: string): string[] {
+  /**
+   * Replace one side's units with those in an army file. Lines that can't be read are left out, and kept for the
+   * review; a file with no readable unit (or a wrong header) changes nothing. Returns the problems.
+   */
+  function loadArmy(side: 0 | 1, text: string, file: string | null = null): string[] {
     const { units: read, problems } = armyFromCsv(text, side);
-    if (problems.length) return problems;
-    if (read.length === 0) return ['The file has no units.'];
+    if (read.length === 0) return problems.length ? problems : ['The file has no units.'];
     const others = units.value.filter((u) => u.side !== side);
     const used = new Set(others.map((u) => u.id));
     let n = 0;
@@ -420,17 +600,20 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       return { ...u, id: `s${side}u${n}` };
     });
     units.value = side === 0 ? [...fresh, ...others] : [...others, ...fresh];
-    return [];
+    setReview(side, { ...NEW_REVIEW, file, lineProblems: problems });
+    return problems;
   }
 
   function clearUnits(): void {
     units.value = [];
+    review.value = [{ ...NEW_REVIEW }, { ...NEW_REVIEW }];
   }
 
   function renameSide(side: 0 | 1, name: string): void {
     const next: [string, string] = [...sides.value];
     next[side] = name;
     sides.value = next;
+    changed(side);
   }
 
   /** Enemy units a unit can target: any not wiped out (broken ones can still be fired on or pursued). */
@@ -537,6 +720,156 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   function selectUnit(uid: string | null): void {
     selected.value = uid;
+    if (uid !== null) {
+      selectedGroup.value = null;
+      setTab('unit');
+    }
+  }
+
+  const mapGroups = signal<MapGroups>(loadGroups());
+  function setMapGroups(groups: MapGroups): void {
+    mapGroups.value = groups;
+    try {
+      localStorage.setItem(GROUPS_KEY, groups);
+    } catch {
+      // blocked storage: the choice lasts for this page only
+    }
+  }
+  const selectedGroup = signal<GroupRef | null>(null);
+  /** Select a brigade or division (its card opens in the Unit tab); a regiment selected gives way to it. */
+  function selectGroup(group: GroupRef | null): void {
+    selectedGroup.value = group;
+    if (group !== null) {
+      selected.value = null;
+      aiming.value = null;
+      targetChoice.value = null;
+      setTab('unit');
+    }
+  }
+  /** The battle's units in a group (any, standing or not). */
+  function unitsOfGroup(group: GroupRef): BattleUnit[] {
+    return [...battle.value!.units.values()].filter((u) => {
+      const g = groupOf(u.side as 0 | 1, u.org, group.level);
+      return g !== null && groupKey(g) === groupKey(group);
+    });
+  }
+  /** The orders the last group order gave, per unit: to tell which have since been changed by hand. */
+  const groupOrdered = signal<Record<string, { mode: string; target: string | null }>>({});
+
+  /** Enemy brigades a group could be ordered against: those with a standing regiment that can be seen. */
+  function enemyBrigades(group: GroupRef): GroupRef[] {
+    const found = new Map<string, GroupRef>();
+    for (const u of battle.value!.units.values()) {
+      if (u.side === group.side || u.size === 0 || !seenNow(u.uid)) continue;
+      const g = groupOf(u.side as 0 | 1, u.org, 'brigade');
+      if (g !== null) found.set(groupKey(g), g);
+    }
+    return [...found.values()];
+  }
+
+  /**
+   * Order a whole group: each standing regiment fires on (or charges) the nearest regiment of the target brigade it
+   * can reach (fire: in range, in its front arc and in sight; a charge: one it can see and get to within the round,
+   * at its charging pace), or holds. A regiment that can't, holds. Returns how many were given the target, of how
+   * many standing.
+   */
+  function orderGroup(group: GroupRef, mode: 'ranged' | 'melee' | 'idle', target: GroupRef | null): { reached: number; of: number } {
+    const b = battle.value!;
+    const standing = unitsOfGroup(group).filter((u) => u.active);
+    const aims = target === null ? [] : unitsOfGroup(target).filter((t) => t.size > 0);
+    const given: Record<string, { mode: string; target: string | null }> = { ...groupOrdered.value };
+    let reached = 0;
+    for (const u of standing) {
+      const can = actionsFor(u.uid);
+      const visible = new Set(targetsFor(u.uid).map((t) => t.uid));
+      const battery = u.regiment instanceof ArtilleryBattery;
+      const ammo = battery ? b.params.combat.artillery_default_ammo : null;
+      // until units move, a charge from any distance would close by the round's end: one order for a whole
+      // brigade shouldn't send regiments further than they could charge in the round
+      const pace = b.params.charge.speed[u.key[0]];
+      const fits = (t: BattleUnit) => visible.has(t.uid) && (mode === 'melee'
+        ? (b.distance(u.uid, t.uid) ?? 0) <= pace * duration.value
+        : (b.reach(u.uid, t.uid, ammo) ?? 1) > 0 && b.inArc(u.uid, t.uid) && b.lineOfSight(u.uid, t.uid));
+      const options = mode === 'idle' || !can.includes(mode) ? [] : aims.filter(fits);
+      const far = (t: BattleUnit) => b.distance(u.uid, t.uid) ?? 0;
+      const best = options.sort((x, y) => far(x) - far(y))[0];
+      if (best === undefined) {
+        setOrder(u.uid, { mode: 'idle' });
+        given[u.uid] = { mode: 'idle', target: null };
+      } else {
+        setOrder(u.uid, { mode, target: best.uid });
+        given[u.uid] = { mode, target: best.uid };
+        reached += 1;
+      }
+    }
+    groupOrdered.value = given;
+    return { reached, of: standing.length };
+  }
+
+  /** The ids of a group's units: the battle's, or before it the drafts'. */
+  function groupMembers(group: GroupRef): string[] {
+    const b = battle.value;
+    const all = b === null ? units.value.map((u) => ({ id: u.id, side: u.side, org: u.org ?? {} }))
+      : [...b.units.values()].map((u) => ({ id: u.uid, side: u.side as 0 | 1, org: u.org }));
+    return all.filter((u) => {
+      const g = groupOf(u.side, u.org, group.level);
+      return g !== null && groupKey(g) === groupKey(group);
+    }).map((u) => u.id);
+  }
+
+  /** Move a whole group by some yards, each regiment keeping its place in it and its facing. */
+  function moveGroup(group: GroupRef, dx: number, dy: number): void {
+    const f = field.value;
+    for (const uid of groupMembers(group)) {
+      const m = mapUnit(uid);
+      placeUnit(uid, { ...clampToField({ x: m.x + dx, y: m.y + dy }, f), facing: m.facing });
+    }
+  }
+
+  /** Draw a group up around where it stands: one line, two lines, or a column, facing the enemy (deploying: in its zone). */
+  function formGroup(group: GroupRef, kind: Formation): void {
+    const members = groupMembers(group).map(mapUnit);
+    const centre = {
+      x: members.reduce((sum, m) => sum + m.x, 0) / members.length,
+      y: members.reduce((sum, m) => sum + m.y, 0) / members.length,
+    };
+    const formed = formation(members.map((m) => ({ id: m.uid, width: m.width, depth: m.depth })), centre, group.side, kind);
+    const zone = battle.value?.plan.zones[String(group.side)];
+    const places = zone === undefined ? formed : shiftInto(formed, zone);
+    const f = field.value;
+    for (const [uid, at] of Object.entries(places)) placeUnit(uid, { ...clampToField(at, f), facing: defaultFacing(group.side) });
+  }
+
+  /** Units of a group whose order was set by the last group order and has since been changed by hand. */
+  function changedByHand(group: GroupRef): number {
+    const eff = effectiveOrders.value;
+    return unitsOfGroup(group).filter((u) => {
+      const was = groupOrdered.value[u.uid];
+      return was !== undefined && (eff[u.uid].mode !== was.mode || eff[u.uid].target !== was.target);
+    }).length;
+  }
+
+  const phase = computed<Phase>(() => {
+    revision.value; // the battle opens and finishes in place
+    const b = battle.value;
+    if (b === null) return 'setup';
+    if (b.finished) return 'end';
+    return b.plan.phase === 'deployment' ? 'deployment' : 'battle';
+  });
+  const tabPicked = signal<{ tab: Tab; phase: Phase } | null>(null);
+  /** The sidebar's open tab: the one picked in this phase, else the phase's first. */
+  const sidebarTab = computed<Tab>(() => {
+    const p = phase.value;
+    const picked = tabPicked.value;
+    return picked !== null && picked.phase === p && PHASE_TABS[p].includes(picked.tab) ? picked.tab : PHASE_TABS[p][0];
+  });
+  function setTab(tab: Tab): void {
+    tabPicked.value = { tab, phase: phase.value };
+  }
+  const sidebarWide = signal(loadWide());
+  function setWide(wide: boolean): void {
+    sidebarWide.value = wide;
+    saveWide(wide);
   }
 
   const MELEE_REACH = 100; // yards: how far a melee-only unit's front arc is drawn
@@ -590,7 +923,8 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
    */
   function clickUnit(uid: string): void {
     const b = battle.value;
-    if (b === null || b.finished || mapRound.value !== null) return;
+    // deploying, there is nothing to aim at: units are only placed
+    if (b === null || b.finished || b.plan.phase === 'deployment' || mapRound.value !== null) return;
     const from = aiming.value;
     if (from !== null && targetsFor(from).some((t) => t.uid === uid)) {
       targetChoice.value = { from, to: uid, actions: actionsFor(from) };
@@ -598,7 +932,10 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     }
     targetChoice.value = null;
     if (uid === from) aiming.value = null;
-    else if (b.units.get(uid)!.active && !isEnemy(uid) && actionsFor(uid).length > 0) aiming.value = uid;
+    else if (b.units.get(uid)!.active && !isEnemy(uid) && actionsFor(uid).length > 0) {
+      aiming.value = uid;
+      setTab('unit');
+    }
   }
 
   /** Confirm the picked target: the aiming unit fires on or charges it. */
@@ -629,41 +966,129 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     seedSignal.value = Math.floor(random() * 2 ** 32);
   }
 
-  /** Build the battle from the drafts; returns the problems found (none: the battle has started). */
-  function start(): string[] {
-    const problems: string[] = [];
-    const specs: Record<string, UnitSpec> = {};
-    for (const u of units.value) {
-      if (!wholeAtLeast(u.size, 1)) {
-        problems.push(`${u.name}: men must be a whole number, 1 or more.`);
-        continue;
-      }
-      if (u.type === 'art' && !wholeAtLeast(u.guns, 0)) {
-        problems.push(`${u.name}: guns must be a whole number, 0 or more.`);
-        continue;
-      }
-      try {
-        specs[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name };
-      } catch (error) {
-        problems.push(`${u.name}: ${(error as Error).message}`);
-      }
+  /** What is wrong with one unit's draft (it can't be built), or null. */
+  function unitProblem(u: UnitDraft): string | null {
+    if (!wholeAtLeast(u.size, 1)) return 'men must be a whole number, 1 or more.';
+    if (u.type === 'art' && !wholeAtLeast(u.guns, 0)) return 'guns must be a whole number, 0 or more.';
+    try {
+      buildRegiment(u);
+    } catch (error) {
+      return (error as Error).message;
     }
-    for (const side of [0, 1] as const) {
-      if (!units.value.some((u) => u.side === side)) problems.push(`${sides.value[side]} has no units.`);
-    }
+    return null;
+  }
+
+  /** What is wrong with one side's drafts: units that can't be built, or no units at all. */
+  function draftProblems(side: 0 | 1): string[] {
+    const drafts = units.value.filter((u) => u.side === side);
+    const problems = drafts.flatMap((u) => {
+      const problem = unitProblem(u);
+      return problem === null ? [] : [`${u.name}: ${problem}`];
+    });
+    if (drafts.length === 0) problems.push(`${sides.value[side]} has no units.`);
+    return problems;
+  }
+
+  /** Everything the admin must settle before approving a side: lines left out of its file, and its drafts. */
+  const sideProblems = (side: 0 | 1): string[] => [...review.value[side].lineProblems, ...draftProblems(side)];
+
+  /** Admin: approve a side's army; refused (returns the problems) while it has any. */
+  function approve(side: 0 | 1): string[] {
+    const problems = sideProblems(side);
+    if (problems.length === 0) setReview(side, { approved: true, sentBack: false });
+    return problems;
+  }
+
+  /** Admin: leave out the lines of a side's file that couldn't be read (the player can send them again). */
+  function dropUnreadLines(side: 0 | 1): void {
+    setReview(side, { lineProblems: [] });
+  }
+
+  function setReviewNote(side: 0 | 1, note: string): void {
+    setReview(side, { note });
+  }
+
+  /** Admin: send a side's army back: what to tell the player (its problems and the admin's note). */
+  function sendBack(side: 0 | 1): string {
+    setReview(side, { approved: false, sentBack: true });
+    const r = review.value[side];
+    const problems = sideProblems(side);
+    return [
+      `${sides.value[side]} army${r.file === null ? '' : ` (${r.file})`}: sent back.`,
+      ...(problems.length ? ['', 'Problems:', ...problems.map((p) => `- ${p}`)] : []),
+      ...(r.note.trim() === '' ? [] : ['', r.note.trim()]),
+    ].join('\n');
+  }
+
+  /** What stops the battle being built: the armies, the seed, the day's plan. */
+  function setupProblems(): string[] {
+    const problems = [...draftProblems(0), ...draftProblems(1)];
     const s = seedSignal.value;
     if (!(Number.isInteger(s) && s >= 0 && s < 2 ** 32)) {
       problems.push(`The seed must be a whole number from 0 to ${2 ** 32 - 1}.`);
     }
+    if (!(duration.value > 0)) problems.push('The round length must be more than 0 minutes.');
+    const r = roundsPlanned.value;
+    if (r !== null && !wholeAtLeast(r, 1)) problems.push('Rounds planned must be a whole number, 1 or more.');
+    for (const side of [0, 1] as const) {
+      const d = zoneDepth.value[side];
+      const most = fieldSize.value.height / 2;
+      if (!(Number.isFinite(d) && d > 0 && d <= most)) {
+        problems.push(`${sides.value[side]}'s zone must be 1 to ${most} yards deep.`);
+      }
+    }
+    return problems;
+  }
+
+  /** Build the battle from the drafts, each unit where the map shows it, in the phase given. */
+  function build(phase: 'deployment' | 'battle'): string[] {
+    const problems = setupProblems();
     if (problems.length) return problems;
+    const specs: Record<string, UnitSpec> = {};
+    for (const u of units.value) {
+      specs[u.id] = { side: u.side, regiment: buildRegiment(u), name: u.name, org: u.org ?? {} };
+    }
     for (const u of mapUnits.value) specs[u.uid].regiment.position = onOpenGround(u);
-    battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, { sides: [...sides.value] }, {},
-      terrain.value);
+    const meta: Record<string, unknown> = { sides: [...sides.value] };
+    if (battleName.value.trim() !== '') meta.name = battleName.value.trim();
+    const plan = {
+      rounds_planned: roundsPlanned.value, start_clock: startClock.value, phase,
+      zones: phase === 'deployment' ? structuredClone(zones.value) : {}, field: { ...fieldSize.value },
+    };
+    battle.value = new Battle(specs, new Rng(seedSignal.value), undefined, meta, {}, terrain.value, plan);
     mapRound.value = null;
+    selectedGroup.value = null;
+    groupOrdered.value = {};
     newRound();
     orders.value = Object.fromEntries([...battle.value.units.keys()].map((uid) => [uid, IDLE]));
     touch();
     return [];
+  }
+
+  /** Build the battle and start fighting it now, each unit where the admin placed it; returns the problems. */
+  function start(): string[] {
+    return build('battle');
+  }
+
+  /**
+   * Admin: open round 0, the deployment: each unit starts drawn up in its side's zone, and the players place their
+   * own. Returns the problems (none: opened).
+   */
+  function openDeployment(): string[] {
+    const problems = setupProblems();
+    for (const side of [0, 1] as const) {
+      if (!review.value[side].approved) problems.push(`${sides.value[side]}'s army has not been approved.`);
+    }
+    if (problems.length) return problems;
+    positions.value = {}; // drawn up afresh in the zones
+    return build('deployment');
+  }
+
+  /** Admin: change how deep a side's deployment zone is (yards from its own edge). */
+  function setZoneDepth(side: 0 | 1, depth: number): void {
+    const next: [number, number] = [...zoneDepth.value];
+    next[side] = depth;
+    zoneDepth.value = next;
   }
 
   /**
@@ -686,7 +1111,9 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       const keep = o.target !== null && b.units.get(uid)!.active && b.units.get(o.target)!.size > 0;
       return [uid, keep ? o : IDLE];
     }));
+    dispatchRound.value = b.round;
     touch();
+    setTab('dispatches');
     return null;
   }
 
@@ -697,19 +1124,56 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     return { name: `battle-${b.seed}-${when}.json`, text: b.toJson(2) };
   }
 
-  /** Open a saved battle (from this client or the Python engine); returns what is wrong with it, or null. */
+  /** Admin: the setup file, to carry on setting up later. */
+  function setupDownload(): { name: string; text: string } {
+    const setup: Setup & { format: string; version: number } = {
+      format: SETUP_FORMAT, version: SETUP_VERSION, name: battleName.value, sides: [...sides.value],
+      seed: seedSignal.value, ground: terrainPreset.value, round_length: duration.value,
+      rounds_planned: roundsPlanned.value, start_clock: startClock.value, zone_depth: [...zoneDepth.value],
+      field: { ...fieldSize.value },
+      units: structuredClone(units.value), review: structuredClone(review.value),
+    };
+    const name = battleName.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'battle';
+    return { name: `setup-${name}.json`, text: JSON.stringify(setup, null, 2) };
+  }
+
+  /** Carry on setting up from a setup file (any battle open is dropped). */
+  function openSetup(setup: Setup): void {
+    battleName.value = setup.name;
+    sides.value = setup.sides;
+    seedSignal.value = setup.seed;
+    terrainPreset.value = setup.ground === 'none' || TERRAIN_PRESETS.includes(setup.ground) ? setup.ground : 'none';
+    duration.value = setup.round_length;
+    roundsPlanned.value = setup.rounds_planned;
+    startClock.value = setup.start_clock;
+    fieldSize.value = setup.field;
+    mapView.value = null;
+    zoneDepth.value = setup.zone_depth;
+    units.value = setup.units;
+    review.value = setup.review;
+    positions.value = {};
+    playerFileInfo.value = null;
+    reset();
+  }
+
+  /** Open a saved battle or a setup file; returns what is wrong with it, or null. */
   function open(text: string): string | null {
     let b: Battle;
     let file: { side: 0 | 1; tag: string } | null = null;
     try {
       const data = JSON.parse(text);
+      if (data?.format === SETUP_FORMAT) {
+        if (modeSignal.value === 'player') return 'This is the admin\'s setup file; open your player file instead.';
+        openSetup(readSetup(data));
+        return null;
+      }
       if (data?.format === PLAYER_FORMAT) {
         if (modeSignal.value === 'admin') {
           return `This is the ${data.state.meta.sides[data.side]} player's file; open the full battle file instead.`;
         }
-        // version 1 files (before the fog of war on the terrain) still open
-        if (data.version !== 1 && data.version !== PLAYER_VERSION) {
-          return `Unsupported player file version ${data.version} (expected 1 or ${PLAYER_VERSION}).`;
+        // older files (before the fog of war on the terrain, before the game flow) still open
+        if (![1, 2, PLAYER_VERSION].includes(data.version)) {
+          return `Unsupported player file version ${data.version} (expected 1 to ${PLAYER_VERSION}).`;
         }
         file = { side: data.side, tag: data.tag };
         b = Battle.fromDict(data.state);
@@ -726,6 +1190,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     units.value = data.units.map((u) => ({
       id: u.id, name: u.name, side: u.side as 0 | 1, type: u.type as UnitType | null, subtype: u.subtype,
       size: u.initial_size, stats: u.initial_stats, guns: u.guns === undefined ? null : u.guns + u.guns_lost,
+      org: { ...u.org }, // toDict always writes it
     }));
     battle.value = b;
     const preset = b.terrain?.meta.preset;
@@ -733,14 +1198,34 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     mapRound.value = null;
     newRound();
     playerFileInfo.value = file;
+    mapView.value = null; // the whole of its field
+    selectedGroup.value = null;
+    groupOrdered.value = {};
+    // a new file from the admin opens on what happened in the last round
+    dispatchRound.value = b.history.length ? b.history.length : null;
     guesses.value = {};
     if (file !== null) playerSide.value = file.side;
     orders.value = Object.fromEntries([...b.units.keys()].map((uid) => [uid, IDLE]));
     touch();
+    if (b.finished) atNightfall();
+    else if (dispatchRound.value !== null) setTab('dispatches');
     return null;
   }
 
-  /** Player mode: the orders file for the admin: this side's orders for the next round, and where its units stand. */
+  /** The battle's end opens on its result, the sidebar widened for this page (not saved: a viewer's choice stays). */
+  function atNightfall(): void {
+    setTab('result');
+    sidebarWide.value = true;
+  }
+
+  const deploying = () => battle.value!.plan.phase === 'deployment';
+  /** The round an orders file is for: 0 while deploying (places only), else the next to be fought. */
+  const nextRound = () => (deploying() ? 0 : battle.value!.round + 1);
+
+  /**
+   * Player mode: the orders file for the admin: this side's orders for the next round, and where its units stand.
+   * While deploying (round 0) it holds only where they stand.
+   */
   function planDownload(): { name: string; text: string } {
     const b = battle.value!;
     const side = playerSide.value;
@@ -752,14 +1237,15 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     const plan = {
       format: PLAN_FORMAT, version: PLAN_VERSION,
       battle: {
-        seed: b.seed, round: b.round + 1, time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()),
+        seed: b.seed, round: nextRound(), time: b.time, tag: playerFileInfo.value?.tag ?? battleTag(b.toDict()),
       },
       side, side_name: sides.value[side],
-      orders: Object.fromEntries(actingUnits.value.filter((u) => u.side === side)
+      orders: deploying() ? {} : Object.fromEntries(actingUnits.value.filter((u) => u.side === side)
         .map((u) => [u.uid, orderForFile(orders.value[u.uid])])),
       positions: Object.fromEntries(own.map((u) => [u.uid, place(u.uid)])),
     };
-    const name = `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
+    const name = deploying() ? `deployment-${b.seed}-${sides.value[side]}.json`
+      : `orders-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`;
     return { name, text: JSON.stringify(plan, null, 2) };
   }
 
@@ -767,7 +1253,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
   function playerFileDownload(side: 0 | 1): { name: string; text: string } {
     const b = battle.value!;
     return {
-      name: `player-${b.seed}-round-${b.round + 1}-${sides.value[side]}.json`,
+      name: `player-${b.seed}-round-${nextRound()}-${sides.value[side]}.json`,
       text: JSON.stringify(playerFile(b.toDict(), side), null, 2),
     };
   }
@@ -806,7 +1292,11 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     if (plan.version !== PLAN_VERSION) return `unsupported orders file version ${plan.version} (expected ${PLAN_VERSION}).`;
     const meta = plan.battle as { seed: number; round: number; tag?: string };
     if (meta.seed !== b.seed) return `these orders are for another battle (seed ${meta.seed}, this one ${b.seed}).`;
-    if (meta.round !== b.round + 1) return `these orders are for round ${meta.round}; the next round is ${b.round + 1}.`;
+    if (meta.round !== nextRound()) {
+      return deploying() ? `these orders are for round ${meta.round}; the armies are still deploying (round 0).`
+        : `these orders are for round ${meta.round}; the next round is ${b.round + 1}.`;
+    }
+    if (deploying() && Object.keys(plan.orders as object).length) return 'a deployment gives no orders, only places.';
     // files from before tags have none
     if (meta.tag !== undefined && meta.tag !== battleTag(b.toDict())) {
       return 'these orders were made from an older copy of the battle; send the player the latest.';
@@ -854,7 +1344,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
       const moves = (plan.positions ?? {}) as Record<string, Point & { facing?: number }>;
       for (const [uid, place] of Object.entries(moves)) {
         const unit = battle.value!.units.get(uid)!;
-        unit.regiment.position = onOpenGround({ ...clampToField(place), facing: place.facing ?? facingOf(unit) });
+        unit.regiment.position = onOpenGround({ ...clampToField(place, field.value), facing: place.facing ?? facingOf(unit) });
       }
     }
     orders.value = merged;
@@ -878,7 +1368,7 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
 
   /** Move a unit on the map (kept on the field), facing the same way. */
   function moveUnit(uid: string, point: Point): void {
-    placeUnit(uid, { ...clampToField(point), facing: mapUnit(uid).facing });
+    placeUnit(uid, { ...clampToField(point, field.value), facing: mapUnit(uid).facing });
   }
 
   /** Turn a unit to face a compass bearing (degrees clockwise from the top of the map), where it stands. */
@@ -887,28 +1377,56 @@ export function createStore(seed: number = Math.floor(Math.random() * 2 ** 32), 
     placeUnit(uid, { x, y, facing: turned(facing, 0) });
   }
 
+  /** Deploying: does this unit stand outside its side's zone? */
+  function outsideZone(uid: string): boolean {
+    const b = battle.value;
+    return b !== null && b.plan.phase === 'deployment' && !b.inZone(uid);
+  }
+
+  /** Admin: end the deployment and open round 1; returns what stops it (units outside their zone), or null. */
+  function openBattle(): string | null {
+    try {
+      battle.value!.openBattle();
+    } catch (error) {
+      return (error as Error).message;
+    }
+    newRound();
+    touch();
+    return null;
+  }
+
   /** End the battle: settle killed, wounded and prisoners; `holder` 'auto' lets the engine decide the field. */
   function finish(holder: FieldHolder): void {
     battle.value!.finish(holder);
     touch();
+    atNightfall();
   }
 
   /** Back to editing the armies (the battle is dropped). */
   function reset(): void {
     battle.value = null;
+    dispatchRound.value = null;
     mapRound.value = null;
     newRound();
     touch();
   }
 
   return {
+    groupMembers, moveGroup, formGroup,
+    mapGroups, setMapGroups, selectedGroup, selectGroup, unitsOfGroup, enemyBrigades, orderGroup, changedByHand,
+    groupOrdered,
+    field, fieldSize, setField, view, zoomMap, panMap, centreMap, fitMap,
+    dispatchRound, dispatchOf, phase, sidebarTab, setTab, sidebarWide, setWide,
+    battleName, startClock, roundsPlanned, zoneDepth, zones, setZoneDepth, draftProblems, setupProblems, unitProblem,
+    review, sideProblems, approve, dropUnreadLines, setReviewNote, sendBack, outsideZone, openBattle,
+    openDeployment, setupDownload,
     units, sides, seed: seedSignal, battle, revision, orderOfBattle: orderOfBattleView,
     orders, duration, recordEvents, actingUnits, preview, history, resolve, summary, finish, download, open,
     mapUnits, orderArrows, moveUnit, faceUnit, mapRound, replayRounds, aiming, targetChoice, actionsFor, clickUnit,
     chooseAction, cancelTargeting, mode: modeSignal, playerSide, effectiveOrders, isAssumed, resetAssumption,
     estimate, runEstimate, planDownload, loadPlans, playerFileDownload, playerFileInfo, hiddenSide, fogSide, guesses, setGuess,
     modifiers, setModifier, plansLoaded, orderSources, withoutOrders, canRally, sideModifiers, setSideModifier, rangeOf,
-    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain, seenNow,
+    layers, setLayer, focusedUnit, selectUnit, arcOf, terrainPreset, terrain, seenNow, lastSeenRound,
     addUnit, updateUnit, removeUnit, clearUnits, armyDownload, loadArmy, renameSide, newSeed, start, reset, touch, targetsFor, setOrder,
   };
 }

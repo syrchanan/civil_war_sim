@@ -15,23 +15,27 @@ prisoners and who held the field. Same seed, same battle, every time.
 
 The site opens in the **player view**; the admin uses **`?mode=admin`**
 (https://syrchanan.github.io/civil_war_sim/?mode=admin). Everything stays in the browser: files are passed by hand.
+The field is on the left and one tabbed sidebar on the right; on a phone the tabs run along the bottom.
 
-1. The admin builds both armies (or loads each side's army file, CSV), places units on the map and starts the
-   battle.
-2. The admin downloads a **player file** for each side and sends it to that side's player. It shows the player's
-   own units exactly, and of the enemy only what could be seen: names, types, places, broken or not, and men
-   roughly.
-3. Each player opens their file, gives orders (in the table, or by clicking a unit and then an enemy on the map),
-   moves and turns units, and can estimate the round using their own guesses about the enemy. They download their
-   **orders file** and send it back.
-4. The admin loads both orders files, checks who sent orders and what came from where, adjusts any order, adds
-   **modifiers** for the round (e.g. "uphill, fire -15%"), and fights the round. Orders files made from an older
-   copy of the battle are refused.
-5. Repeat from step 2 with fresh player files. At the end, the admin finishes the battle: killed, wounded,
-   prisoners, and who held the field.
+1. **Setup** (admin): the battle's name, the ground, the field's size (suggested from the armies), the first round's
+   time, round length and rounds planned, and each side's deployment zone (drag its edge on the map).
+2. **Armies**: each player sends an army file (CSV, with optional corps, division and brigade columns). The admin
+   loads both, reviews them (problems flagged, by brigade), and approves each or sends it back with a note.
+3. **Round 0, deployment**: the admin downloads a **player file** for each side. Each player places their regiments
+   inside their zone (one at a time, or a brigade at a time: drawn up in line, two lines or column, and dragged as
+   one) and sends their deployment back. The admin loads both and opens round 1.
+4. **Each round**: the admin sends fresh player files. A player sees their own units exactly and of the enemy only
+   what could be seen (men roughly; regiments lost from sight as last seen). They give orders by regiment, or to a
+   whole brigade or division at once (fire, charge or hold against an enemy brigade), look things up in
+   **Reconnaissance**, and send their **orders file**. The admin loads both, adjusts orders, adds **modifiers**
+   (e.g. "uphill, fire -15%") and fights the round, which is told as a **dispatch**.
+5. **Nightfall**: the admin finishes the battle and sends everyone the battle file (Download battle): the fog lifts.
+   The Result tab tells it: the verdict, the butcher's bill, the general each commander fought like, and the
+   regiments ranked.
 
-The admin's battle file (Download battle) holds everything and resumes the battle later. Each
-round can be replayed on the map ("Show on the map").
+The admin's battle file (Download battle) holds everything and resumes the battle later. Each round can be replayed
+on the map ("Show on the map"). Large battles (60 to 80 regiments a side) can be shown on the map by brigade or
+division.
 
 ## Development
 

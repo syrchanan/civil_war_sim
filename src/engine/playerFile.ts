@@ -8,7 +8,10 @@
  * Version 2, fog of war on the terrain (sight.ts): an enemy unit the side has never seen, at any round's start or
  * now, isn't in the file at all. One seen before but not now stands where it was last seen, with its men and
  * whether it was broken as seen then, marked `meta.last_seen` (that round). History keeps an enemy unit's place
- * and orders only for rounds it was seen at the start of. Version 1 files (no fog) still open. The dice state stays with the admin; the
+ * and orders only for rounds it was seen at the start of. Version 1 files (no fog) still open.
+ *
+ * Version 3 (game flow): units carry their org (corps, division, brigade), the enemy's as seen. While the armies
+ * are deploying (round 0) the file holds no enemy unit at all: nothing has been seen yet. The dice state stays with the admin; the
  * real battle's tag goes along, so the player's orders file can be checked against the battle it was made from.
  */
 
@@ -20,7 +23,7 @@ import type { UnitReport } from './battle';
 import { battleTag, type StateData, type UnitData } from './state';
 
 export const PLAYER_FORMAT = 'imperial-generals-player';
-export const PLAYER_VERSION = 2;
+export const PLAYER_VERSION = 3;
 
 /** The stats shown for an enemy unit until the player guesses better: average experience and morale. */
 export const UNKNOWN_STATS = '5/5/0/0';
@@ -89,7 +92,9 @@ export function playerFile(real: StateData, side: 0 | 1): PlayerFile {
   const enemy = new Set(real.units.filter((u) => u.side !== side).map((u) => u.id));
   const own = (uid: string) => !enemy.has(uid);
   const sight = sightings(real, side);
-  const never = (uid: string) => enemy.has(uid) && sight.get(uid)!.last === null;
+  // deploying, nothing of the enemy has been seen yet
+  const deploying = real.plan?.phase === 'deployment';
+  const never = (uid: string) => enemy.has(uid) && (deploying || sight.get(uid)!.last === null);
   const known = (uid: string) => !never(uid);
   // an enemy unit's place and orders in a round only if it was seen as that round began
   const seenAt = (uid: string, n: number) => own(uid) || sight.get(uid)!.seen.has(n);

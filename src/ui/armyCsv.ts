@@ -1,13 +1,17 @@
 /**
  * Army files: one side's units as CSV, so players can keep their army in a spreadsheet and load it instead of
  * typing it in each time. Words rather than codes (Infantry, rifled musket, yes / no); blank cells take the usual
- * values; columns may come in any order. Problems are reported by line, and nothing is loaded while there are any.
+ * values; columns may come in any order. Corps, division and brigade are optional names for organising the army
+ * (regiments of a brigade need not stand together). Problems are reported by line, and nothing is loaded while
+ * there are any.
  */
 
 import defaults from '../engine/defaults.json';
+import { ORG_KEYS, type Org } from '../engine';
 import { DEFAULT_SUBTYPE, STANDARD_BATTERY, type UnitDraft, type UnitType } from './store';
 
-export const COLUMNS = ['name', 'type', 'subtype', 'men', 'experience', 'morale', 'weapon', 'melee_only', 'guns'];
+export const COLUMNS = ['name', 'type', 'subtype', 'men', 'experience', 'morale', 'weapon', 'melee_only', 'guns', 'corps',
+  'division', 'brigade'];
 
 const TYPES: Record<string, UnitType | null> = { infantry: 'inf', cavalry: 'cav', artillery: 'art', generic: null };
 const TYPE_WORDS: Record<string, string> = { inf: 'Infantry', cav: 'Cavalry', art: 'Artillery' };
@@ -69,7 +73,8 @@ export function armyToCsv(units: UnitDraft[]): string {
     const [xp, morale, weapon, meleeOnly] = u.stats.split('/');
     const weaponName = Object.entries(weapons(u.type)).find(([, code]) => String(code) === weapon)![0];
     return [u.name, u.type === null ? 'Generic' : TYPE_WORDS[u.type], u.subtype ?? '', String(u.size), xp, morale,
-      weaponName, meleeOnly === '1' ? 'yes' : 'no', u.guns === null ? '' : String(u.guns)];
+      weaponName, meleeOnly === '1' ? 'yes' : 'no', u.guns === null ? '' : String(u.guns),
+      ...ORG_KEYS.map((key) => u.org?.[key] ?? '')];
   });
   return [COLUMNS, ...rows].map((r) => r.map(quote).join(',')).join('\r\n') + '\r\n';
 }
@@ -115,7 +120,9 @@ function readUnit(get: (column: string) => string, side: 0 | 1): Omit<UnitDraft,
   } else if (type === 'art') {
     guns = STANDARD_BATTERY.guns;
   }
-  return { name, side, type, subtype, size, stats: `${xp}/${morale}/${weapon}/${melee}`, guns };
+  const org: Org = {};
+  for (const key of ORG_KEYS) if (get(key) !== '') org[key] = get(key);
+  return { name, side, type, subtype, size, stats: `${xp}/${morale}/${weapon}/${melee}`, guns, org };
 }
 
 /** Read one side's units from an army file; `problems` names each line that couldn't be read. */

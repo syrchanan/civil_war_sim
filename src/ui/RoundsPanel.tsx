@@ -1,18 +1,23 @@
-/** Every round fought so far: per unit losses, inflicted, men left, morale and breaks; charges and target switches. */
+/**
+ * Every round fought so far: its dispatch, and under it the full report (per unit losses, inflicted, men left,
+ * morale and breaks; charges, target switches, modifiers, flights and rallies). The dispatch just fought or picked
+ * on the round strip comes first, with the way on to the next orders; then the rest, latest first.
+ */
 
 import type { RoundReport } from '../engine';
+import { DispatchCard } from './DispatchCard';
 import { chargeText, flightText, modifierText, rallyText, status } from './format';
 import type { Store } from './store';
 import { StrengthCharts } from './StrengthCharts';
 
-function Round({ store, report, open }: { store: Store; report: RoundReport; open: boolean }) {
+function Round({ store, report }: { store: Store; report: RoundReport }) {
   const units = store.battle.value!.units;
   const name = (uid: string) => units.get(uid)!.name;
   // a player sees only their own units' figures (fog of war)
   const rows = Object.entries(report.units).filter(([uid]) => units.get(uid)!.side !== store.fogSide.value);
   return (
-    <details open={open}>
-      <summary>Round {report.round} ({report.start.toFixed(0)}–{report.end.toFixed(0)} min)</summary>
+    <details class="full-report">
+      <summary>The full report: Round {report.round} ({report.start.toFixed(0)}–{report.end.toFixed(0)} min)</summary>
       <div class="table-wrap">
         <table aria-label={`Round ${report.round}`}>
           <thead>
@@ -78,10 +83,18 @@ function Round({ store, report, open }: { store: Store; report: RoundReport; ope
 export function RoundsPanel({ store }: { store: Store }) {
   const history = store.history.value;
   if (history.length === 0) return <p class="note">No rounds fought yet.</p>;
+  const picked = store.dispatchRound.value;
+  const rounds = [...history].reverse().sort((a, b) => Number(b.round === picked) - Number(a.round === picked));
   return (
     <div class="rounds">
+      {/* the dispatches first: the charts below would push the round just fought out of sight */}
+      {rounds.map((report) => (
+        <div class={`dispatch-entry${report.round === picked ? ' picked' : ''}`}>
+          <DispatchCard store={store} round={report.round} docked={report.round === picked} />
+          <Round store={store} report={report} />
+        </div>
+      ))}
       <StrengthCharts store={store} />
-      {history.map((report, i) => <Round store={store} report={report} open={i === history.length - 1} />)}
     </div>
   );
 }

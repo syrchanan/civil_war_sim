@@ -12,6 +12,7 @@
 
 import defaults from '../engine/defaults.json';
 import { Rng, type TerrainData } from '../engine';
+import type { FieldSize } from '../engine';
 import { FIELD } from './field';
 
 const cfg = defaults.terrain;
@@ -80,14 +81,17 @@ export function threshold(values: number[], share: number): number {
   return sorted[Math.max(0, Math.round(share * values.length) - 1)];
 }
 
-/** A new battle's ground from a preset (`terrain.presets` in defaults.json) and a seed. */
-export function generateTerrain(preset: string, seed: number): TerrainData {
+/**
+ * A new battle's ground from a preset (`terrain.presets` in defaults.json) and a seed, over the battle's field. The
+ * grid's cell grows with the field (about a hundred cells across at most), so a large field stays a small file.
+ */
+export function generateTerrain(preset: string, seed: number, field: FieldSize = FIELD): TerrainData {
   if (!(preset in cfg.presets)) throw new Error(`Unknown terrain preset ${preset}; one of ${TERRAIN_PRESETS.join(', ')}.`);
   const elevation = cfg.elevation[preset as Preset];
   const { forest_share: share } = cfg.presets[preset as Preset];
-  const cell = cfg.cell;
-  const columns = Math.round(FIELD.width / cell);
-  const rows = Math.round(FIELD.height / cell);
+  const cell = Math.max(cfg.cell, Math.round(field.width / 100));
+  const columns = Math.round(field.width / cell);
+  const rows = Math.round(field.height / cell);
   const land = gradientNoise(seed);
   const woods = gradientNoise((seed ^ 0x5bd1e995) >>> 0); // unsigned: seeds go up to 2^32 - 1
   const feet: number[] = [];

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/preact';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/preact';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { App } from './App';
@@ -176,7 +176,7 @@ describe('map targeting', () => {
     const menu = screen.getByRole('dialog', { name: '1st Minnesota against 8th Alabama' });
     expect([...menu.querySelectorAll('button')].map((b) => b.textContent)).toEqual(['Fire', 'Charge', 'Cancel']);
     expect(document.activeElement).toBe(menu.querySelector('button'));
-    fireEvent.click(screen.getByRole('button', { name: 'Charge' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Charge' }));
     expect(store.orders.value.us_1mn).toMatchObject({ mode: 'melee', target: 'cs_8al' });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect((screen.getByLabelText('1st Minnesota action') as HTMLSelectElement).value).toBe('melee');
@@ -186,7 +186,7 @@ describe('map targeting', () => {
     const store = started();
     fireEvent.click(unit('1st Minnesota'));
     fireEvent.click(unit('8th Alabama'));
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.click(unit('1st Minnesota'));
     fireEvent.click(unit('8th Alabama'));
@@ -206,7 +206,7 @@ describe('map targeting', () => {
     expect(unit('8th Alabama').getAttribute('tabindex')).toBe('0');
     fireEvent.keyDown(unit('1st Minnesota'), { key: 'Enter' });
     fireEvent.keyDown(unit('8th Alabama'), { key: ' ' });
-    fireEvent.click(screen.getByRole('button', { name: 'Fire' }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Fire' }));
     expect(store.orders.value.us_1mn).toMatchObject({ mode: 'ranged', target: 'cs_8al' });
   });
 

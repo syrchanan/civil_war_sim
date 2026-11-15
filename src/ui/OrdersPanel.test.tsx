@@ -11,7 +11,7 @@ afterEach(cleanup);
 const started = () => {
   const store = createStore(1863);
   render(<App store={store} />);
-  expect(screen.getByText('Start the battle to give orders.')).toBeTruthy();
+  expect(screen.queryByRole('tab', { name: 'Orders' })).toBeNull(); // no orders before the battle
   closeRanks(store);
   fireEvent.click(screen.getByRole('button', { name: 'Start battle' }));
   return store;

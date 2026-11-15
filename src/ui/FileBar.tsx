@@ -1,5 +1,6 @@
 /**
- * Save and open battles, and pass orders between players and the admin. The battle download resumes here. A player downloads their orders file for the next round; the admin loads one per player. The admin
+ * Save and open battles, and pass orders between players and the admin. On a phone only the main action shows (a
+ * player's orders out, the admin's orders in); the rest fold behind a Files button. The battle download resumes here. A player downloads their orders file for the next round; the admin loads one per player. The admin
  * also downloads a player file per side (the battle as that side sees it) to send to each player.
  */
 
@@ -23,6 +24,7 @@ const readAll = (input: HTMLInputElement) =>
 
 export function FileBar({ store }: { store: Store }) {
   const [problem, setProblem] = useState<string | null>(null);
+  const [open, setOpen] = useState(false); // the Files menu, on a phone
   store.revision.value; // the battle changes in place (a round fought, or finished)
   const battle = store.battle.value;
   const player = store.mode.value === 'player';
@@ -43,41 +45,45 @@ export function FileBar({ store }: { store: Store }) {
   };
   return (
     <div class="file-bar">
-      {player && locked !== null && <span>You command: {store.sides.value[locked.side]}</span>}
-      {player && battle !== null && locked === null && (
-        <label>
-          You command{' '}
-          <select aria-label="You command" value={String(store.playerSide.value)}
-            onChange={(e) => { store.playerSide.value = Number(e.currentTarget.value) as 0 | 1; }}>
-            <option value="0">{store.sides.value[0]}</option>
-            <option value="1">{store.sides.value[1]}</option>
-          </select>
+      <button class="files-toggle" aria-expanded={open} aria-controls="file-more" onClick={() => setOpen(!open)}>
+        Files</button>
+      <div id="file-more" class={`file-more${open ? ' open' : ''}`}>
+        {player && locked !== null && <span>You command: {store.sides.value[locked.side]}</span>}
+        {player && battle !== null && locked === null && (
+          <label>
+            You command{' '}
+            <select aria-label="You command" value={String(store.playerSide.value)}
+              onChange={(e) => { store.playerSide.value = Number(e.currentTarget.value) as 0 | 1; }}>
+              <option value="0">{store.sides.value[0]}</option>
+              <option value="1">{store.sides.value[1]}</option>
+            </select>
+          </label>
+        )}
+        {locked === null && (
+          <button disabled={battle === null} onClick={() => {
+            const { name, text } = store.download();
+            save(name, text);
+          }}>Download battle</button>
+        )}
+        {!player && ([0, 1] as const).map((side) => (
+          <button disabled={battle === null || battle.finished} onClick={() => {
+            const { name, text } = store.playerFileDownload(side);
+            save(name, text);
+          }}>Player file: {store.sides.value[side]}</button>
+        ))}
+        <label class="button">
+          Open a saved battle
+          <input type="file" accept=".json,application/json" aria-label="Open a saved battle"
+            onChange={(e) => onOpen(e.currentTarget)} />
         </label>
-      )}
-      {locked === null && (
-        <button disabled={battle === null} onClick={() => {
-          const { name, text } = store.download();
-          save(name, text);
-        }}>Download battle</button>
-      )}
-      {!player && ([0, 1] as const).map((side) => (
-        <button disabled={battle === null || battle.finished} onClick={() => {
-          const { name, text } = store.playerFileDownload(side);
-          save(name, text);
-        }}>Player file: {store.sides.value[side]}</button>
-      ))}
-      <label class="button">
-        Open a saved battle
-        <input type="file" accept=".json,application/json" aria-label="Open a saved battle"
-          onChange={(e) => onOpen(e.currentTarget)} />
-      </label>
+      </div>
       {player ? (
-        <button disabled={battle === null || battle.finished} onClick={() => {
+        <button class="main-action" disabled={battle === null || battle.finished} onClick={() => {
           const { name, text } = store.planDownload();
           save(name, text);
-        }}>Download my orders</button>
+        }}>{battle?.plan.phase === 'deployment' ? 'Send deployment' : 'Download my orders'}</button>
       ) : (
-        <label class="button">
+        <label class="button main-action">
           Load players' orders
           <input type="file" multiple accept=".json,application/json" aria-label="Load players' orders"
             disabled={battle === null} onChange={(e) => onLoadPlans(e.currentTarget)} />
